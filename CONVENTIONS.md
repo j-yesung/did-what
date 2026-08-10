@@ -36,11 +36,13 @@ export function RecordCard() {
 
 ## Feature-Sliced Design
 
-`src/app`은 Next.js 라우팅 전용으로 두고, 실제 화면과 비즈니스 코드는 FSD 레이어에 둔다.
+`src/app`은 Next.js App Router의 라우팅 전용 레이어로 사용하고, 실제 화면 구성과 비즈니스 코드는 FSD 레이어에 둔다.
+
+이 프로젝트에서는 Next.js의 `app` 디렉터리와 FSD의 page layer를 명확히 구분하기 위해 FSD `pages` 레이어를 `_pages`라는 이름으로 사용한다.
 
 ```text
 src/
-├── app/       # Next.js 라우트와 레이아웃
+├── app/       # Next.js 라우트, layout, metadata 등
 ├── _pages/    # 페이지 단위 화면 조합
 ├── features/  # 사용자의 재사용 가능한 행동
 ├── entities/  # record, person, place 같은 도메인
@@ -48,12 +50,15 @@ src/
 ```
 
 - 필요한 레이어와 slice만 만들고 빈 폴더를 미리 생성하지 않는다.
-- 의존성은 `app → _pages → features → entities → shared` 방향만 허용한다.
+- 기본 의존성 방향은 `app → _pages → features → entities → shared`로 유지한다.
+- 상위 레이어는 하위 레이어를 참조할 수 있지만, 하위 레이어가 상위 레이어를 참조하지 않는다.
 - 같은 레이어의 서로 다른 slice끼리는 직접 import하지 않는다.
 - slice 내부는 필요에 따라 `ui`, `model`, `api`, `lib` segment로 나눈다.
-- 외부에서는 slice의 `index.ts`에 공개된 API만 import한다.
-- `src/app/**/page.tsx`는 대응하는 `_pages` 화면을 가져와 렌더링하는 얇은 진입점으로 유지한다.
-- `processes`는 사용하지 않는다. `widgets`는 여러 페이지에서 재사용되는 큰 UI 블록이 생길 때만 추가한다.
+- 외부에서는 가능한 한 slice의 `index.ts`에 공개된 API를 통해 import한다.
+- `src/app/**/page.tsx`는 대응하는 `_pages` 화면을 import해 렌더링하는 얇은 진입점으로 유지한다.
+- `processes` 레이어는 사용하지 않는다.
+- `widgets`는 여러 페이지에서 재사용되거나 독립적인 책임을 가진 큰 UI 블록이 실제로 생길 때만 추가한다.
+- FSD 구조를 맞추기 위해 불필요한 추상화나 폴더를 만들지 않는다.
 
 ## Exports
 
