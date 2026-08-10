@@ -1,276 +1,67 @@
 .shell {
-  position: relative;
+  display: flex;
   width: min(100%, 430px);
   min-height: 100svh;
   margin: 0 auto;
-  padding: 30px 22px 112px;
-  overflow: hidden;
-  background: radial-gradient(circle at 106% 10%, var(--brand-100) 0, transparent 31%), var(--background);
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header h1,
-.intro h2,
-.header p,
-.intro p {
-  margin: 0;
-}
-
-.header h1 {
-  margin-top: 2px;
-  font-size: 25px;
-  font-weight: 800;
-  letter-spacing: -0.06em;
-}
-
-.eyebrow {
-  color: var(--muted-foreground);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.profileLink {
-  border-radius: 50%;
-}
-
-.intro {
-  margin-top: 36px;
-}
-
-.intro p {
-  margin-bottom: 8px;
-  color: var(--primary);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.intro h2 {
-  font-size: clamp(28px, 8vw, 34px);
-  font-weight: 750;
-  line-height: 1.24;
-  letter-spacing: -0.045em;
-}
-
-.map {
-  position: relative;
-  min-height: 400px;
-  margin-top: 22px;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--border), transparent 20%);
-  border-radius: 34px 34px 76px 34px;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--brand-50), white 38%), var(--surface));
-  box-shadow: 0 24px 70px color-mix(in srgb, var(--brand-900), transparent 91%);
-}
-
-.map::before,
-.map::after {
-  position: absolute;
-  border: 1px solid color-mix(in srgb, var(--brand-300), transparent 70%);
-  border-radius: 50%;
-  content: "";
-}
-
-.map::before {
-  top: 80px;
-  left: -100px;
-  width: 260px;
-  height: 260px;
-}
-
-.map::after {
-  right: -90px;
-  bottom: -40px;
-  width: 220px;
-  height: 220px;
-}
-
-.mapTitle {
-  position: absolute;
-  z-index: 1;
-  top: 24px;
-  left: 24px;
-  display: flex;
+  padding: 12px 20px calc(92px + env(safe-area-inset-bottom));
   flex-direction: column;
-  gap: 3px;
-  font-size: 11px;
+  gap: 12px;
+  background: var(--background);
 }
 
-.mapTitle span {
-  color: var(--muted-foreground);
-}
-
-.mapTitle strong {
-  color: var(--brand-800);
-  font-size: 14px;
-}
-
-.mapGraphic {
-  position: absolute;
-  top: 25px;
-  left: 50%;
-  width: 245px;
-  height: 335px;
-  filter: drop-shadow(0 16px 16px color-mix(in srgb, var(--brand-900), transparent 88%));
-  transform: translateX(-42%) rotate(2deg);
-}
-
-.mapRegions path {
-  transition:
-    filter 180ms ease,
-    transform 180ms ease;
-}
-
-.empty {
-  fill: var(--map-empty);
-  background: var(--map-empty);
-}
-
-.levelOne {
-  fill: var(--map-level-1);
-  background: var(--map-level-1);
-}
-
-.levelTwo {
-  fill: var(--map-level-2);
-  background: var(--map-level-2);
-}
-
-.levelThree {
-  fill: var(--map-level-3);
-  background: var(--map-level-3);
-}
-
-.levelFour {
-  fill: var(--map-level-4);
-  background: var(--map-level-4);
-}
-
-.mapPinHalo {
-  fill: color-mix(in srgb, var(--primary), transparent 77%);
-}
-
-.mapPin {
-  fill: var(--brand-800);
-  stroke: var(--surface);
-  stroke-width: 3px;
-}
-
-.mapLegend {
-  position: absolute;
-  z-index: 1;
-  right: 22px;
-  bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--muted-foreground);
-  font-size: 9px;
-}
-
-.legendScale {
-  display: flex;
-  gap: 3px;
-}
-
-.legendScale i {
-  width: 13px;
-  height: 13px;
-  border-radius: 4px;
-}
-
-.summary {
+.mapArea {
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  gap: 22px;
-  align-items: center;
-  padding: 26px 12px 12px;
-}
-
-.summary > div:not([data-slot="separator"]) {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: baseline;
-}
-
-.summary span {
-  grid-column: 1 / -1;
-  margin-bottom: 3px;
-  color: var(--muted-foreground);
-  font-size: 11px;
-}
-
-.summary strong {
-  margin-right: 5px;
-  color: var(--brand-800);
-  font-size: 27px;
-  letter-spacing: -0.04em;
-}
-
-.summary small {
-  color: var(--muted-foreground);
-  font-size: 11px;
+  min-height: 0;
+  flex: 1;
+  place-items: center;
+  padding: 4px 6px;
 }
 
 .navigation {
   position: fixed;
   z-index: 10;
-  right: max(14px, calc((100vw - 402px) / 2));
-  bottom: max(12px, env(safe-area-inset-bottom));
-  left: max(14px, calc((100vw - 402px) / 2));
+  right: max(0px, calc((100vw - 430px) / 2));
+  bottom: 0;
+  left: max(0px, calc((100vw - 430px) / 2));
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  min-height: 72px;
-  padding: 8px;
-  border: 1px solid color-mix(in srgb, var(--border), transparent 15%);
-  border-radius: 24px;
-  background: color-mix(in srgb, var(--surface), transparent 5%);
-  box-shadow: 0 12px 45px color-mix(in srgb, var(--foreground), transparent 87%);
+  grid-template-columns: repeat(3, 1fr);
+  min-height: calc(76px + env(safe-area-inset-bottom));
+  padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface), transparent 4%);
   backdrop-filter: blur(18px);
 }
 
 .navigation a {
   display: flex;
+  min-height: 54px;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 3px;
-  border-radius: 17px;
+  gap: 4px;
+  border-radius: var(--radius-lg);
   color: var(--muted-foreground);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
 }
 
 .navigation .activeNavItem {
-  background: var(--brand-50);
-  color: var(--brand-700);
+  color: var(--primary);
 }
 
 .navIcon {
-  width: 19px;
-  height: 19px;
+  width: 20px;
+  height: 20px;
   stroke-width: 2;
 }
 
-.profileLink:focus-visible,
 .navigation a:focus-visible {
-  outline: 3px solid var(--brand-300);
-  outline-offset: 3px;
+  outline: 3px solid var(--ring);
+  outline-offset: -2px;
 }
 
 @media (min-width: 700px) {
   .shell {
     box-shadow: 0 0 80px color-mix(in srgb, var(--brand-950), transparent 92%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mapRegions path {
-    transition: none;
   }
 }
