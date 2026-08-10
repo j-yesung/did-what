@@ -1,9 +1,20 @@
-<!-- BEGIN:nextjs-agent-rules -->
+## 서비스 도메인
 
-# This is NOT the Next.js you know
+"뭐했지"는 사용자가 연인, 친구 등 함께한 사람과 언제, 어디서, 무엇을 했는지 기록하고, 그 발자취를 대한민국 지도와 타임라인을 통해 돌아볼 수 있는 개인 기록 서비스다.
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+단순 여행 기록 앱이 아니라 사람과 장소를 중심으로 추억을 쌓는 관계 기반 라이프로그 앱을 지향한다.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+## 커밋 / 브랜치
 
-<!-- END:nextjs-agent-rules -->
+- 커밋, 푸시, 브랜치 생성/삭제/변경은 사용자가 직접 수행하고, 필요한 경우 커밋 메시지나 브랜치명만 추천합니다.
+- git status, git diff, git log, git show 같은 조회 명령만 사용할 수 있습니다.
+- 커밋 메시지는 <type>: <subject> 형태로 한국어로 작성합니다. type은 feat(기능) | fix(버그) | hotfix(운영 긴급) | refactor(구조 개선) | style(포맷팅) | docs(문서) | chore(빌드·설정·기타) 중 하나.
+- 하나의 커밋에는 하나의 목적만 담습니다.
+
+## 명령어 / 검증 정책
+
+- 파일을 생성·수정했으면 biome로 import 정렬을 체크해준다.
+
+## 참고 문서
+
+- 코드 작성 시 `CONVENTIONS.md`를 따른다.

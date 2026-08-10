@@ -1,3 +1,3 @@
 export default function Page() {
-  return <main>did-what</main>;
+  return <main>Place</main>;
 }

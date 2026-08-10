@@ -1,0 +1,29 @@
+prefix_rule(
+    pattern = ["git", ["status", "diff", "log", "show"]],
+    decision = "allow",
+    justification = "Read-only Git commands are safe.",
+)
+
+prefix_rule(
+    pattern = ["git", ["add", "commit", "checkout", "switch", "merge", "rebase"]],
+    decision = "prompt",
+    justification = "Confirm Git commands that modify repository state.",
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+    justification = "Do not publish repository changes.",
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Use a non-destructive Git command instead.",
+)
+
+prefix_rule(
+    pattern = ["git", "branch", "-D"],
+    decision = "forbidden",
+    justification = "Use `git branch -d` after confirming the branch is merged.",
+)
