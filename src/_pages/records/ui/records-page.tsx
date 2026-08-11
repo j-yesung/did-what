@@ -1,4 +1,12 @@
-import { CalendarDaysIcon, ChevronLeftIcon, MapPinIcon, NotebookPenIcon, PlusIcon, UsersIcon } from "lucide-react";
+import {
+  CalendarDaysIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MapPinIcon,
+  NotebookPenIcon,
+  PlusIcon,
+  UsersIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -81,11 +89,22 @@ export async function RecordsPage() {
                   </p>
                   {record.memo ? <p className="text-muted-foreground text-sm leading-relaxed">{record.memo}</p> : null}
                 </CardContent>
-                <CardFooter className="gap-2">
-                  <UsersIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-                  <p className="text-muted-foreground text-xs">
-                    {record.record_people.map(({ person }) => person.name).join(", ")}
-                  </p>
+                <CardFooter className="justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <UsersIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <p className="truncate text-muted-foreground text-xs">
+                      {record.record_people.map(({ person }) => person.name).join(", ")}
+                    </p>
+                  </div>
+                  <Button
+                    nativeButton={false}
+                    render={<Link href={`/records/${record.id}`} />}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    기록 보기
+                    <ChevronRightIcon data-icon="inline-end" />
+                  </Button>
                 </CardFooter>
               </Card>
             </article>
