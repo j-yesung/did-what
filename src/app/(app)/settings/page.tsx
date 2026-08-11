@@ -1,3 +1,5 @@
+import { SettingsPage } from "@/_pages/settings";
+
 export default function Page() {
-  return <main>Settings</main>;
+  return <SettingsPage />;
 }

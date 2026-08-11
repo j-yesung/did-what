@@ -24,7 +24,7 @@
   bottom: 0;
   left: max(0px, calc((100vw - 430px) / 2));
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   min-height: calc(76px + env(safe-area-inset-bottom));
   padding: 8px 12px max(8px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--border);

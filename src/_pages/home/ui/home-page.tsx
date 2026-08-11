@@ -1,4 +1,4 @@
-import { MapIcon, NotebookPenIcon, PlusIcon, UsersIcon } from "lucide-react";
+import { MapIcon, NotebookPenIcon, PlusIcon, SettingsIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,10 @@ export function HomePage() {
         <Link href="/people">
           <UsersIcon className={styles.navIcon} aria-hidden="true" />
           사람
+        </Link>
+        <Link href="/settings">
+          <SettingsIcon className={styles.navIcon} aria-hidden="true" />
+          설정
         </Link>
       </nav>
     </main>
