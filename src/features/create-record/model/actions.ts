@@ -85,6 +85,7 @@ export async function createRecord(
     };
   }
 
+  revalidatePath("/");
   revalidatePath("/records");
   redirect("/records");
 }

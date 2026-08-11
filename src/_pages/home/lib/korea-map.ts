@@ -1,7 +1,12 @@
 import koreaAdm1 from "../model/korea-adm1.geo.json" with { type: "json" };
-import type { MockRecordLocation } from "../model/mock-record-locations";
 
 export type ActivityLevel = 0 | 1 | 2 | 3 | 4;
+
+export type RecordLocation = {
+  id: string;
+  latitude: number;
+  longitude: number;
+};
 
 export type KoreaMapCell = {
   id: string;
@@ -140,7 +145,7 @@ function generateCells(columns: number): KoreaMapGrid {
   };
 }
 
-function mapRecordsToCells(cells: KoreaMapCell[], records: MockRecordLocation[]) {
+function mapRecordsToCells(cells: KoreaMapCell[], records: RecordLocation[]) {
   const counts = new Map<string, number>();
 
   for (const record of records) {
@@ -167,7 +172,8 @@ function mapRecordsToCells(cells: KoreaMapCell[], records: MockRecordLocation[])
   });
 }
 
-export function createKoreaMap(records: MockRecordLocation[], columns = GRID_COLUMNS): KoreaMapGrid {
-  const grid = generateCells(columns);
-  return { ...grid, cells: mapRecordsToCells(grid.cells, records) };
+const KOREA_MAP_GRID = generateCells(GRID_COLUMNS);
+
+export function createKoreaMap(records: RecordLocation[]): KoreaMapGrid {
+  return { ...KOREA_MAP_GRID, cells: mapRecordsToCells(KOREA_MAP_GRID.cells, records) };
 }
