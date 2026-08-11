@@ -1,278 +1,316 @@
-다음 단계로 `/records/new`의 **새 기록 작성 화면**을 구현해줘.
+다음 단계로 Supabase MCP를 사용해서 "뭐했지"의 MVP 데이터베이스 스키마를 설계하고 migration을 만들어줘.
 
-아직 Supabase 저장은 하지 않고, UI와 입력 구조만 완성한다.
-
-이 화면의 목적은 실제 DB schema를 확정하기 전에 "뭐했지"에서 하나의 Record를 만들기 위해 어떤 정보가 필요한지 검증하는 것이다.
-
-## 핵심 입력
-
-새 기록 작성에 필요한 정보는 다음과 같다.
-
-1. 언제
-2. 누구와
-3. 어디서
-4. 무엇을 했는지
-5. 메모
-
-사진 첨부 기능은 현재 MVP 범위에서 제외한다.
-
-사진 관련 UI, 타입, mock data, upload placeholder 등을 미리 만들지 않는다.
-
-향후 별도 기능으로 추가할 예정이다.
-
----
-
-## 날짜
-
-사용자가 함께한 날짜를 선택할 수 있도록 한다.
-
-기본값은 오늘 날짜로 해도 된다.
-
-시간까지 반드시 입력하게 만들지는 않는다.
-
-현재 MVP에서는 날짜 중심으로 기록한다.
-
----
-
-## 누구와
-
-한 Record에는 한 명 이상의 Person이 연결될 수 있다.
-
-현재는 실제 DB 연동 없이 mock Person 데이터를 사용한다.
-
-예:
+현재 `/records/new` UI에서 검증된 입력 모델은 다음과 같다.
 
 ```ts
-type Person = {
-  id: string;
-  name: string;
+type RecordFormValues = {
+  recordedAt: string;
+  personIds: string[];
+  placeId: string;
+  activity: string;
+  memo?: string;
 };
 ```
 
-사용자가 한 명 또는 여러 명을 선택할 수 있도록 설계한다.
-
-모바일에서 빠르게 선택할 수 있어야 하고, 지나치게 복잡한 multi-select UI는 피한다.
-
-향후 `/people` 및 Supabase Person 데이터로 교체할 수 있는 구조로 만든다.
-
----
-
-## 어디서
-
-장소는 향후 별도의 `Place` entity로 관리할 예정이다.
-
-Record 내부에 장소명, 주소, latitude, longitude 등을 중복 저장하는 구조를 전제로 하지 않는다.
-
-향후 관계는 다음과 같은 방향을 고려한다.
+현재 도메인 관계는 다음과 같다.
 
 ```text
+User
+├── People
+├── Places
+└── Records
+
 Record
-→ placeId
-→ Place
+├── Place 1개
+└── Person 여러 명
+
+Record ↔ Person = N:M
 ```
 
-Place는 향후 다음 정보를 가질 수 있다.
+## 목표
 
-```ts
-type Place = {
-  id: string;
-  name: string;
-  address: string;
+MVP에서 필요한 최소 테이블만 만든다.
 
-  latitude: number;
-  longitude: number;
+필요한 테이블:
 
-  region?: string;
-  district?: string;
-};
-```
+- profiles
+- people
+- places
+- records
+- record_people
 
-현재는 실제 장소 API를 연결하지 않는다.
-
-mock 장소 검색 결과 또는 임시 장소 선택 UI를 만들어도 된다.
-
-향후 실제 장소 검색 API를 연결하기 쉽게 UI와 데이터 책임을 분리한다.
+사진 관련 테이블이나 Storage는 아직 만들지 않는다.
 
 ---
 
-## 무엇을 했는지
+## profiles
 
-사용자가 해당 장소에서 무엇을 했는지 짧게 기록할 수 있도록 한다.
+Supabase Auth의 `auth.users`와 1:1로 연결한다.
+
+예상 필드:
+
+```text
+id uuid PK → auth.users.id
+display_name text nullable
+created_at timestamptz
+updated_at timestamptz
+```
+
+불필요한 프로필 필드는 추가하지 않는다.
+
+---
+
+## people
+
+사용자가 기록에 함께 연결하는 사람.
+
+예상 필드:
+
+```text
+id uuid PK
+owner_id uuid NOT NULL → auth.users.id
+name text NOT NULL
+created_at timestamptz
+updated_at timestamptz
+```
+
+MVP에서는 관계 타입(연인/친구/지인)을 필수로 만들지 않는다.
+
+향후 필요하면 확장할 수 있도록 한다.
+
+---
+
+## places
+
+사용자가 방문한 장소.
+
+예상 필드:
+
+```text
+id uuid PK
+owner_id uuid NOT NULL → auth.users.id
+
+name text NOT NULL
+address text
+
+latitude double precision NOT NULL
+longitude double precision NOT NULL
+
+region text
+district text
+
+provider text
+provider_place_id text
+
+created_at timestamptz
+updated_at timestamptz
+```
+
+중요:
+
+- 지도 cell ID를 저장하지 않는다.
+- 위도/경도가 원본 위치 데이터다.
+- 홈 activity map은 latitude/longitude에서 cell을 계산한다.
+- 향후 Kakao/Naver 등 장소 provider를 사용할 수 있도록 provider/provider_place_id는 nullable로 둔다.
+
+---
+
+## records
+
+하나의 발자취 기록.
+
+예상 필드:
+
+```text
+id uuid PK
+owner_id uuid NOT NULL → auth.users.id
+place_id uuid NOT NULL → places.id
+
+recorded_at date NOT NULL
+activity text NOT NULL
+memo text nullable
+
+created_at timestamptz
+updated_at timestamptz
+```
+
+현재 MVP에서는 시간까지 필수로 기록하지 않으므로 `recorded_at`은 date를 사용한다.
+
+---
+
+## record_people
+
+Record와 Person의 N:M 관계.
+
+예상 필드:
+
+```text
+record_id uuid → records.id
+person_id uuid → people.id
+created_at timestamptz
+```
+
+복합 primary key 또는 unique constraint를 사용해서 같은 person이 하나의 record에 중복 연결되지 않도록 한다.
+
+---
+
+# Ownership
+
+모든 사용자 데이터는 owner 기준으로 격리한다.
+
+다음 테이블에는 owner_id가 존재한다.
+
+- people
+- places
+- records
+
+`record_people`은 연결된 record/person의 ownership을 기준으로 접근을 제한한다.
+
+---
+
+# RLS
+
+RLS를 모든 사용자 데이터 테이블에 적용한다.
+
+사용자는 자신의 데이터만:
+
+- SELECT
+- INSERT
+- UPDATE
+- DELETE
+
+할 수 있어야 한다.
+
+기본 원칙:
+
+```sql
+auth.uid() = owner_id
+```
+
+을 사용한다.
+
+`record_people`은 단순히 authenticated user에게 전체 허용하지 않는다.
+
+연결되는 `records`와 `people`이 모두 현재 사용자의 소유인지 검증하는 정책을 만든다.
+
+다른 사용자의 record와 person을 임의로 연결할 수 없어야 한다.
+
+---
+
+# Foreign Key 삭제 정책
+
+삭제 시 orphan 데이터가 남지 않도록 적절한 ON DELETE 정책을 적용한다.
 
 예:
 
-- 이자카야 갔다가 산책
-- 카페에서 이야기함
-- 영화 보고 저녁 먹음
-- 드라이브
-
-이 필드는 Record의 핵심 내용이므로 쉽게 입력할 수 있어야 한다.
-
-과도하게 긴 에디터나 rich text editor는 사용하지 않는다.
-
----
-
-## 메모
-
-추가적으로 남기고 싶은 내용을 작성하는 선택 필드다.
-
-필수 입력으로 만들지 않는다.
-
-일반 textarea 정도면 충분하다.
-
----
-
-# UX 목표
-
-이 화면에서 가장 중요한 목표는:
-
-> 사용자가 약 30초 안에 기록 하나를 남길 수 있는 것
-
-이다.
-
-따라서:
-
-- 입력 필드를 과도하게 많이 만들지 않는다.
-- 불필요한 단계형 wizard를 만들지 않는다.
-- 한 화면에서 자연스럽게 기록할 수 있도록 한다.
-- 필수 항목과 선택 항목을 명확하게 구분한다.
-- 모바일 키보드가 올라오는 상황을 고려한다.
-- CTA가 모바일에서 쉽게 접근 가능해야 한다.
-
-모바일 PWA 약 390px 너비를 우선한다.
-
----
-
-# 제출 버튼
-
-화면의 주요 CTA는:
-
-`기록 남기기`
-
-로 한다.
-
-현재는 Supabase에 저장하지 않는다.
-
-mock submit 처리 또는 form validation까지만 구현해도 된다.
-
-실제 저장 로직이 없는 상태에서 성공한 것처럼 영구 데이터를 생성하지 않는다.
-
----
-
-# UI
-
-현재 프로젝트의 디자인 시스템을 그대로 사용한다.
-
-- shadcn/ui
-- Lucide
-- semantic color token
-- 기존 typography
-- 기존 spacing
-- 기존 radius
-
-필요한 shadcn/ui component가 이미 설치되어 있으면 재사용한다.
-
-필요한 component가 없다면 실제 필요한 것만 shadcn CLI로 추가한다.
-
-동일한 기능의 custom component를 불필요하게 다시 만들지 않는다.
-
-Lucide 아이콘을 사용하고 별도의 icon library를 추가하지 않는다.
-
----
-
-# FSD
-
-현재 프로젝트의 FSD 규칙을 유지한다.
-
-`src/app`은 Next.js 라우팅 전용으로 유지한다.
-
-`src/app/(app)/records/new/page.tsx`는 실제 화면을 직접 구현하지 않고 대응하는 `_pages` 화면을 렌더링하는 얇은 entry point로 유지한다.
-
-필요에 따라 다음과 같은 구조를 사용할 수 있다.
-
 ```text
-src/_pages/record-new/
-├── ui/
-│   └── record-new-page.tsx
-├── model/
-│   └── ...
-└── index.ts
+auth user 삭제
+→ profile / people / places / records 정리
+
+record 삭제
+→ record_people 삭제
+
+person 삭제
+→ record_people 삭제
 ```
 
-단, 아직 필요하지 않은 segment와 파일을 FSD 형식을 맞추기 위해 미리 생성하지 않는다.
-
-Person 선택처럼 나중에 여러 화면에서 재사용되는 명확한 사용자 행동이 생겼을 때만 `features` 승격을 고려한다.
-
-MVP 단계에서 지나친 추상화를 하지 않는다.
+단, place 삭제 정책은 records와 관계를 고려해서 임의로 cascade 하지 말고 가장 안전한 방향을 판단해.
 
 ---
 
-# 향후 도메인 방향
+# Index
 
-현재 UI를 구현하면서 다음 관계를 염두에 둔다.
+실제 조회 패턴을 고려해서 필요한 최소 index만 추가한다.
+
+예상 조회:
+
+- owner별 최신 records
+- 특정 person의 records
+- 특정 place의 records
+- 날짜순 records
+
+과도한 index는 만들지 않는다.
+
+---
+
+# updated_at
+
+필요하면 공용 trigger/function을 사용해 `updated_at`을 자동 갱신할 수 있다.
+
+이미 프로젝트 또는 Supabase에 동일한 trigger 패턴이 존재하면 재사용한다.
+
+---
+
+# Supabase MCP
+
+반드시 현재 연결된 Supabase MCP 프로젝트를 먼저 확인한다.
+
+작업 전에 다음을 확인해줘.
+
+1. 연결된 project ref
+2. 기존 public schema table 목록
+3. 기존 migration 또는 동일 이름의 table 존재 여부
+
+다른 프로젝트에 연결되어 있거나 예상하지 못한 기존 데이터가 있다면 migration을 적용하지 말고 먼저 보고한다.
+
+현재 새 "뭐했지" 프로젝트이고 충돌이 없다면 migration을 생성하고 적용한다.
+
+---
+
+# 타입 생성
+
+migration 적용 후 Supabase MCP를 통해 현재 schema 기준 TypeScript type을 생성할 수 있다면 생성한다.
+
+현재 프로젝트 FSD 구조에 맞는 적절한 위치를 선택한다.
+
+예:
 
 ```text
-Record
-├── recordedAt
-├── activity
-├── memo
-├── Place
-└── Person[]
+src/shared/api/supabase/database.types.ts
 ```
 
-장소와 사람은 Record와 독립된 entity가 될 예정이다.
-
-특히 장소의 latitude/longitude는 향후 홈의 대한민국 activity map과 연결된다.
-
-```text
-Record
-→ Place
-→ latitude / longitude
-→ Korea Activity Map Cell
-```
-
-지도 cell id 자체를 Record의 원본 위치 정보로 사용하지 않는다.
+이미 Supabase 관련 구조가 있으면 기존 구조를 따른다.
 
 ---
 
 # 제외 범위
 
-이번 작업에서는 다음을 구현하지 않는다.
+이번 작업에서는 다음을 하지 않는다.
 
-- Supabase integration
-- DB schema/migration
-- Auth
-- 실제 장소 API
-- 실제 저장
-- 사진 첨부
+- Auth UI
+- 로그인/회원가입 화면
+- 실제 Record 저장 연결
+- 장소 검색 API
+- 사진
 - Supabase Storage
-- 이미지 업로드
-- 이미지 preview
-- 위치 자동 감지
-- 지도 선택 UI
-- record 상세 화면
+- 홈 지도 실제 DB 연결
+- seed/mock 데이터 삽입
+- 과도한 domain abstraction
 
-이번 작업의 목적은 **새 기록을 빠르게 입력할 수 있는 UI와 Record 입력 모델을 검증하는 것**이다.
+이번 작업의 목적은 **MVP 데이터베이스 schema와 안전한 RLS를 확정하는 것**이다.
 
 ---
 
-# 구현 완료 후
+# 작업 완료 후
 
 다음을 정리해줘.
 
-1. 생성하거나 수정한 파일
-2. 필수 입력 필드
-3. 선택 입력 필드
-4. Record에 필요한 데이터
-5. Place entity로 분리해야 하는 데이터
-6. Person과 Record의 관계
-7. 실제 Supabase schema 설계 시 고려해야 할 관계
-8. 실제 장소 검색 API를 붙일 때 교체할 부분
+1. 생성/수정한 migration 파일
+2. 생성된 table 목록
+3. 각 table의 핵심 column
+4. foreign key 관계
+5. ON DELETE 정책
+6. RLS 정책
+7. 추가한 index
+8. 생성한 TypeScript 타입 위치
+9. `/records/new`에서 실제 저장 연결 시 필요한 다음 작업
+10. 홈 activity map에서 실제 Place 좌표를 조회할 방법
 
 마지막으로:
 
+- migration 적용 결과
+- Supabase security advisor 확인 가능 시 결과
+- TypeScript 검사
 - lint
-- TypeScript type check
-- biome write
 
-를 실행하고 오류가 있다면 수정해.
+를 실행하고 문제가 있으면 수정해.
