@@ -1,3 +1,5 @@
+import { RecordsPage } from "@/_pages/records";
+
 export default function Page() {
-  return <main>Records</main>;
+  return <RecordsPage />;
 }
