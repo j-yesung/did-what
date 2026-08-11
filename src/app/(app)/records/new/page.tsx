@@ -1,3 +1,5 @@
+import { RecordNewPage } from "@/_pages/record-new";
+
 export default function Page() {
-  return <main>New record</main>;
+  return <RecordNewPage />;
 }
