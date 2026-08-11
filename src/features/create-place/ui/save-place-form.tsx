@@ -1,0 +1,49 @@
+"use client";
+
+import { useActionState } from "react";
+
+import { CheckIcon, CircleAlertIcon, PlusIcon } from "lucide-react";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+
+import { createPlace } from "../model/actions";
+import { INITIAL_CREATE_PLACE_STATE } from "../model/place-form";
+
+type SavePlaceFormProps = {
+  page: number;
+  placeId: string;
+  query: string;
+  saved: boolean;
+};
+
+export function SavePlaceForm({ page, placeId, query, saved }: SavePlaceFormProps) {
+  const [state, formAction, pending] = useActionState(createPlace, INITIAL_CREATE_PLACE_STATE);
+  const isSaved = saved || state.status === "success";
+
+  return (
+    <form action={formAction} className="flex w-full flex-col gap-2">
+      <input name="page" type="hidden" value={page} />
+      <input name="placeId" type="hidden" value={placeId} />
+      <input name="query" type="hidden" value={query} />
+      <Button className="w-full" disabled={pending || isSaved} type="submit" variant={isSaved ? "outline" : "default"}>
+        {pending ? (
+          <Spinner aria-label="장소 저장 중" data-icon="inline-start" />
+        ) : isSaved ? (
+          <CheckIcon data-icon="inline-start" />
+        ) : (
+          <PlusIcon data-icon="inline-start" />
+        )}
+        {pending ? "저장 중..." : isSaved ? "저장됨" : "이 장소 저장"}
+      </Button>
+      {state.status === "error" ? (
+        <Alert variant="destructive">
+          <CircleAlertIcon aria-hidden="true" />
+          <AlertTitle>저장하지 못했어요</AlertTitle>
+          <AlertDescription>{state.message}</AlertDescription>
+        </Alert>
+      ) : null}
+    </form>
+  );
+}

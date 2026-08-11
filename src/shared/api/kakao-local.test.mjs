@@ -1,0 +1,57 @@
+import {
+  normalizeKakaoPage,
+  parseKakaoSearchResponse,
+  validateKakaoPlaceId,
+  validateKakaoQuery,
+} from "./kakao-local.ts";
+import assert from "node:assert/strict";
+
+assert.deepEqual(validateKakaoQuery("  성수 카페  "), { query: "성수 카페", valid: true });
+assert.deepEqual(validateKakaoQuery(" "), {
+  error: "검색어는 1자 이상 100자 이하로 입력해 주세요.",
+  valid: false,
+});
+assert.equal(validateKakaoQuery("가".repeat(101)).valid, false);
+assert.deepEqual(validateKakaoPlaceId("26338954"), { id: "26338954", valid: true });
+assert.equal(validateKakaoPlaceId("not-an-id").valid, false);
+assert.equal(normalizeKakaoPage("2"), 2);
+assert.equal(normalizeKakaoPage("0"), 1);
+assert.equal(normalizeKakaoPage("46"), 1);
+assert.equal(normalizeKakaoPage("1.5"), 1);
+
+assert.deepEqual(
+  parseKakaoSearchResponse({
+    documents: [
+      {
+        address_name: "서울 강남구 삼성동 159",
+        id: "26338954",
+        place_name: "카카오프렌즈 코엑스점",
+        road_address_name: "서울 강남구 영동대로 513",
+        x: "127.05902969025047",
+        y: "37.51207412593136",
+      },
+    ],
+    meta: { is_end: false, pageable_count: 45 },
+  }),
+  {
+    isEnd: false,
+    pageableCount: 45,
+    places: [
+      {
+        address: "서울 강남구 영동대로 513",
+        id: "26338954",
+        latitude: 37.51207412593136,
+        longitude: 127.05902969025047,
+        name: "카카오프렌즈 코엑스점",
+      },
+    ],
+  },
+);
+assert.equal(
+  parseKakaoSearchResponse({
+    documents: [{ address_name: "서울", id: "1", place_name: "범위 밖", road_address_name: "", x: "181", y: "37" }],
+    meta: { is_end: true, pageable_count: 1 },
+  }),
+  null,
+);
+assert.equal(parseKakaoSearchResponse({ documents: [], meta: {} }), null);
