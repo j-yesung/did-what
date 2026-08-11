@@ -29,7 +29,7 @@ export async function createRecord(
   const result = validateRecordInput(values);
 
   if (!result.data) {
-    return { fieldErrors: result.fieldErrors, status: "error", values };
+    return { fieldErrors: result.fieldErrors, status: "error" };
   }
 
   const { data } = result;
@@ -47,7 +47,6 @@ export async function createRecord(
     return {
       message: "선택한 사람 또는 장소를 확인할 수 없습니다. 다시 선택해 주세요.",
       status: "error",
-      values,
     };
   }
 
@@ -64,7 +63,7 @@ export async function createRecord(
     .single();
 
   if (recordError || !record) {
-    return { message: "기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error", values };
+    return { message: "기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   const { error: peopleError } = await supabase
@@ -83,7 +82,6 @@ export async function createRecord(
         ? "기록 연결을 완료하지 못했습니다. 기록 목록을 확인한 뒤 다시 시도해 주세요."
         : "함께한 사람을 연결하지 못했습니다. 다시 시도해 주세요.",
       status: "error",
-      values,
     };
   }
 

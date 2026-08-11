@@ -4,10 +4,6 @@ export type AuthActionState = {
   status: "idle" | "error" | "success";
   message?: string;
   fieldErrors?: AuthFieldErrors;
-  values?: {
-    displayName?: string;
-    email?: string;
-  };
 };
 
 export const INITIAL_AUTH_STATE: AuthActionState = { status: "idle" };

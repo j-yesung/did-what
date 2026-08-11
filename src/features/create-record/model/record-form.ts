@@ -20,7 +20,6 @@ export type CreateRecordActionState = {
   status: "idle" | "error";
   message?: string;
   fieldErrors?: RecordFieldErrors;
-  values?: RecordInputValues;
 };
 
 export type PersonOption = {

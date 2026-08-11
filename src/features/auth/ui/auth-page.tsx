@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { CircleAlertIcon, LogInIcon, MailCheckIcon, MapPinnedIcon, UserRoundPlusIcon } from "lucide-react";
 import Link from "next/link";
@@ -40,6 +40,8 @@ export function AuthPage({ mode }: AuthPageProps) {
   const isSignup = mode === "signup";
   const copy = COPY[mode];
   const [state, formAction, pending] = useActionState(isSignup ? signup : login, INITIAL_AUTH_STATE);
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
   const SubmitIcon = isSignup ? UserRoundPlusIcon : LogInIcon;
 
   return (
@@ -97,7 +99,8 @@ export function AuthPage({ mode }: AuthPageProps) {
                       minLength={1}
                       maxLength={100}
                       required
-                      defaultValue={state.values?.displayName}
+                      value={displayName}
+                      onChange={(event) => setDisplayName(event.target.value)}
                       aria-invalid={Boolean(state.fieldErrors?.displayName)}
                       aria-describedby={state.fieldErrors?.displayName ? "displayName-error" : undefined}
                       className="h-11"
@@ -116,7 +119,8 @@ export function AuthPage({ mode }: AuthPageProps) {
                     inputMode="email"
                     autoComplete="email"
                     required
-                    defaultValue={state.values?.email}
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     aria-invalid={Boolean(state.fieldErrors?.email)}
                     aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
                     className="h-11"

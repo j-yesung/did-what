@@ -41,21 +41,21 @@ export async function login(_state: AuthActionState, formData: FormData): Promis
   const fieldErrors = validateLoginInput(email, password);
 
   if (Object.keys(fieldErrors).length > 0) {
-    return { fieldErrors, status: "error", values: { email } };
+    return { fieldErrors, status: "error" };
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error || !data.user) {
-    return { message: getLoginErrorMessage(error?.code), status: "error", values: { email } };
+    return { message: getLoginErrorMessage(error?.code), status: "error" };
   }
 
   const { error: profileError } = await ensureProfile(supabase, data.user);
 
   if (profileError) {
     await supabase.auth.signOut();
-    return { message: "프로필을 준비하지 못했습니다. 다시 시도해 주세요.", status: "error", values: { email } };
+    return { message: "프로필을 준비하지 못했습니다. 다시 시도해 주세요.", status: "error" };
   }
 
   redirect("/");
@@ -71,7 +71,7 @@ export async function signup(_state: AuthActionState, formData: FormData): Promi
   const fieldErrors = validateSignupInput(displayName, email, password, passwordConfirm);
 
   if (Object.keys(fieldErrors).length > 0) {
-    return { fieldErrors, status: "error", values: { displayName, email } };
+    return { fieldErrors, status: "error" };
   }
 
   const requestHeaders = await headers();
@@ -87,14 +87,13 @@ export async function signup(_state: AuthActionState, formData: FormData): Promi
   });
 
   if (error || !data.user) {
-    return { message: getSignupErrorMessage(error?.code), status: "error", values: { displayName, email } };
+    return { message: getSignupErrorMessage(error?.code), status: "error" };
   }
 
   if (!data.session) {
     return {
       message: "인증 메일을 보냈습니다. 메일의 링크를 누르면 가입이 완료됩니다.",
       status: "success",
-      values: { displayName, email },
     };
   }
 
@@ -105,7 +104,6 @@ export async function signup(_state: AuthActionState, formData: FormData): Promi
     return {
       message: "계정은 생성됐지만 프로필을 준비하지 못했습니다. 다시 로그인해 주세요.",
       status: "error",
-      values: { displayName, email },
     };
   }
 
