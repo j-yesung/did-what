@@ -1,180 +1,152 @@
-# 다음 단계: Supabase 인증 기반 구축
+# 다음 단계: 실제 기록 저장 연결
 
 ## 목적
 
-Supabase RLS가 사용하는 `auth.uid()`를 애플리케이션 세션과 연결한다.
+현재 `/records/new`의 mock 사람·장소와 입력 검증 완료 안내를 실제 Supabase 조회·저장 흐름으로 교체한다.
 
-이번 단계에서는 `/login`, `/signup`을 실제 Supabase Auth에 연결하고 `(app)` 라우트를 인증된 사용자만 접근할 수 있게 만든다. Record 저장 연결은 인증 기반이 완성된 다음 단계에서 진행한다.
+인증된 사용자의 기존 `people`, `places`만 선택할 수 있게 하고, 저장한 기록은 `/records`의 최소 목록에서 바로 확인할 수 있게 한다. 사람·장소 생성과 장소 검색은 다음 단계로 남긴다.
 
 ## 완료 조건
 
-- 이메일과 비밀번호로 회원가입할 수 있다.
-- 이메일과 비밀번호로 로그인할 수 있다.
-- 로그아웃할 수 있다.
-- 서버 컴포넌트에서 현재 사용자를 확인할 수 있다.
-- 비로그인 사용자는 `(app)` 라우트 접근 시 `/login`으로 이동한다.
-- 로그인 사용자는 `/login`, `/signup` 접근 시 홈으로 이동한다.
-- 브라우저나 설치된 PWA를 종료했다가 다시 열어도 유효한 세션이 자동으로 복원된다.
-- 인증된 사용자가 자신의 `profiles` 행을 생성하거나 갱신할 수 있다.
-- 브라우저에 service role key를 노출하지 않는다.
+- `/records/new`가 현재 사용자의 `people`, `places`를 서버에서 조회한다.
+- mock ID를 제거하고 실제 UUID를 폼 값으로 사용한다.
+- 입력값과 선택한 데이터의 소유권을 서버에서 다시 검증한다.
+- `records`와 `record_people`에 실제 데이터가 저장된다.
+- 연결 저장 실패 시 불완전한 `records` 행을 남기지 않는다.
+- 중복 제출을 막고 오류를 폼 안에 한국어로 표시한다.
+- 성공하면 `/records`로 이동하고 저장한 기록이 최신순으로 보인다.
+- 다른 사용자의 사람·장소·기록은 조회하거나 연결할 수 없다.
 
-## 패키지
+## 데이터 조회
 
-필요한 공식 패키지만 pnpm으로 추가한다.
-
-```bash
-pnpm add @supabase/supabase-js @supabase/ssr
-```
-
-다른 인증 또는 상태 관리 라이브러리는 추가하지 않는다.
-
-## 환경 변수
-
-현재 설정을 재사용한다.
+`/records/new` 진입 시 Server Component에서 다음을 조회한다.
 
 ```text
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+people: id, name
+places: id, name, address
 ```
 
-- 값이 없으면 명확한 설정 오류를 발생시킨다.
-- service role key를 클라이언트 환경 변수로 추가하지 않는다.
-- `.env.local` 값은 커밋하지 않는다.
+- `getUser()`로 현재 사용자를 확인한다.
+- RLS를 통과한 현재 사용자 데이터만 사용한다.
+- 사람은 이름순, 장소는 이름순으로 정렬한다.
+- 브라우저에서 별도 Supabase 조회나 전역 store를 만들지 않는다.
 
-## Supabase 클라이언트
+## 빈 상태
 
-현재 FSD 구조에 맞춰 `src/shared/api/supabase` 아래에 필요한 클라이언트만 둔다.
+사람 또는 장소가 하나도 없으면 저장 가능한 것처럼 빈 form을 보여주지 않는다.
 
-예상 구조:
+- 사람 없음: `/people`로 이동하는 안내를 제공한다.
+- 장소 없음: `/places`로 이동하는 안내를 제공한다.
+- 이번 단계에서 People CRUD와 Place CRUD를 함께 구현하지 않는다.
+
+## 입력 모델
+
+현재 검증된 모델을 유지한다.
+
+```ts
+type RecordFormValues = {
+  recordedAt: string;
+  personIds: string[];
+  placeId: string;
+  activity: string;
+  memo?: string;
+};
+```
+
+- `recordedAt`은 유효한 날짜여야 한다.
+- `personIds`는 한 명 이상이며 중복을 제거한다.
+- `placeId`와 모든 `personIds`는 UUID 형식이어야 한다.
+- `activity`는 공백 제거 후 1~120자다.
+- `memo`는 공백 제거 후 빈 값이면 `null`, 최대 500자다.
+- HTML 기본 검증과 Server Action 검증을 함께 사용한다.
+
+## 저장 Action
+
+서버에서 다음 순서로 처리한다.
+
+1. `getUser()`로 인증된 사용자 ID를 얻는다.
+2. 입력값을 검증한다.
+3. 선택한 `placeId`와 모든 `personIds`가 현재 사용자 소유인지 조회한다.
+4. `records.owner_id`는 입력값이 아니라 검증된 `user.id`로 설정한다.
+5. `records`를 생성한다.
+6. 선택한 사람을 `record_people`에 한 번에 삽입한다.
+7. 연결 삽입 실패 시 방금 만든 record를 삭제해 반쪽 저장을 정리한다.
+8. 성공하면 `/records`로 redirect하고 목록을 갱신한다.
+
+별도 상태 관리 라이브러리나 service role key는 사용하지 않는다.
+
+## 기록 목록
+
+`/records` placeholder를 최소 실제 목록으로 교체한다.
+
+- 현재 사용자의 기록을 `recorded_at DESC`, `created_at DESC`로 조회한다.
+- 날짜, 활동, 장소 이름, 함께한 사람 이름을 표시한다.
+- 데이터가 없으면 `/records/new`로 이동하는 empty state를 표시한다.
+- 페이지네이션, 검색, 필터는 아직 추가하지 않는다.
+- 기록 상세 `/records/[recordId]`는 이번 범위에 포함하지 않는다.
+
+## 구조
+
+현재 FSD 의존 방향을 유지한다.
 
 ```text
-src/shared/api/supabase/
-├── client.ts
-├── server.ts
-└── database.types.ts
+app → _pages → features → shared
 ```
 
-- 브라우저 컴포넌트는 browser client를 사용한다.
-- Server Component, Server Action, Route Handler는 cookie 기반 server client를 사용한다.
-- 이미 생성된 `Database` 타입을 client generic에 연결한다.
-- Next.js 16의 최신 Supabase SSR 세션 갱신 방식을 공식 문서에서 확인하고 적용한다.
-
-## 로그인 유지
-
-사용자가 직접 로그아웃하기 전까지 로그인 상태가 자연스럽게 유지되는 경험을 기본값으로 제공한다.
-
-- `@supabase/ssr`이 access token과 refresh token을 cookie에 저장하도록 한다.
-- access token 만료 시 refresh token으로 세션을 자동 갱신하고 변경된 cookie를 응답에 반영한다.
-- 브라우저 또는 설치된 PWA를 종료했다가 다시 실행해도 남아 있는 cookie에서 세션을 복원한다.
-- 임의로 짧은 cookie `Max-Age` 또는 `Expires`를 설정하지 않는다.
-- 별도의 `로그인 유지` 체크박스나 장기 세션용 custom token을 만들지 않는다.
-- 보호 라우트 접근 권한은 cookie 존재 여부만 보지 않고 Supabase가 검증한 사용자 기준으로 판단한다.
-- 세션을 갱신하거나 `Set-Cookie`를 반환하는 인증 응답은 공유 cache, ISR, CDN cache 대상에서 제외한다.
-- 사용자가 로그아웃하거나 cookie를 삭제한 경우, refresh token이 폐기된 경우, 프로젝트의 inactivity/session timeout에 도달한 경우에는 다시 로그인하게 한다.
-
-참고: [Supabase SSR Auth advanced guide](https://supabase.com/docs/guides/auth/server-side/advanced-guide)
-
-## 로그인
-
-`/login`의 placeholder를 실제 로그인 화면으로 교체한다.
-
-필수 입력:
-
-- 이메일
-- 비밀번호
-
-동작:
-
-- `signInWithPassword`를 사용한다.
-- 성공하면 홈으로 이동한다.
-- 실패하면 form 내부에 한국어 오류 메시지를 표시한다.
-- 중복 제출을 방지한다.
-
-## 회원가입
-
-`/signup`의 placeholder를 실제 회원가입 화면으로 교체한다.
-
-필수 입력:
-
-- 표시 이름
-- 이메일
-- 비밀번호
-- 비밀번호 확인
-
-동작:
-
-- 클라이언트와 서버에서 최소 입력 검증을 수행한다.
-- `signUp` 성공 후 이메일 확인 필요 여부를 구분해 안내한다.
-- 인증된 세션이 생긴 뒤 `profiles`에 `id`와 `display_name`을 upsert한다.
-- 회원가입 중간 실패가 영구적인 성공 상태처럼 보이지 않게 한다.
-
-## 로그아웃
-
-- 기존 설정 화면 또는 인증된 공용 헤더 중 실제 사용되는 한 곳에만 로그아웃 동작을 둔다.
-- `signOut` 성공 후 `/login`으로 이동한다.
-- 별도의 전역 인증 store를 만들지 않는다.
-
-## 라우트 보호
-
-- `src/app`은 라우팅과 세션 경계만 담당한다.
-- `(app)` layout에서 서버 기준으로 사용자를 확인한다.
-- 비로그인 사용자는 `/login`으로 redirect한다.
-- 로그인·회원가입 화면은 `_pages` 화면을 렌더링하는 얇은 entry point로 유지한다.
-- cookie 갱신에 필요한 Next.js 진입 파일은 현재 Next.js 16 및 Supabase 공식 문서의 권장 방식을 따른다.
+- `src/app/**/page.tsx`는 얇은 진입점으로 유지한다.
+- 기록 생성 Action과 제출 UI는 실제 필요 범위에서만 `features`로 분리한다.
+- 조회 조립은 대응하는 `_pages` slice에 둔다.
+- 한 번만 쓰는 repository, service, hook abstraction은 만들지 않는다.
 
 ## UI
 
-- 기존 Forest Green 디자인 토큰을 유지한다.
-- 기존 shadcn/ui 컴포넌트를 먼저 재사용한다.
+- 기존 Forest Green 토큰과 현재 `/records/new` 구성을 유지한다.
+- shadcn/ui 공용 컴포넌트를 재사용한다.
 - 추가 컴포넌트가 필요하면 shadcn CLI로 필요한 것만 추가한다.
 - 아이콘은 `lucide-react`에서 개별 import한다.
-- 오류, 로딩, 키보드 포커스, label 등 접근성 기본 동작을 유지한다.
+- 제출 중 버튼 비활성화와 Spinner를 표시한다.
+- 오류 메시지는 접근성 트리에 포함하고 첫 오류로 이동할 수 있게 한다.
 - 모바일 390px을 우선한다.
 
-## 보안
+## 보안 및 데이터 무결성
 
-- 인증 판단은 클라이언트 state가 아니라 서버에서 검증된 사용자 기준으로 한다.
-- 사용자 입력으로 `owner_id`를 임의 지정하지 않는다.
-- profile upsert의 `id`는 서버에서 확인한 `user.id`를 사용한다.
-- Auth 오류 원문에 민감 정보가 포함되지 않도록 사용자 메시지를 정리한다.
+- 브라우저가 보낸 `owner_id`를 신뢰하지 않는다.
+- RLS에 더해 Server Action에서도 사람·장소 소유권을 확인한다.
+- 존재하지 않거나 다른 사용자 소유인 ID는 동일한 일반 오류로 처리한다.
+- `record_people` 중복 ID는 저장 전에 제거한다.
+- 관계 저장 실패 시 생성한 record 삭제 결과도 확인한다.
 - Supabase security advisor를 다시 확인한다.
 
 ## 제외 범위
 
-이번 단계에서는 다음을 구현하지 않는다.
-
-- `/records/new` 실제 저장
 - People CRUD
 - Place CRUD 및 장소 검색 API
-- 소셜 로그인
-- 비밀번호 재설정
-- 이메일 템플릿 커스터마이징
-- 관리자 권한
-- Storage 및 사진
-- 별도 인증 상태 관리 라이브러리
+- 기록 수정·삭제·상세
+- 사진 및 Storage
+- 홈 지도 실제 DB 연결
+- 페이지네이션·검색·필터
+- optimistic update
+- 별도 전역 상태 관리
+- DB seed/mock 삽입
 
 ## 검증
 
-- 회원가입 성공 및 이메일 확인 필요 상태
-- 로그인 성공과 실패
-- 브라우저 재실행 후 로그인 세션 복원
-- 만료된 access token의 자동 갱신과 cookie 반영
-- 로그아웃
-- 보호 라우트 redirect
-- 로그인 사용자의 auth 화면 redirect
-- profile upsert가 다른 사용자 ID로 실행되지 않는지 확인
+- 정상 기록 저장
+- 필수값 및 길이 검증 실패
+- 사람 미선택
+- 중복 person ID 제거
+- 다른 사용자 소유 ID 거부
+- 관계 저장 실패 시 record 정리
+- 중복 제출 방지
+- 빈 데이터 안내
+- `/records` 최신순 목록
+- 입력 검증 최소 테스트
+- Biome import/format check
 - lint
 - TypeScript type check
-- biome write
 - production build
+- Supabase security advisor
 
-## 완료 후 정리
+## 완료 후 다음 플랜
 
-1. 추가한 Supabase client 파일
-2. 사용한 환경 변수
-3. 로그인·회원가입·로그아웃 흐름
-4. 세션 갱신 방식
-5. 보호한 라우트 범위
-6. profile 생성 방식
-7. security advisor 결과
-8. 다음 `/records/new` 저장 연결에 필요한 작업
+저장 흐름이 완성되면 앱 안에서 참조 데이터를 준비할 수 있도록 People CRUD와 Place 입력·검색 방식을 설계한다. 장소 provider는 API 키, 좌표 정확도, 대한민국 주소 구조를 확인한 뒤 하나만 선택한다.
