@@ -1,3 +1,5 @@
+import { PeoplePage } from "@/_pages/people";
+
 export default function Page() {
-  return <main>People</main>;
+  return <PeoplePage />;
 }
