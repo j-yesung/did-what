@@ -5,7 +5,6 @@ import { getProfileName } from "@/entities/profile";
 import { LogoutButton } from "@/features/auth";
 import { createClient } from "@/shared/api/supabase/server";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { BackButton } from "@/shared/ui/back-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 
 export async function SettingsPage() {
@@ -20,9 +19,11 @@ export async function SettingsPage() {
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)]">
-      <header className="grid grid-cols-[40px_1fr_40px] items-center">
-        <BackButton />
-        <h1 className="text-center font-bold font-heading text-xl tracking-[-0.03em]">설정</h1>
+      <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
+        <div className="col-start-2 text-center">
+          <p className="font-bold text-[9px] text-primary tracking-[0.16em]">MY ACCOUNT</p>
+          <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">설정</h1>
+        </div>
       </header>
 
       <Card>
