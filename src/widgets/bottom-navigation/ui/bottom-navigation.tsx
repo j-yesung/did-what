@@ -1,12 +1,13 @@
 "use client";
 
-import { MapIcon, NotebookPenIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import { MapIcon, MapPinIcon, NotebookPenIcon, SettingsIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
   { href: "/", icon: MapIcon, label: "지도" },
   { href: "/records", icon: NotebookPenIcon, label: "기록" },
+  { href: "/places", icon: MapPinIcon, label: "장소" },
   { href: "/people", icon: UsersIcon, label: "사람" },
   { href: "/settings", icon: SettingsIcon, label: "설정" },
 ] as const;

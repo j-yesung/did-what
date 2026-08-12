@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { getPlace, getPlaceRecords } from "@/entities/place";
+import { PlaceSaveButton } from "@/features/create-place";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
@@ -44,7 +45,9 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
   }
 
   const place = placeResult.data;
-  const records = recordsResult.data ?? [];
+  const records = (recordsResult.data ?? [])
+    .map(({ record }) => record)
+    .toSorted((a, b) => b.recorded_at.localeCompare(a.recorded_at));
   const hasLoadError = Boolean(placeResult.error || recordsResult.error);
 
   return (
@@ -69,10 +72,15 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
               <CardDescription>{place.address ?? "주소 정보 없음"}</CardDescription>
             </CardHeader>
             <CardFooter>
-              <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                <CalendarDaysIcon className="size-4" aria-hidden="true" />
-                {DATE_FORMATTER.format(new Date(place.created_at))}에 저장했어요.
-              </p>
+              <div className="flex w-full flex-col gap-3">
+                <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                  <CalendarDaysIcon className="size-4" aria-hidden="true" />
+                  {place.saved_at
+                    ? `${DATE_FORMATTER.format(new Date(place.saved_at))}에 저장했어요.`
+                    : "방문 기록에 연결된 장소예요."}
+                </p>
+                <PlaceSaveButton placeId={place.id} saved={Boolean(place.saved_at)} />
+              </div>
             </CardFooter>
           </Card>
 

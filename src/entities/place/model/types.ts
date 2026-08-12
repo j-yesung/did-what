@@ -1,5 +1,7 @@
 export type PlaceOption = {
+  address: string | null;
   id: string;
   name: string;
-  address: string | null;
+  region_code: string;
+  saved_at: string | null;
 };

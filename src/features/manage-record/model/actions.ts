@@ -4,96 +4,254 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { findPersonIds } from "@/entities/person";
-import { findPlace } from "@/entities/place";
+import {
+  normalizeKakaoPage,
+  resolveKakaoRegion,
+  searchKakaoPlaces,
+  searchKakaoRegions,
+  validateKakaoPlaceId,
+  validateKakaoQuery,
+} from "@/shared/api/kakao-local";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 
-import type { RecordActionState, RecordInputValues } from "./record-form";
+import type { PlaceSearchState, RegionSearchState, ResolveRecordPlaceResult } from "./location-picker";
+import type { RecordActionState, RecordInput, RecordInputValues, RecordPlaceReference } from "./record-form";
 import { validateRecordInput } from "./record-form";
+
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 function readRecordInput(formData: FormData): RecordInputValues {
   return {
     recordedAt: String(formData.get("recordedAt") ?? ""),
     personIds: formData.getAll("personIds").map(String),
-    placeId: String(formData.get("placeId") ?? ""),
+    regionCode: String(formData.get("regionCode") ?? ""),
+    regionName: String(formData.get("regionName") ?? ""),
+    places: String(formData.get("places") ?? "[]"),
     activity: String(formData.get("activity") ?? ""),
     memo: String(formData.get("memo") ?? ""),
   };
 }
 
-async function ownsRecordSelections(personIds: string[], placeId: string, ownerId: string) {
-  const [placeResult, peopleResult] = await Promise.all([
-    findPlace(placeId, ownerId),
-    findPersonIds(personIds, ownerId),
+async function getUser() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) redirect("/login");
+  return { supabase, user: data.user };
+}
+
+async function verifyRegion(code: string, name: string) {
+  const result = await searchKakaoRegions(name);
+  return "regions" in result ? (result.regions.find((region) => region.code === code) ?? null) : null;
+}
+
+async function verifyKakaoPlace(reference: Extract<RecordPlaceReference, { kind: "kakao" }>) {
+  const result = await searchKakaoPlaces(reference.query, reference.page);
+  const place = result.places?.find((item) => item.id === reference.providerPlaceId);
+  if (!place) return null;
+
+  const region = await resolveKakaoRegion(place.longitude, place.latitude);
+  return region ? { place, reference, region } : null;
+}
+
+async function prepareRecordPlaces(
+  references: RecordPlaceReference[],
+  regionCode: string,
+  ownerId: string,
+  supabase: SupabaseClient,
+) {
+  const existingReferences = references.filter(
+    (reference): reference is Extract<RecordPlaceReference, { kind: "existing" }> => reference.kind === "existing",
+  );
+  const kakaoReferences = references.filter(
+    (reference): reference is Extract<RecordPlaceReference, { kind: "kakao" }> => reference.kind === "kakao",
+  );
+
+  const [existingResult, verifiedKakaoPlaces] = await Promise.all([
+    existingReferences.length
+      ? supabase
+          .from("places")
+          .select("id, region_code, saved_at")
+          .eq("owner_id", ownerId)
+          .in(
+            "id",
+            existingReferences.map((reference) => reference.placeId),
+          )
+      : Promise.resolve({ data: [], error: null }),
+    Promise.all(kakaoReferences.map(verifyKakaoPlace)),
   ]);
 
-  return (
-    !placeResult.error &&
-    !peopleResult.error &&
-    Boolean(placeResult.data) &&
-    peopleResult.data.length === personIds.length
-  );
+  if (
+    existingResult.error ||
+    existingResult.data.length !== existingReferences.length ||
+    existingResult.data.some((place) => place.region_code !== regionCode) ||
+    verifiedKakaoPlaces.some((result) => !result || result.region.code !== regionCode)
+  ) {
+    return null;
+  }
+
+  const placeIds = new Set(existingResult.data.map((place) => place.id));
+  const saveExistingIds = existingReferences
+    .filter((reference) => reference.save)
+    .map((reference) => reference.placeId);
+  if (saveExistingIds.length) {
+    const { error } = await supabase
+      .from("places")
+      .update({ saved_at: new Date().toISOString() })
+      .eq("owner_id", ownerId)
+      .in("id", saveExistingIds);
+    if (error) return null;
+  }
+
+  for (const verified of verifiedKakaoPlaces) {
+    if (!verified) return null;
+
+    const { data: existing, error: findError } = await supabase
+      .from("places")
+      .select("id, region_code, saved_at")
+      .eq("owner_id", ownerId)
+      .eq("provider", "kakao")
+      .eq("provider_place_id", verified.place.id)
+      .maybeSingle();
+    if (findError || (existing && existing.region_code !== regionCode)) return null;
+
+    if (existing) {
+      placeIds.add(existing.id);
+      if (verified.reference.save && !existing.saved_at) {
+        const { error } = await supabase
+          .from("places")
+          .update({ saved_at: new Date().toISOString() })
+          .eq("id", existing.id)
+          .eq("owner_id", ownerId);
+        if (error) return null;
+      }
+      continue;
+    }
+
+    const { data: inserted, error } = await supabase
+      .from("places")
+      .insert({
+        address: verified.place.address,
+        latitude: verified.place.latitude,
+        longitude: verified.place.longitude,
+        name: verified.place.name,
+        owner_id: ownerId,
+        provider: "kakao",
+        provider_place_id: verified.place.id,
+        region_code: verified.region.code,
+        saved_at: verified.reference.save ? new Date().toISOString() : null,
+      })
+      .select("id")
+      .single();
+    if (error || !inserted) return null;
+    placeIds.add(inserted.id);
+  }
+
+  return [...placeIds];
+}
+
+async function validateSelections(data: RecordInput, ownerId: string, supabase: SupabaseClient) {
+  const [peopleResult, region] = await Promise.all([
+    findPersonIds(data.personIds, ownerId),
+    verifyRegion(data.regionCode, data.regionName),
+  ]);
+
+  if (peopleResult.error || peopleResult.data.length !== data.personIds.length || !region) return null;
+
+  const placeIds = await prepareRecordPlaces(data.places, data.regionCode, ownerId, supabase);
+  if (!placeIds) return null;
+  return { placeIds, region };
+}
+
+export async function searchRecordRegions(_state: RegionSearchState, formData: FormData): Promise<RegionSearchState> {
+  await getUser();
+  const result = await searchKakaoRegions(String(formData.get("query") ?? ""));
+  return "regions" in result
+    ? { regions: result.regions, status: "success" }
+    : { message: result.error, status: "error" };
+}
+
+export async function searchRecordPlaces(_state: PlaceSearchState, formData: FormData): Promise<PlaceSearchState> {
+  await getUser();
+  const queryResult = validateKakaoQuery(String(formData.get("query") ?? ""));
+  if (!queryResult.valid) return { message: queryResult.error, status: "error" };
+
+  const regionName = String(formData.get("regionName") ?? "").trim();
+  const query = regionName ? `${regionName} ${queryResult.query}` : queryResult.query;
+  const page = normalizeKakaoPage(formData.get("page"));
+  const result = await searchKakaoPlaces(query, page);
+  return result.places
+    ? { page, places: result.places, query, status: "success" }
+    : { message: result.error, status: "error" };
+}
+
+export async function resolveRecordPlace(input: {
+  expectedRegionCode?: string;
+  page: number;
+  providerPlaceId: string;
+  query: string;
+}): Promise<ResolveRecordPlaceResult> {
+  await getUser();
+  const idResult = validateKakaoPlaceId(input.providerPlaceId);
+  const queryResult = validateKakaoQuery(input.query);
+  if (!idResult.valid || !queryResult.valid) return { error: "선택한 장소를 확인할 수 없어요." };
+
+  const result = await searchKakaoPlaces(queryResult.query, input.page);
+  const place = result.places?.find((item) => item.id === idResult.id);
+  if (!place) return { error: "선택한 장소를 다시 검색해 주세요." };
+
+  const region = await resolveKakaoRegion(place.longitude, place.latitude);
+  if (!region) return { error: "장소의 지역을 확인하지 못했어요." };
+  if (input.expectedRegionCode && region.code !== input.expectedRegionCode) {
+    return { error: `선택한 장소는 ${region.fullName}에 있어 추가할 수 없어요.` };
+  }
+
+  return {
+    place: {
+      address: place.address,
+      key: `kakao:${place.id}`,
+      name: place.name,
+      reference: {
+        kind: "kakao",
+        page: normalizeKakaoPage(input.page),
+        providerPlaceId: place.id,
+        query: queryResult.query,
+        save: false,
+      },
+      saved: false,
+    },
+    region,
+  };
 }
 
 export async function createRecord(_state: RecordActionState, formData: FormData): Promise<RecordActionState> {
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) {
-    redirect("/login");
-  }
-
+  const { supabase, user } = await getUser();
   const result = validateRecordInput(readRecordInput(formData));
+  if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };
 
-  if (!result.data) {
-    return { fieldErrors: result.fieldErrors, status: "error" };
+  const selections = await validateSelections(result.data, user.id, supabase);
+  if (!selections) {
+    return { message: "선택한 지역·사람·장소를 확인할 수 없습니다.", status: "error" };
   }
 
-  const { data } = result;
-  if (!(await ownsRecordSelections(data.personIds, data.placeId, userData.user.id))) {
-    return {
-      message: "선택한 사람 또는 장소를 확인할 수 없습니다. 다시 선택해 주세요.",
-      status: "error",
-    };
-  }
-
-  const { data: record, error: recordError } = await supabase
-    .from("records")
-    .insert({
-      activity: data.activity,
-      memo: data.memo ?? null,
-      owner_id: userData.user.id,
-      place_id: data.placeId,
-      recorded_at: data.recordedAt,
-    })
-    .select("id")
-    .single();
-
-  if (recordError || !record) {
+  const { data: recordId, error } = await supabase.rpc("create_owned_record", {
+    p_activity: result.data.activity,
+    p_memo: result.data.memo ?? "",
+    p_person_ids: result.data.personIds,
+    p_place_ids: selections.placeIds,
+    p_recorded_at: result.data.recordedAt,
+    p_region_code: selections.region.code,
+    p_region_latitude: selections.region.latitude,
+    p_region_longitude: selections.region.longitude,
+    p_region_name: selections.region.fullName,
+  });
+  if (error || !recordId) {
     return { message: "기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
-  }
-
-  const { error: peopleError } = await supabase
-    .from("record_people")
-    .insert(data.personIds.map((personId) => ({ person_id: personId, record_id: record.id })));
-
-  if (peopleError) {
-    const { error: cleanupError } = await supabase
-      .from("records")
-      .delete()
-      .eq("id", record.id)
-      .eq("owner_id", userData.user.id);
-
-    return {
-      message: cleanupError
-        ? "기록 연결을 완료하지 못했습니다. 기록 목록을 확인한 뒤 다시 시도해 주세요."
-        : "함께한 사람을 연결하지 못했습니다. 다시 시도해 주세요.",
-      status: "error",
-    };
   }
 
   revalidatePath("/");
   revalidatePath("/records");
+  revalidatePath("/places");
   redirect("/records");
 }
 
@@ -102,51 +260,39 @@ export async function updateRecord(
   _state: RecordActionState,
   formData: FormData,
 ): Promise<RecordActionState> {
-  if (!isUuid(recordId)) {
-    return { message: "수정할 기록을 확인할 수 없습니다.", status: "error" };
-  }
+  if (!isUuid(recordId)) return { message: "수정할 기록을 확인할 수 없습니다.", status: "error" };
 
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) {
-    redirect("/login");
-  }
-
+  const { supabase, user } = await getUser();
   const result = validateRecordInput(readRecordInput(formData));
+  if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };
 
-  if (!result.data) {
-    return { fieldErrors: result.fieldErrors, status: "error" };
-  }
-
-  const { data } = result;
-  const [ownsSelections, recordResult] = await Promise.all([
-    ownsRecordSelections(data.personIds, data.placeId, userData.user.id),
-    supabase.from("records").select("id").eq("id", recordId).eq("owner_id", userData.user.id).maybeSingle(),
+  const [selections, recordResult] = await Promise.all([
+    validateSelections(result.data, user.id, supabase),
+    supabase.from("records").select("id").eq("id", recordId).eq("owner_id", user.id).maybeSingle(),
   ]);
-
-  if (!ownsSelections || recordResult.error || !recordResult.data) {
-    return {
-      message: "수정할 기록이나 선택한 사람·장소를 확인할 수 없습니다.",
-      status: "error",
-    };
+  if (!selections || recordResult.error || !recordResult.data) {
+    return { message: "수정할 기록이나 선택 항목을 확인할 수 없습니다.", status: "error" };
   }
 
   const { data: updated, error } = await supabase.rpc("update_owned_record", {
-    p_activity: data.activity,
-    p_memo: data.memo ?? null,
-    p_person_ids: data.personIds,
-    p_place_id: data.placeId,
+    p_activity: result.data.activity,
+    p_memo: result.data.memo ?? "",
+    p_person_ids: result.data.personIds,
+    p_place_ids: selections.placeIds,
     p_record_id: recordId,
-    p_recorded_at: data.recordedAt,
+    p_recorded_at: result.data.recordedAt,
+    p_region_code: selections.region.code,
+    p_region_latitude: selections.region.latitude,
+    p_region_longitude: selections.region.longitude,
+    p_region_name: selections.region.fullName,
   });
-
   if (error || !updated) {
     return { message: "기록을 수정하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   revalidatePath("/");
   revalidatePath("/records");
+  revalidatePath("/places");
   revalidatePath(`/records/${recordId}`);
   redirect(`/records/${recordId}`);
 }
@@ -156,22 +302,14 @@ export async function deleteRecord(
   _state: RecordActionState,
   _formData: FormData,
 ): Promise<RecordActionState> {
-  if (!isUuid(recordId)) {
-    return { message: "삭제할 기록을 확인할 수 없습니다.", status: "error" };
-  }
+  if (!isUuid(recordId)) return { message: "삭제할 기록을 확인할 수 없습니다.", status: "error" };
 
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) {
-    redirect("/login");
-  }
-
+  const { supabase, user } = await getUser();
   const { data: deleted, error } = await supabase
     .from("records")
     .delete()
     .eq("id", recordId)
-    .eq("owner_id", userData.user.id)
+    .eq("owner_id", user.id)
     .select("id")
     .maybeSingle();
 

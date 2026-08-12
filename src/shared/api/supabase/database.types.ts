@@ -36,43 +36,43 @@ export type Database = {
         Row: {
           address: string | null;
           created_at: string;
-          district: string | null;
           id: string;
           latitude: number;
           longitude: number;
           name: string;
           owner_id: string;
-          provider: string | null;
-          provider_place_id: string | null;
-          region: string | null;
+          provider: string;
+          provider_place_id: string;
+          region_code: string;
+          saved_at: string | null;
           updated_at: string;
         };
         Insert: {
           address?: string | null;
           created_at?: string;
-          district?: string | null;
           id?: string;
           latitude: number;
           longitude: number;
           name: string;
           owner_id: string;
-          provider?: string | null;
-          provider_place_id?: string | null;
-          region?: string | null;
+          provider: string;
+          provider_place_id: string;
+          region_code: string;
+          saved_at?: string | null;
           updated_at?: string;
         };
         Update: {
           address?: string | null;
           created_at?: string;
-          district?: string | null;
           id?: string;
           latitude?: number;
           longitude?: number;
           name?: string;
           owner_id?: string;
-          provider?: string | null;
-          provider_place_id?: string | null;
-          region?: string | null;
+          provider?: string;
+          provider_place_id?: string;
+          region_code?: string;
+          saved_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -131,6 +131,39 @@ export type Database = {
           },
         ];
       };
+      record_places: {
+        Row: {
+          created_at: string;
+          place_id: string;
+          record_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          place_id: string;
+          record_id: string;
+        };
+        Update: {
+          created_at?: string;
+          place_id?: string;
+          record_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "record_places_place_id_fkey";
+            columns: ["place_id"];
+            isOneToOne: false;
+            referencedRelation: "places";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "record_places_record_id_fkey";
+            columns: ["record_id"];
+            isOneToOne: false;
+            referencedRelation: "records";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       records: {
         Row: {
           activity: string;
@@ -138,8 +171,11 @@ export type Database = {
           id: string;
           memo: string | null;
           owner_id: string;
-          place_id: string;
           recorded_at: string;
+          region_code: string;
+          region_latitude: number;
+          region_longitude: number;
+          region_name: string;
           updated_at: string;
         };
         Insert: {
@@ -148,8 +184,11 @@ export type Database = {
           id?: string;
           memo?: string | null;
           owner_id: string;
-          place_id: string;
           recorded_at: string;
+          region_code: string;
+          region_latitude: number;
+          region_longitude: number;
+          region_name: string;
           updated_at?: string;
         };
         Update: {
@@ -158,33 +197,46 @@ export type Database = {
           id?: string;
           memo?: string | null;
           owner_id?: string;
-          place_id?: string;
           recorded_at?: string;
+          region_code?: string;
+          region_latitude?: number;
+          region_longitude?: number;
+          region_name?: string;
           updated_at?: string;
         };
-        Relationships: [
-          {
-            foreignKeyName: "records_place_id_fkey";
-            columns: ["place_id"];
-            isOneToOne: false;
-            referencedRelation: "places";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      create_owned_record: {
+        Args: {
+          p_activity: string;
+          p_memo: string;
+          p_person_ids: string[];
+          p_place_ids: string[];
+          p_recorded_at: string;
+          p_region_code: string;
+          p_region_latitude: number;
+          p_region_longitude: number;
+          p_region_name: string;
+        };
+        Returns: string;
+      };
       update_owned_record: {
         Args: {
           p_activity: string;
-          p_memo: string | null;
+          p_memo: string;
           p_person_ids: string[];
-          p_place_id: string;
+          p_place_ids: string[];
           p_record_id: string;
           p_recorded_at: string;
+          p_region_code: string;
+          p_region_latitude: number;
+          p_region_longitude: number;
+          p_region_name: string;
         };
         Returns: boolean;
       };

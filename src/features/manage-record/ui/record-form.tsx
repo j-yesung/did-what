@@ -3,26 +3,15 @@
 import type { FormEvent } from "react";
 import { useActionState, useEffect, useRef, useState } from "react";
 
-import {
-  CalendarDaysIcon,
-  CircleAlertIcon,
-  MapPinIcon,
-  MessageSquareTextIcon,
-  NotebookPenIcon,
-  PlusIcon,
-  UsersIcon,
-} from "lucide-react";
-import Link from "next/link";
+import { CalendarDaysIcon, CircleAlertIcon, MessageSquareTextIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 
 import type { PersonOption } from "@/entities/person";
-import type { PlaceOption } from "@/entities/place";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { Button, buttonVariants } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
   Field,
-  FieldContent,
   FieldDescription,
   FieldError,
   FieldGroup,
@@ -30,14 +19,14 @@ import {
   FieldLegend,
   FieldSeparator,
   FieldSet,
-  FieldTitle,
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/shared/ui/native-select";
 import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
+import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import type { RecordActionState } from "../model/record-form";
+import { RecordLocationFields } from "./record-location-fields";
 
 const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
 
@@ -49,17 +38,17 @@ type RecordFormProps = {
     activity: string;
     memo: string;
     personIds: string[];
-    placeId: string;
+    places: RecordLocationPlace[];
     recordedAt: string;
+    region: RecordLocationRegion;
   };
   mode?: "create" | "edit";
   people: PersonOption[];
-  places: PlaceOption[];
 };
 
 const INITIAL_STATE: RecordActionState = { status: "idle" };
 
-export function RecordForm({ action, initialValues, mode = "create", people, places }: RecordFormProps) {
+export function RecordForm({ action, initialValues, mode = "create", people }: RecordFormProps) {
   const [state, formAction, pending] = useActionState(action, INITIAL_STATE);
   const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>(initialValues?.personIds ?? []);
   const [hasPersonError, setHasPersonError] = useState(false);
@@ -135,7 +124,11 @@ export function RecordForm({ action, initialValues, mode = "create", people, pla
                   const isSelected = selectedPersonIds.includes(person.id);
 
                   return (
-                    <FieldLabel htmlFor={`person-${person.id}`} key={person.id}>
+                    <FieldLabel
+                      className="items-center has-[>[data-slot=field]]:flex-row"
+                      htmlFor={`person-${person.id}`}
+                      key={person.id}
+                    >
                       <Field orientation="horizontal">
                         <Checkbox
                           aria-describedby={personError ? "people-error" : undefined}
@@ -149,9 +142,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, pla
                         <Avatar className="size-8">
                           <AvatarFallback>{person.name[0]}</AvatarFallback>
                         </Avatar>
-                        <FieldContent>
-                          <FieldTitle>{person.name}</FieldTitle>
-                        </FieldContent>
+                        <span className="font-medium text-sm">{person.name}</span>
                       </Field>
                     </FieldLabel>
                   );
@@ -163,38 +154,12 @@ export function RecordForm({ action, initialValues, mode = "create", people, pla
 
           <FieldSeparator />
 
-          <Field data-invalid={Boolean(state.fieldErrors?.placeId)}>
-            <FieldLabel htmlFor="placeId">
-              <MapPinIcon className={FIELD_ICON} aria-hidden="true" />
-              어디서 <span className="font-[650] text-[11px] text-primary">필수</span>
-            </FieldLabel>
-            <NativeSelect
-              className="w-full [&_select]:h-12"
-              defaultValue={initialValues?.placeId ?? ""}
-              id="placeId"
-              name="placeId"
-              required
-              aria-invalid={Boolean(state.fieldErrors?.placeId)}
-              aria-describedby={state.fieldErrors?.placeId ? "placeId-error" : undefined}
-            >
-              <NativeSelectOption disabled value="">
-                장소를 선택하세요
-              </NativeSelectOption>
-              {places.map((place) => (
-                <NativeSelectOption key={place.id} value={place.id}>
-                  {place.name}
-                  {place.address ? ` · ${place.address}` : ""}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-            <FieldDescription>내 장소 목록에서 한 곳을 연결해요.</FieldDescription>
-            {mode === "create" ? (
-              <Link className={buttonVariants({ size: "sm", variant: "outline" })} href="/places">
-                <PlusIcon aria-hidden="true" data-icon="inline-start" />새 장소 저장하기
-              </Link>
-            ) : null}
-            <FieldError id="placeId-error">{state.fieldErrors?.placeId}</FieldError>
-          </Field>
+          <RecordLocationFields
+            initialPlaces={initialValues?.places}
+            initialRegion={initialValues?.region}
+            placeError={state.fieldErrors?.places}
+            regionError={state.fieldErrors?.regionCode}
+          />
 
           <FieldSeparator />
 
@@ -239,15 +204,8 @@ export function RecordForm({ action, initialValues, mode = "create", people, pla
             <FieldError id="memo-error">{state.fieldErrors?.memo}</FieldError>
           </Field>
         </FieldGroup>
-      </div>
 
-      <footer className="fixed right-[max(0px,calc((100vw-430px)/2))] bottom-[var(--nav-clearance)] left-[max(0px,calc((100vw-430px)/2))] flex flex-col gap-2 border-[color-mix(in_srgb,var(--border),transparent_28%)] border-t bg-[color-mix(in_srgb,var(--surface),transparent_3%)] px-5 pt-2.5 pb-3 text-center backdrop-blur-[18px] [&_p]:text-[11px] [&_p]:text-muted-foreground">
-        <p>
-          {mode === "edit"
-            ? "수정한 내용은 상세 화면과 지도에 바로 반영돼요."
-            : "저장하면 기록 목록에서 바로 확인할 수 있어요."}
-        </p>
-        <Button className="h-14 w-full" size="lg" type="submit" disabled={pending}>
+        <Button className="mt-5 h-14 w-full" size="lg" type="submit" disabled={pending}>
           {pending ? (
             <Spinner data-icon="inline-start" aria-label={`기록 ${mode === "edit" ? "수정" : "저장"} 중`} />
           ) : (
@@ -255,7 +213,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, pla
           )}
           {pending ? `${mode === "edit" ? "수정" : "저장"} 중...` : mode === "edit" ? "수정 완료" : "기록 남기기"}
         </Button>
-      </footer>
+      </div>
     </form>
   );
 }

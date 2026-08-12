@@ -1,18 +1,25 @@
 import { createClient } from "@/shared/api/supabase/server";
 
-const LIST_COLUMNS = "id, activity, memo, recorded_at, place:places(name), record_people(person:people(name))";
+const LIST_COLUMNS = "id, activity, memo, recorded_at, region_name, record_people(person:people(name))";
 const DETAIL_COLUMNS =
-  "id, activity, memo, place_id, recorded_at, place:places(name, address), record_people(person_id, person:people(name))";
+  "id, activity, memo, recorded_at, region_code, region_name, region_latitude, region_longitude, record_people(person_id, person:people(name)), record_places(place:places(id, name, address, saved_at))";
 
-// 지도에 찍을 좌표만 가져온다.
+// 지도에 찍을 지역 대표 좌표만 가져온다.
 export async function getRecordLocations(ownerId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("records")
-    .select("id, place:places(latitude, longitude)")
+    .select("id, region_latitude, region_longitude")
     .eq("owner_id", ownerId);
 
-  return { locations: (data ?? []).map(({ id, place }) => ({ id, ...place })), error };
+  return {
+    locations: (data ?? []).map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
+      id,
+      latitude,
+      longitude,
+    })),
+    error,
+  };
 }
 
 // 최신순 기록 목록.

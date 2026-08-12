@@ -4,9 +4,21 @@ export type KakaoPlace = {
   latitude: number;
   longitude: number;
   name: string;
+  parcelAddress: string | null;
 };
 
-const KAKAO_LOCAL_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
+export type KakaoRegion = {
+  code: string;
+  fullName: string;
+  latitude: number;
+  longitude: number;
+  name: string;
+  type: "dong" | "eup" | "myeon";
+};
+
+const KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
+const KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json";
+const KAKAO_COORD_REGION_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json";
 export const KAKAO_SEARCH_MAX_PAGE = 45;
 const SEARCH_ERROR_MESSAGE = "장소를 검색하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 
@@ -99,10 +111,110 @@ export function parseKakaoSearchResponse(
       latitude,
       longitude,
       name,
+      parcelAddress: document.address_name.trim() || null,
     });
   }
 
   return { isEnd: payload.meta.is_end, pageableCount: payload.meta.pageable_count, places };
+}
+
+function getRegionType(name: string): KakaoRegion["type"] | null {
+  if (name.endsWith("동")) return "dong";
+  if (name.endsWith("읍")) return "eup";
+  if (name.endsWith("면")) return "myeon";
+  return null;
+}
+
+function parseRegionDocument(document: unknown): KakaoRegion | null {
+  if (!isRecord(document) || !isRecord(document.address)) {
+    return null;
+  }
+
+  const { address } = document;
+  if (
+    typeof address.b_code !== "string" ||
+    typeof address.region_1depth_name !== "string" ||
+    typeof address.region_2depth_name !== "string" ||
+    typeof address.region_3depth_name !== "string" ||
+    typeof document.x !== "string" ||
+    typeof document.y !== "string"
+  ) {
+    return null;
+  }
+
+  const code = address.b_code.trim();
+  const name = address.region_3depth_name.trim();
+  const type = getRegionType(name);
+  const longitude = Number(document.x);
+  const latitude = Number(document.y);
+
+  if (
+    !/^\d{10}$/.test(code) ||
+    !type ||
+    !Number.isFinite(longitude) ||
+    !Number.isFinite(latitude) ||
+    longitude < -180 ||
+    longitude > 180 ||
+    latitude < -90 ||
+    latitude > 90
+  ) {
+    return null;
+  }
+
+  return {
+    code,
+    fullName: [address.region_1depth_name, address.region_2depth_name, name].filter(Boolean).join(" "),
+    latitude,
+    longitude,
+    name,
+    type,
+  };
+}
+
+export function parseKakaoRegionSearchResponse(payload: unknown): KakaoRegion[] | null {
+  if (!isRecord(payload) || !Array.isArray(payload.documents)) {
+    return null;
+  }
+
+  const regions = new Map<string, KakaoRegion>();
+  for (const document of payload.documents) {
+    const region = parseRegionDocument(document);
+    if (region) regions.set(region.code, region);
+  }
+
+  return [...regions.values()];
+}
+
+export function parseKakaoCoordinateRegionResponse(payload: unknown): { code: string; fullName: string } | null {
+  if (!isRecord(payload) || !Array.isArray(payload.documents)) {
+    return null;
+  }
+
+  for (const document of payload.documents) {
+    if (
+      !isRecord(document) ||
+      document.region_type !== "B" ||
+      typeof document.code !== "string" ||
+      typeof document.region_1depth_name !== "string" ||
+      typeof document.region_2depth_name !== "string" ||
+      typeof document.region_3depth_name !== "string"
+    ) {
+      continue;
+    }
+
+    const name = document.region_3depth_name.trim();
+    if (!getRegionType(name) || !/^\d{10}$/.test(document.code)) {
+      continue;
+    }
+
+    const code = name.endsWith("읍") || name.endsWith("면") ? `${document.code.slice(0, 8)}00` : document.code;
+    return {
+      code,
+      fullName: [document.region_1depth_name, document.region_2depth_name, name].filter(Boolean).join(" "),
+    };
+  }
+
+  return null;
 }
 
 export async function searchKakaoPlaces(
@@ -124,7 +236,7 @@ export async function searchKakaoPlaces(
     return { error: "장소 검색 설정이 필요합니다. 관리자에게 문의해 주세요." };
   }
 
-  const url = new URL(KAKAO_LOCAL_URL);
+  const url = new URL(KAKAO_KEYWORD_URL);
   url.searchParams.set("query", queryResult.query);
   const page = normalizeKakaoPage(pageValue);
   url.searchParams.set("page", String(page));
@@ -146,5 +258,64 @@ export async function searchKakaoPlaces(
     return result ? { ...result, page } : { error: SEARCH_ERROR_MESSAGE };
   } catch {
     return { error: SEARCH_ERROR_MESSAGE };
+  }
+}
+
+export async function searchKakaoRegions(value: string): Promise<{ regions: KakaoRegion[] } | { error: string }> {
+  const queryResult = validateKakaoQuery(value);
+
+  if (!queryResult.valid) {
+    return { error: queryResult.error };
+  }
+
+  const apiKey = process.env.KAKAO_REST_API_KEY;
+  if (!apiKey) {
+    return { error: "지역 검색 설정이 필요합니다. 관리자에게 문의해 주세요." };
+  }
+
+  const url = new URL(KAKAO_ADDRESS_URL);
+  url.searchParams.set("query", queryResult.query);
+  url.searchParams.set("size", "30");
+
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: { Authorization: `KakaoAK ${apiKey}` },
+      signal: AbortSignal.timeout(5_000),
+    });
+    const regions = response.ok ? parseKakaoRegionSearchResponse(await response.json()) : null;
+    return regions ? { regions } : { error: "지역을 검색하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+  } catch {
+    return { error: "지역을 검색하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+  }
+}
+
+export async function resolveKakaoRegion(longitude: number, latitude: number): Promise<KakaoRegion | null> {
+  if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
+    return null;
+  }
+
+  const apiKey = process.env.KAKAO_REST_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+
+  const url = new URL(KAKAO_COORD_REGION_URL);
+  url.searchParams.set("x", String(longitude));
+  url.searchParams.set("y", String(latitude));
+
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: { Authorization: `KakaoAK ${apiKey}` },
+      signal: AbortSignal.timeout(5_000),
+    });
+    const location = response.ok ? parseKakaoCoordinateRegionResponse(await response.json()) : null;
+    if (!location) return null;
+
+    const result = await searchKakaoRegions(location.fullName);
+    return "regions" in result ? (result.regions.find((region) => region.code === location.code) ?? null) : null;
+  } catch {
+    return null;
   }
 }

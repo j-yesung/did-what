@@ -58,7 +58,7 @@ export async function RecordsPage() {
                 <CardContent className="flex flex-col gap-3">
                   <p className="flex items-center gap-2 text-sm">
                     <MapPinIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                    {record.place.name}
+                    {record.region_name}
                   </p>
                   {record.memo ? <p className="text-muted-foreground text-sm leading-relaxed">{record.memo}</p> : null}
                 </CardContent>

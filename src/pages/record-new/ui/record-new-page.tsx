@@ -1,9 +1,8 @@
-import { CircleAlertIcon, MapPinIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
+import { CircleAlertIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
-import { getPlaces } from "@/entities/place";
 import { createRecord, RecordForm } from "@/features/manage-record";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
@@ -19,13 +18,12 @@ export async function RecordNewPage() {
     redirect("/login");
   }
 
-  const [peopleResult, placesResult] = await Promise.all([getPeople(userData.user.id), getPlaces(userData.user.id)]);
+  const peopleResult = await getPeople(userData.user.id);
   const people = peopleResult.data ?? [];
-  const places = placesResult.data ?? [];
-  const hasLoadError = Boolean(peopleResult.error || placesResult.error);
+  const hasLoadError = Boolean(peopleResult.error);
 
   return (
-    <PageShell className="block pb-[calc(var(--nav-clearance)+96px)] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+    <PageShell className="block [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
       <PageHeader back="/" eyebrow="NEW RECORD" title="새 기록" />
 
       <section
@@ -39,7 +37,7 @@ export async function RecordNewPage() {
           오늘의 장면을 남겨보세요.
         </h2>
         <p className="mt-2 text-[14px] text-muted-foreground leading-[1.6]">
-          날짜, 사람, 장소와 한 일을 한 화면에서 빠르게 기록할 수 있어요.
+          날짜, 사람, 지역과 방문 장소를 한 화면에서 빠르게 기록할 수 있어요.
         </p>
       </section>
 
@@ -49,20 +47,14 @@ export async function RecordNewPage() {
           <AlertTitle>선택지를 불러오지 못했어요</AlertTitle>
           <AlertDescription>잠시 후 다시 시도해 주세요.</AlertDescription>
         </Alert>
-      ) : people.length === 0 || places.length === 0 ? (
+      ) : people.length === 0 ? (
         <Empty className="border bg-card py-12">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <NotebookPenIcon aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>기록 전에 준비가 필요해요</EmptyTitle>
-            <EmptyDescription>
-              {people.length === 0 && places.length === 0
-                ? "함께한 사람과 방문한 장소를 먼저 추가해 주세요."
-                : people.length === 0
-                  ? "기록에 연결할 사람을 먼저 추가해 주세요."
-                  : "기록에 연결할 장소를 먼저 추가해 주세요."}
-            </EmptyDescription>
+            <EmptyDescription>기록에 연결할 사람을 먼저 추가해 주세요.</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             {people.length === 0 ? (
@@ -71,16 +63,10 @@ export async function RecordNewPage() {
                 사람 추가하러 가기
               </Button>
             ) : null}
-            {places.length === 0 ? (
-              <Button className="w-full" variant="outline" render={<Link href="/places" />} nativeButton={false}>
-                <MapPinIcon data-icon="inline-start" />
-                장소 추가하러 가기
-              </Button>
-            ) : null}
           </EmptyContent>
         </Empty>
       ) : (
-        <RecordForm action={createRecord} people={people} places={places} />
+        <RecordForm action={createRecord} people={people} />
       )}
     </PageShell>
   );

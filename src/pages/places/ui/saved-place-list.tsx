@@ -17,7 +17,7 @@ type SavedPlace = {
   id: string;
   name: string;
   address: string | null;
-  created_at: string;
+  saved_at: string | null;
 };
 
 type SavedPlaceListProps = {
@@ -59,13 +59,15 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
         <Card key={place.id} size="sm">
           <CardHeader>
             <CardTitle>{place.name}</CardTitle>
-            <CardDescription>기록에 연결할 수 있는 장소</CardDescription>
+            <CardDescription>내가 간직하기로 한 장소</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
           </CardContent>
           <CardFooter className="justify-between gap-3">
-            <p className="text-muted-foreground text-xs">{DATE_FORMATTER.format(new Date(place.created_at))} 저장</p>
+            <p className="text-muted-foreground text-xs">
+              {place.saved_at ? `${DATE_FORMATTER.format(new Date(place.saved_at))} 저장` : "저장한 장소"}
+            </p>
             <Link className={buttonVariants({ size: "sm", variant: "ghost" })} href={`/places/${place.id}`}>
               이곳의 기록 보기
               <ChevronRightIcon aria-hidden="true" data-icon="inline-end" />

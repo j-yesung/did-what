@@ -1,5 +1,7 @@
 import {
   normalizeKakaoPage,
+  parseKakaoCoordinateRegionResponse,
+  parseKakaoRegionSearchResponse,
   parseKakaoSearchResponse,
   validateKakaoPlaceId,
   validateKakaoQuery,
@@ -43,6 +45,7 @@ assert.deepEqual(
         latitude: 37.51207412593136,
         longitude: 127.05902969025047,
         name: "카카오프렌즈 코엑스점",
+        parcelAddress: "서울 강남구 삼성동 159",
       },
     ],
   },
@@ -55,3 +58,55 @@ assert.equal(
   null,
 );
 assert.equal(parseKakaoSearchResponse({ documents: [], meta: {} }), null);
+
+assert.deepEqual(
+  parseKakaoRegionSearchResponse({
+    documents: [
+      {
+        address: {
+          b_code: "1144012300",
+          region_1depth_name: "서울",
+          region_2depth_name: "마포구",
+          region_3depth_name: "망원동",
+        },
+        x: "126.901347294861",
+        y: "37.5567856576913",
+      },
+      {
+        address: {
+          b_code: "",
+          region_1depth_name: "서울",
+          region_2depth_name: "마포구",
+          region_3depth_name: "",
+        },
+        x: "126.9",
+        y: "37.5",
+      },
+    ],
+  }),
+  [
+    {
+      code: "1144012300",
+      fullName: "서울 마포구 망원동",
+      latitude: 37.5567856576913,
+      longitude: 126.901347294861,
+      name: "망원동",
+      type: "dong",
+    },
+  ],
+);
+
+assert.deepEqual(
+  parseKakaoCoordinateRegionResponse({
+    documents: [
+      {
+        code: "5011025325",
+        region_1depth_name: "제주특별자치도",
+        region_2depth_name: "제주시",
+        region_3depth_name: "애월읍",
+        region_type: "B",
+      },
+    ],
+  }),
+  { code: "5011025300", fullName: "제주특별자치도 제주시 애월읍" },
+);

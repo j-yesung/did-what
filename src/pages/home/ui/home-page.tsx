@@ -42,7 +42,7 @@ export async function HomePage() {
               <MapPinnedIcon aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>아직 지도에 남긴 발자취가 없어요</EmptyTitle>
-            <EmptyDescription>함께한 오늘의 장소를 첫 기록으로 남겨보세요.</EmptyDescription>
+            <EmptyDescription>함께한 오늘의 지역을 첫 발자취로 남겨보세요.</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button render={<Link href="/records/new" />} nativeButton={false}>

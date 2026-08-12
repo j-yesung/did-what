@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { getRecord } from "@/entities/record";
+import { PlaceSaveButton } from "@/features/create-place";
 import { DeleteRecordDialog } from "@/features/manage-record";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
@@ -97,13 +98,33 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
               <div className="grid grid-cols-[20px_1fr] gap-3">
                 <MapPinIcon className="size-5 text-primary" aria-hidden="true" />
                 <div>
-                  <p className="text-muted-foreground text-xs">장소</p>
-                  <p className="mt-1 font-medium">{record.place.name}</p>
-                  {record.place.address ? (
-                    <p className="mt-1 text-muted-foreground text-sm">{record.place.address}</p>
-                  ) : null}
+                  <p className="text-muted-foreground text-xs">지역</p>
+                  <p className="mt-1 font-medium">{record.region_name}</p>
                 </div>
               </div>
+              {record.record_places.length ? (
+                <div className="grid grid-cols-[20px_1fr] gap-3">
+                  <MapPinIcon className="size-5 text-primary" aria-hidden="true" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">방문 장소</p>
+                    <ul className="mt-2 flex flex-col gap-2">
+                      {record.record_places.map(({ place }) => (
+                        <li key={place.id}>
+                          <p className="font-medium">{place.name}</p>
+                          {place.address ? (
+                            <p className="mt-0.5 text-muted-foreground text-sm">{place.address}</p>
+                          ) : null}
+                          {!place.saved_at ? (
+                            <div className="mt-2">
+                              <PlaceSaveButton placeId={place.id} saved={false} />
+                            </div>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
 

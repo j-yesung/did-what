@@ -2,7 +2,6 @@ import { CircleAlertIcon } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
-import { getPlaces } from "@/entities/place";
 import { getRecord } from "@/entities/record";
 import { RecordForm, updateRecord } from "@/features/manage-record";
 import { createClient } from "@/shared/api/supabase/server";
@@ -28,10 +27,9 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
     redirect("/login");
   }
 
-  const [recordResult, peopleResult, placesResult] = await Promise.all([
+  const [recordResult, peopleResult] = await Promise.all([
     getRecord(recordId, userData.user.id),
     getPeople(userData.user.id),
-    getPlaces(userData.user.id),
   ]);
 
   if (!recordResult.data && !recordResult.error) {
@@ -39,10 +37,10 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
   }
 
   const record = recordResult.data;
-  const hasLoadError = Boolean(recordResult.error || peopleResult.error || placesResult.error);
+  const hasLoadError = Boolean(recordResult.error || peopleResult.error);
 
   return (
-    <PageShell className="block pb-[calc(var(--nav-clearance)+96px)] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+    <PageShell className="block [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
       <PageHeader back={`/records/${recordId}`} eyebrow="EDIT MEMORY" title="기록 수정" />
 
       <section className="px-1 pt-[22px] pb-5" aria-labelledby="record-edit-title">
@@ -53,7 +51,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
           그날의 기록을 다듬어보세요.
         </h2>
         <p className="mt-2 text-[14px] text-muted-foreground leading-[1.6]">
-          바뀐 날짜, 사람, 장소와 내용을 한 번에 수정할 수 있어요.
+          바뀐 날짜, 사람, 지역과 방문 장소를 한 번에 수정할 수 있어요.
         </p>
       </section>
 
@@ -70,12 +68,25 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
             activity: record.activity,
             memo: record.memo ?? "",
             personIds: record.record_people.map(({ person_id }) => person_id),
-            placeId: record.place_id,
+            places: record.record_places.map(({ place }) => ({
+              address: place.address,
+              key: `existing:${place.id}`,
+              name: place.name,
+              reference: { kind: "existing" as const, placeId: place.id, save: false },
+              saved: Boolean(place.saved_at),
+            })),
             recordedAt: record.recorded_at,
+            region: {
+              code: record.region_code,
+              fullName: record.region_name,
+              latitude: record.region_latitude,
+              longitude: record.region_longitude,
+              name: record.region_name.split(" ").at(-1) ?? record.region_name,
+              type: record.region_name.endsWith("읍") ? "eup" : record.region_name.endsWith("면") ? "myeon" : "dong",
+            },
           }}
           mode="edit"
           people={peopleResult.data ?? []}
-          places={placesResult.data ?? []}
         />
       )}
     </PageShell>

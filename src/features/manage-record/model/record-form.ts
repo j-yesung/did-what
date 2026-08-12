@@ -1,11 +1,19 @@
 import { isUuid } from "#shared/lib/is-uuid.ts";
 
-export type RecordFieldErrors = Partial<Record<"recordedAt" | "personIds" | "placeId" | "activity" | "memo", string>>;
+export type RecordPlaceReference =
+  | { kind: "existing"; placeId: string; save: boolean }
+  | { kind: "kakao"; page: number; providerPlaceId: string; query: string; save: boolean };
+
+export type RecordFieldErrors = Partial<
+  Record<"recordedAt" | "personIds" | "regionCode" | "places" | "activity" | "memo", string>
+>;
 
 export type RecordInput = {
   recordedAt: string;
   personIds: string[];
-  placeId: string;
+  regionCode: string;
+  regionName: string;
+  places: RecordPlaceReference[];
   activity: string;
   memo?: string;
 };
@@ -13,7 +21,9 @@ export type RecordInput = {
 export type RecordInputValues = {
   recordedAt: string;
   personIds: readonly string[];
-  placeId: string;
+  regionCode: string;
+  regionName: string;
+  places: string;
   activity: string;
   memo: string;
 };
@@ -27,6 +37,9 @@ export type RecordActionState = {
 export const INITIAL_RECORD_ACTION_STATE: RecordActionState = { status: "idle" };
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const REGION_CODE_PATTERN = /^\d{10}$/;
+const KAKAO_PLACE_ID_PATTERN = /^\d{1,100}$/;
+const MAX_VISITED_PLACES = 10;
 
 function isValidDate(value: string) {
   if (!DATE_PATTERN.test(value)) {
@@ -37,11 +50,65 @@ function isValidDate(value: string) {
   return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
 }
 
+function parsePlaces(value: string): RecordPlaceReference[] | null {
+  try {
+    const parsed: unknown = JSON.parse(value || "[]");
+    if (!Array.isArray(parsed) || parsed.length > MAX_VISITED_PLACES) return null;
+
+    const places = new Map<string, RecordPlaceReference>();
+    for (const item of parsed) {
+      if (!item || typeof item !== "object" || !("kind" in item) || !("save" in item)) return null;
+
+      if (item.kind === "existing" && "placeId" in item && typeof item.placeId === "string" && isUuid(item.placeId)) {
+        const key = `existing:${item.placeId}`;
+        const previous = places.get(key);
+        places.set(key, { kind: "existing", placeId: item.placeId, save: Boolean(item.save || previous?.save) });
+        continue;
+      }
+
+      if (
+        item.kind === "kakao" &&
+        "providerPlaceId" in item &&
+        "query" in item &&
+        "page" in item &&
+        typeof item.providerPlaceId === "string" &&
+        KAKAO_PLACE_ID_PATTERN.test(item.providerPlaceId) &&
+        typeof item.query === "string" &&
+        item.query.trim().length >= 1 &&
+        item.query.trim().length <= 100 &&
+        typeof item.page === "number" &&
+        Number.isInteger(item.page) &&
+        item.page >= 1 &&
+        item.page <= 45
+      ) {
+        const key = `kakao:${item.providerPlaceId}`;
+        const previous = places.get(key);
+        places.set(key, {
+          kind: "kakao",
+          page: item.page,
+          providerPlaceId: item.providerPlaceId,
+          query: item.query.trim(),
+          save: Boolean(item.save || previous?.save),
+        });
+        continue;
+      }
+
+      return null;
+    }
+
+    return [...places.values()];
+  } catch {
+    return null;
+  }
+}
+
 export function validateRecordInput(
   values: RecordInputValues,
 ): { data: RecordInput; fieldErrors?: never } | { data?: never; fieldErrors: RecordFieldErrors } {
   const fieldErrors: RecordFieldErrors = {};
   const personIds = [...new Set(values.personIds)];
+  const regionName = values.regionName.trim();
+  const places = parsePlaces(values.places);
   const activity = values.activity.trim();
   const memo = values.memo.trim();
 
@@ -53,8 +120,12 @@ export function validateRecordInput(
     fieldErrors.personIds = "함께한 사람을 한 명 이상 선택해 주세요.";
   }
 
-  if (!isUuid(values.placeId)) {
-    fieldErrors.placeId = "장소를 선택해 주세요.";
+  if (!REGION_CODE_PATTERN.test(values.regionCode) || regionName.length < 1 || regionName.length > 200) {
+    fieldErrors.regionCode = "목록에서 지역을 선택해 주세요.";
+  }
+
+  if (!places) {
+    fieldErrors.places = `방문 장소는 ${MAX_VISITED_PLACES}곳까지 선택할 수 있어요.`;
   }
 
   if (activity.length < 1 || activity.length > 120) {
@@ -65,7 +136,7 @@ export function validateRecordInput(
     fieldErrors.memo = "메모는 500자 이하로 입력해 주세요.";
   }
 
-  if (Object.keys(fieldErrors).length > 0) {
+  if (Object.keys(fieldErrors).length > 0 || !places) {
     return { fieldErrors };
   }
 
@@ -73,7 +144,9 @@ export function validateRecordInput(
     data: {
       recordedAt: values.recordedAt,
       personIds,
-      placeId: values.placeId,
+      regionCode: values.regionCode,
+      regionName,
+      places,
       activity,
       ...(memo ? { memo } : {}),
     },

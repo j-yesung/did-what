@@ -50,7 +50,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
 
   return (
     <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
-      <PageHeader back="/" title="장소" />
+      <PageHeader title="장소" />
 
       <section aria-labelledby="places-intro-title" className="px-1">
         <p className="font-bold text-primary text-xs">{places.length}곳에 추억 저장 중</p>
@@ -58,7 +58,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
           기억하고 싶은 장소를 찾아보세요.
         </h2>
         <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-          저장한 장소는 새 기록을 남길 때 바로 선택할 수 있어요.
+          직접 간직하기로 선택한 장소만 이곳에 모여요.
         </p>
       </section>
 
