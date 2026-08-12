@@ -2,6 +2,7 @@ import { ChevronLeftIcon, UserRoundIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getPeople } from "@/entities/person";
 import { CreatePersonForm } from "@/features/create-person";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
@@ -25,11 +26,7 @@ export async function PeoplePage() {
     redirect("/login");
   }
 
-  const { data: people, error } = await supabase
-    .from("people")
-    .select("id, name, created_at")
-    .eq("owner_id", userData.user.id)
-    .order("name");
+  const { data: people, error } = await getPeople(userData.user.id);
   const personCount = people?.length ?? 0;
 
   return (

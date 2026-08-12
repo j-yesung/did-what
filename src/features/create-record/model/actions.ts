@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { findPersonIds } from "@/entities/person";
+import { findPlace } from "@/entities/place";
 import { createClient } from "@/shared/api/supabase/server";
 
 import type { CreateRecordActionState, RecordInputValues } from "./record-form";
@@ -34,8 +36,8 @@ export async function createRecord(
 
   const { data } = result;
   const [placeResult, peopleResult] = await Promise.all([
-    supabase.from("places").select("id").eq("id", data.placeId).eq("owner_id", userData.user.id).maybeSingle(),
-    supabase.from("people").select("id").in("id", data.personIds).eq("owner_id", userData.user.id),
+    findPlace(data.placeId, userData.user.id),
+    findPersonIds(data.personIds, userData.user.id),
   ]);
 
   if (

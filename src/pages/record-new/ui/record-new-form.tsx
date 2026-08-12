@@ -12,12 +12,9 @@ import {
   UsersIcon,
 } from "lucide-react";
 
-import {
-  createRecord,
-  INITIAL_CREATE_RECORD_STATE,
-  type PersonOption,
-  type PlaceOption,
-} from "@/features/create-record";
+import type { PersonOption } from "@/entities/person";
+import type { PlaceOption } from "@/entities/place";
+import { createRecord, INITIAL_CREATE_RECORD_STATE } from "@/features/create-record";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";

@@ -2,6 +2,8 @@ import { ChevronLeftIcon, CircleAlertIcon, MapPinIcon, NotebookPenIcon, UsersIco
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getPeople } from "@/entities/person";
+import { getPlaces } from "@/entities/place";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
@@ -18,10 +20,7 @@ export async function RecordNewPage() {
     redirect("/login");
   }
 
-  const [peopleResult, placesResult] = await Promise.all([
-    supabase.from("people").select("id, name").eq("owner_id", userData.user.id).order("name"),
-    supabase.from("places").select("id, name, address").eq("owner_id", userData.user.id).order("name"),
-  ]);
+  const [peopleResult, placesResult] = await Promise.all([getPeople(userData.user.id), getPlaces(userData.user.id)]);
   const people = peopleResult.data ?? [];
   const places = placesResult.data ?? [];
   const hasLoadError = Boolean(peopleResult.error || placesResult.error);

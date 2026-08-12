@@ -24,17 +24,6 @@ export type CreateRecordActionState = {
   fieldErrors?: RecordFieldErrors;
 };
 
-export type PersonOption = {
-  id: string;
-  name: string;
-};
-
-export type PlaceOption = {
-  id: string;
-  name: string;
-  address: string | null;
-};
-
 export const INITIAL_CREATE_RECORD_STATE: CreateRecordActionState = { status: "idle" };
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;

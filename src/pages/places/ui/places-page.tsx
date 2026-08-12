@@ -2,6 +2,7 @@ import { ChevronLeftIcon, CircleAlertIcon, MapPinIcon, SearchIcon } from "lucide
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getPlaces } from "@/entities/place";
 import { SavePlaceForm } from "@/features/create-place";
 import {
   KAKAO_SEARCH_MAX_PAGE,
@@ -55,11 +56,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
   const queryResult = hasSearch ? validateKakaoQuery(rawQuery) : null;
   const query = queryResult?.valid ? queryResult.query : rawQuery;
   const [placesResult, searchResult] = await Promise.all([
-    supabase
-      .from("places")
-      .select("id, name, address, created_at, provider, provider_place_id")
-      .eq("owner_id", userData.user.id)
-      .order("name"),
+    getPlaces(userData.user.id),
     queryResult?.valid ? searchKakaoPlaces(queryResult.query, currentPage) : Promise.resolve(null),
   ]);
   const places = placesResult.data ?? [];
