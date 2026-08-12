@@ -1,14 +1,11 @@
-import { cn } from "@/shared/lib/utils";
-
 import { createKoreaMap, KOREA_MAP_CELL_STYLE, type RecordLocation } from "../lib/korea-map";
-import styles from "./korea-activity-map.module.css";
 
 const LEVEL_CLASS_NAMES = {
-  0: styles.levelZero,
-  1: styles.levelOne,
-  2: styles.levelTwo,
-  3: styles.levelThree,
-  4: styles.levelFour,
+  0: "fill-map-empty",
+  1: "fill-map-level-1",
+  2: "fill-map-level-2",
+  3: "fill-map-level-3",
+  4: "fill-map-level-4",
 } as const;
 
 export function KoreaActivityMap({ records }: { records: RecordLocation[] }) {
@@ -16,7 +13,7 @@ export function KoreaActivityMap({ records }: { records: RecordLocation[] }) {
 
   return (
     <svg
-      className={styles.map}
+      className="h-full w-full overflow-visible [shape-rendering:geometricPrecision]"
       viewBox={`0 0 ${map.width} ${map.height}`}
       role="img"
       aria-labelledby="korea-map-title korea-map-description"
@@ -32,7 +29,7 @@ export function KoreaActivityMap({ records }: { records: RecordLocation[] }) {
         {map.cells.map((cell) => (
           <rect
             key={cell.id}
-            className={cn(styles.cell, LEVEL_CLASS_NAMES[cell.level])}
+            className={`stroke-none ${LEVEL_CLASS_NAMES[cell.level]}`}
             x={cell.x}
             y={cell.y}
             width={KOREA_MAP_CELL_STYLE.size}

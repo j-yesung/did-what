@@ -36,9 +36,9 @@ import { NativeSelect, NativeSelectOption } from "@/shared/ui/native-select";
 import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
-import styles from "./record-new.module.css";
-
 const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
+
+const FIELD_ICON = "size-[18px] text-primary [stroke-width:2]";
 
 type RecordNewFormProps = {
   people: PersonOption[];
@@ -77,7 +77,7 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
   }
 
   return (
-    <form ref={formRef} className={styles.form} action={formAction} onSubmit={handleSubmit}>
+    <form ref={formRef} className="flex flex-col gap-4" action={formAction} onSubmit={handleSubmit}>
       {state.message ? (
         <Alert variant="destructive" tabIndex={-1}>
           <CircleAlertIcon aria-hidden="true" />
@@ -86,12 +86,12 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
         </Alert>
       ) : null}
 
-      <div className={styles.formSurface}>
+      <div className="rounded-xl border border-border bg-surface px-[18px] py-5 shadow-[0_18px_50px_color-mix(in_srgb,var(--brand-950),transparent_94%)] motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
           <Field data-invalid={Boolean(state.fieldErrors?.recordedAt)}>
             <FieldLabel htmlFor="recordedAt">
-              <CalendarDaysIcon className={styles.fieldIcon} aria-hidden="true" />
-              언제 <span className={styles.required}>필수</span>
+              <CalendarDaysIcon className={FIELD_ICON} aria-hidden="true" />
+              언제 <span className="font-[650] text-[11px] text-primary">필수</span>
             </FieldLabel>
             <Input
               className="h-12"
@@ -112,8 +112,8 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
           <Field data-invalid={Boolean(personError)}>
             <FieldSet>
               <FieldLegend className="flex items-center gap-2" variant="label">
-                <UsersIcon className={styles.fieldIcon} aria-hidden="true" />
-                누구와 <span className={styles.required}>필수</span>
+                <UsersIcon className={FIELD_ICON} aria-hidden="true" />
+                누구와 <span className="font-[650] text-[11px] text-primary">필수</span>
               </FieldLegend>
               <FieldDescription>한 명 이상 선택해 주세요.</FieldDescription>
               <FieldGroup className="grid grid-cols-2 gap-2" data-slot="checkbox-group">
@@ -151,8 +151,8 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
 
           <Field data-invalid={Boolean(state.fieldErrors?.placeId)}>
             <FieldLabel htmlFor="placeId">
-              <MapPinIcon className={styles.fieldIcon} aria-hidden="true" />
-              어디서 <span className={styles.required}>필수</span>
+              <MapPinIcon className={FIELD_ICON} aria-hidden="true" />
+              어디서 <span className="font-[650] text-[11px] text-primary">필수</span>
             </FieldLabel>
             <NativeSelect
               className="w-full [&_select]:h-12"
@@ -181,8 +181,8 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
 
           <Field data-invalid={Boolean(state.fieldErrors?.activity)}>
             <FieldLabel htmlFor="activity">
-              <NotebookPenIcon className={styles.fieldIcon} aria-hidden="true" />
-              무엇을 했나요? <span className={styles.required}>필수</span>
+              <NotebookPenIcon className={FIELD_ICON} aria-hidden="true" />
+              무엇을 했나요? <span className="font-[650] text-[11px] text-primary">필수</span>
             </FieldLabel>
             <Input
               className="h-12"
@@ -202,8 +202,8 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
 
           <Field data-invalid={Boolean(state.fieldErrors?.memo)}>
             <FieldLabel htmlFor="memo">
-              <MessageSquareTextIcon className={styles.fieldIcon} aria-hidden="true" />
-              메모 <span className={styles.optional}>선택</span>
+              <MessageSquareTextIcon className={FIELD_ICON} aria-hidden="true" />
+              메모 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
             </FieldLabel>
             <Textarea
               className="min-h-24 resize-none"
@@ -220,7 +220,7 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
         </FieldGroup>
       </div>
 
-      <footer className={styles.footer}>
+      <footer className="fixed right-[max(0px,calc((100vw-430px)/2))] bottom-0 left-[max(0px,calc((100vw-430px)/2))] flex flex-col gap-2 border-[color-mix(in_srgb,var(--border),transparent_28%)] border-t bg-[color-mix(in_srgb,var(--surface),transparent_3%)] px-5 pt-2.5 pb-[max(16px,env(safe-area-inset-bottom))] text-center backdrop-blur-[18px] [&_p]:text-[11px] [&_p]:text-muted-foreground">
         <p>저장하면 기록 목록에서 바로 확인할 수 있어요.</p>
         <Button className="h-14 w-full" size="lg" type="submit" disabled={pending}>
           {pending ? (

@@ -8,8 +8,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
-import styles from "./home-page.module.css";
 import { KoreaActivityMap } from "./korea-activity-map";
+
+const NAV_ICON = "size-5 [stroke-width:2]";
 
 export async function HomePage() {
   const supabase = await createClient();
@@ -22,8 +23,8 @@ export async function HomePage() {
   const { locations: records, error } = await getRecordLocations(userData.user.id);
 
   return (
-    <main className={styles.shell}>
-      <section className={styles.mapArea} aria-label="대한민국 활동 지도">
+    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-3 bg-background px-5 pt-3 pb-[calc(92px+env(safe-area-inset-bottom))] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+      <section className="grid min-h-0 flex-1 place-items-center px-1.5 py-1" aria-label="대한민국 활동 지도">
         <KoreaActivityMap records={error ? [] : records} />
       </section>
 
@@ -58,21 +59,24 @@ export async function HomePage() {
         </Button>
       ) : null}
 
-      <nav className={styles.navigation} aria-label="주요 메뉴">
-        <Link className={styles.activeNavItem} href="/" aria-current="page">
-          <MapIcon className={styles.navIcon} aria-hidden="true" />
+      <nav
+        className="fixed right-[max(0px,calc((100vw-430px)/2))] bottom-0 left-[max(0px,calc((100vw-430px)/2))] z-10 grid min-h-[calc(76px+env(safe-area-inset-bottom))] grid-cols-4 border-border border-t bg-[color-mix(in_srgb,var(--surface),transparent_4%)] px-3 pt-2 pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur-[18px] [&_a:focus-visible]:outline [&_a:focus-visible]:outline-[3px] [&_a:focus-visible]:outline-ring [&_a:focus-visible]:-outline-offset-2 [&_a]:flex [&_a]:min-h-[54px] [&_a]:flex-col [&_a]:items-center [&_a]:justify-center [&_a]:gap-1 [&_a]:rounded-lg [&_a]:font-[650] [&_a]:text-[11px] [&_a]:text-muted-foreground"
+        aria-label="주요 메뉴"
+      >
+        <Link className="text-primary!" href="/" aria-current="page">
+          <MapIcon className={NAV_ICON} aria-hidden="true" />
           지도
         </Link>
         <Link href="/records">
-          <NotebookPenIcon className={styles.navIcon} aria-hidden="true" />
+          <NotebookPenIcon className={NAV_ICON} aria-hidden="true" />
           기록
         </Link>
         <Link href="/people">
-          <UsersIcon className={styles.navIcon} aria-hidden="true" />
+          <UsersIcon className={NAV_ICON} aria-hidden="true" />
           사람
         </Link>
         <Link href="/settings">
-          <SettingsIcon className={styles.navIcon} aria-hidden="true" />
+          <SettingsIcon className={NAV_ICON} aria-hidden="true" />
           설정
         </Link>
       </nav>

@@ -9,7 +9,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
-import styles from "./record-new.module.css";
 import { RecordNewForm } from "./record-new-form";
 
 export async function RecordNewPage() {
@@ -26,8 +25,8 @@ export async function RecordNewPage() {
   const hasLoadError = Boolean(peopleResult.error || placesResult.error);
 
   return (
-    <main className={styles.shell}>
-      <header className={styles.header}>
+    <main className="mx-auto min-h-svh w-full max-w-[430px] px-5 pb-[132px] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+      <header className="grid min-h-[74px] grid-cols-[42px_1fr_42px] items-center gap-2 text-center">
         <Button
           aria-label="홈으로 돌아가기"
           nativeButton={false}
@@ -38,14 +37,24 @@ export async function RecordNewPage() {
           <ChevronLeftIcon />
         </Button>
         <div>
-          <p className={styles.eyebrow}>NEW RECORD</p>
-          <h1>새 기록</h1>
+          <p className="font-extrabold text-[9px] text-primary tracking-[0.16em]">NEW RECORD</p>
+          <h1 className="mt-px font-[760] font-heading text-[18px] tracking-[-0.03em]">새 기록</h1>
         </div>
       </header>
 
-      <section className={styles.intro} aria-labelledby="record-intro-title">
-        <h2 id="record-intro-title">오늘의 장면을 남겨보세요.</h2>
-        <p>날짜, 사람, 장소와 한 일을 한 화면에서 빠르게 기록할 수 있어요.</p>
+      <section
+        className="px-1 pt-[22px] pb-5 motion-safe:animate-[enter_360ms_ease-out_both]"
+        aria-labelledby="record-intro-title"
+      >
+        <h2
+          className="font-[780] font-heading text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
+          id="record-intro-title"
+        >
+          오늘의 장면을 남겨보세요.
+        </h2>
+        <p className="mt-2 text-[14px] text-muted-foreground leading-[1.6]">
+          날짜, 사람, 장소와 한 일을 한 화면에서 빠르게 기록할 수 있어요.
+        </p>
       </section>
 
       {hasLoadError ? (
