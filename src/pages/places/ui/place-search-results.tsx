@@ -1,3 +1,5 @@
+"use client";
+
 import { SearchIcon } from "lucide-react";
 
 import { CreatePlaceForm } from "@/features/create-place";

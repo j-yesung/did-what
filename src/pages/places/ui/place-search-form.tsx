@@ -1,4 +1,9 @@
+"use client";
+
+import type { FormEvent } from "react";
+
 import { SearchIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -11,6 +16,15 @@ type PlaceSearchFormProps = {
 };
 
 export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
+  const router = useRouter();
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const searchQuery = new FormData(event.currentTarget).get("q");
+
+    router.push(`/places?${new URLSearchParams({ q: String(searchQuery ?? "") })}`);
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -18,7 +32,7 @@ export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
         <CardDescription>상호명이나 지역을 함께 입력하면 더 정확하게 찾을 수 있어요.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="place-search-form" method="get">
+        <form id="place-search-form" method="get" onSubmit={handleSubmit}>
           <FieldGroup>
             <Field data-invalid={Boolean(searchError)}>
               <FieldLabel htmlFor="place-query">어디였나요?</FieldLabel>
