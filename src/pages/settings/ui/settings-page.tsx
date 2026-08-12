@@ -2,6 +2,7 @@ import { ChevronLeftIcon, ShieldCheckIcon, UserRoundIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getProfileName } from "@/entities/profile";
 import { LogoutButton } from "@/features/auth";
 import { createClient } from "@/shared/api/supabase/server";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
@@ -16,8 +17,7 @@ export async function SettingsPage() {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", data.user.id).maybeSingle();
-  const displayName = profile?.display_name || "기록자";
+  const displayName = (await getProfileName(data.user.id)) || "기록자";
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6">

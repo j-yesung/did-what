@@ -3,11 +3,11 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { ensureProfile } from "@/entities/profile";
 import { createClient } from "@/shared/api/supabase/server";
 
 import type { AuthActionState } from "./auth-form";
 import { validateLoginInput, validateSignupInput } from "./auth-form";
-import { ensureProfile } from "./profile";
 
 function getLoginErrorMessage(code?: string) {
   if (code === "email_not_confirmed") {

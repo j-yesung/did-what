@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { ensureProfile } from "@/features/auth";
+import { ensureProfile } from "@/entities/profile";
 import { createClient } from "@/shared/api/supabase/server";
 
 export async function confirmAuth(request: NextRequest) {
