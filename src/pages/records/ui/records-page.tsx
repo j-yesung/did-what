@@ -31,9 +31,6 @@ export async function RecordsPage() {
           <p className="font-bold text-[9px] text-primary tracking-[0.16em]">MEMORY LOG</p>
           <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">기록</h1>
         </div>
-        <Button size="icon-lg" render={<Link href="/records/new" aria-label="새 기록 남기기" />} nativeButton={false}>
-          <PlusIcon aria-hidden="true" />
-        </Button>
       </header>
 
       {error ? (
