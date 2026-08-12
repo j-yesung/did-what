@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
   dateStyle: "long",
@@ -25,13 +26,8 @@ export async function RecordsPage() {
   const { data: records, error } = await getRecords(userData.user.id);
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)] [background:radial-gradient(circle_at_12%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_27%),var(--background)]">
-      <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
-        <div className="col-start-2 text-center">
-          <p className="font-bold text-[9px] text-primary tracking-[0.16em]">MEMORY LOG</p>
-          <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">기록</h1>
-        </div>
-      </header>
+    <PageShell className="[background:radial-gradient(circle_at_12%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_27%),var(--background)]">
+      <PageHeader title="기록" />
 
       {error ? (
         <Alert variant="destructive">
@@ -103,6 +99,6 @@ export async function RecordsPage() {
           </EmptyContent>
         </Empty>
       )}
-    </main>
+    </PageShell>
   );
 }

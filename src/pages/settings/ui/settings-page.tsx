@@ -6,6 +6,7 @@ import { LogoutButton } from "@/features/auth";
 import { createClient } from "@/shared/api/supabase/server";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 export async function SettingsPage() {
   const supabase = await createClient();
@@ -18,13 +19,8 @@ export async function SettingsPage() {
   const displayName = (await getProfileName(data.user.id)) || "기록자";
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)]">
-      <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
-        <div className="col-start-2 text-center">
-          <p className="font-bold text-[9px] text-primary tracking-[0.16em]">MY ACCOUNT</p>
-          <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">설정</h1>
-        </div>
-      </header>
+    <PageShell>
+      <PageHeader title="설정" />
 
       <Card className="flex-1">
         <CardHeader className="justify-items-center text-center">
@@ -40,6 +36,6 @@ export async function SettingsPage() {
           <LogoutButton />
         </CardContent>
       </Card>
-    </main>
+    </PageShell>
   );
 }

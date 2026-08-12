@@ -8,7 +8,7 @@ import {
   validateKakaoQuery,
 } from "@/shared/api/kakao-local";
 import { createClient } from "@/shared/api/supabase/server";
-import { BackButton } from "@/shared/ui/back-button";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 import { PlaceSearchForm } from "./place-search-form";
 import { PlaceSearchResults } from "./place-search-results";
@@ -49,14 +49,8 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
   );
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)] [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
-      <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
-        <BackButton />
-        <div className="text-center">
-          <p className="font-bold text-[9px] text-primary tracking-[0.16em]">PLACE ARCHIVE</p>
-          <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">장소</h1>
-        </div>
-      </header>
+    <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
+      <PageHeader back="/" eyebrow="PLACE ARCHIVE" title="장소" />
 
       <section aria-labelledby="places-intro-title" className="px-1">
         <p className="font-bold text-primary text-xs">{places.length}곳에 추억 저장 중</p>
@@ -85,6 +79,6 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
       ) : null}
 
       <SavedPlaceList hasError={Boolean(placesResult.error)} places={places} />
-    </main>
+    </PageShell>
   );
 }
