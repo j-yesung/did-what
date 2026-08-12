@@ -26,7 +26,7 @@ export async function RecordsPage() {
   const { data: records, error } = await getRecords(userData.user.id);
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6 [background:radial-gradient(circle_at_12%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_27%),var(--background)]">
+    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)] [background:radial-gradient(circle_at_12%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_27%),var(--background)]">
       <header className="grid grid-cols-[40px_1fr_40px] items-center">
         <BackButton />
         <div className="text-center">

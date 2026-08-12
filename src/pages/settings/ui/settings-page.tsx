@@ -19,7 +19,7 @@ export async function SettingsPage() {
   const displayName = (await getProfileName(data.user.id)) || "기록자";
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6">
+    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)]">
       <header className="grid grid-cols-[40px_1fr_40px] items-center">
         <BackButton />
         <h1 className="text-center font-bold font-heading text-xl tracking-[-0.03em]">설정</h1>

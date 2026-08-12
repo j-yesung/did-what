@@ -38,7 +38,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6 [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_28%),var(--background)]">
+    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)] [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_28%),var(--background)]">
       <header className="grid grid-cols-[40px_1fr_40px] items-center">
         <BackButton fallbackHref="/records" />
         <div className="text-center">
