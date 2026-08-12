@@ -8,8 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-import { PageHeader } from "@/shared/ui/layouts/page-header";
-import { PageShell } from "@/shared/ui/layouts/page-shell";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
   day: "numeric",

@@ -8,8 +8,7 @@ import {
   validateKakaoQuery,
 } from "@/shared/api/kakao-local";
 import { createClient } from "@/shared/api/supabase/server";
-import { PageHeader } from "@/shared/ui/layouts/page-header";
-import { PageShell } from "@/shared/ui/layouts/page-shell";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 import { PlaceSearchForm } from "./place-search-form";
 import { PlaceSearchResults } from "./place-search-results";

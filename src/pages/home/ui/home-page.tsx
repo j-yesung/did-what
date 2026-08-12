@@ -7,7 +7,7 @@ import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-import { PageShell } from "@/shared/ui/layouts/page-shell";
+import { PageShell } from "@/shared/ui/layouts";
 
 import { KoreaActivityMap } from "./korea-activity-map";
 

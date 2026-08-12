@@ -8,8 +8,7 @@ import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-import { PageHeader } from "@/shared/ui/layouts/page-header";
-import { PageShell } from "@/shared/ui/layouts/page-shell";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 import { RecordNewForm } from "./record-new-form";
 

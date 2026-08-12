@@ -6,8 +6,7 @@ import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { PageHeader } from "@/shared/ui/layouts/page-header";
-import { PageShell } from "@/shared/ui/layouts/page-shell";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
   dateStyle: "long",

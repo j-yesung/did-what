@@ -6,8 +6,7 @@ import { LogoutButton } from "@/features/auth";
 import { createClient } from "@/shared/api/supabase/server";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { PageHeader } from "@/shared/ui/layouts/page-header";
-import { PageShell } from "@/shared/ui/layouts/page-shell";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 export async function SettingsPage() {
   const supabase = await createClient();
