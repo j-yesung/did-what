@@ -28,7 +28,7 @@ export function BottomNavigation() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="fixed inset-x-0 bottom-[calc(10px+env(safe-area-inset-bottom))] z-50 mx-auto w-[min(100%-32px,398px)] rounded-[28px] border border-border/60 bg-[color-mix(in_srgb,var(--surface),transparent_22%)] p-1.5 shadow-[0_12px_40px_color-mix(in_srgb,var(--brand-950),transparent_86%)] backdrop-blur-2xl"
+      className="fixed inset-x-0 bottom-[calc(22px+env(safe-area-inset-bottom))] z-50 mx-auto w-[min(100%-32px,398px)] rounded-[28px] border border-border/60 bg-[color-mix(in_srgb,var(--surface),transparent_22%)] p-1.5 shadow-[0_12px_40px_color-mix(in_srgb,var(--brand-950),transparent_86%)] backdrop-blur-2xl"
     >
       {/* 탭 사이를 미끄러지는 배경. 자기 너비(=탭 한 칸)만큼 이동한다. */}
       <div
