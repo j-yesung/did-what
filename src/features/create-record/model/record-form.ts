@@ -1,3 +1,6 @@
+// 같은 폴더의 테스트를 plain node로 실행하므로 @/ alias 대신 상대 경로를 쓴다.
+import { isUuid } from "../../../shared/lib/is-uuid.ts";
+
 export type RecordFieldErrors = Partial<Record<"recordedAt" | "personIds" | "placeId" | "activity" | "memo", string>>;
 
 export type RecordInput = {
@@ -35,7 +38,6 @@ export type PlaceOption = {
 
 export const INITIAL_CREATE_RECORD_STATE: CreateRecordActionState = { status: "idle" };
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function isValidDate(value: string) {
@@ -59,11 +61,11 @@ export function validateRecordInput(
     fieldErrors.recordedAt = "올바른 날짜를 입력해 주세요.";
   }
 
-  if (personIds.length === 0 || personIds.some((personId) => !UUID_PATTERN.test(personId))) {
+  if (personIds.length === 0 || personIds.some((personId) => !isUuid(personId))) {
     fieldErrors.personIds = "함께한 사람을 한 명 이상 선택해 주세요.";
   }
 
-  if (!UUID_PATTERN.test(values.placeId)) {
+  if (!isUuid(values.placeId)) {
     fieldErrors.placeId = "장소를 선택해 주세요.";
   }
 

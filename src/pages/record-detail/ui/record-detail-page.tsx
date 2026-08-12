@@ -3,11 +3,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { createClient } from "@/shared/api/supabase/server";
+import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-
-import { isRecordId } from "../lib/is-record-id";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
   dateStyle: "long",
@@ -21,7 +20,7 @@ type RecordDetailPageProps = {
 export async function RecordDetailPage({ params }: RecordDetailPageProps) {
   const { recordId } = await params;
 
-  if (!isRecordId(recordId)) {
+  if (!isUuid(recordId)) {
     notFound();
   }
 
