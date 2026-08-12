@@ -1,3 +1,1 @@
-export default function Page() {
-  return <main>Person</main>;
-}
+export { PersonDetailPage as default } from "@/pages/person-detail";
