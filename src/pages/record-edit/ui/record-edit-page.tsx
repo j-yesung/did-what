@@ -1,0 +1,83 @@
+import { CircleAlertIcon } from "lucide-react";
+import { notFound, redirect } from "next/navigation";
+
+import { getPeople } from "@/entities/person";
+import { getPlaces } from "@/entities/place";
+import { getRecord } from "@/entities/record";
+import { RecordForm, updateRecord } from "@/features/manage-record";
+import { createClient } from "@/shared/api/supabase/server";
+import { isUuid } from "@/shared/lib/is-uuid";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { PageHeader, PageShell } from "@/shared/ui/layouts";
+
+type RecordEditPageProps = {
+  params: Promise<{ recordId: string }>;
+};
+
+export async function RecordEditPage({ params }: RecordEditPageProps) {
+  const { recordId } = await params;
+
+  if (!isUuid(recordId)) {
+    notFound();
+  }
+
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+
+  if (!userData.user) {
+    redirect("/login");
+  }
+
+  const [recordResult, peopleResult, placesResult] = await Promise.all([
+    getRecord(recordId, userData.user.id),
+    getPeople(userData.user.id),
+    getPlaces(userData.user.id),
+  ]);
+
+  if (!recordResult.data && !recordResult.error) {
+    notFound();
+  }
+
+  const record = recordResult.data;
+  const hasLoadError = Boolean(recordResult.error || peopleResult.error || placesResult.error);
+
+  return (
+    <PageShell className="block pb-[calc(var(--nav-clearance)+96px)] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+      <PageHeader back={`/records/${recordId}`} eyebrow="EDIT MEMORY" title="기록 수정" />
+
+      <section className="px-1 pt-[22px] pb-5" aria-labelledby="record-edit-title">
+        <h2
+          className="font-[780] font-heading text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
+          id="record-edit-title"
+        >
+          그날의 기록을 다듬어보세요.
+        </h2>
+        <p className="mt-2 text-[14px] text-muted-foreground leading-[1.6]">
+          바뀐 날짜, 사람, 장소와 내용을 한 번에 수정할 수 있어요.
+        </p>
+      </section>
+
+      {hasLoadError || !record ? (
+        <Alert variant="destructive">
+          <CircleAlertIcon aria-hidden="true" />
+          <AlertTitle>수정할 기록을 불러오지 못했어요</AlertTitle>
+          <AlertDescription>잠시 후 다시 시도해 주세요.</AlertDescription>
+        </Alert>
+      ) : (
+        <RecordForm
+          action={updateRecord.bind(null, recordId)}
+          initialValues={{
+            activity: record.activity,
+            memo: record.memo ?? "",
+            personIds: record.record_people.map(({ person_id }) => person_id),
+            placeId: record.place_id,
+            recordedAt: record.recorded_at,
+          }}
+          mode="edit"
+          people={peopleResult.data ?? []}
+          places={placesResult.data ?? []}
+        />
+      )}
+    </PageShell>
+  );
+}

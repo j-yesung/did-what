@@ -177,7 +177,17 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      update_owned_record: {
+        Args: {
+          p_activity: string;
+          p_memo: string | null;
+          p_person_ids: string[];
+          p_place_id: string;
+          p_record_id: string;
+          p_recorded_at: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: {
       [_ in never]: never;

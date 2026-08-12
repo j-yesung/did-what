@@ -14,7 +14,6 @@ import {
 
 import type { PersonOption } from "@/entities/person";
 import type { PlaceOption } from "@/entities/place";
-import { createRecord, INITIAL_CREATE_RECORD_STATE } from "@/features/create-record";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
@@ -36,18 +35,31 @@ import { NativeSelect, NativeSelectOption } from "@/shared/ui/native-select";
 import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
+import type { RecordActionState } from "../model/record-form";
+
 const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
 
 const FIELD_ICON = "size-[18px] text-primary [stroke-width:2]";
 
-type RecordNewFormProps = {
+type RecordFormProps = {
+  action: (state: RecordActionState, formData: FormData) => Promise<RecordActionState>;
+  initialValues?: {
+    activity: string;
+    memo: string;
+    personIds: string[];
+    placeId: string;
+    recordedAt: string;
+  };
+  mode?: "create" | "edit";
   people: PersonOption[];
   places: PlaceOption[];
 };
 
-export function RecordNewForm({ people, places }: RecordNewFormProps) {
-  const [state, formAction, pending] = useActionState(createRecord, INITIAL_CREATE_RECORD_STATE);
-  const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>([]);
+const INITIAL_STATE: RecordActionState = { status: "idle" };
+
+export function RecordForm({ action, initialValues, mode = "create", people, places }: RecordFormProps) {
+  const [state, formAction, pending] = useActionState(action, INITIAL_STATE);
+  const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>(initialValues?.personIds ?? []);
   const [hasPersonError, setHasPersonError] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -81,7 +93,7 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
       {state.message ? (
         <Alert variant="destructive" tabIndex={-1}>
           <CircleAlertIcon aria-hidden="true" />
-          <AlertTitle>기록을 저장하지 못했어요</AlertTitle>
+          <AlertTitle>기록을 {mode === "edit" ? "수정" : "저장"}하지 못했어요</AlertTitle>
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       ) : null}
@@ -95,7 +107,7 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
             </FieldLabel>
             <Input
               className="h-12"
-              defaultValue={TODAY}
+              defaultValue={initialValues?.recordedAt ?? TODAY}
               id="recordedAt"
               name="recordedAt"
               required
@@ -156,7 +168,7 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
             </FieldLabel>
             <NativeSelect
               className="w-full [&_select]:h-12"
-              defaultValue=""
+              defaultValue={initialValues?.placeId ?? ""}
               id="placeId"
               name="placeId"
               required
@@ -186,6 +198,7 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
             </FieldLabel>
             <Input
               className="h-12"
+              defaultValue={initialValues?.activity}
               id="activity"
               maxLength={120}
               name="activity"
@@ -207,6 +220,7 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
             </FieldLabel>
             <Textarea
               className="min-h-24 resize-none"
+              defaultValue={initialValues?.memo}
               id="memo"
               maxLength={500}
               name="memo"
@@ -221,14 +235,18 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
       </div>
 
       <footer className="fixed right-[max(0px,calc((100vw-430px)/2))] bottom-[var(--nav-clearance)] left-[max(0px,calc((100vw-430px)/2))] flex flex-col gap-2 border-[color-mix(in_srgb,var(--border),transparent_28%)] border-t bg-[color-mix(in_srgb,var(--surface),transparent_3%)] px-5 pt-2.5 pb-3 text-center backdrop-blur-[18px] [&_p]:text-[11px] [&_p]:text-muted-foreground">
-        <p>저장하면 기록 목록에서 바로 확인할 수 있어요.</p>
+        <p>
+          {mode === "edit"
+            ? "수정한 내용은 상세 화면과 지도에 바로 반영돼요."
+            : "저장하면 기록 목록에서 바로 확인할 수 있어요."}
+        </p>
         <Button className="h-14 w-full" size="lg" type="submit" disabled={pending}>
           {pending ? (
-            <Spinner data-icon="inline-start" aria-label="기록 저장 중" />
+            <Spinner data-icon="inline-start" aria-label={`기록 ${mode === "edit" ? "수정" : "저장"} 중`} />
           ) : (
             <NotebookPenIcon data-icon="inline-start" />
           )}
-          {pending ? "저장 중..." : "기록 남기기"}
+          {pending ? `${mode === "edit" ? "수정" : "저장"} 중...` : mode === "edit" ? "수정 완료" : "기록 남기기"}
         </Button>
       </footer>
     </form>
