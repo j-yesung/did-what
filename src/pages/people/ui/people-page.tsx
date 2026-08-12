@@ -1,4 +1,5 @@
-import { UserRoundIcon, UsersIcon } from "lucide-react";
+import { ChevronRightIcon, UserRoundIcon, UsersIcon } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
@@ -6,6 +7,7 @@ import { CreatePersonForm } from "@/features/create-person";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
@@ -64,10 +66,14 @@ export async function PeoplePage() {
               <CardContent>
                 <p className="text-muted-foreground text-xs">새 기록에서 이 사람을 선택할 수 있어요.</p>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="justify-between gap-3">
                 <p className="text-muted-foreground text-xs">
                   {DATE_FORMATTER.format(new Date(person.created_at))} 추가
                 </p>
+                <Button nativeButton={false} render={<Link href={`/people/${person.id}`} />} size="sm" variant="ghost">
+                  함께한 기록 보기
+                  <ChevronRightIcon data-icon="inline-end" />
+                </Button>
               </CardFooter>
             </Card>
           ))}
