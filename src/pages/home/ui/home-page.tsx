@@ -2,6 +2,7 @@ import { MapIcon, MapPinnedIcon, NotebookPenIcon, PlusIcon, SettingsIcon, UsersI
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getRecordLocations } from "@/entities/record";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
@@ -18,11 +19,7 @@ export async function HomePage() {
     redirect("/login");
   }
 
-  const { data, error } = await supabase
-    .from("records")
-    .select("id, place:places(latitude, longitude)")
-    .eq("owner_id", userData.user.id);
-  const records = (data ?? []).map(({ id, place }) => ({ id, ...place }));
+  const { locations: records, error } = await getRecordLocations(userData.user.id);
 
   return (
     <main className={styles.shell}>

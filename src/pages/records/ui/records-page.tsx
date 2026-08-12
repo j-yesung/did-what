@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getRecords } from "@/entities/record";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
@@ -29,12 +30,7 @@ export async function RecordsPage() {
     redirect("/login");
   }
 
-  const { data: records, error } = await supabase
-    .from("records")
-    .select("id, activity, memo, recorded_at, place:places(name), record_people(person:people(name))")
-    .eq("owner_id", userData.user.id)
-    .order("recorded_at", { ascending: false })
-    .order("created_at", { ascending: false });
+  const { data: records, error } = await getRecords(userData.user.id);
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6 [background:radial-gradient(circle_at_12%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_27%),var(--background)]">

@@ -2,6 +2,7 @@ import { BookOpenIcon, CalendarDaysIcon, ChevronLeftIcon, MapPinIcon, NotebookPe
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { getRecord } from "@/entities/record";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
@@ -31,12 +32,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
     redirect("/login");
   }
 
-  const { data: record, error } = await supabase
-    .from("records")
-    .select("id, activity, memo, recorded_at, place:places(name, address), record_people(person:people(name))")
-    .eq("id", recordId)
-    .eq("owner_id", userData.user.id)
-    .maybeSingle();
+  const { data: record, error } = await getRecord(recordId, userData.user.id);
 
   if (!record && !error) {
     notFound();
