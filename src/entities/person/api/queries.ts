@@ -2,11 +2,6 @@ import { createClient } from "@/shared/api/supabase/server";
 
 const COLUMNS = "id, name, created_at";
 
-export type PersonOption = {
-  id: string;
-  name: string;
-};
-
 // 소유자의 사람 목록. 이름순.
 export async function getPeople(ownerId: string) {
   const supabase = await createClient();

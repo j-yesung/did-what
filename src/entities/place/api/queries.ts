@@ -2,12 +2,6 @@ import { createClient } from "@/shared/api/supabase/server";
 
 const COLUMNS = "id, name, address, created_at, provider, provider_place_id";
 
-export type PlaceOption = {
-  id: string;
-  name: string;
-  address: string | null;
-};
-
 // 소유자의 장소 목록. 이름순.
 export async function getPlaces(ownerId: string) {
   const supabase = await createClient();

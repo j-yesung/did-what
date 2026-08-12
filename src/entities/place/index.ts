@@ -1,1 +1,2 @@
-export { findPlace, getPlaces, type PlaceOption } from "./api/queries";
+export { findPlace, getPlaces } from "./api/queries";
+export type { PlaceOption } from "./model/types";
