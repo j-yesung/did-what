@@ -1,3 +1,1 @@
-export default function Page() {
-  return <main>Place</main>;
-}
+export { PlaceDetailPage as default } from "@/pages/place-detail";

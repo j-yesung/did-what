@@ -1,6 +1,8 @@
-import { CircleAlertIcon, MapPinIcon } from "lucide-react";
+import { ChevronRightIcon, CircleAlertIcon, MapPinIcon } from "lucide-react";
+import Link from "next/link";
 
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { buttonVariants } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
@@ -53,7 +55,7 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
       <div className="px-1">
         <h2 className="mt-1 font-bold font-heading text-lg">저장한 장소</h2>
       </div>
-      {places.map(place => (
+      {places.map((place) => (
         <Card key={place.id} size="sm">
           <CardHeader>
             <CardTitle>{place.name}</CardTitle>
@@ -62,8 +64,12 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
           <CardContent>
             <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="justify-between gap-3">
             <p className="text-muted-foreground text-xs">{DATE_FORMATTER.format(new Date(place.created_at))} 저장</p>
+            <Link className={buttonVariants({ size: "sm", variant: "ghost" })} href={`/places/${place.id}`}>
+              이곳의 기록 보기
+              <ChevronRightIcon aria-hidden="true" data-icon="inline-end" />
+            </Link>
           </CardFooter>
         </Card>
       ))}
