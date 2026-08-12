@@ -18,4 +18,5 @@
 
 ## 참고 문서
 
-- 코드 작성 시 `CONVENTIONS.md`를 따른다.
+- 코드 작성 시 `docs/convention.md`를 따른다.
+- 기획과 백로그 문서는 `docs/`에 있다.
