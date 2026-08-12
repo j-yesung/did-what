@@ -1,12 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getPlaces } from "@/entities/place";
-import {
-  KAKAO_SEARCH_MAX_PAGE,
-  normalizeKakaoPage,
-  searchKakaoPlaces,
-  validateKakaoQuery,
-} from "@/shared/api/kakao-local";
+import { KAKAO_SEARCH_MAX_PAGE, normalizeKakaoPage, searchKakaoPlaces, validateKakaoQuery } from "@/shared/api/kakao-local";
 import { createClient } from "@/shared/api/supabase/server";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
@@ -45,12 +40,12 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
         ? searchResult.error
         : undefined;
   const savedKakaoIds = new Set(
-    places.flatMap((place) => (place.provider === "kakao" && place.provider_place_id ? [place.provider_place_id] : [])),
+    places.flatMap(place => (place.provider === "kakao" && place.provider_place_id ? [place.provider_place_id] : [])),
   );
 
   return (
     <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
-      <PageHeader back="/" eyebrow="PLACE ARCHIVE" title="장소" />
+      <PageHeader back="/" title="장소" />
 
       <section aria-labelledby="places-intro-title" className="px-1">
         <p className="font-bold text-primary text-xs">{places.length}곳에 추억 저장 중</p>
@@ -67,9 +62,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
       {queryResult?.valid && !searchError ? (
         <PlaceSearchResults
           currentPage={currentPage}
-          hasNextPage={Boolean(
-            successfulSearchResult && !successfulSearchResult.isEnd && currentPage < KAKAO_SEARCH_MAX_PAGE,
-          )}
+          hasNextPage={Boolean(successfulSearchResult && !successfulSearchResult.isEnd && currentPage < KAKAO_SEARCH_MAX_PAGE)}
           hasPreviousPage={currentPage > 1}
           pageableCount={successfulSearchResult?.pageableCount ?? 0}
           places={successfulSearchResult?.places ?? []}
