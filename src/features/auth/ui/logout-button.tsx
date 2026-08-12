@@ -4,8 +4,8 @@ import { useFormStatus } from "react-dom";
 
 import { LogOutIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/shared/ui/button";
+import { Spinner } from "@/shared/ui/spinner";
 
 import { logout } from "../model/actions";
 

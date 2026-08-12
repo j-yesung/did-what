@@ -4,12 +4,12 @@ import { useActionState, useEffect, useRef, useState } from "react";
 
 import { CircleAlertIcon, PlusIcon, UserRoundPlusIcon } from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
+import { Input } from "@/shared/ui/input";
+import { Spinner } from "@/shared/ui/spinner";
 
 import { createPerson } from "../model/actions";
 import { INITIAL_CREATE_PERSON_STATE } from "../model/person-form";

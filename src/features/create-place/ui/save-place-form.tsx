@@ -4,9 +4,9 @@ import { useActionState } from "react";
 
 import { CheckIcon, CircleAlertIcon, PlusIcon } from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
+import { Spinner } from "@/shared/ui/spinner";
 
 import { createPlace } from "../model/actions";
 import { INITIAL_CREATE_PLACE_STATE } from "../model/place-form";
