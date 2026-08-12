@@ -9,14 +9,16 @@ import {
   MapPinIcon,
   MessageSquareTextIcon,
   NotebookPenIcon,
+  PlusIcon,
   UsersIcon,
 } from "lucide-react";
+import Link from "next/link";
 
 import type { PersonOption } from "@/entities/person";
 import type { PlaceOption } from "@/entities/place";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { Button } from "@/shared/ui/button";
+import { Button, buttonVariants } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
   Field,
@@ -186,6 +188,11 @@ export function RecordForm({ action, initialValues, mode = "create", people, pla
               ))}
             </NativeSelect>
             <FieldDescription>내 장소 목록에서 한 곳을 연결해요.</FieldDescription>
+            {mode === "create" ? (
+              <Link className={buttonVariants({ size: "sm", variant: "outline" })} href="/places">
+                <PlusIcon aria-hidden="true" data-icon="inline-start" />새 장소 저장하기
+              </Link>
+            ) : null}
             <FieldError id="placeId-error">{state.fieldErrors?.placeId}</FieldError>
           </Field>
 
