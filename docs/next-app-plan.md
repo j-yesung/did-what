@@ -1,9 +1,5 @@
 # 다음 단계: 사람 상세와 함께한 기록
 
-## 시작 전 확인
-
-기록 수정 기능이 사용하는 `supabase/migrations/20260812090000_update_owned_record.sql`을 연결된 Supabase 프로젝트에 먼저 적용하고 Security Advisor를 확인한다.
-
 ## 목적
 
 사람 목록에서 한 사람을 선택해 기본 정보와 그 사람과 함께 남긴 기록을 시간순으로 돌아볼 수 있게 한다.
