@@ -5,8 +5,9 @@ import { getRecord } from "@/entities/record";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { BackButton } from "@/shared/ui/back-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { PageHeader } from "@/shared/ui/layouts/page-header";
+import { PageShell } from "@/shared/ui/layouts/page-shell";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
   dateStyle: "long",
@@ -38,14 +39,8 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)] [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_28%),var(--background)]">
-      <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
-        <BackButton fallbackHref="/records" />
-        <div className="text-center">
-          <p className="font-bold text-[9px] text-primary tracking-[0.16em]">MEMORY DETAIL</p>
-          <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">기록 상세</h1>
-        </div>
-      </header>
+    <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_28%),var(--background)]">
+      <PageHeader back="/records" eyebrow="MEMORY DETAIL" title="기록 상세" />
 
       {error ? (
         <Alert variant="destructive">
@@ -119,6 +114,6 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
           ) : null}
         </>
       ) : null}
-    </main>
+    </PageShell>
   );
 }

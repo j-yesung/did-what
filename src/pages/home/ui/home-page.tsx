@@ -7,6 +7,7 @@ import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { PageShell } from "@/shared/ui/layouts/page-shell";
 
 import { KoreaActivityMap } from "./korea-activity-map";
 
@@ -21,7 +22,7 @@ export async function HomePage() {
   const { locations: records, error } = await getRecordLocations(userData.user.id);
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-3 bg-background px-5 pt-3 pb-[var(--nav-clearance)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+    <PageShell className="gap-3 pt-3 min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
       <section className="grid min-h-0 flex-1 place-items-center px-1.5 py-1" aria-label="대한민국 활동 지도">
         <KoreaActivityMap records={error ? [] : records} />
       </section>
@@ -56,6 +57,6 @@ export async function HomePage() {
           <PlusIcon data-icon="inline-start" />새 기록 남기기
         </Button>
       ) : null}
-    </main>
+    </PageShell>
   );
 }

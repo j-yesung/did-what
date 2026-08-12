@@ -8,6 +8,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { PageHeader } from "@/shared/ui/layouts/page-header";
+import { PageShell } from "@/shared/ui/layouts/page-shell";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
   day: "numeric",
@@ -28,13 +30,8 @@ export async function PeoplePage() {
   const personCount = people?.length ?? 0;
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)] [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
-      <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
-        <div className="col-start-2 text-center">
-          <p className="font-bold text-[9px] text-primary tracking-[0.16em]">PEOPLE INDEX</p>
-          <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">사람</h1>
-        </div>
-      </header>
+    <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
+      <PageHeader title="사람" />
 
       <section className="px-1" aria-labelledby="people-intro-title">
         <p className="font-bold text-primary text-xs">{personCount}명과 함께 기록 중</p>
@@ -87,6 +84,6 @@ export async function PeoplePage() {
           </EmptyHeader>
         </Empty>
       )}
-    </main>
+    </PageShell>
   );
 }

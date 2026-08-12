@@ -6,9 +6,10 @@ import { getPeople } from "@/entities/person";
 import { getPlaces } from "@/entities/place";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { BackButton } from "@/shared/ui/back-button";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { PageHeader } from "@/shared/ui/layouts/page-header";
+import { PageShell } from "@/shared/ui/layouts/page-shell";
 
 import { RecordNewForm } from "./record-new-form";
 
@@ -26,14 +27,8 @@ export async function RecordNewPage() {
   const hasLoadError = Boolean(peopleResult.error || placesResult.error);
 
   return (
-    <main className="mx-auto min-h-svh w-full max-w-[430px] px-5 pb-[calc(var(--nav-clearance)+96px)] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
-      <header className="grid min-h-[74px] grid-cols-[42px_1fr_42px] items-center gap-2 text-center">
-        <BackButton />
-        <div>
-          <p className="font-extrabold text-[9px] text-primary tracking-[0.16em]">NEW RECORD</p>
-          <h1 className="mt-px font-[760] font-heading text-[18px] tracking-[-0.03em]">새 기록</h1>
-        </div>
-      </header>
+    <PageShell className="block pb-[calc(var(--nav-clearance)+96px)] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+      <PageHeader back="/" eyebrow="NEW RECORD" title="새 기록" />
 
       <section
         className="px-1 pt-[22px] pb-5 motion-safe:animate-[enter_360ms_ease-out_both]"
@@ -89,6 +84,6 @@ export async function RecordNewPage() {
       ) : (
         <RecordNewForm people={people} places={places} />
       )}
-    </main>
+    </PageShell>
   );
 }
