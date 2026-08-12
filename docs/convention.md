@@ -40,6 +40,7 @@
 
 - 의존 방향은 `app → pages → features → entities → shared` 한 방향이다. 하위 레이어가 상위 레이어를, 같은 레이어의 다른 slice를 import하지 않는다.
 - slice는 필요한 segment(`ui`, `model`, `api`, `lib`)만 두고, 외부에서는 `index.ts`의 공개 API로만 가져온다.
+- 서버 전용 모듈(`shared/api/supabase/server`)을 import하는 파일에는 클라이언트가 쓰는 타입을 두지 않는다. 데이터 접근은 `api/`, 타입은 `model/`에 두고 `index.ts`에서 `export type`으로 내보낸다. 섞으면 클라이언트 컴포넌트가 `next/headers`까지 끌어와 빌드가 깨진다.
 - 루트 `app/**/page.tsx`는 `export { XxxPage as default } from "@/pages/xxx";` 형태의 re-export만 둔다.
 - shadcn 컴포넌트는 `src/shared/ui`, 공용 유틸은 `src/shared/lib`에 둔다. `src/components`, `src/lib`는 쓰지 않는다.
 
