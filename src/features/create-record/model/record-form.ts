@@ -1,4 +1,4 @@
-import { isUuid } from "@/shared/lib/is-uuid";
+import { isUuid } from "#shared/lib/is-uuid.ts";
 
 export type RecordFieldErrors = Partial<Record<"recordedAt" | "personIds" | "placeId" | "activity" | "memo", string>>;
 
