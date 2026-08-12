@@ -51,6 +51,9 @@
   --sidebar-ring: #67ab78;
 
   --surface: #ffffff;
+  /* 하단 고정 내비게이션이 가리는 높이. 화면 콘텐츠의 아래 여백 기준값이다. */
+  --nav-clearance: calc(94px + env(safe-area-inset-bottom));
+
   --map-empty: #ebede8;
   --map-level-1: #d7ead9;
   --map-level-2: #a8d1ae;

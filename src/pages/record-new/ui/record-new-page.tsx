@@ -26,7 +26,7 @@ export async function RecordNewPage() {
   const hasLoadError = Boolean(peopleResult.error || placesResult.error);
 
   return (
-    <main className="mx-auto min-h-svh w-full max-w-[430px] px-5 pb-[132px] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+    <main className="mx-auto min-h-svh w-full max-w-[430px] px-5 pb-[calc(var(--nav-clearance)+96px)] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
       <header className="grid min-h-[74px] grid-cols-[42px_1fr_42px] items-center gap-2 text-center">
         <BackButton />
         <div>

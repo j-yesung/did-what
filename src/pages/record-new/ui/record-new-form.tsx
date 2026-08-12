@@ -220,7 +220,7 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
         </FieldGroup>
       </div>
 
-      <footer className="fixed right-[max(0px,calc((100vw-430px)/2))] bottom-0 left-[max(0px,calc((100vw-430px)/2))] flex flex-col gap-2 border-[color-mix(in_srgb,var(--border),transparent_28%)] border-t bg-[color-mix(in_srgb,var(--surface),transparent_3%)] px-5 pt-2.5 pb-[max(16px,env(safe-area-inset-bottom))] text-center backdrop-blur-[18px] [&_p]:text-[11px] [&_p]:text-muted-foreground">
+      <footer className="fixed right-[max(0px,calc((100vw-430px)/2))] bottom-[var(--nav-clearance)] left-[max(0px,calc((100vw-430px)/2))] flex flex-col gap-2 border-[color-mix(in_srgb,var(--border),transparent_28%)] border-t bg-[color-mix(in_srgb,var(--surface),transparent_3%)] px-5 pt-2.5 pb-3 text-center backdrop-blur-[18px] [&_p]:text-[11px] [&_p]:text-muted-foreground">
         <p>저장하면 기록 목록에서 바로 확인할 수 있어요.</p>
         <Button className="h-14 w-full" size="lg" type="submit" disabled={pending}>
           {pending ? (

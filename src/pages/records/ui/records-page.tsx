@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { getRecords } from "@/entities/record";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { BackButton } from "@/shared/ui/back-button";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
@@ -26,16 +25,12 @@ export async function RecordsPage() {
   const { data: records, error } = await getRecords(userData.user.id);
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6 [background:radial-gradient(circle_at_12%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_27%),var(--background)]">
-      <header className="grid grid-cols-[40px_1fr_40px] items-center">
-        <BackButton />
-        <div className="text-center">
+    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)] [background:radial-gradient(circle_at_12%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_27%),var(--background)]">
+      <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
+        <div className="col-start-2 text-center">
           <p className="font-bold text-[9px] text-primary tracking-[0.16em]">MEMORY LOG</p>
           <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">기록</h1>
         </div>
-        <Button size="icon-lg" render={<Link href="/records/new" aria-label="새 기록 남기기" />} nativeButton={false}>
-          <PlusIcon aria-hidden="true" />
-        </Button>
       </header>
 
       {error ? (

@@ -6,7 +6,6 @@ import { CreatePersonForm } from "@/features/create-person";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { BackButton } from "@/shared/ui/back-button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
@@ -29,10 +28,9 @@ export async function PeoplePage() {
   const personCount = people?.length ?? 0;
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6 [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
-      <header className="grid grid-cols-[40px_1fr_40px] items-center">
-        <BackButton />
-        <div className="text-center">
+    <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-6 pb-[var(--nav-clearance)] [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
+      <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
+        <div className="col-start-2 text-center">
           <p className="font-bold text-[9px] text-primary tracking-[0.16em]">PEOPLE INDEX</p>
           <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">사람</h1>
         </div>
