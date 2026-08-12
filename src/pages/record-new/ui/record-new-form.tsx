@@ -50,12 +50,9 @@ type RecordNewFormProps = {
 
 export function RecordNewForm({ people, places }: RecordNewFormProps) {
   const [state, formAction, pending] = useActionState(createRecord, INITIAL_CREATE_RECORD_STATE);
-  const [recordedAt, setRecordedAt] = useState(TODAY);
   const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>([]);
-  const [placeId, setPlaceId] = useState("");
-  const [activity, setActivity] = useState("");
-  const [memo, setMemo] = useState("");
   const [hasPersonError, setHasPersonError] = useState(false);
+
   const formRef = useRef<HTMLFormElement>(null);
   const personError = hasPersonError ? "함께한 사람을 선택해 주세요." : state.fieldErrors?.personIds;
 
@@ -101,12 +98,11 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
             </FieldLabel>
             <Input
               className="h-12"
+              defaultValue={TODAY}
               id="recordedAt"
               name="recordedAt"
-              onChange={(event) => setRecordedAt(event.target.value)}
               required
               type="date"
-              value={recordedAt}
               aria-invalid={Boolean(state.fieldErrors?.recordedAt)}
               aria-describedby={state.fieldErrors?.recordedAt ? "recordedAt-error" : undefined}
             />
@@ -163,11 +159,10 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
             </FieldLabel>
             <NativeSelect
               className="w-full [&_select]:h-12"
+              defaultValue=""
               id="placeId"
               name="placeId"
-              onChange={(event) => setPlaceId(event.target.value)}
               required
-              value={placeId}
               aria-invalid={Boolean(state.fieldErrors?.placeId)}
               aria-describedby={state.fieldErrors?.placeId ? "placeId-error" : undefined}
             >
@@ -197,10 +192,8 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
               id="activity"
               maxLength={120}
               name="activity"
-              onChange={(event) => setActivity(event.target.value)}
               placeholder="예: 영화 보고 저녁 먹음"
               required
-              value={activity}
               aria-invalid={Boolean(state.fieldErrors?.activity)}
               aria-describedby={state.fieldErrors?.activity ? "activity-error" : undefined}
             />
@@ -220,10 +213,8 @@ export function RecordNewForm({ people, places }: RecordNewFormProps) {
               id="memo"
               maxLength={500}
               name="memo"
-              onChange={(event) => setMemo(event.target.value)}
               placeholder="더 남기고 싶은 이야기가 있다면 적어 주세요."
               rows={4}
-              value={memo}
               aria-invalid={Boolean(state.fieldErrors?.memo)}
               aria-describedby={state.fieldErrors?.memo ? "memo-error" : undefined}
             />

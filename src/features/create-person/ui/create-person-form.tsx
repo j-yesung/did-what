@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 
 import { CircleAlertIcon, PlusIcon, UserRoundPlusIcon } from "lucide-react";
 
@@ -16,15 +16,9 @@ import { INITIAL_CREATE_PERSON_STATE } from "../model/person-form";
 
 export function CreatePersonForm() {
   const [state, formAction, pending] = useActionState(createPerson, INITIAL_CREATE_PERSON_STATE);
-  const [name, setName] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (state.status === "success") {
-      setName("");
-      return;
-    }
-
     if (state.status === "error") {
       formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"], [role="alert"]')?.focus();
     }
@@ -55,8 +49,6 @@ export function CreatePersonForm() {
               <Input
                 id="person-name"
                 name="name"
-                onChange={(event) => setName(event.target.value)}
-                value={name}
                 maxLength={50}
                 placeholder="예: 다연"
                 required
