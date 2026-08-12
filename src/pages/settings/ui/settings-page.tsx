@@ -1,12 +1,11 @@
-import { ChevronLeftIcon, ShieldCheckIcon, UserRoundIcon } from "lucide-react";
-import Link from "next/link";
+import { ShieldCheckIcon, UserRoundIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { getProfileName } from "@/entities/profile";
 import { LogoutButton } from "@/features/auth";
 import { createClient } from "@/shared/api/supabase/server";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { Button } from "@/shared/ui/button";
+import { BackButton } from "@/shared/ui/back-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 
 export async function SettingsPage() {
@@ -22,14 +21,7 @@ export async function SettingsPage() {
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6">
       <header className="grid grid-cols-[40px_1fr_40px] items-center">
-        <Button
-          size="icon-lg"
-          variant="ghost"
-          render={<Link href="/" aria-label="홈으로 돌아가기" />}
-          nativeButton={false}
-        >
-          <ChevronLeftIcon aria-hidden="true" />
-        </Button>
+        <BackButton />
         <h1 className="text-center font-bold font-heading text-xl tracking-[-0.03em]">설정</h1>
       </header>
 

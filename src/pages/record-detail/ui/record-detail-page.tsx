@@ -1,12 +1,11 @@
-import { BookOpenIcon, CalendarDaysIcon, ChevronLeftIcon, MapPinIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
-import Link from "next/link";
+import { BookOpenIcon, CalendarDaysIcon, MapPinIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { getRecord } from "@/entities/record";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { Button } from "@/shared/ui/button";
+import { BackButton } from "@/shared/ui/back-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
@@ -41,15 +40,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6 [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_28%),var(--background)]">
       <header className="grid grid-cols-[40px_1fr_40px] items-center">
-        <Button
-          aria-label="기록 목록으로 돌아가기"
-          nativeButton={false}
-          render={<Link href="/records" />}
-          size="icon-lg"
-          variant="ghost"
-        >
-          <ChevronLeftIcon aria-hidden="true" />
-        </Button>
+        <BackButton fallbackHref="/records" />
         <div className="text-center">
           <p className="font-bold text-[9px] text-primary tracking-[0.16em]">MEMORY DETAIL</p>
           <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">기록 상세</h1>

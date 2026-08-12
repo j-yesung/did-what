@@ -1,5 +1,4 @@
-import { ChevronLeftIcon, UserRoundIcon, UsersIcon } from "lucide-react";
-import Link from "next/link";
+import { UserRoundIcon, UsersIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
@@ -7,7 +6,7 @@ import { CreatePersonForm } from "@/features/create-person";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { Button } from "@/shared/ui/button";
+import { BackButton } from "@/shared/ui/back-button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
@@ -32,14 +31,7 @@ export async function PeoplePage() {
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 py-6 [background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
       <header className="grid grid-cols-[40px_1fr_40px] items-center">
-        <Button
-          size="icon-lg"
-          variant="ghost"
-          render={<Link href="/" aria-label="홈으로 돌아가기" />}
-          nativeButton={false}
-        >
-          <ChevronLeftIcon aria-hidden="true" />
-        </Button>
+        <BackButton />
         <div className="text-center">
           <p className="font-bold text-[9px] text-primary tracking-[0.16em]">PEOPLE INDEX</p>
           <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">사람</h1>

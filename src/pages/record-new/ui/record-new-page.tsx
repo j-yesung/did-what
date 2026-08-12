@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, CircleAlertIcon, MapPinIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
+import { CircleAlertIcon, MapPinIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -6,6 +6,7 @@ import { getPeople } from "@/entities/person";
 import { getPlaces } from "@/entities/place";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { BackButton } from "@/shared/ui/back-button";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
@@ -27,15 +28,7 @@ export async function RecordNewPage() {
   return (
     <main className="mx-auto min-h-svh w-full max-w-[430px] px-5 pb-[132px] [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
       <header className="grid min-h-[74px] grid-cols-[42px_1fr_42px] items-center gap-2 text-center">
-        <Button
-          aria-label="홈으로 돌아가기"
-          nativeButton={false}
-          render={<Link href="/" />}
-          size="icon-lg"
-          variant="ghost"
-        >
-          <ChevronLeftIcon />
-        </Button>
+        <BackButton />
         <div>
           <p className="font-extrabold text-[9px] text-primary tracking-[0.16em]">NEW RECORD</p>
           <h1 className="mt-px font-[760] font-heading text-[18px] tracking-[-0.03em]">새 기록</h1>
