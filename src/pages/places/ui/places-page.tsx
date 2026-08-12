@@ -1,7 +1,12 @@
 import { redirect } from "next/navigation";
 
 import { getPlaces } from "@/entities/place";
-import { KAKAO_SEARCH_MAX_PAGE, normalizeKakaoPage, searchKakaoPlaces, validateKakaoQuery } from "@/shared/api/kakao-local";
+import {
+  KAKAO_SEARCH_MAX_PAGE,
+  normalizeKakaoPage,
+  searchKakaoPlaces,
+  validateKakaoQuery,
+} from "@/shared/api/kakao-local";
 import { createClient } from "@/shared/api/supabase/server";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
@@ -40,7 +45,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
         ? searchResult.error
         : undefined;
   const savedKakaoIds = new Set(
-    places.flatMap(place => (place.provider === "kakao" && place.provider_place_id ? [place.provider_place_id] : [])),
+    places.flatMap((place) => (place.provider === "kakao" && place.provider_place_id ? [place.provider_place_id] : [])),
   );
 
   return (
@@ -62,7 +67,9 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
       {queryResult?.valid && !searchError ? (
         <PlaceSearchResults
           currentPage={currentPage}
-          hasNextPage={Boolean(successfulSearchResult && !successfulSearchResult.isEnd && currentPage < KAKAO_SEARCH_MAX_PAGE)}
+          hasNextPage={Boolean(
+            successfulSearchResult && !successfulSearchResult.isEnd && currentPage < KAKAO_SEARCH_MAX_PAGE,
+          )}
           hasPreviousPage={currentPage > 1}
           pageableCount={successfulSearchResult?.pageableCount ?? 0}
           places={successfulSearchResult?.places ?? []}

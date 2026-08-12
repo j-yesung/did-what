@@ -47,7 +47,7 @@ export function PlaceSearchResults({
       </div>
 
       {places.length > 0 ? (
-        places.map(place => (
+        places.map((place) => (
           <Card key={place.id} size="sm">
             <CardHeader>
               <CardTitle>{place.name}</CardTitle>
@@ -57,7 +57,12 @@ export function PlaceSearchResults({
               <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
             </CardContent>
             <CardFooter>
-              <CreatePlaceForm page={currentPage} placeId={place.id} query={query} saved={savedKakaoIds.has(place.id)} />
+              <CreatePlaceForm
+                page={currentPage}
+                placeId={place.id}
+                query={query}
+                saved={savedKakaoIds.has(place.id)}
+              />
             </CardFooter>
           </Card>
         ))
@@ -78,7 +83,11 @@ export function PlaceSearchResults({
           <PaginationContent>
             {hasPreviousPage ? (
               <PaginationItem>
-                <PaginationPrevious aria-label="이전 검색 결과" href={getSearchPageHref(query, currentPage - 1)} text="이전" />
+                <PaginationPrevious
+                  aria-label="이전 검색 결과"
+                  href={getSearchPageHref(query, currentPage - 1)}
+                  text="이전"
+                />
               </PaginationItem>
             ) : null}
             <PaginationItem>
@@ -88,7 +97,11 @@ export function PlaceSearchResults({
             </PaginationItem>
             {hasNextPage ? (
               <PaginationItem>
-                <PaginationNext aria-label="다음 검색 결과" href={getSearchPageHref(query, currentPage + 1)} text="다음" />
+                <PaginationNext
+                  aria-label="다음 검색 결과"
+                  href={getSearchPageHref(query, currentPage + 1)}
+                  text="다음"
+                />
               </PaginationItem>
             ) : null}
           </PaginationContent>
