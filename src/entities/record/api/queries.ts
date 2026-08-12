@@ -1,8 +1,8 @@
 import { createClient } from "@/shared/api/supabase/server";
 
-const LIST_COLUMNS = "id, activity, memo, recorded_at, region_name, record_people(person:people(name))";
+const LIST_COLUMNS = "id, activity, memo, recorded_at, region_label, region_name, record_people(person:people(name))";
 const DETAIL_COLUMNS =
-  "id, activity, memo, recorded_at, region_code, region_name, region_latitude, region_longitude, record_people(person_id, person:people(name)), record_places(place:places(id, name, address, saved_at))";
+  "id, activity, memo, recorded_at, region_code, region_label, region_name, region_latitude, region_longitude, record_people(person_id, person:people(name)), record_places(place:places(id, name, address, saved_at))";
 
 // 지도에 찍을 지역 대표 좌표만 가져온다.
 export async function getRecordLocations(ownerId: string) {

@@ -173,6 +173,7 @@ export type Database = {
           owner_id: string;
           recorded_at: string;
           region_code: string;
+          region_label: string;
           region_latitude: number;
           region_longitude: number;
           region_name: string;
@@ -186,6 +187,7 @@ export type Database = {
           owner_id: string;
           recorded_at: string;
           region_code: string;
+          region_label: string;
           region_latitude: number;
           region_longitude: number;
           region_name: string;
@@ -199,6 +201,7 @@ export type Database = {
           owner_id?: string;
           recorded_at?: string;
           region_code?: string;
+          region_label?: string;
           region_latitude?: number;
           region_longitude?: number;
           region_name?: string;
@@ -219,6 +222,7 @@ export type Database = {
           p_place_ids: string[];
           p_recorded_at: string;
           p_region_code: string;
+          p_region_label: string;
           p_region_latitude: number;
           p_region_longitude: number;
           p_region_name: string;
@@ -234,6 +238,7 @@ export type Database = {
           p_record_id: string;
           p_recorded_at: string;
           p_region_code: string;
+          p_region_label: string;
           p_region_latitude: number;
           p_region_longitude: number;
           p_region_name: string;

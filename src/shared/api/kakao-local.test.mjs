@@ -1,4 +1,5 @@
 import {
+  getRelatedRegionQueries,
   normalizeKakaoPage,
   parseKakaoCoordinateRegionResponse,
   parseKakaoRegionSearchResponse,
@@ -109,4 +110,16 @@ assert.deepEqual(
     ],
   }),
   { code: "5011025300", fullName: "제주특별자치도 제주시 애월읍" },
+);
+
+assert.deepEqual(
+  getRelatedRegionQueries([
+    { address: null, id: "1", latitude: 0, longitude: 0, name: "학교", parcelAddress: "서울 마포구 상수동 72-1" },
+    { address: null, id: "2", latitude: 0, longitude: 0, name: "역", parcelAddress: "서울 마포구 동교동 165" },
+    { address: null, id: "3", latitude: 0, longitude: 0, name: "거리", parcelAddress: "서울 마포구 서교동 348-40" },
+    { address: null, id: "4", latitude: 0, longitude: 0, name: "숙소", parcelAddress: "서울 마포구 동교동 162-5" },
+    { address: null, id: "5", latitude: 0, longitude: 0, name: "극장", parcelAddress: "서울 마포구 서교동 357-5" },
+    { address: null, id: "6", latitude: 0, longitude: 0, name: "지점", parcelAddress: "세종 조치원읍 신안리 300" },
+  ]),
+  ["서울 마포구 동교동", "서울 마포구 서교동", "서울 마포구 상수동"],
 );

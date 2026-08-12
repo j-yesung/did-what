@@ -5,6 +5,8 @@ import type { RecordPlaceReference } from "./record-form";
 export type RegionSearchState = {
   status: "idle" | "error" | "success";
   message?: string;
+  query?: string;
+  related?: boolean;
   regions?: KakaoRegion[];
 };
 
@@ -16,7 +18,7 @@ export type PlaceSearchState = {
   query?: string;
 };
 
-export type RecordLocationRegion = KakaoRegion;
+export type RecordLocationRegion = KakaoRegion & { label: string };
 
 export type RecordLocationPlace = {
   address: string | null;
@@ -26,7 +28,7 @@ export type RecordLocationPlace = {
   saved: boolean;
 };
 
-export type ResolveRecordPlaceResult = { error: string } | { place: RecordLocationPlace; region: KakaoRegion };
+export type ResolveRecordPlaceResult = { error: string } | { place: RecordLocationPlace; region: RecordLocationRegion };
 
 export const INITIAL_REGION_SEARCH_STATE: RegionSearchState = { status: "idle" };
 export const INITIAL_PLACE_SEARCH_STATE: PlaceSearchState = { status: "idle" };

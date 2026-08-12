@@ -12,6 +12,7 @@ export type RecordInput = {
   recordedAt: string;
   personIds: string[];
   regionCode: string;
+  regionLabel: string;
   regionName: string;
   places: RecordPlaceReference[];
   activity: string;
@@ -22,6 +23,7 @@ export type RecordInputValues = {
   recordedAt: string;
   personIds: readonly string[];
   regionCode: string;
+  regionLabel: string;
   regionName: string;
   places: string;
   activity: string;
@@ -107,6 +109,7 @@ export function validateRecordInput(
 ): { data: RecordInput; fieldErrors?: never } | { data?: never; fieldErrors: RecordFieldErrors } {
   const fieldErrors: RecordFieldErrors = {};
   const personIds = [...new Set(values.personIds)];
+  const regionLabel = values.regionLabel.trim();
   const regionName = values.regionName.trim();
   const places = parsePlaces(values.places);
   const activity = values.activity.trim();
@@ -120,7 +123,13 @@ export function validateRecordInput(
     fieldErrors.personIds = "함께한 사람을 한 명 이상 선택해 주세요.";
   }
 
-  if (!REGION_CODE_PATTERN.test(values.regionCode) || regionName.length < 1 || regionName.length > 200) {
+  if (
+    !REGION_CODE_PATTERN.test(values.regionCode) ||
+    regionLabel.length < 1 ||
+    regionLabel.length > 100 ||
+    regionName.length < 1 ||
+    regionName.length > 200
+  ) {
     fieldErrors.regionCode = "목록에서 지역을 선택해 주세요.";
   }
 
@@ -145,6 +154,7 @@ export function validateRecordInput(
       recordedAt: values.recordedAt,
       personIds,
       regionCode: values.regionCode,
+      regionLabel,
       regionName,
       places,
       activity,

@@ -16,6 +16,8 @@ export type KakaoRegion = {
   type: "dong" | "eup" | "myeon";
 };
 
+export type KakaoRegionSearchResult = { regions: KakaoRegion[]; related: boolean } | { error: string };
+
 const KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
 const KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json";
 const KAKAO_COORD_REGION_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json";
@@ -217,6 +219,31 @@ export function parseKakaoCoordinateRegionResponse(payload: unknown): { code: st
   return null;
 }
 
+export function getRelatedRegionQueries(places: KakaoPlace[]): string[] {
+  const counts = new Map<string, { count: number; index: number }>();
+
+  places.forEach((place, index) => {
+    const parts = place.parcelAddress?.split(/\s+/) ?? [];
+    let localityIndex = -1;
+    for (let partIndex = parts.length - 1; partIndex >= 0; partIndex -= 1) {
+      if (getRegionType(parts[partIndex])) {
+        localityIndex = partIndex;
+        break;
+      }
+    }
+    if (localityIndex < 0) return;
+
+    const query = parts.slice(0, localityIndex + 1).join(" ");
+    const current = counts.get(query);
+    counts.set(query, { count: (current?.count ?? 0) + 1, index: current?.index ?? index });
+  });
+
+  return [...counts]
+    .sort(([, a], [, b]) => b.count - a.count || a.index - b.index)
+    .slice(0, 3)
+    .map(([query]) => query);
+}
+
 export async function searchKakaoPlaces(
   value: string,
   pageValue: unknown = 1,
@@ -261,7 +288,20 @@ export async function searchKakaoPlaces(
   }
 }
 
-export async function searchKakaoRegions(value: string): Promise<{ regions: KakaoRegion[] } | { error: string }> {
+async function fetchKakaoRegions(query: string, apiKey: string) {
+  const url = new URL(KAKAO_ADDRESS_URL);
+  url.searchParams.set("query", query);
+  url.searchParams.set("size", "30");
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: { Authorization: `KakaoAK ${apiKey}` },
+    signal: AbortSignal.timeout(5_000),
+  });
+  return response.ok ? parseKakaoRegionSearchResponse(await response.json()) : null;
+}
+
+export async function searchKakaoRegions(value: string): Promise<KakaoRegionSearchResult> {
   const queryResult = validateKakaoQuery(value);
 
   if (!queryResult.valid) {
@@ -273,18 +313,23 @@ export async function searchKakaoRegions(value: string): Promise<{ regions: Kaka
     return { error: "지역 검색 설정이 필요합니다. 관리자에게 문의해 주세요." };
   }
 
-  const url = new URL(KAKAO_ADDRESS_URL);
-  url.searchParams.set("query", queryResult.query);
-  url.searchParams.set("size", "30");
-
   try {
-    const response = await fetch(url, {
-      cache: "no-store",
-      headers: { Authorization: `KakaoAK ${apiKey}` },
-      signal: AbortSignal.timeout(5_000),
-    });
-    const regions = response.ok ? parseKakaoRegionSearchResponse(await response.json()) : null;
-    return regions ? { regions } : { error: "지역을 검색하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+    const regions = await fetchKakaoRegions(queryResult.query, apiKey);
+    if (!regions) return { error: "지역을 검색하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+    if (regions.length) return { regions, related: false };
+
+    const placesResult = await searchKakaoPlaces(queryResult.query);
+    if (!placesResult.places) return { regions: [], related: false };
+
+    const relatedResults = await Promise.all(
+      getRelatedRegionQueries(placesResult.places).map((query) => fetchKakaoRegions(query, apiKey)),
+    );
+    const relatedRegions = new Map<string, KakaoRegion>();
+    for (const result of relatedResults) {
+      for (const region of result ?? []) relatedRegions.set(region.code, region);
+    }
+
+    return { regions: [...relatedRegions.values()], related: relatedRegions.size > 0 };
   } catch {
     return { error: "지역을 검색하지 못했습니다. 잠시 후 다시 시도해 주세요." };
   }

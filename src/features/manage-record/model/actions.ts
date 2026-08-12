@@ -26,6 +26,7 @@ function readRecordInput(formData: FormData): RecordInputValues {
     recordedAt: String(formData.get("recordedAt") ?? ""),
     personIds: formData.getAll("personIds").map(String),
     regionCode: String(formData.get("regionCode") ?? ""),
+    regionLabel: String(formData.get("regionLabel") ?? ""),
     regionName: String(formData.get("regionName") ?? ""),
     places: String(formData.get("places") ?? "[]"),
     activity: String(formData.get("activity") ?? ""),
@@ -165,9 +166,10 @@ async function validateSelections(data: RecordInput, ownerId: string, supabase: 
 
 export async function searchRecordRegions(_state: RegionSearchState, formData: FormData): Promise<RegionSearchState> {
   await getUser();
-  const result = await searchKakaoRegions(String(formData.get("query") ?? ""));
+  const query = String(formData.get("query") ?? "").trim();
+  const result = await searchKakaoRegions(query);
   return "regions" in result
-    ? { regions: result.regions, status: "success" }
+    ? { query, regions: result.regions, related: result.related, status: "success" }
     : { message: result.error, status: "error" };
 }
 
@@ -220,7 +222,7 @@ export async function resolveRecordPlace(input: {
       },
       saved: false,
     },
-    region,
+    region: { ...region, label: region.name },
   };
 }
 
@@ -241,6 +243,7 @@ export async function createRecord(_state: RecordActionState, formData: FormData
     p_place_ids: selections.placeIds,
     p_recorded_at: result.data.recordedAt,
     p_region_code: selections.region.code,
+    p_region_label: result.data.regionLabel,
     p_region_latitude: selections.region.latitude,
     p_region_longitude: selections.region.longitude,
     p_region_name: selections.region.fullName,
@@ -282,6 +285,7 @@ export async function updateRecord(
     p_record_id: recordId,
     p_recorded_at: result.data.recordedAt,
     p_region_code: selections.region.code,
+    p_region_label: result.data.regionLabel,
     p_region_latitude: selections.region.latitude,
     p_region_longitude: selections.region.longitude,
     p_region_name: selections.region.fullName,

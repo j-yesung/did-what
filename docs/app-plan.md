@@ -22,6 +22,7 @@ type RecordFormValues = {
   recordedAt: string;
   personIds: string[];
   regionCode: string;
+  regionLabel: string;
   regionName: string;
   places: RecordPlaceReference[];
   activity: string;
@@ -148,6 +149,7 @@ updated_at timestamptz NOT NULL
 id uuid PK
 owner_id uuid NOT NULL → auth.users.id
 region_code text NOT NULL
+region_label text NOT NULL
 region_name text NOT NULL
 region_latitude double precision NOT NULL
 region_longitude double precision NOT NULL

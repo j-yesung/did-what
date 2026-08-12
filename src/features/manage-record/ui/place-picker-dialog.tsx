@@ -5,7 +5,7 @@ import { useActionState, useState, useTransition } from "react";
 
 import { CircleAlertIcon, MapPinIcon, PlusIcon, SearchIcon } from "lucide-react";
 
-import type { KakaoPlace, KakaoRegion } from "@/shared/api/kakao-local";
+import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
@@ -13,12 +13,16 @@ import { Input } from "@/shared/ui/input";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { resolveRecordPlace, searchRecordPlaces } from "../model/actions";
-import { INITIAL_PLACE_SEARCH_STATE, type RecordLocationPlace } from "../model/location-picker";
+import {
+  INITIAL_PLACE_SEARCH_STATE,
+  type RecordLocationPlace,
+  type RecordLocationRegion,
+} from "../model/location-picker";
 
 type PlacePickerDialogProps = {
   disabled?: boolean;
-  onAdd: (place: RecordLocationPlace, region: KakaoRegion) => void;
-  region: KakaoRegion | null;
+  onAdd: (place: RecordLocationPlace, region: RecordLocationRegion) => void;
+  region: RecordLocationRegion | null;
   selectedKeys: Set<string>;
 };
 

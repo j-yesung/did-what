@@ -78,6 +78,7 @@ export function RecordLocationFields({
   return (
     <>
       <input name="regionCode" type="hidden" value={region?.code ?? ""} />
+      <input name="regionLabel" type="hidden" value={region?.label ?? ""} />
       <input name="regionName" type="hidden" value={region?.fullName ?? ""} />
       <input name="places" type="hidden" value={JSON.stringify(places.map((place) => place.reference))} />
 
@@ -89,7 +90,7 @@ export function RecordLocationFields({
         {region ? (
           <div className="flex items-center justify-between gap-3 rounded-xl border bg-muted/40 p-3">
             <div className="min-w-0">
-              <p className="font-medium text-sm">{region.name}</p>
+              <p className="font-medium text-sm">{region.label}</p>
               <p className="mt-1 text-muted-foreground text-xs">{region.fullName}</p>
             </div>
             <RegionPickerDialog onSelect={selectRegion} />

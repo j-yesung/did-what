@@ -22,7 +22,7 @@ export async function getPersonRecords(personId: string, ownerId: string) {
 
   return supabase
     .from("records")
-    .select("id, activity, memo, recorded_at, region_name, record_people!inner(person_id)")
+    .select("id, activity, memo, recorded_at, region_label, region_name, record_people!inner(person_id)")
     .eq("owner_id", ownerId)
     .eq("record_people.person_id", personId)
     .order("recorded_at", { ascending: false })

@@ -99,7 +99,9 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
                 <MapPinIcon className="size-5 text-primary" aria-hidden="true" />
                 <div>
                   <p className="text-muted-foreground text-xs">지역</p>
-                  <p className="mt-1 font-medium">{record.region_name}</p>
+                  <p className="mt-1 font-medium">
+                    {record.region_label} / {record.region_name}
+                  </p>
                 </div>
               </div>
               {record.record_places.length ? (
