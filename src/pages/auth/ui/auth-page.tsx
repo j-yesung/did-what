@@ -5,15 +5,13 @@ import { useActionState, useState } from "react";
 import { CircleAlertIcon, LogInIcon, MailCheckIcon, MapPinnedIcon, UserRoundPlusIcon } from "lucide-react";
 import Link from "next/link";
 
+import { INITIAL_AUTH_STATE, login, signup } from "@/features/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Spinner } from "@/shared/ui/spinner";
-
-import { login, signup } from "../model/actions";
-import { INITIAL_AUTH_STATE } from "../model/auth-model";
 
 type AuthPageProps = {
   mode: "login" | "signup";
@@ -36,7 +34,7 @@ const COPY = {
   },
 } as const;
 
-export function AuthPage({ mode }: AuthPageProps) {
+function AuthPage({ mode }: AuthPageProps) {
   const isSignup = mode === "signup";
   const copy = COPY[mode];
   const [state, formAction, pending] = useActionState(isSignup ? signup : login, INITIAL_AUTH_STATE);
@@ -190,4 +188,12 @@ export function AuthPage({ mode }: AuthPageProps) {
       </section>
     </main>
   );
+}
+
+export function LoginPage() {
+  return <AuthPage mode="login" />;
+}
+
+export function SignupPage() {
+  return <AuthPage mode="signup" />;
 }
