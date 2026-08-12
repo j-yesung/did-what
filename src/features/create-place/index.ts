@@ -1,1 +1,1 @@
-export { SavePlaceForm } from "./ui/save-place-form";
+export { CreatePlaceForm } from "./ui/create-place-form";

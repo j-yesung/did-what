@@ -11,14 +11,14 @@ import { Spinner } from "@/shared/ui/spinner";
 import { createPlace } from "../model/actions";
 import { INITIAL_CREATE_PLACE_STATE } from "../model/place-form";
 
-type SavePlaceFormProps = {
+type CreatePlaceFormProps = {
   page: number;
   placeId: string;
   query: string;
   saved: boolean;
 };
 
-export function SavePlaceForm({ page, placeId, query, saved }: SavePlaceFormProps) {
+export function CreatePlaceForm({ page, placeId, query, saved }: CreatePlaceFormProps) {
   const [state, formAction, pending] = useActionState(createPlace, INITIAL_CREATE_PLACE_STATE);
   const isSaved = saved || state.status === "success";
 

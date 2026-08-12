@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getPlaces } from "@/entities/place";
-import { SavePlaceForm } from "@/features/create-place";
+import { CreatePlaceForm } from "@/features/create-place";
 import {
   KAKAO_SEARCH_MAX_PAGE,
   normalizeKakaoPage,
@@ -159,7 +159,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
                   <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
                 </CardContent>
                 <CardFooter>
-                  <SavePlaceForm
+                  <CreatePlaceForm
                     page={currentPage}
                     placeId={place.id}
                     query={queryResult.query}
