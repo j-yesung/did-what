@@ -26,7 +26,7 @@ export async function SettingsPage() {
         </div>
       </header>
 
-      <Card>
+      <Card className="flex-1">
         <CardHeader className="justify-items-center text-center">
           <Avatar size="lg" className="mb-2 size-16">
             <AvatarFallback className="bg-secondary text-secondary-foreground">
