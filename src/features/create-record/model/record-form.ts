@@ -1,5 +1,4 @@
-// 같은 폴더의 테스트를 plain node로 실행하므로 @/ alias 대신 상대 경로를 쓴다.
-import { isUuid } from "../../../shared/lib/is-uuid.ts";
+import { isUuid } from "@/shared/lib/is-uuid";
 
 export type RecordFieldErrors = Partial<Record<"recordedAt" | "personIds" | "placeId" | "activity" | "memo", string>>;
 
