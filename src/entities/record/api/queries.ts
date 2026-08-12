@@ -2,7 +2,7 @@ import { createClient } from "@/shared/api/supabase/server";
 
 const LIST_COLUMNS = "id, activity, memo, recorded_at, place:places(name), record_people(person:people(name))";
 const DETAIL_COLUMNS =
-  "id, activity, memo, recorded_at, place:places(name, address), record_people(person:people(name))";
+  "id, activity, memo, place_id, recorded_at, place:places(name, address), record_people(person_id, person:people(name))";
 
 // 지도에 찍을 좌표만 가져온다.
 export async function getRecordLocations(ownerId: string) {

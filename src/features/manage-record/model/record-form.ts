@@ -18,13 +18,13 @@ export type RecordInputValues = {
   memo: string;
 };
 
-export type CreateRecordActionState = {
+export type RecordActionState = {
   status: "idle" | "error";
   message?: string;
   fieldErrors?: RecordFieldErrors;
 };
 
-export const INITIAL_CREATE_RECORD_STATE: CreateRecordActionState = { status: "idle" };
+export const INITIAL_RECORD_ACTION_STATE: RecordActionState = { status: "idle" };
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 

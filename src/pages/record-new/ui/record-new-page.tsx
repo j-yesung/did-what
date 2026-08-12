@@ -4,13 +4,12 @@ import { redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
 import { getPlaces } from "@/entities/place";
+import { createRecord, RecordForm } from "@/features/manage-record";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
-
-import { RecordNewForm } from "./record-new-form";
 
 export async function RecordNewPage() {
   const supabase = await createClient();
@@ -81,7 +80,7 @@ export async function RecordNewPage() {
           </EmptyContent>
         </Empty>
       ) : (
-        <RecordNewForm people={people} places={places} />
+        <RecordForm action={createRecord} people={people} places={places} />
       )}
     </PageShell>
   );
