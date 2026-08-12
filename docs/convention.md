@@ -48,6 +48,11 @@
 - `@/` alias를 쓴다: `@/shared/ui/button`.
 - 단, 테스트(`*.test.mjs`)가 붙은 모듈이 `shared`를 가져올 때는 `#shared/lib/is-uuid.ts`처럼 `#shared/` + 확장자를 쓴다. 테스트를 plain node로 실행하는데 node가 `@/`를 해석하지 못한다. `pnpm test`로 확인한다.
 
+## 주석
+
+- 한 줄은 `//`, 여러 줄은 `/** */`를 쓴다.
+- 코드가 말하는 것을 되풀이하지 않는다. 왜 이렇게 했는지가 남길 값어치가 있는 내용이다.
+
 ## Exports
 
 - Next.js 예약 파일만 `default export`, 나머지는 이름 변경이 쉬운 `named export`를 쓴다.

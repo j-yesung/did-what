@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/shared/api/supabase/server";
 
-import type { AuthActionState } from "./auth-model";
-import { validateLoginInput, validateSignupInput } from "./auth-model";
+import type { AuthActionState } from "./auth-form";
+import { validateLoginInput, validateSignupInput } from "./auth-form";
 import { ensureProfile } from "./profile";
 
 function getLoginErrorMessage(code?: string) {

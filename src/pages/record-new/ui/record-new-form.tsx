@@ -36,7 +36,7 @@ import { NativeSelect, NativeSelectOption } from "@/shared/ui/native-select";
 import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
-import styles from "./record-new-page.module.css";
+import styles from "./record-new.module.css";
 
 const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
 

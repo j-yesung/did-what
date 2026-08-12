@@ -9,8 +9,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
+import styles from "./record-new.module.css";
 import { RecordNewForm } from "./record-new-form";
-import styles from "./record-new-page.module.css";
 
 export async function RecordNewPage() {
   const supabase = await createClient();

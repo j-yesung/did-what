@@ -1,4 +1,4 @@
-import { validateLoginInput, validateSignupInput } from "./auth-model.ts";
+import { validateLoginInput, validateSignupInput } from "./auth-form.ts";
 import assert from "node:assert/strict";
 
 assert.deepEqual(validateLoginInput("invalid", "123"), {
