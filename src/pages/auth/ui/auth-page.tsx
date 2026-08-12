@@ -175,10 +175,6 @@ function AuthPage({ mode }: AuthPageProps) {
             </Button>
           </CardFooter>
         </Card>
-
-        <p className="text-center text-muted-foreground text-xs leading-relaxed">
-          로그인 상태는 안전한 쿠키로 유지되며 직접 로그아웃할 때까지 자동으로 복원됩니다.
-        </p>
       </section>
     </main>
   );
