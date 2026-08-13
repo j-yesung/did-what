@@ -36,7 +36,7 @@ export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, 
           <CardContent className="flex flex-col gap-3">
             {region ? (
               <p className="flex items-center gap-2 text-sm">
-                <MapPinIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                <MapPinIcon className="size-4 shrink-0 text-foreground" aria-hidden="true" />
                 {region.label} / {region.name}
               </p>
             ) : null}

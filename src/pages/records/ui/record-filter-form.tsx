@@ -45,10 +45,10 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
 
       <details className="group rounded-xl border bg-card px-4 py-3" open={hasPeriod}>
         <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
-          <CalendarRangeIcon className="size-[18px] text-primary" aria-hidden="true" />
+          <CalendarRangeIcon className="size-[18px] text-foreground" aria-hidden="true" />
           기간
           {hasPeriod ? (
-            <span className="rounded-md bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-primary">
+            <span className="rounded-md bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-foreground">
               {filters.from || "처음"} ~ {filters.to || "오늘"}
             </span>
           ) : (
@@ -82,7 +82,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
                 aria-current={active ? "true" : undefined}
                 className={cn(
                   "flex h-8 items-center rounded-md border px-3 font-[650] text-xs transition-colors",
-                  active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground",
+                  active ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground",
                 )}
                 href={buildRecordsHref(filters, { sort: value })}
                 key={value}

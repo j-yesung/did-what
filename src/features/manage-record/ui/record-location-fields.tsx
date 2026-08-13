@@ -23,7 +23,7 @@ import type { RecordLocationPlace, RecordLocationRegion } from "../model/locatio
 import { PlacePickerDialog } from "./place-picker-dialog";
 import { RegionPickerDialog } from "./region-picker-dialog";
 
-const FIELD_ICON = "size-[18px] text-primary [stroke-width:2]";
+const FIELD_ICON = "size-[18px] text-foreground [stroke-width:2]";
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
@@ -88,7 +88,7 @@ export function RecordLocationFields({
       <Field data-invalid={Boolean(regionError)}>
         <FieldLabel>
           <MapPinnedIcon className={FIELD_ICON} aria-hidden="true" />
-          어느 지역에 갔나요? <span className="font-[650] text-[11px] text-primary">필수</span>
+          어느 지역에 갔나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
         </FieldLabel>
         {region ? (
           <div className="flex items-center justify-between gap-3 rounded-xl border bg-muted/40 p-3">
@@ -144,7 +144,7 @@ export function RecordLocationFields({
                       id={`save-${place.key}`}
                       onCheckedChange={(checked) => toggleSave(place.key, checked)}
                     />
-                    <BookmarkIcon className="size-4 text-primary" aria-hidden="true" />
+                    <BookmarkIcon className="size-4 text-foreground" aria-hidden="true" />
                     {place.saved ? "내 장소에 저장됨" : "기록을 저장할 때 내 장소에도 추가"}
                   </label>
                 </li>

@@ -46,7 +46,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
       <PageHeader title="장소" />
 
       <section aria-labelledby="places-intro-title" className="px-1">
-        <p className="font-bold text-primary text-xs">{places.length}곳에 추억 저장 중</p>
+        <p className="font-bold text-foreground text-xs">{places.length}곳에 추억 저장 중</p>
         <h2 className="mt-2 font-bold font-heading text-2xl tracking-[-0.04em]" id="places-intro-title">
           기억하고 싶은 장소를 찾아보세요.
         </h2>

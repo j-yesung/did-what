@@ -16,7 +16,7 @@ export async function HomePage() {
   const { locations: records, error } = await getRecordLocations(user.id);
 
   return (
-    <PageShell className="gap-3 pt-3 min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+    <PageShell className="gap-3 pt-3 min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--blue-950),transparent_92%)]">
       <section className="grid min-h-0 flex-1 place-items-center px-1.5 py-1" aria-label="대한민국 활동 지도">
         <KoreaActivityMap records={error ? [] : records} />
       </section>

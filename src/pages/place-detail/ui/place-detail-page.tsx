@@ -48,7 +48,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
         <>
           <Card>
             <CardHeader>
-              <CardDescription className="flex items-center gap-1.5 font-bold text-primary text-xs">
+              <CardDescription className="flex items-center gap-1.5 font-bold text-foreground text-xs">
                 <MapPinnedIcon className="size-4" aria-hidden="true" />
                 기억의 장소
               </CardDescription>
@@ -71,7 +71,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
             <RecordTimeline aria-labelledby="place-records-title">
               <div className="flex items-center justify-between gap-3 px-1">
                 <h2 className="flex items-center gap-2 font-bold font-heading" id="place-records-title">
-                  <NotebookPenIcon className="size-5 text-primary" aria-hidden="true" />
+                  <NotebookPenIcon className="size-5 text-foreground" aria-hidden="true" />
                   이곳의 기록
                 </h2>
                 <p className="text-muted-foreground text-xs">{records.length}개</p>

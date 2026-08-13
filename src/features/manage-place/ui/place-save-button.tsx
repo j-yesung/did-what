@@ -43,7 +43,7 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
       {iconOnly ? (
         <Button
           aria-label={label}
-          className="size-11 text-primary [&_svg]:size-[18px]"
+          className="size-11 text-foreground [&_svg]:size-[18px]"
           disabled={pending || state.status === "success"}
           size="icon-lg"
           type="submit"

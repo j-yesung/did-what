@@ -30,7 +30,7 @@ import { RecordLocationFields } from "./record-location-fields";
 
 const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
 
-const FIELD_ICON = "size-[18px] text-primary [stroke-width:2]";
+const FIELD_ICON = "size-[18px] text-foreground [stroke-width:2]";
 
 type RecordFormProps = {
   action: (state: RecordActionState, formData: FormData) => Promise<RecordActionState>;
@@ -83,12 +83,12 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
         </Alert>
       ) : null}
 
-      <div className="rounded-xl border border-border bg-surface px-[18px] py-5 shadow-[0_18px_50px_color-mix(in_srgb,var(--brand-950),transparent_94%)] motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
+      <div className="rounded-xl border border-border bg-surface px-[18px] py-5 shadow-[0_18px_50px_color-mix(in_srgb,var(--blue-950),transparent_94%)] motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
           <Field data-invalid={Boolean(state.fieldErrors?.recordedAt)}>
             <FieldLabel htmlFor="recordedAt">
               <CalendarDaysIcon className={FIELD_ICON} aria-hidden="true" />
-              언제 <span className="font-[650] text-[11px] text-primary">필수</span>
+              언제 <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLabel>
             <Input
               className="h-12"
@@ -110,7 +110,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
             <FieldSet>
               <FieldLegend className="flex items-center gap-2" variant="label">
                 <UsersIcon className={FIELD_ICON} aria-hidden="true" />
-                누구와 <span className="font-[650] text-[11px] text-primary">필수</span>
+                누구와 <span className="font-[650] text-[11px] text-foreground">필수</span>
               </FieldLegend>
               <FieldDescription>한 명 이상 선택해 주세요.</FieldDescription>
 
@@ -148,7 +148,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
           <Field data-invalid={Boolean(state.fieldErrors?.activity)}>
             <FieldLabel htmlFor="activity">
               <NotebookPenIcon className={FIELD_ICON} aria-hidden="true" />
-              무엇을 했나요? <span className="font-[650] text-[11px] text-primary">필수</span>
+              무엇을 했나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLabel>
             <Input
               className="h-12"

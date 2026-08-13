@@ -36,7 +36,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
   const hasLoadError = Boolean(recordResult.error || peopleResult.error);
 
   return (
-    <PageShell className="block min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+    <PageShell className="block min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--blue-950),transparent_92%)]">
       <PageHeader back={`/records/${recordId}`} eyebrow="EDIT MEMORY" title="기록 수정" />
 
       <section className="px-1 pt-[22px] pb-5" aria-labelledby="record-edit-title">

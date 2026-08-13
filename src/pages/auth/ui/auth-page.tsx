@@ -47,19 +47,19 @@ function AuthPage({ mode }: AuthPageProps) {
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -top-32 left-1/2 size-80 -translate-x-1/2 rounded-full bg-brand-100 blur-3xl"
+        className="pointer-events-none absolute -top-32 left-1/2 size-80 -translate-x-1/2 rounded-full bg-blue-100 blur-3xl"
         aria-hidden="true"
       />
 
       <section className="relative z-10 flex w-full max-w-[430px] flex-col gap-6" aria-labelledby="auth-title">
-        <div className="flex items-center justify-center gap-2 font-heading font-semibold text-brand-800">
+        <div className="flex items-center justify-center gap-2 font-heading font-semibold text-blue-800">
           <span className="grid size-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
             <MapPinnedIcon className="size-5" strokeWidth={2} aria-hidden="true" />
           </span>
           <span className="text-lg tracking-[-0.02em]">뭐했지</span>
         </div>
 
-        <Card className="shadow-[0_24px_80px_color-mix(in_srgb,var(--brand-950),transparent_88%)]">
+        <Card className="shadow-[0_24px_80px_color-mix(in_srgb,var(--blue-950),transparent_88%)]">
           <CardHeader className="gap-2 pb-2 text-center">
             <CardTitle>
               <h1 id="auth-title" className="font-bold font-heading text-2xl tracking-[-0.03em]">
