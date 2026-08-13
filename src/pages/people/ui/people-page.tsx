@@ -30,7 +30,7 @@ export async function PeoplePage() {
   const personCount = people?.length ?? 0;
 
   return (
-    <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
+    <PageShell>
       <PageHeader title="사람" />
 
       <section className="px-1" aria-labelledby="people-intro-title">

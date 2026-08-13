@@ -49,7 +49,7 @@ export async function PersonDetailPage({ params }: PersonDetailPageProps) {
   const hasLoadError = Boolean(personResult.error || recordsResult.error);
 
   return (
-    <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
+    <PageShell>
       <PageHeader back="/people" eyebrow="PERSON DETAIL" title="함께한 사람" />
 
       {hasLoadError || !person ? (

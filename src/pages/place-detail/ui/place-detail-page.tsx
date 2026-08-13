@@ -51,7 +51,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
   const hasLoadError = Boolean(placeResult.error || recordsResult.error);
 
   return (
-    <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
+    <PageShell>
       <PageHeader back="/places" eyebrow="PLACE DETAIL" title="기억의 장소" />
 
       {hasLoadError || !place ? (

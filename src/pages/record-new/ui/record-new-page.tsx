@@ -24,7 +24,7 @@ export async function RecordNewPage() {
   const hasLoadError = Boolean(peopleResult.error);
 
   return (
-    <PageShell className="block [background:radial-gradient(circle_at_88%_2%,color-mix(in_srgb,var(--brand-100),transparent_34%),transparent_28%),var(--background)] min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
+    <PageShell className="block min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--brand-950),transparent_92%)]">
       <PageHeader back="/" title="새 기록" />
 
       <section

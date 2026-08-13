@@ -42,7 +42,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
   }
 
   return (
-    <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_28%),var(--background)]">
+    <PageShell>
       <PageHeader back="/records" eyebrow="MEMORY DETAIL" title="기록 상세" />
 
       {error ? (

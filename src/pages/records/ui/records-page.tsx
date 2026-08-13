@@ -25,7 +25,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
   const { data: records, error } = await getRecords(userData.user.id, filters);
 
   return (
-    <PageShell className="[background:radial-gradient(circle_at_12%_0%,color-mix(in_srgb,var(--brand-100),transparent_32%),transparent_27%),var(--background)]">
+    <PageShell>
       <PageHeader title="기록" />
 
       <RecordFilterForm filters={filters} />

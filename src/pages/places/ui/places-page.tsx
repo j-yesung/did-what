@@ -49,7 +49,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
   );
 
   return (
-    <PageShell className="[background:radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--brand-100),transparent_30%),transparent_28%),var(--background)]">
+    <PageShell>
       <PageHeader title="장소" />
 
       <section aria-labelledby="places-intro-title" className="px-1">
