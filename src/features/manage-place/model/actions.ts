@@ -17,10 +17,10 @@ export async function createPlace(_state: PlaceActionState, formData: FormData):
 
   const searchResult = await searchKakaoPlaces(String(formData.get("query") ?? ""), String(formData.get("page") ?? ""));
   const place = searchResult.places?.find((item) => item.id === placeIdResult.id);
-  if (!place) return { message: "선택한 장소를 확인할 수 없습니다. 다시 검색해 주세요.", status: "error" };
+  if (!place) return { message: "선택한 장소를 확인할 수 없습니다.\n다시 검색해 주세요.", status: "error" };
 
   const region = await resolveKakaoRegion(place.longitude, place.latitude);
-  if (!region) return { message: "장소의 지역을 확인하지 못했습니다. 다시 시도해 주세요.", status: "error" };
+  if (!region) return { message: "장소의 지역을 확인하지 못했습니다.\n다시 시도해 주세요.", status: "error" };
 
   const { data: existing, error: findError } = await supabase
     .from("places")
@@ -29,7 +29,7 @@ export async function createPlace(_state: PlaceActionState, formData: FormData):
     .eq("provider", "kakao")
     .eq("provider_place_id", place.id)
     .maybeSingle();
-  if (findError) return { message: "장소를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+  if (findError) return { message: "장소를 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
 
   const { error } = existing
     ? await supabase
@@ -49,7 +49,7 @@ export async function createPlace(_state: PlaceActionState, formData: FormData):
         saved_at: new Date().toISOString(),
       });
 
-  if (error) return { message: "장소를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+  if (error) return { message: "장소를 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
 
   revalidatePath("/places");
   revalidatePath("/records/new");
@@ -73,7 +73,7 @@ export async function deletePlace(
     .eq("owner_id", user.id)
     .select("id")
     .maybeSingle();
-  if (error || !data) return { message: "장소를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+  if (error || !data) return { message: "장소를 삭제하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
 
   revalidatePath("/places");
   revalidatePath("/records");

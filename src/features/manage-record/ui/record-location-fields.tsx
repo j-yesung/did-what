@@ -111,8 +111,9 @@ export function RecordLocationFields({
           방문 장소 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
         </FieldLabel>
         <FieldDescription>
-          같은 지역에서 방문한 카페나 식당을 최대 10곳까지 추가할 수 있어요. 저장해 둔 장소는 검색 없이 바로 고를 수
-          있어요.
+          {
+            "같은 지역에서 방문한 카페나 식당을 최대 10곳까지 추가할 수 있어요.\n저장해 둔 장소는 검색 없이 바로 고를 수 있어요."
+          }
         </FieldDescription>
 
         {places.length ? (
@@ -167,7 +168,7 @@ export function RecordLocationFields({
           <AlertDialogHeader>
             <AlertDialogTitle>지역을 변경할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              선택한 방문 장소 {places.length}곳이 모두 해제돼요. 내 장소에 이미 저장된 곳은 사라지지 않아요.
+              {`선택한 방문 장소 ${places.length}곳이 모두 해제돼요.\n내 장소에 이미 저장된 곳은 사라지지 않아요.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

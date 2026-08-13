@@ -31,7 +31,7 @@ export async function createPerson(_state: PersonActionState, formData: FormData
   const { error } = await supabase.from("people").insert({ name: result.name, owner_id: user.id });
 
   if (error) {
-    return { message: "사람을 추가하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+    return { message: "사람을 추가하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   revalidatePerson();
@@ -64,7 +64,7 @@ export async function renamePerson(
     .maybeSingle();
 
   if (error || !data) {
-    return { message: "이름을 바꾸지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+    return { message: "이름을 바꾸지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   revalidatePerson(personId);
@@ -91,7 +91,7 @@ export async function deletePerson(
     .maybeSingle();
 
   if (error || !data) {
-    return { message: "사람을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+    return { message: "사람을 삭제하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   revalidatePerson(personId);

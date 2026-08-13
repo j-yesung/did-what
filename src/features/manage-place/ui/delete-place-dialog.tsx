@@ -56,7 +56,7 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
           <AlertDialogTitle>{name}을(를) 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription>
             {recordCount > 0
-              ? `이곳의 기록 ${recordCount}개에서 방문 장소만 빠지고 기록 자체는 남아요. 되돌릴 수 없어요.`
+              ? `이곳의 기록 ${recordCount}개에서 방문 장소만 빠지고 기록 자체는 남아요.\n되돌릴 수 없어요.`
               : "삭제한 뒤에는 되돌릴 수 없어요."}
           </AlertDialogDescription>
         </AlertDialogHeader>

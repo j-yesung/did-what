@@ -242,7 +242,7 @@ export async function createRecord(_state: RecordActionState, formData: FormData
     p_region_name: selections.region.fullName,
   });
   if (error || !recordId) {
-    return { message: "기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+    return { message: "기록을 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   revalidatePath("/");
@@ -284,7 +284,7 @@ export async function updateRecord(
     p_region_name: selections.region.fullName,
   });
   if (error || !updated) {
-    return { message: "기록을 수정하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+    return { message: "기록을 수정하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   revalidatePath("/");
@@ -311,7 +311,7 @@ export async function deleteRecord(
     .maybeSingle();
 
   if (error || !deleted) {
-    return { message: "기록을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
+    return { message: "기록을 삭제하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   revalidatePath("/");

@@ -46,7 +46,7 @@ export function DeletePersonDialog({ name, personId, recordCount }: DeletePerson
           <AlertDialogTitle>{name}님을 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription>
             {recordCount > 0
-              ? `함께한 기록 ${recordCount}개에서 ${name}님만 빠지고 기록 자체는 남아요. 되돌릴 수 없어요.`
+              ? `함께한 기록 ${recordCount}개에서 ${name}님만 빠지고 기록 자체는 남아요.\n되돌릴 수 없어요.`
               : "삭제한 뒤에는 되돌릴 수 없어요."}
           </AlertDialogDescription>
         </AlertDialogHeader>

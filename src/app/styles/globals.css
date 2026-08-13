@@ -138,6 +138,24 @@
     background: var(--background);
     color: var(--foreground);
     text-rendering: optimizeLegibility;
+    /** 한글은 어절 단위로만 줄을 넘긴다. 한 어절이 줄보다 길 때만 강제로 자른다. */
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  /**
+   * 안내 문구 공통. 문장 사이 줄바꿈(\n)을 살리고, 두 줄 이상이면 줄 길이를 고르게 맞춘다.
+   * JSX 텍스트의 줄바꿈은 컴파일 때 공백으로 합쳐지므로 코드 포매팅에는 영향받지 않는다.
+   */
+  [data-slot="alert-description"],
+  [data-slot="alert-dialog-description"],
+  [data-slot="card-description"],
+  [data-slot="dialog-description"],
+  [data-slot="empty-description"],
+  [data-slot="field-description"],
+  [data-slot="field-error"] {
+    text-wrap: balance;
+    white-space: pre-line;
   }
 
   a {
