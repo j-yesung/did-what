@@ -7,7 +7,6 @@ import { DeletePersonDialog, RenamePersonDialog } from "@/features/manage-person
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
@@ -62,10 +61,7 @@ export async function PersonDetailPage({ params }: PersonDetailPageProps) {
       ) : (
         <>
           <Card>
-            <CardHeader className="grid grid-cols-[64px_1fr] items-center gap-x-4">
-              <Avatar className="row-span-3 size-16">
-                <AvatarFallback>{person.name[0]}</AvatarFallback>
-              </Avatar>
+            <CardHeader>
               <CardDescription className="flex items-center gap-1.5 font-bold text-primary text-xs">
                 <UserRoundIcon className="size-4" aria-hidden="true" />
                 함께한 사람

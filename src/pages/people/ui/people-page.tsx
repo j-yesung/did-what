@@ -6,7 +6,6 @@ import { getPeople } from "@/entities/person";
 import { CreatePersonForm } from "@/features/manage-person";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
@@ -56,10 +55,7 @@ export async function PeoplePage() {
         <section className="flex flex-col gap-3" aria-label={`함께한 사람 ${people.length}명`}>
           {people.map((person) => (
             <Card key={person.id} size="sm">
-              <CardHeader className="grid grid-cols-[40px_1fr] items-center gap-x-3">
-                <Avatar size="lg" className="row-span-2">
-                  <AvatarFallback>{person.name[0]}</AvatarFallback>
-                </Avatar>
+              <CardHeader>
                 <CardTitle>{person.name}</CardTitle>
                 <CardDescription>함께한 사람</CardDescription>
               </CardHeader>

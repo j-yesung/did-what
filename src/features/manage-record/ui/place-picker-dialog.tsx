@@ -99,7 +99,7 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
               return (
                 <li key={place.id}>
                   <Button
-                    className="rounded-full"
+                    className="rounded-lg"
                     disabled={added || selecting}
                     onClick={() => addSavedPlace(place)}
                     size="sm"

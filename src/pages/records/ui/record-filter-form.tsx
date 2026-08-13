@@ -30,7 +30,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
           />
           <Input
             aria-label="기록 검색"
-            className="h-11 rounded-full pl-11"
+            className="h-11 rounded-lg pl-11"
             defaultValue={filters.query}
             maxLength={100}
             name="q"
@@ -38,17 +38,17 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
             type="search"
           />
         </div>
-        <Button aria-label="검색" className="h-11 rounded-full px-5" type="submit">
+        <Button aria-label="검색" className="h-11 rounded-lg px-5" type="submit">
           <SearchIcon aria-hidden="true" />
         </Button>
       </div>
 
-      <details className="group rounded-2xl border bg-card px-4 py-3" open={hasPeriod}>
+      <details className="group rounded-xl border bg-card px-4 py-3" open={hasPeriod}>
         <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
           <CalendarRangeIcon className="size-[18px] text-primary" aria-hidden="true" />
           기간
           {hasPeriod ? (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-primary">
+            <span className="rounded-md bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-primary">
               {filters.from || "처음"} ~ {filters.to || "오늘"}
             </span>
           ) : (
@@ -81,7 +81,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
               <Link
                 aria-current={active ? "true" : undefined}
                 className={cn(
-                  "flex h-8 items-center rounded-full border px-3 font-[650] text-xs transition-colors",
+                  "flex h-8 items-center rounded-md border px-3 font-[650] text-xs transition-colors",
                   active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground",
                 )}
                 href={buildRecordsHref(filters, { sort: value })}
@@ -95,7 +95,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
 
         {hasRecordFilters(filters) ? (
           <Link
-            className="ml-auto flex h-8 items-center gap-1 rounded-full px-2.5 font-[650] text-muted-foreground text-xs"
+            className="ml-auto flex h-8 items-center gap-1 rounded-md px-2.5 font-[650] text-muted-foreground text-xs"
             href="/records"
           >
             <RotateCcwIcon className="size-3.5" aria-hidden="true" />

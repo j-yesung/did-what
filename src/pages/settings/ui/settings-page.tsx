@@ -1,10 +1,8 @@
-import { UserRoundIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { getProfileName } from "@/entities/profile";
 import { LogoutButton } from "@/features/auth";
 import { createClient } from "@/shared/api/supabase/server";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
@@ -24,11 +22,6 @@ export async function SettingsPage() {
 
       <Card className="flex-1">
         <CardHeader className="justify-items-center text-center">
-          <Avatar size="lg" className="mb-2 size-16">
-            <AvatarFallback className="bg-secondary text-secondary-foreground">
-              <UserRoundIcon className="size-6" aria-hidden="true" />
-            </AvatarFallback>
-          </Avatar>
           <CardTitle className="text-lg">{displayName}</CardTitle>
           <CardDescription>{data.user.email}</CardDescription>
         </CardHeader>

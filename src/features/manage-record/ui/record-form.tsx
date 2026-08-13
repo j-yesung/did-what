@@ -8,9 +8,8 @@ import { CalendarDaysIcon, CircleAlertIcon, MessageSquareTextIcon, NotebookPenIc
 import type { PersonOption } from "@/entities/person";
 import type { PlaceOption } from "@/entities/place";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { CheckboxChip } from "@/shared/ui/checkbox-chip";
 import {
   Field,
   FieldDescription,
@@ -52,7 +51,6 @@ const INITIAL_STATE: RecordActionState = { status: "idle" };
 
 export function RecordForm({ action, initialValues, mode = "create", people, savedPlaces }: RecordFormProps) {
   const [state, formAction, pending] = useActionState(action, INITIAL_STATE);
-  const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>(initialValues?.personIds ?? []);
   const [hasPersonError, setHasPersonError] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -64,21 +62,15 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
     }
   }, [state]);
 
-  function togglePerson(personId: string, checked: boolean) {
-    setSelectedPersonIds((current) =>
-      checked ? [...current, personId] : current.filter((selectedId) => selectedId !== personId),
-    );
-    setHasPersonError(false);
-  }
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    if (selectedPersonIds.length > 0) {
+    // 선택 상태는 체크박스가 직접 들고 있으므로 제출 직전에 폼에서 읽는다.
+    if (event.currentTarget.querySelectorAll('input[name="personIds"]:checked').length > 0) {
       return;
     }
 
     event.preventDefault();
     setHasPersonError(true);
-    event.currentTarget.querySelector<HTMLElement>("[role=checkbox]")?.focus();
+    event.currentTarget.querySelector<HTMLElement>('input[name="personIds"]')?.focus();
   }
 
   return (
@@ -121,35 +113,22 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
                 누구와 <span className="font-[650] text-[11px] text-primary">필수</span>
               </FieldLegend>
               <FieldDescription>한 명 이상 선택해 주세요.</FieldDescription>
-              <FieldGroup className="grid grid-cols-2 gap-2" data-slot="checkbox-group">
-                {people.map((person) => {
-                  const isSelected = selectedPersonIds.includes(person.id);
 
-                  return (
-                    <FieldLabel
-                      className="items-center has-[>[data-slot=field]]:flex-row"
-                      htmlFor={`person-${person.id}`}
-                      key={person.id}
-                    >
-                      <Field orientation="horizontal">
-                        <Checkbox
-                          aria-describedby={personError ? "people-error" : undefined}
-                          aria-invalid={Boolean(personError)}
-                          checked={isSelected}
-                          id={`person-${person.id}`}
-                          name="personIds"
-                          onCheckedChange={(checked) => togglePerson(person.id, checked)}
-                          value={person.id}
-                        />
-                        <Avatar className="size-8">
-                          <AvatarFallback>{person.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium text-sm">{person.name}</span>
-                      </Field>
-                    </FieldLabel>
-                  );
-                })}
-              </FieldGroup>
+              <div className="flex flex-wrap gap-1.5">
+                {people.map((person) => (
+                  <CheckboxChip
+                    aria-describedby={personError ? "people-error" : undefined}
+                    aria-invalid={Boolean(personError)}
+                    defaultChecked={initialValues?.personIds.includes(person.id)}
+                    key={person.id}
+                    name="personIds"
+                    onChange={() => setHasPersonError(false)}
+                    value={person.id}
+                  >
+                    {person.name}
+                  </CheckboxChip>
+                ))}
+              </div>
               <FieldError id="people-error">{personError}</FieldError>
             </FieldSet>
           </Field>
