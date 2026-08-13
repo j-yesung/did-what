@@ -233,6 +233,18 @@
     white-space: pre-line;
   }
 
+  /** 버튼 안 아이콘 공통 규칙. 크기는 size variant가 덮는다. */
+  [data-slot="button"] svg,
+  [data-slot="text-button"] svg {
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  [data-slot="button"] svg:not([class*="size-"]) {
+    width: --spacing(4);
+    height: --spacing(4);
+  }
+
   a {
     color: inherit;
     text-decoration: none;
