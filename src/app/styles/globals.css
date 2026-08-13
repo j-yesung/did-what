@@ -2,7 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark {
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not(.light), :root:not(.light) *) {
+      @slot;
+    }
+  }
+}
 
 :root {
   --grey-0: #ffffff;
@@ -78,6 +88,7 @@
   --ring: var(--blue-300);
   --surface: var(--fill-surface);
   --radius: 0.875rem;
+  color-scheme: light;
 
   /* 하단 고정 내비게이션이 가리는 높이. 화면 콘텐츠의 아래 여백 기준값이다. */
   --nav-clearance: calc(72px + env(safe-area-inset-bottom));
@@ -135,6 +146,54 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/**
+ * 다크 값. Base 팔레트는 그대로 두고 시맨틱 토큰이 가리키는 단계만 바꾼다.
+ * 명시 선택(.dark)과 시스템 설정 두 경로가 모두 필요해 같은 선언을 두 번 쓴다.
+ */
+:root.dark {
+  color-scheme: dark;
+
+  /* 배경과 카드 */
+  --fill-base: var(--grey-900);
+  --fill-surface: var(--grey-850);
+  --fill-elevated: var(--grey-800);
+  --fill-muted: var(--grey-850);
+
+  /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
+  --text-primary: var(--grey-50);
+  --text-secondary: var(--grey-400);
+  --text-disabled: var(--grey-600);
+  --text-brand: var(--grey-50);
+  --border-default: var(--grey-800);
+  --border-strong: var(--grey-700);
+
+  /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
+  --map-empty: var(--grey-800);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    color-scheme: dark;
+
+    /* 배경과 카드 */
+    --fill-base: var(--grey-900);
+    --fill-surface: var(--grey-850);
+    --fill-elevated: var(--grey-800);
+    --fill-muted: var(--grey-850);
+
+    /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
+    --text-primary: var(--grey-50);
+    --text-secondary: var(--grey-400);
+    --text-disabled: var(--grey-600);
+    --text-brand: var(--grey-50);
+    --border-default: var(--grey-800);
+    --border-strong: var(--grey-700);
+
+    /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
+    --map-empty: var(--grey-800);
+  }
 }
 
 @layer base {
