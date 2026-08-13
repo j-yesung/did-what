@@ -159,7 +159,7 @@
   --fill-base: var(--grey-900);
   --fill-surface: var(--grey-850);
   --fill-elevated: var(--grey-800);
-  --fill-muted: var(--grey-850);
+  --fill-muted: var(--grey-900);
 
   /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
   --text-primary: var(--grey-50);
@@ -181,7 +181,7 @@
     --fill-base: var(--grey-900);
     --fill-surface: var(--grey-850);
     --fill-elevated: var(--grey-800);
-    --fill-muted: var(--grey-850);
+    --fill-muted: var(--grey-900);
 
     /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
     --text-primary: var(--grey-50);

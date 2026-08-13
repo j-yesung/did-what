@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
+import { getTheme } from "@/features/switch-theme";
+import { cn } from "@/shared/lib/utils";
+
 import "@/app/styles/globals.css";
 
 import { APPLE_STARTUP_IMAGES } from "./startup-images";
@@ -13,6 +16,8 @@ const pretendard = localFont({
   display: "swap",
   variable: "--font-pretendard",
 });
+
+const THEME_COLOR = { dark: "#191f28", light: "#f9fafb" };
 
 export const metadata: Metadata = {
   title: "뭐했지",
@@ -26,17 +31,28 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#FAFAF8",
-  width: "device-width",
-  initialScale: 1,
-  // 화면 끝까지 그리고, 노치·홈 인디케이터는 각 화면이 env()로 피한다.
-  viewportFit: "cover",
-};
+export async function generateViewport(): Promise<Viewport> {
+  const theme = await getTheme();
 
-export default function Layout({ children }: { children: ReactNode }) {
+  return {
+    themeColor:
+      theme === "system"
+        ? [
+            { color: THEME_COLOR.light, media: "(prefers-color-scheme: light)" },
+            { color: THEME_COLOR.dark, media: "(prefers-color-scheme: dark)" },
+          ]
+        : THEME_COLOR[theme],
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+  };
+}
+
+export default async function Layout({ children }: { children: ReactNode }) {
+  const theme = await getTheme();
+
   return (
-    <html lang="ko" className={pretendard.variable}>
+    <html className={cn(pretendard.variable, theme !== "system" && theme)} lang="ko">
       <body>{children}</body>
     </html>
   );
