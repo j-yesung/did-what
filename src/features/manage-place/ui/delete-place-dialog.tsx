@@ -18,7 +18,6 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { deletePlace } from "../model/actions";
 import { INITIAL_PLACE_ACTION_STATE } from "../model/place-form";
@@ -70,9 +69,8 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
           <form action={formAction}>
-            <AlertDialogAction className="w-full" disabled={pending} type="submit" variant="destructive">
-              {pending ? <Spinner aria-label="장소 삭제 중" data-icon="inline-start" /> : null}
-              {pending ? "삭제 중..." : "장소 삭제"}
+            <AlertDialogAction className="w-full" loading={pending} type="submit" variant="destructive">
+              장소 삭제
             </AlertDialogAction>
           </form>
         </AlertDialogFooter>

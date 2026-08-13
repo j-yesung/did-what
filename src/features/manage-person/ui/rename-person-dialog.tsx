@@ -18,7 +18,6 @@ import {
 } from "@/shared/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { renamePerson } from "../model/actions";
 import { INITIAL_PERSON_ACTION_STATE } from "../model/person-form";
@@ -78,9 +77,8 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
             <DialogClose disabled={pending} render={<Button type="button" variant="outline" />}>
               취소
             </DialogClose>
-            <Button disabled={pending} type="submit">
-              {pending ? <Spinner aria-label="이름 수정 중" data-icon="inline-start" /> : null}
-              {pending ? "수정 중..." : "수정 완료"}
+            <Button loading={pending} type="submit">
+              수정 완료
             </Button>
           </DialogFooter>
         </form>

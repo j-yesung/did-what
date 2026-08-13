@@ -18,7 +18,6 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { deletePerson } from "../model/actions";
 import { INITIAL_PERSON_ACTION_STATE } from "../model/person-form";
@@ -60,9 +59,8 @@ export function DeletePersonDialog({ name, personId, recordCount }: DeletePerson
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
           <form action={formAction}>
-            <AlertDialogAction className="w-full" disabled={pending} type="submit" variant="destructive">
-              {pending ? <Spinner data-icon="inline-start" aria-label="사람 삭제 중" /> : null}
-              {pending ? "삭제 중..." : "사람 삭제"}
+            <AlertDialogAction className="w-full" loading={pending} type="submit" variant="destructive">
+              사람 삭제
             </AlertDialogAction>
           </form>
         </AlertDialogFooter>

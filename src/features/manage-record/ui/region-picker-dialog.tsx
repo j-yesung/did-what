@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { searchRecordRegions } from "../model/actions";
 import { INITIAL_REGION_SEARCH_STATE, type RecordLocationRegion } from "../model/location-picker";
@@ -55,8 +54,8 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
 
       <form action={formAction} className="flex gap-2" onSubmit={stopPropagation}>
         <Input aria-label="지역 이름" maxLength={100} name="query" placeholder="예: 망원동, 홍대" required />
-        <Button disabled={pending} type="submit">
-          {pending ? <Spinner aria-label="지역 검색 중" /> : <SearchIcon aria-hidden="true" />}
+        <Button loading={pending} type="submit">
+          <SearchIcon aria-hidden="true" />
           <span className="sr-only">검색</span>
         </Button>
       </form>

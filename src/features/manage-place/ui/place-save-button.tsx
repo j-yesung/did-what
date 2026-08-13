@@ -6,7 +6,6 @@ import { BookmarkCheckIcon, BookmarkIcon, CircleAlertIcon } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { setPlaceSaved } from "../model/actions";
 import { INITIAL_PLACE_ACTION_STATE } from "../model/place-form";
@@ -23,16 +22,8 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
     INITIAL_PLACE_ACTION_STATE,
   );
   const currentSaved = state.saved ?? saved;
-  const label = pending
-    ? "변경 중..."
-    : currentSaved
-      ? saved
-        ? "내 장소에서 해제"
-        : "내 장소에 저장됨"
-      : "내 장소에 저장";
-  const icon = pending ? (
-    <Spinner aria-label="장소 저장 상태 변경 중" data-icon={iconOnly ? undefined : "inline-start"} />
-  ) : currentSaved ? (
+  const label = currentSaved ? (saved ? "내 장소에서 해제" : "내 장소에 저장됨") : "내 장소에 저장";
+  const icon = currentSaved ? (
     <BookmarkCheckIcon aria-hidden="true" data-icon={iconOnly ? undefined : "inline-start"} />
   ) : (
     <BookmarkIcon aria-hidden="true" data-icon={iconOnly ? undefined : "inline-start"} />
@@ -44,7 +35,8 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
         <Button
           aria-label={label}
           className="size-11 text-foreground [&_svg]:size-[18px]"
-          disabled={pending || state.status === "success"}
+          disabled={state.status === "success"}
+          loading={pending}
           size="icon-lg"
           type="submit"
           variant="ghost"
@@ -52,7 +44,7 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
           {icon}
         </Button>
       ) : (
-        <Button disabled={pending || state.status === "success"} type="submit" variant="outline">
+        <Button disabled={state.status === "success"} loading={pending} type="submit" variant="outline">
           {icon}
           {label}
         </Button>

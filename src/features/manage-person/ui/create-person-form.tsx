@@ -9,7 +9,6 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { createPerson } from "../model/actions";
 import { INITIAL_PERSON_ACTION_STATE } from "../model/person-form";
@@ -61,13 +60,9 @@ export function CreatePersonForm() {
           </FieldGroup>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" type="submit" disabled={pending}>
-            {pending ? (
-              <Spinner data-icon="inline-start" aria-label="사람 추가 중" />
-            ) : (
-              <PlusIcon data-icon="inline-start" />
-            )}
-            {pending ? "추가 중..." : "사람 추가"}
+          <Button className="w-full" loading={pending} type="submit">
+            <PlusIcon data-icon="inline-start" />
+            사람 추가
           </Button>
         </CardFooter>
       </Card>

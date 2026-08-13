@@ -11,7 +11,6 @@ import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { resolveRecordPlace, searchRecordPlaces } from "../model/actions";
 import {
@@ -124,8 +123,8 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
         <input name="page" type="hidden" value="1" />
         <input name="regionName" type="hidden" value={region?.fullName ?? ""} />
         <Input aria-label="방문 장소 이름" maxLength={100} name="query" placeholder="예: 메가커피" required />
-        <Button disabled={pending || selecting} type="submit">
-          {pending ? <Spinner aria-label="장소 검색 중" /> : <SearchIcon aria-hidden="true" />}
+        <Button disabled={selecting} loading={pending} type="submit">
+          <SearchIcon aria-hidden="true" />
           <span className="sr-only">검색</span>
         </Button>
       </form>
@@ -161,13 +160,14 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
                 </div>
                 <Button
                   className="mt-3 w-full"
-                  disabled={selected || selecting}
+                  disabled={selected}
+                  loading={selecting}
                   onClick={() => selectPlace(place)}
                   size="sm"
                   type="button"
                   variant="outline"
                 >
-                  {selecting ? <Spinner aria-label="장소 확인 중" /> : <PlusIcon aria-hidden="true" />}
+                  <PlusIcon aria-hidden="true" />
                   {selected ? "추가됨" : "방문 장소에 추가"}
                 </Button>
               </li>

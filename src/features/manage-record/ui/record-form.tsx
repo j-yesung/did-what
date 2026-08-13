@@ -21,7 +21,6 @@ import {
   FieldSet,
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
@@ -187,13 +186,9 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
           </Field>
         </FieldGroup>
 
-        <Button className="mt-5 h-14 w-full" size="lg" type="submit" disabled={pending}>
-          {pending ? (
-            <Spinner data-icon="inline-start" aria-label={`기록 ${mode === "edit" ? "수정" : "저장"} 중`} />
-          ) : (
-            <NotebookPenIcon data-icon="inline-start" />
-          )}
-          {pending ? `${mode === "edit" ? "수정" : "저장"} 중...` : mode === "edit" ? "수정 완료" : "기록 남기기"}
+        <Button className="mt-5 h-14 w-full" loading={pending} size="lg" type="submit">
+          <NotebookPenIcon data-icon="inline-start" />
+          {mode === "edit" ? "수정 완료" : "기록 남기기"}
         </Button>
       </div>
     </form>

@@ -11,7 +11,6 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 import { TextButton } from "@/shared/ui/text-button";
 
 type AuthPageProps = {
@@ -158,13 +157,9 @@ function AuthPage({ mode }: AuthPageProps) {
                   </Field>
                 ) : null}
 
-                <Button className="mt-1 h-11 w-full" size="lg" type="submit" disabled={pending}>
-                  {pending ? (
-                    <Spinner data-icon="inline-start" aria-label="처리 중" />
-                  ) : (
-                    <SubmitIcon data-icon="inline-start" />
-                  )}
-                  {pending ? "처리 중..." : copy.submitLabel}
+                <Button className="mt-1 h-11 w-full" loading={pending} size="lg" type="submit">
+                  <SubmitIcon data-icon="inline-start" />
+                  {copy.submitLabel}
                 </Button>
               </FieldGroup>
             </form>

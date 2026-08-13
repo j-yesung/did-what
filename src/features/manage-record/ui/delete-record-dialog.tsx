@@ -18,7 +18,6 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { deleteRecord } from "../model/actions";
 import { INITIAL_RECORD_ACTION_STATE } from "../model/record-form";
@@ -57,9 +56,8 @@ export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogPro
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
           <form action={formAction}>
-            <AlertDialogAction className="w-full" disabled={pending} type="submit" variant="destructive">
-              {pending ? <Spinner data-icon="inline-start" aria-label="기록 삭제 중" /> : null}
-              {pending ? "삭제 중..." : "기록 삭제"}
+            <AlertDialogAction className="w-full" loading={pending} type="submit" variant="destructive">
+              기록 삭제
             </AlertDialogAction>
           </form>
         </AlertDialogFooter>
