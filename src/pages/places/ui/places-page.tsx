@@ -42,7 +42,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
   );
 
   return (
-    <PageShell>
+    <PageShell withBottomNavigation>
       <PageHeader title="장소" />
 
       <section aria-labelledby="places-intro-title" className="px-1">
@@ -57,21 +57,23 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
 
       <PlaceSearchForm query={query} searchError={searchError} />
 
-      {queryResult?.valid && !searchError ? (
-        <PlaceSearchResults
-          currentPage={currentPage}
-          hasNextPage={Boolean(
-            successfulSearchResult && !successfulSearchResult.isEnd && currentPage < KAKAO_SEARCH_MAX_PAGE,
-          )}
-          hasPreviousPage={currentPage > 1}
-          pageableCount={successfulSearchResult?.pageableCount ?? 0}
-          places={successfulSearchResult?.places ?? []}
-          query={queryResult.query}
-          savedKakaoIds={savedKakaoIds}
-        />
-      ) : null}
-
-      <SavedPlaceList hasError={Boolean(placesResult.error)} places={places} />
+      {hasSearch ? (
+        queryResult?.valid && !searchError ? (
+          <PlaceSearchResults
+            currentPage={currentPage}
+            hasNextPage={Boolean(
+              successfulSearchResult && !successfulSearchResult.isEnd && currentPage < KAKAO_SEARCH_MAX_PAGE,
+            )}
+            hasPreviousPage={currentPage > 1}
+            pageableCount={successfulSearchResult?.pageableCount ?? 0}
+            places={successfulSearchResult?.places ?? []}
+            query={queryResult.query}
+            savedKakaoIds={savedKakaoIds}
+          />
+        ) : null
+      ) : (
+        <SavedPlaceList hasError={Boolean(placesResult.error)} places={places} />
+      )}
     </PageShell>
   );
 }

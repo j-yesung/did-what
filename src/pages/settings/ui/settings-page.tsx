@@ -11,7 +11,7 @@ export async function SettingsPage() {
   const [displayName, theme] = await Promise.all([getProfileName(user.id), getTheme()]);
 
   return (
-    <PageShell>
+    <PageShell withBottomNavigation>
       <PageHeader title="설정" />
 
       <Card>

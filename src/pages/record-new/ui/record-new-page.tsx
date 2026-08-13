@@ -19,7 +19,7 @@ export async function RecordNewPage() {
 
   return (
     <PageShell className="block min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--blue-950),transparent_92%)]">
-      <PageHeader back="/" title="새 기록" />
+      <PageHeader back="/records" backGuardFormId="record-form" title="새 기록" />
 
       <section
         className="px-1 pt-[22px] pb-5 motion-safe:animate-[enter_360ms_ease-out_both]"

@@ -18,7 +18,7 @@ export async function PeoplePage() {
   const personCount = people?.length ?? 0;
 
   return (
-    <PageShell>
+    <PageShell withBottomNavigation>
       <PageHeader title="사람" />
 
       <section className="px-1" aria-labelledby="people-intro-title">

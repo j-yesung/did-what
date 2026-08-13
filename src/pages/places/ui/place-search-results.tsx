@@ -1,9 +1,11 @@
 "use client";
 
 import { SearchIcon } from "lucide-react";
+import Link from "next/link";
 
 import { CreatePlaceForm } from "@/features/manage-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
+import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import {
@@ -14,6 +16,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/ui/pagination";
+import { textButtonVariants } from "@/shared/ui/text-button";
 
 type PlaceSearchResultsProps = {
   currentPage: number;
@@ -40,10 +43,16 @@ export function PlaceSearchResults({
 }: PlaceSearchResultsProps) {
   return (
     <section aria-labelledby="place-search-results-title" className="flex flex-col gap-3">
-      <div className="px-1">
-        <h2 className="mt-1 font-bold font-heading text-lg" id="place-search-results-title">
+      <div className="flex items-start justify-between gap-3 px-1">
+        <h2 className="min-w-0 font-bold font-heading text-lg" id="place-search-results-title">
           ‘{query}’ 검색 결과 {pageableCount}곳 · {currentPage}페이지
         </h2>
+        <Link
+          className={cn(textButtonVariants({ size: "sm", tone: "muted" }), "mt-0.5 whitespace-nowrap")}
+          href="/places"
+        >
+          저장한 장소 보기
+        </Link>
       </div>
 
       {places.length > 0 ? (

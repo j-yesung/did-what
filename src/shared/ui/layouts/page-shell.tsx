@@ -5,17 +5,19 @@ import { cn } from "@/shared/lib/utils";
 type PageShellProps = {
   children: ReactNode;
   className?: string;
+  withBottomNavigation?: boolean;
 };
 
 /**
  * 화면 공통 뼈대.
- * pt는 상태 표시줄·노치를, pb는 하단 내비게이션이 가리는 높이를 피한다. 화면마다 다시 적지 않는다.
+ * 상태 표시줄·노치와 홈 인디케이터를 피하고, 최상위 탭에서는 하단 내비게이션 높이까지 확보한다.
  */
-export function PageShell({ children, className }: PageShellProps) {
+export function PageShell({ children, className, withBottomNavigation = false }: PageShellProps) {
   return (
     <main
       className={cn(
-        "mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-[calc(24px+env(safe-area-inset-top))] pb-[var(--nav-clearance)]",
+        "mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-[calc(24px+env(safe-area-inset-top))] pb-[calc(24px+env(safe-area-inset-bottom))]",
+        withBottomNavigation && "pb-[var(--nav-clearance)]",
         className,
       )}
     >

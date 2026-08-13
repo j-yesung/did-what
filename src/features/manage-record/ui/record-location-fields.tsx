@@ -28,6 +28,7 @@ const FIELD_ICON = "size-[18px] text-foreground [stroke-width:2]";
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
   initialRegion?: RecordLocationRegion;
+  onChange?: () => void;
   placeError?: string;
   regionError?: string;
   savedPlaces: PlaceOption[];
@@ -36,6 +37,7 @@ type RecordLocationFieldsProps = {
 export function RecordLocationFields({
   initialPlaces = [],
   initialRegion,
+  onChange,
   placeError,
   regionError,
   savedPlaces,
@@ -49,6 +51,7 @@ export function RecordLocationFields({
     if (nextRegion.code === region?.code) return;
     if (places.length === 0) {
       setRegion(nextRegion);
+      onChange?.();
       return;
     }
 
@@ -61,29 +64,34 @@ export function RecordLocationFields({
     setPlaces([]);
     setPendingRegion(null);
     setConfirmOpen(false);
+    onChange?.();
   }
 
   function addPlace(place: RecordLocationPlace, placeRegion: RecordLocationRegion) {
+    if (places.some((item) => item.key === place.key)) return;
+
     if (!region) setRegion(placeRegion);
-    setPlaces(current => (current.some(item => item.key === place.key) ? current : [...current, place]));
+    setPlaces((current) => [...current, place]);
+    onChange?.();
   }
 
   function toggleSave(key: string, checked: boolean) {
-    setPlaces(current =>
-      current.map(place =>
+    setPlaces((current) =>
+      current.map((place) =>
         place.key === key ? { ...place, reference: { ...place.reference, save: checked || place.saved } } : place,
       ),
     );
+    onChange?.();
   }
 
-  const selectedKeys = new Set(places.map(place => place.key));
+  const selectedKeys = new Set(places.map((place) => place.key));
 
   return (
     <>
       <input name="regionCode" type="hidden" value={region?.code ?? ""} />
       <input name="regionLabel" type="hidden" value={region?.label ?? ""} />
       <input name="regionName" type="hidden" value={region?.fullName ?? ""} />
-      <input name="places" type="hidden" value={JSON.stringify(places.map(place => place.reference))} />
+      <input name="places" type="hidden" value={JSON.stringify(places.map((place) => place.reference))} />
 
       <Field data-invalid={Boolean(regionError)}>
         <FieldLabel>
@@ -113,7 +121,7 @@ export function RecordLocationFields({
 
         {places.length ? (
           <ul className="flex flex-col gap-2">
-            {places.map(place => {
+            {places.map((place) => {
               const saveChecked = place.saved || place.reference.save;
               return (
                 <li className="rounded-xl border bg-card p-3" key={place.key}>
@@ -124,7 +132,10 @@ export function RecordLocationFields({
                     </div>
                     <Button
                       aria-label={`${place.name} 방문 장소에서 제거`}
-                      onClick={() => setPlaces(current => current.filter(item => item.key !== place.key))}
+                      onClick={() => {
+                        setPlaces((current) => current.filter((item) => item.key !== place.key));
+                        onChange?.();
+                      }}
                       size="icon-sm"
                       type="button"
                       variant="ghost"
@@ -137,7 +148,7 @@ export function RecordLocationFields({
                       checked={saveChecked}
                       disabled={place.saved}
                       id={`save-${place.key}`}
-                      onCheckedChange={checked => toggleSave(place.key, checked)}
+                      onCheckedChange={(checked) => toggleSave(place.key, checked)}
                     />
                     <BookmarkIcon className="size-4 text-foreground" aria-hidden="true" />
                     {place.saved ? "내 장소에 저장됨" : "기록을 저장할 때 내 장소에도 추가"}

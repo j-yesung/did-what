@@ -57,12 +57,30 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
 
   useEffect(() => {
     if (state.status === "error") {
+      if (formRef.current) formRef.current.dataset.dirty = "true";
       formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"], [role="alert"]')?.focus();
     }
   }, [state]);
 
+  useEffect(() => {
+    function warnBeforeUnload(event: BeforeUnloadEvent) {
+      if (formRef.current?.dataset.dirty !== "true") return;
+
+      event.preventDefault();
+      event.returnValue = "";
+    }
+
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, []);
+
+  function markDirty() {
+    if (formRef.current) formRef.current.dataset.dirty = "true";
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (event.currentTarget.querySelectorAll('input[name="personIds"]:checked').length > 0) {
+      event.currentTarget.dataset.dirty = "false";
       return;
     }
 
@@ -72,7 +90,15 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
   }
 
   return (
-    <form ref={formRef} className="flex flex-col gap-4" action={formAction} onSubmit={handleSubmit}>
+    <form
+      ref={formRef}
+      action={formAction}
+      className="flex flex-col gap-4"
+      data-dirty="false"
+      id="record-form"
+      onChange={markDirty}
+      onSubmit={handleSubmit}
+    >
       {state.message ? (
         <Alert variant="destructive" tabIndex={-1}>
           <CircleAlertIcon aria-hidden="true" />
@@ -112,7 +138,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               <FieldDescription>한 명 이상 선택해 주세요.</FieldDescription>
 
               <div className="flex flex-wrap gap-1.5">
-                {people.map(person => (
+                {people.map((person) => (
                   <CheckboxChip
                     aria-describedby={personError ? "people-error" : undefined}
                     aria-invalid={Boolean(personError)}
@@ -135,6 +161,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
           <RecordLocationFields
             initialPlaces={initialValues?.places}
             initialRegion={initialValues?.region}
+            onChange={markDirty}
             placeError={state.fieldErrors?.places}
             regionError={state.fieldErrors?.regionCode}
             savedPlaces={savedPlaces}

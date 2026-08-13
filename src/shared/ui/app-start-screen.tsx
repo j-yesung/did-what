@@ -16,7 +16,7 @@ export function AppStartScreen() {
   useEffect(() => {
     if (visible) return;
 
-    const timeout = setTimeout(() => setMounted(false), 300);
+    const timeout = setTimeout(() => setMounted(false), 1500);
 
     return () => clearTimeout(timeout);
   }, [visible]);

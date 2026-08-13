@@ -1,7 +1,10 @@
-import { NotebookPenIcon } from "lucide-react";
+import { NotebookPenIcon, PlusIcon } from "lucide-react";
+import Link from "next/link";
 
 import { getRecords, hasRecordFilters, parseRecordFilters, type RecordSearchParams } from "@/entities/record";
 import { requireUser } from "@/shared/api/supabase/require-user";
+import { cn } from "@/shared/lib/utils";
+import { buttonVariants } from "@/shared/ui/button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
@@ -19,8 +22,19 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
   const { data: records, error } = await getRecords(user.id, filters);
 
   return (
-    <PageShell>
-      <PageHeader title="기록" />
+    <PageShell withBottomNavigation>
+      <PageHeader
+        action={
+          <Link
+            aria-label="새 기록 남기기"
+            className={cn(buttonVariants({ size: "icon-lg", variant: "ghost" }), "size-11")}
+            href="/records/new"
+          >
+            <PlusIcon aria-hidden="true" />
+          </Link>
+        }
+        title="기록"
+      />
 
       <RecordFilterForm filters={filters} />
 
