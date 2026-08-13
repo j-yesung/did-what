@@ -1,8 +1,16 @@
 import type { ReactNode } from "react";
 
 import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 
 import "@/app/styles/globals.css";
+
+const pretendard = localFont({
+  src: "./fonts/PretendardVariable.woff2",
+  weight: "45 920",
+  display: "swap",
+  variable: "--font-pretendard",
+});
 
 export const metadata: Metadata = {
   title: "뭐했지",
@@ -17,7 +25,7 @@ export const viewport: Viewport = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={pretendard.variable}>
       <body>{children}</body>
     </html>
   );
