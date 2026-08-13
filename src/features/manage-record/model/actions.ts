@@ -12,14 +12,14 @@ import {
   validateKakaoPlaceId,
   validateKakaoQuery,
 } from "@/shared/api/kakao-local";
-import { createClient } from "@/shared/api/supabase/server";
+import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/is-uuid";
 
 import type { PlaceSearchState, RegionSearchState, ResolveRecordPlaceResult } from "./location-picker";
 import type { RecordActionState, RecordInput, RecordInputValues, RecordPlaceReference } from "./record-form";
 import { validateRecordInput } from "./record-form";
 
-type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
 
 function readRecordInput(formData: FormData): RecordInputValues {
   return {
@@ -32,13 +32,6 @@ function readRecordInput(formData: FormData): RecordInputValues {
     activity: String(formData.get("activity") ?? ""),
     memo: String(formData.get("memo") ?? ""),
   };
-}
-
-async function getUser() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) redirect("/login");
-  return { supabase, user: data.user };
 }
 
 async function verifyRegion(code: string, name: string) {
@@ -165,7 +158,7 @@ async function validateSelections(data: RecordInput, ownerId: string, supabase: 
 }
 
 export async function searchRecordRegions(_state: RegionSearchState, formData: FormData): Promise<RegionSearchState> {
-  await getUser();
+  await requireUser();
   const query = String(formData.get("query") ?? "").trim();
   const result = await searchKakaoRegions(query);
   return "regions" in result
@@ -174,7 +167,7 @@ export async function searchRecordRegions(_state: RegionSearchState, formData: F
 }
 
 export async function searchRecordPlaces(_state: PlaceSearchState, formData: FormData): Promise<PlaceSearchState> {
-  await getUser();
+  await requireUser();
   const queryResult = validateKakaoQuery(String(formData.get("query") ?? ""));
   if (!queryResult.valid) return { message: queryResult.error, status: "error" };
 
@@ -193,7 +186,7 @@ export async function resolveRecordPlace(input: {
   providerPlaceId: string;
   query: string;
 }): Promise<ResolveRecordPlaceResult> {
-  await getUser();
+  await requireUser();
   const idResult = validateKakaoPlaceId(input.providerPlaceId);
   const queryResult = validateKakaoQuery(input.query);
   if (!idResult.valid || !queryResult.valid) return { error: "선택한 장소를 확인할 수 없어요." };
@@ -227,7 +220,7 @@ export async function resolveRecordPlace(input: {
 }
 
 export async function createRecord(_state: RecordActionState, formData: FormData): Promise<RecordActionState> {
-  const { supabase, user } = await getUser();
+  const { supabase, user } = await requireUser();
   const result = validateRecordInput(readRecordInput(formData));
   if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };
 
@@ -265,7 +258,7 @@ export async function updateRecord(
 ): Promise<RecordActionState> {
   if (!isUuid(recordId)) return { message: "수정할 기록을 확인할 수 없습니다.", status: "error" };
 
-  const { supabase, user } = await getUser();
+  const { supabase, user } = await requireUser();
   const result = validateRecordInput(readRecordInput(formData));
   if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };
 
@@ -308,7 +301,7 @@ export async function deleteRecord(
 ): Promise<RecordActionState> {
   if (!isUuid(recordId)) return { message: "삭제할 기록을 확인할 수 없습니다.", status: "error" };
 
-  const { supabase, user } = await getUser();
+  const { supabase, user } = await requireUser();
   const { data: deleted, error } = await supabase
     .from("records")
     .delete()

@@ -1,18 +1,12 @@
-import { ChevronRightIcon, CircleAlertIcon, MapPinIcon } from "lucide-react";
+import { ChevronRightIcon, MapPinIcon } from "lucide-react";
 import Link from "next/link";
 
 import { DeletePlaceDialog, PlaceSaveButton } from "@/features/manage-place";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { formatShortDate } from "@/shared/lib/format-date";
 import { buttonVariants } from "@/shared/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-
-const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
-  day: "numeric",
-  month: "short",
-  timeZone: "Asia/Seoul",
-  year: "numeric",
-});
+import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 type SavedPlace = {
   id: string;
@@ -29,13 +23,7 @@ type SavedPlaceListProps = {
 
 export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
   if (hasError) {
-    return (
-      <Alert variant="destructive">
-        <CircleAlertIcon aria-hidden="true" />
-        <AlertTitle>저장한 장소를 불러오지 못했어요</AlertTitle>
-        <AlertDescription>잠시 후 다시 시도해 주세요.</AlertDescription>
-      </Alert>
-    );
+    return <LoadErrorAlert title="저장한 장소를 불러오지 못했어요" />;
   }
 
   if (places.length === 0) {
@@ -62,7 +50,7 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
           <CardHeader>
             <CardTitle>{place.name}</CardTitle>
             <CardDescription>
-              {place.saved_at ? `${DATE_FORMATTER.format(new Date(place.saved_at))} 저장` : "저장한 장소"}
+              {place.saved_at ? `${formatShortDate(place.saved_at)} 저장` : "저장한 장소"}
             </CardDescription>
             <CardAction className="-mt-1.5 -mr-1.5">
               <PlaceSaveButton iconOnly placeId={place.id} saved={Boolean(place.saved_at)} />

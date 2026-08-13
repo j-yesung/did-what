@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import { getPlaces } from "@/entities/place";
 import {
   KAKAO_SEARCH_MAX_PAGE,
@@ -7,7 +5,7 @@ import {
   searchKakaoPlaces,
   validateKakaoQuery,
 } from "@/shared/api/kakao-local";
-import { createClient } from "@/shared/api/supabase/server";
+import { requireUser } from "@/shared/api/supabase/require-user";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 import { PlaceSearchForm } from "./place-search-form";
@@ -19,12 +17,7 @@ type PlacesPageProps = {
 };
 
 export async function PlacesPage({ searchParams }: PlacesPageProps) {
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) {
-    redirect("/login");
-  }
+  const { user } = await requireUser();
 
   const params = await searchParams;
   const hasSearch = Object.hasOwn(params, "q");
@@ -33,7 +26,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
   const queryResult = hasSearch ? validateKakaoQuery(rawQuery) : null;
   const query = queryResult?.valid ? queryResult.query : rawQuery;
   const [placesResult, searchResult] = await Promise.all([
-    getPlaces(userData.user.id),
+    getPlaces(user.id),
     queryResult?.valid ? searchKakaoPlaces(queryResult.query, currentPage) : Promise.resolve(null),
   ]);
   const places = placesResult.data ?? [];

@@ -1,21 +1,17 @@
 import { BookOpenIcon, CalendarDaysIcon, MapPinIcon, NotebookPenIcon, PencilIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { getRecord } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/manage-place";
 import { DeleteRecordDialog } from "@/features/manage-record";
-import { createClient } from "@/shared/api/supabase/server";
+import { requireUser } from "@/shared/api/supabase/require-user";
+import { formatRecordDate } from "@/shared/lib/format-date";
 import { isUuid } from "@/shared/lib/is-uuid";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
-
-const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
-  dateStyle: "long",
-  timeZone: "Asia/Seoul",
-});
+import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 type RecordDetailPageProps = {
   params: Promise<{ recordId: string }>;
@@ -28,14 +24,9 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
     notFound();
   }
 
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
+  const { user } = await requireUser();
 
-  if (!userData.user) {
-    redirect("/login");
-  }
-
-  const { data: record, error } = await getRecord(recordId, userData.user.id);
+  const { data: record, error } = await getRecord(recordId, user.id);
 
   if (!record && !error) {
     notFound();
@@ -46,11 +37,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
       <PageHeader back="/records" eyebrow="MEMORY DETAIL" title="기록 상세" />
 
       {error ? (
-        <Alert variant="destructive">
-          <NotebookPenIcon aria-hidden="true" />
-          <AlertTitle>기록을 불러오지 못했어요</AlertTitle>
-          <AlertDescription>잠시 후 다시 시도해 주세요.</AlertDescription>
-        </Alert>
+        <LoadErrorAlert icon={<NotebookPenIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />
       ) : record ? (
         <>
           <section aria-labelledby="record-activity-title" className="px-1 py-4">
@@ -81,9 +68,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
                 <CalendarDaysIcon className="size-5 text-primary" aria-hidden="true" />
                 <div>
                   <p className="text-muted-foreground text-xs">날짜</p>
-                  <p className="mt-1 font-medium">
-                    {DATE_FORMATTER.format(new Date(`${record.recorded_at}T00:00:00+09:00`))}
-                  </p>
+                  <p className="mt-1 font-medium">{formatRecordDate(record.recorded_at)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-[20px_1fr] gap-3">

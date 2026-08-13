@@ -1,25 +1,19 @@
-import { CircleAlertIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
+import { NotebookPenIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
 import { getPlaces } from "@/entities/place";
 import { createRecord, RecordForm } from "@/features/manage-record";
-import { createClient } from "@/shared/api/supabase/server";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { requireUser } from "@/shared/api/supabase/require-user";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
+import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 export async function RecordNewPage() {
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
+  const { user } = await requireUser();
 
-  if (!userData.user) {
-    redirect("/login");
-  }
-
-  const [peopleResult, placesResult] = await Promise.all([getPeople(userData.user.id), getPlaces(userData.user.id)]);
+  const [peopleResult, placesResult] = await Promise.all([getPeople(user.id), getPlaces(user.id)]);
   const people = peopleResult.data ?? [];
   const hasLoadError = Boolean(peopleResult.error);
 
@@ -43,11 +37,7 @@ export async function RecordNewPage() {
       </section>
 
       {hasLoadError ? (
-        <Alert variant="destructive">
-          <CircleAlertIcon aria-hidden="true" />
-          <AlertTitle>선택지를 불러오지 못했어요</AlertTitle>
-          <AlertDescription>잠시 후 다시 시도해 주세요.</AlertDescription>
-        </Alert>
+        <LoadErrorAlert title="선택지를 불러오지 못했어요" />
       ) : people.length === 0 ? (
         <Empty className="border bg-card py-12">
           <EmptyHeader>

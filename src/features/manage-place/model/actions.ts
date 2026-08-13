@@ -4,16 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { resolveKakaoRegion, searchKakaoPlaces, validateKakaoPlaceId } from "@/shared/api/kakao-local";
-import { createClient } from "@/shared/api/supabase/server";
+import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/is-uuid";
 
 import type { PlaceActionState } from "./place-form";
 
 export async function createPlace(_state: PlaceActionState, formData: FormData): Promise<PlaceActionState> {
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) redirect("/login");
+  const { supabase, user } = await requireUser();
 
   const placeIdResult = validateKakaoPlaceId(String(formData.get("placeId") ?? ""));
   if (!placeIdResult.valid) return { message: placeIdResult.error, status: "error" };
@@ -28,7 +25,7 @@ export async function createPlace(_state: PlaceActionState, formData: FormData):
   const { data: existing, error: findError } = await supabase
     .from("places")
     .select("id, saved_at")
-    .eq("owner_id", userData.user.id)
+    .eq("owner_id", user.id)
     .eq("provider", "kakao")
     .eq("provider_place_id", place.id)
     .maybeSingle();
@@ -39,13 +36,13 @@ export async function createPlace(_state: PlaceActionState, formData: FormData):
         .from("places")
         .update({ saved_at: existing.saved_at ?? new Date().toISOString() })
         .eq("id", existing.id)
-        .eq("owner_id", userData.user.id)
+        .eq("owner_id", user.id)
     : await supabase.from("places").insert({
         address: place.address,
         latitude: place.latitude,
         longitude: place.longitude,
         name: place.name,
-        owner_id: userData.user.id,
+        owner_id: user.id,
         provider: "kakao",
         provider_place_id: place.id,
         region_code: region.code,
@@ -66,16 +63,14 @@ export async function deletePlace(
 ): Promise<PlaceActionState> {
   if (!isUuid(placeId)) return { message: "삭제할 장소를 확인할 수 없어요.", status: "error" };
 
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) redirect("/login");
+  const { supabase, user } = await requireUser();
 
   /** record_places는 장소 삭제를 따라 정리되므로 기록은 남고 방문 장소만 빠진다. */
   const { data, error } = await supabase
     .from("places")
     .delete()
     .eq("id", placeId)
-    .eq("owner_id", userData.user.id)
+    .eq("owner_id", user.id)
     .select("id")
     .maybeSingle();
   if (error || !data) return { message: "장소를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.", status: "error" };
@@ -93,15 +88,13 @@ export async function setPlaceSaved(
 ): Promise<PlaceActionState> {
   if (!isUuid(placeId)) return { message: "장소를 확인할 수 없어요.", status: "error" };
 
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) redirect("/login");
+  const { supabase, user } = await requireUser();
 
   const { data, error } = await supabase
     .from("places")
     .update({ saved_at: saved ? new Date().toISOString() : null })
     .eq("id", placeId)
-    .eq("owner_id", userData.user.id)
+    .eq("owner_id", user.id)
     .select("id")
     .maybeSingle();
   if (error || !data) return { message: "장소 저장 상태를 바꾸지 못했어요.", status: "error" };

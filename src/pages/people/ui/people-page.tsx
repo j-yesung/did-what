@@ -1,32 +1,20 @@
 import { ChevronRightIcon, UserRoundIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
 import { CreatePersonForm } from "@/features/manage-person";
-import { createClient } from "@/shared/api/supabase/server";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { requireUser } from "@/shared/api/supabase/require-user";
+import { formatShortDate } from "@/shared/lib/format-date";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
-
-const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
-  day: "numeric",
-  month: "short",
-  timeZone: "Asia/Seoul",
-  year: "numeric",
-});
+import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 export async function PeoplePage() {
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
+  const { user } = await requireUser();
 
-  if (!userData.user) {
-    redirect("/login");
-  }
-
-  const { data: people, error } = await getPeople(userData.user.id);
+  const { data: people, error } = await getPeople(user.id);
   const personCount = people?.length ?? 0;
 
   return (
@@ -46,11 +34,7 @@ export async function PeoplePage() {
       <CreatePersonForm />
 
       {error ? (
-        <Alert variant="destructive">
-          <UsersIcon aria-hidden="true" />
-          <AlertTitle>사람 목록을 불러오지 못했어요</AlertTitle>
-          <AlertDescription>잠시 후 다시 시도해 주세요.</AlertDescription>
-        </Alert>
+        <LoadErrorAlert icon={<UsersIcon aria-hidden="true" />} title="사람 목록을 불러오지 못했어요" />
       ) : people?.length ? (
         <section className="flex flex-col gap-3" aria-label={`함께한 사람 ${people.length}명`}>
           {people.map((person) => (
@@ -63,9 +47,7 @@ export async function PeoplePage() {
                 <p className="text-muted-foreground text-xs">새 기록에서 이 사람을 선택할 수 있어요.</p>
               </CardContent>
               <CardFooter className="justify-between gap-3">
-                <p className="text-muted-foreground text-xs">
-                  {DATE_FORMATTER.format(new Date(person.created_at))} 추가
-                </p>
+                <p className="text-muted-foreground text-xs">{formatShortDate(person.created_at)} 추가</p>
                 <Button nativeButton={false} render={<Link href={`/people/${person.id}`} />} size="sm" variant="ghost">
                   함께한 기록 보기
                   <ChevronRightIcon data-icon="inline-end" />

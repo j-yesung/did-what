@@ -3,22 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { createClient } from "@/shared/api/supabase/server";
+import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/is-uuid";
 
 import type { PersonActionState } from "./person-form";
 import { validatePersonName } from "./person-form";
-
-async function getUser() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-
-  if (!data.user) {
-    redirect("/login");
-  }
-
-  return { supabase, user: data.user };
-}
 
 // 사람 이름은 기록 목록·상세·작성 폼에 모두 노출된다.
 function revalidatePerson(personId?: string) {
@@ -32,7 +21,7 @@ function revalidatePerson(personId?: string) {
 }
 
 export async function createPerson(_state: PersonActionState, formData: FormData): Promise<PersonActionState> {
-  const { supabase, user } = await getUser();
+  const { supabase, user } = await requireUser();
   const result = validatePersonName(String(formData.get("name") ?? ""));
 
   if (!result.name) {
@@ -59,7 +48,7 @@ export async function renamePerson(
     return { message: "수정할 사람을 확인할 수 없습니다.", status: "error" };
   }
 
-  const { supabase, user } = await getUser();
+  const { supabase, user } = await requireUser();
   const result = validatePersonName(String(formData.get("name") ?? ""));
 
   if (!result.name) {
@@ -92,7 +81,7 @@ export async function deletePerson(
     return { message: "삭제할 사람을 확인할 수 없습니다.", status: "error" };
   }
 
-  const { supabase, user } = await getUser();
+  const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("people")
     .delete()

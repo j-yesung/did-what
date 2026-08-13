@@ -1,14 +1,13 @@
-import { CircleAlertIcon } from "lucide-react";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
 import { getPlaces } from "@/entities/place";
 import { getRecord } from "@/entities/record";
 import { RecordForm, updateRecord } from "@/features/manage-record";
-import { createClient } from "@/shared/api/supabase/server";
+import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/is-uuid";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
+import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 type RecordEditPageProps = {
   params: Promise<{ recordId: string }>;
@@ -21,17 +20,12 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
     notFound();
   }
 
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) {
-    redirect("/login");
-  }
+  const { user } = await requireUser();
 
   const [recordResult, peopleResult, placesResult] = await Promise.all([
-    getRecord(recordId, userData.user.id),
-    getPeople(userData.user.id),
-    getPlaces(userData.user.id),
+    getRecord(recordId, user.id),
+    getPeople(user.id),
+    getPlaces(user.id),
   ]);
 
   if (!recordResult.data && !recordResult.error) {
@@ -58,11 +52,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
       </section>
 
       {hasLoadError || !record ? (
-        <Alert variant="destructive">
-          <CircleAlertIcon aria-hidden="true" />
-          <AlertTitle>수정할 기록을 불러오지 못했어요</AlertTitle>
-          <AlertDescription>잠시 후 다시 시도해 주세요.</AlertDescription>
-        </Alert>
+        <LoadErrorAlert title="수정할 기록을 불러오지 못했어요" />
       ) : (
         <RecordForm
           action={updateRecord.bind(null, recordId)}
