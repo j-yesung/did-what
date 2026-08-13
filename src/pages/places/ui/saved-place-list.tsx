@@ -1,12 +1,12 @@
-import { ChevronRightIcon, MapPinIcon } from "lucide-react";
+import { MapPinIcon } from "lucide-react";
 import Link from "next/link";
 
 import { DeletePlaceDialog, PlaceSaveButton } from "@/features/manage-place";
 import { formatShortDate } from "@/shared/lib/format-date";
-import { buttonVariants } from "@/shared/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { TextButton } from "@/shared/ui/text-button";
 
 type SavedPlace = {
   id: string;
@@ -66,10 +66,15 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
               placeId={place.id}
               recordCount={place.record_places[0]?.count ?? 0}
             />
-            <Link className={buttonVariants({ size: "sm", variant: "ghost" })} href={`/places/${place.id}`}>
+            <TextButton
+              nativeButton={false}
+              render={<Link href={`/places/${place.id}`} />}
+              size="sm"
+              tone="muted"
+              variant="arrow"
+            >
               기록 보기
-              <ChevronRightIcon aria-hidden="true" data-icon="inline-end" />
-            </Link>
+            </TextButton>
           </CardFooter>
         </Card>
       ))}

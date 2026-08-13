@@ -1,10 +1,10 @@
-import { CalendarDaysIcon, ChevronRightIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import { CalendarDaysIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 import { formatRecordDate } from "@/shared/lib/format-date";
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import { TextButton } from "@/shared/ui/text-button";
 
 type RecordCardProps = {
   activity: string;
@@ -51,10 +51,15 @@ export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, 
               <p className="truncate text-muted-foreground text-xs">{peopleNames.join(", ") || "함께한 사람 없음"}</p>
             </div>
           ) : null}
-          <Button nativeButton={false} render={<Link href={`/records/${recordId}`} />} size="sm" variant="ghost">
+          <TextButton
+            nativeButton={false}
+            render={<Link href={`/records/${recordId}`} />}
+            size="sm"
+            tone="muted"
+            variant="arrow"
+          >
             기록 보기
-            <ChevronRightIcon data-icon="inline-end" />
-          </Button>
+          </TextButton>
         </CardFooter>
       </Card>
     </article>

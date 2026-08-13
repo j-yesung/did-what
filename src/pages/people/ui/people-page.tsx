@@ -1,15 +1,15 @@
-import { ChevronRightIcon, UserRoundIcon, UsersIcon } from "lucide-react";
+import { UserRoundIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 import { getPeople } from "@/entities/person";
 import { CreatePersonForm } from "@/features/manage-person";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { formatShortDate } from "@/shared/lib/format-date";
-import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { TextButton } from "@/shared/ui/text-button";
 
 export async function PeoplePage() {
   const { user } = await requireUser();
@@ -48,10 +48,15 @@ export async function PeoplePage() {
               </CardContent>
               <CardFooter className="justify-between gap-3">
                 <p className="text-muted-foreground text-xs">{formatShortDate(person.created_at)} 추가</p>
-                <Button nativeButton={false} render={<Link href={`/people/${person.id}`} />} size="sm" variant="ghost">
+                <TextButton
+                  nativeButton={false}
+                  render={<Link href={`/people/${person.id}`} />}
+                  size="sm"
+                  tone="muted"
+                  variant="arrow"
+                >
                   함께한 기록 보기
-                  <ChevronRightIcon data-icon="inline-end" />
-                </Button>
+                </TextButton>
               </CardFooter>
             </Card>
           ))}

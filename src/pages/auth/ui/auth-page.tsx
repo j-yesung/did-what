@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Spinner } from "@/shared/ui/spinner";
+import { TextButton } from "@/shared/ui/text-button";
 
 type AuthPageProps = {
   mode: "login" | "signup";
@@ -170,9 +171,9 @@ function AuthPage({ mode }: AuthPageProps) {
           </CardContent>
 
           <CardFooter className="justify-center py-3">
-            <Button variant="link" render={<Link href={copy.linkHref} />} nativeButton={false}>
+            <TextButton nativeButton={false} render={<Link href={copy.linkHref} />} tone="brand" variant="underline">
               {copy.linkLabel}
-            </Button>
+            </TextButton>
           </CardFooter>
         </Card>
       </section>
