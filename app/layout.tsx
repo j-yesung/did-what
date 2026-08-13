@@ -5,10 +5,9 @@ import localFont from "next/font/local";
 
 import { getTheme } from "@/features/switch-theme";
 import { cn } from "@/shared/lib/utils";
+import { AppStartScreen } from "@/shared/ui/app-start-screen";
 
 import "@/app/styles/globals.css";
-
-import { APPLE_STARTUP_IMAGES } from "./startup-images";
 
 const pretendard = localFont({
   src: "./fonts/PretendardVariable.woff2",
@@ -26,7 +25,6 @@ export const metadata: Metadata = {
   other: { "apple-mobile-web-app-capable": "yes" },
   appleWebApp: {
     capable: true,
-    startupImage: APPLE_STARTUP_IMAGES,
     statusBarStyle: "default",
     title: "뭐했지",
   },
@@ -54,7 +52,10 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
   return (
     <html className={cn(pretendard.variable, theme !== "system" && theme)} lang="ko">
-      <body>{children}</body>
+      <body>
+        {children}
+        <AppStartScreen />
+      </body>
     </html>
   );
 }

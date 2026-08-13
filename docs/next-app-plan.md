@@ -31,24 +31,22 @@
    - `app/icon.png` (512×512) — 브라우저 탭과 기본 아이콘
    - `app/apple-icon.png` (180×180, 투명도 없음) — iOS 홈 화면
    - `app/favicon.ico` (32×32) — 레거시 브라우저
-3. iOS 스플래시는 `public/splash/`에 기기 물리 해상도별로 둔다. 파일명은 `apple-splash-{가로}x{세로}.png`.
-   - iOS는 미디어 쿼리가 정확히 맞는 이미지 하나만 쓰고, 맞는 것이 없으면 빈 화면을 띄운다.
-   - 9종(1320×2868 ~ 750×1334)으로 현행 iPhone 라인업을 덮는다.
-   - iOS launch image 호환성을 위해 PNG로 저장한다.
-   - 중앙 물음표는 화면 폭의 약 30%로 배치한다.
-   - 시스템 색상 설정에 따라 라이트·다크 이미지를 각각 사용한다.
+3. iOS 네이티브 스플래시는 설치 캐시 때문에 앱 화면 모드와 어긋나므로 사용하지 않는다.
+- 웹과 설치형 PWA에서 동일한 앱 시작 컴포넌트를 표시한다.
+   - 투명 배경의 `app-start-logo.png`를 화면 중앙에 배치한다.
+   - 배경은 `background` 시맨틱 토큰으로 라이트·다크·시스템 모드에 대응한다.
 4. `app/manifest.ts`에서 `MetadataRoute.Manifest`를 반환한다.
    - `name: "뭐했지"`, `short_name: "뭐했지"`, `id: "/"`, `lang: "ko"`
    - `start_url: "/"`, `scope: "/"`, `display: "standalone"`, `orientation: "portrait"`
    - `background_color: "#FAFAF8"`, `theme_color: "#FAFAF8"`
    - `description`은 `metadata.description`과 같은 문장을 쓴다.
-5. `app/layout.tsx`의 `metadata.appleWebApp`에 `capable`, `title`, `statusBarStyle`, `startupImage`를 두고 Apple 전용 capability 메타 태그를 명시한다. 미디어 쿼리는 `app/startup-images.ts`에서 기기 목록으로부터 만든다.
+5. `app/layout.tsx`의 `metadata.appleWebApp`에는 `capable`, `title`, `statusBarStyle`만 두고 Apple 전용 capability 메타 태그를 명시한다.
 6. iOS는 매니페스트 아이콘을 무시하고 `apple-icon`만 사용한다. 두 자산의 그림이 어긋나지 않게 한다.
 
 검증:
 
 - `/manifest.webmanifest`가 200으로 응답하고 JSON이 유효하다. — 확인
-- 생성된 HTML에 `apple-touch-icon`, `icon`, `manifest`, `apple-touch-startup-image` 링크가 나온다. — 확인
+- 생성된 HTML에 `apple-touch-icon`, `icon`, `manifest` 링크가 나오고 `apple-touch-startup-image`는 나오지 않는다.
 - DevTools > Application > Manifest에 경고가 없다.
 - maskable 아이콘을 원형·둥근 사각형 마스크에 넣어도 도형이 잘리지 않는다.
 - iOS 홈 화면 아이콘에 검은 배경이 비치지 않는다.
@@ -56,7 +54,7 @@
 남은 확인:
 
 - 마스커블 아이콘은 새 512px PWA 아이콘을 공유한다. Android 실기기에서 마스크 잘림을 확인한다.
-- 스플래시 원본이 852×1847이라 1320×2868까지 확대해 썼다. 더 큰 원본이 나오면 같은 파일명으로 교체한다.
+- 앱 시작 화면은 이미지 로드 직후 300ms 동안 자연스럽게 사라진다.
 
 ## 2단계: 세이프 에어리어 대응 — 완료
 

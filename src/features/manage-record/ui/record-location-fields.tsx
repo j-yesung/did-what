@@ -65,25 +65,25 @@ export function RecordLocationFields({
 
   function addPlace(place: RecordLocationPlace, placeRegion: RecordLocationRegion) {
     if (!region) setRegion(placeRegion);
-    setPlaces((current) => (current.some((item) => item.key === place.key) ? current : [...current, place]));
+    setPlaces(current => (current.some(item => item.key === place.key) ? current : [...current, place]));
   }
 
   function toggleSave(key: string, checked: boolean) {
-    setPlaces((current) =>
-      current.map((place) =>
+    setPlaces(current =>
+      current.map(place =>
         place.key === key ? { ...place, reference: { ...place.reference, save: checked || place.saved } } : place,
       ),
     );
   }
 
-  const selectedKeys = new Set(places.map((place) => place.key));
+  const selectedKeys = new Set(places.map(place => place.key));
 
   return (
     <>
       <input name="regionCode" type="hidden" value={region?.code ?? ""} />
       <input name="regionLabel" type="hidden" value={region?.label ?? ""} />
       <input name="regionName" type="hidden" value={region?.fullName ?? ""} />
-      <input name="places" type="hidden" value={JSON.stringify(places.map((place) => place.reference))} />
+      <input name="places" type="hidden" value={JSON.stringify(places.map(place => place.reference))} />
 
       <Field data-invalid={Boolean(regionError)}>
         <FieldLabel>
@@ -101,7 +101,6 @@ export function RecordLocationFields({
         ) : (
           <RegionPickerDialog onSelect={selectRegion} />
         )}
-        <FieldDescription>동·읍·면 이름을 검색하고 목록에서 선택해 주세요.</FieldDescription>
         <FieldError id="regionCode-error">{regionError}</FieldError>
       </Field>
 
@@ -110,15 +109,11 @@ export function RecordLocationFields({
           <MapPinIcon className={FIELD_ICON} aria-hidden="true" />
           방문 장소 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
         </FieldLabel>
-        <FieldDescription>
-          {
-            "같은 지역에서 방문한 카페나 식당을 최대 10곳까지 추가할 수 있어요.\n저장해 둔 장소는 검색 없이 바로 고를 수 있어요."
-          }
-        </FieldDescription>
+        <FieldDescription>최대 10곳까지 추가할 수 있어요.</FieldDescription>
 
         {places.length ? (
           <ul className="flex flex-col gap-2">
-            {places.map((place) => {
+            {places.map(place => {
               const saveChecked = place.saved || place.reference.save;
               return (
                 <li className="rounded-xl border bg-card p-3" key={place.key}>
@@ -129,7 +124,7 @@ export function RecordLocationFields({
                     </div>
                     <Button
                       aria-label={`${place.name} 방문 장소에서 제거`}
-                      onClick={() => setPlaces((current) => current.filter((item) => item.key !== place.key))}
+                      onClick={() => setPlaces(current => current.filter(item => item.key !== place.key))}
                       size="icon-sm"
                       type="button"
                       variant="ghost"
@@ -142,7 +137,7 @@ export function RecordLocationFields({
                       checked={saveChecked}
                       disabled={place.saved}
                       id={`save-${place.key}`}
-                      onCheckedChange={(checked) => toggleSave(place.key, checked)}
+                      onCheckedChange={checked => toggleSave(place.key, checked)}
                     />
                     <BookmarkIcon className="size-4 text-foreground" aria-hidden="true" />
                     {place.saved ? "내 장소에 저장됨" : "기록을 저장할 때 내 장소에도 추가"}

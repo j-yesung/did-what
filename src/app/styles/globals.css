@@ -264,6 +264,15 @@
   }
 }
 
+.app-start-screen {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-start-screen[data-visible="true"] {
+  opacity: 1;
+}
+
 @keyframes enter {
   from {
     opacity: 0;

@@ -62,7 +62,6 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
   }, [state]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    // 선택 상태는 체크박스가 직접 들고 있으므로 제출 직전에 폼에서 읽는다.
     if (event.currentTarget.querySelectorAll('input[name="personIds"]:checked').length > 0) {
       return;
     }
@@ -99,7 +98,6 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               aria-invalid={Boolean(state.fieldErrors?.recordedAt)}
               aria-describedby={state.fieldErrors?.recordedAt ? "recordedAt-error" : undefined}
             />
-            <FieldDescription>시간 없이 날짜만 기록해요.</FieldDescription>
             <FieldError id="recordedAt-error">{state.fieldErrors?.recordedAt}</FieldError>
           </Field>
 
@@ -114,7 +112,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               <FieldDescription>한 명 이상 선택해 주세요.</FieldDescription>
 
               <div className="flex flex-wrap gap-1.5">
-                {people.map((person) => (
+                {people.map(person => (
                   <CheckboxChip
                     aria-describedby={personError ? "people-error" : undefined}
                     aria-invalid={Boolean(personError)}
@@ -149,6 +147,8 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               <NotebookPenIcon className={FIELD_ICON} aria-hidden="true" />
               무엇을 했나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLabel>
+            <FieldDescription>가장 기억하고 싶은 일을 짧게 적어 주세요.</FieldDescription>
+
             <Input
               className="h-12"
               defaultValue={initialValues?.activity}
@@ -160,7 +160,6 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               aria-invalid={Boolean(state.fieldErrors?.activity)}
               aria-describedby={state.fieldErrors?.activity ? "activity-error" : undefined}
             />
-            <FieldDescription>가장 기억하고 싶은 일을 짧게 적어 주세요.</FieldDescription>
             <FieldError id="activity-error">{state.fieldErrors?.activity}</FieldError>
           </Field>
 
