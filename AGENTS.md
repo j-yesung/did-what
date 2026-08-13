@@ -14,9 +14,11 @@
 
 ## 명령어 / 검증 정책
 
-- 파일을 생성·수정했으면 biome로 import 정렬을 체크해준다.
+- 코드 파일을 생성·수정했으면 `pnpm exec biome check --write src app`을 돌린다. 포맷, import 정렬, Tailwind 클래스 정렬, 안전한 린트 수정이 한 번에 처리된다. `pnpm format`을 따로 돌릴 필요는 없다.
+- typecheck, test, build를 언제 돌릴지는 `docs/verification.md`를 따른다. 특히 build는 거기 적힌 경우에만 돌린다.
 
 ## 참고 문서
 
 - 코드 작성 시 `docs/convention.md`를 따른다.
+- 검증을 언제 돌릴지는 `docs/verification.md`를 따른다.
 - 기획과 백로그 문서는 `docs/`에 있다.
