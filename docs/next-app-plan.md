@@ -31,16 +31,16 @@
    - `app/icon.png` (512×512) — 브라우저 탭과 기본 아이콘
    - `app/apple-icon.png` (180×180, 투명도 없음) — iOS 홈 화면
    - `app/favicon.ico` (32×32) — 레거시 브라우저
-3. iOS 스플래시는 `public/splash/`에 기기 물리 해상도별로 둔다. 파일명은 `apple-splash-{가로}x{세로}.jpg`.
+3. iOS 스플래시는 `public/splash/`에 기기 물리 해상도별로 둔다. 파일명은 `apple-splash-{가로}x{세로}.png`.
    - iOS는 미디어 쿼리가 정확히 맞는 이미지 하나만 쓰고, 맞는 것이 없으면 빈 화면을 띄운다.
    - 9종(1320×2868 ~ 750×1334)으로 현행 iPhone 라인업을 덮는다.
-   - 사진 계열 이미지라 PNG(26MB)가 아닌 JPEG(2.4MB)로 저장한다.
+   - iOS launch image 호환성을 위해 PNG로 저장한다.
 4. `app/manifest.ts`에서 `MetadataRoute.Manifest`를 반환한다.
    - `name: "뭐했지"`, `short_name: "뭐했지"`, `id: "/"`, `lang: "ko"`
    - `start_url: "/"`, `scope: "/"`, `display: "standalone"`, `orientation: "portrait"`
    - `background_color: "#FAFAF8"`, `theme_color: "#FAFAF8"`
    - `description`은 `metadata.description`과 같은 문장을 쓴다.
-5. `app/layout.tsx`의 `metadata.appleWebApp`에 `capable`, `title`, `statusBarStyle`, `startupImage`를 둔다. 미디어 쿼리는 `app/startup-images.ts`에서 기기 목록으로부터 만든다.
+5. `app/layout.tsx`의 `metadata.appleWebApp`에 `capable`, `title`, `statusBarStyle`, `startupImage`를 두고 Apple 전용 capability 메타 태그를 명시한다. 미디어 쿼리는 `app/startup-images.ts`에서 기기 목록으로부터 만든다.
 6. iOS는 매니페스트 아이콘을 무시하고 `apple-icon`만 사용한다. 두 자산의 그림이 어긋나지 않게 한다.
 
 검증:

@@ -16,5 +16,5 @@ const DEVICES = [
 
 export const APPLE_STARTUP_IMAGES = DEVICES.map(({ height, ratio, width }) => ({
   media: `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${ratio}) and (orientation: portrait)`,
-  url: `/splash/apple-splash-${width * ratio}x${height * ratio}.jpg`,
+  url: `/splash/apple-splash-${width * ratio}x${height * ratio}.png`,
 }));
