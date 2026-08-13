@@ -1,9 +1,10 @@
 import { ChevronRightIcon, CircleAlertIcon, MapPinIcon } from "lucide-react";
 import Link from "next/link";
 
+import { DeletePlaceDialog, PlaceSaveButton } from "@/features/manage-place";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { buttonVariants } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
@@ -17,6 +18,7 @@ type SavedPlace = {
   id: string;
   name: string;
   address: string | null;
+  record_places: { count: number }[];
   saved_at: string | null;
 };
 
@@ -59,17 +61,25 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
         <Card key={place.id} size="sm">
           <CardHeader>
             <CardTitle>{place.name}</CardTitle>
-            <CardDescription>내가 간직하기로 한 장소</CardDescription>
+            <CardDescription>
+              {place.saved_at ? `${DATE_FORMATTER.format(new Date(place.saved_at))} 저장` : "저장한 장소"}
+            </CardDescription>
+            <CardAction className="-mt-1.5 -mr-1.5">
+              <PlaceSaveButton iconOnly placeId={place.id} saved={Boolean(place.saved_at)} />
+            </CardAction>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
           </CardContent>
-          <CardFooter className="justify-between gap-3">
-            <p className="text-muted-foreground text-xs">
-              {place.saved_at ? `${DATE_FORMATTER.format(new Date(place.saved_at))} 저장` : "저장한 장소"}
-            </p>
+          <CardFooter className="justify-between gap-3 py-2">
+            <DeletePlaceDialog
+              iconOnly
+              name={place.name}
+              placeId={place.id}
+              recordCount={place.record_places[0]?.count ?? 0}
+            />
             <Link className={buttonVariants({ size: "sm", variant: "ghost" })} href={`/places/${place.id}`}>
-              이곳의 기록 보기
+              기록 보기
               <ChevronRightIcon aria-hidden="true" data-icon="inline-end" />
             </Link>
           </CardFooter>

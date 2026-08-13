@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { getPerson, getPersonRecords } from "@/entities/person";
+import { DeletePersonDialog, RenamePersonDialog } from "@/features/manage-person";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
@@ -72,6 +73,10 @@ export async function PersonDetailPage({ params }: PersonDetailPageProps) {
               <CardTitle className="text-xl">{person.name}</CardTitle>
               <CardDescription>{DATE_FORMATTER.format(new Date(person.created_at))}에 추가했어요.</CardDescription>
             </CardHeader>
+            <CardFooter className="gap-2">
+              <RenamePersonDialog name={person.name} personId={person.id} />
+              <DeletePersonDialog name={person.name} personId={person.id} recordCount={records.length} />
+            </CardFooter>
           </Card>
 
           {records.length ? (

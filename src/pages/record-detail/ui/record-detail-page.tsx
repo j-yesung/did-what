@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { getRecord } from "@/entities/record";
-import { PlaceSaveButton } from "@/features/create-place";
+import { PlaceSaveButton } from "@/features/manage-place";
 import { DeleteRecordDialog } from "@/features/manage-record";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";

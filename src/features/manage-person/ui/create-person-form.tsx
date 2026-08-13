@@ -12,10 +12,10 @@ import { Input } from "@/shared/ui/input";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { createPerson } from "../model/actions";
-import { INITIAL_CREATE_PERSON_STATE } from "../model/person-form";
+import { INITIAL_PERSON_ACTION_STATE } from "../model/person-form";
 
 export function CreatePersonForm() {
-  const [state, formAction, pending] = useActionState(createPerson, INITIAL_CREATE_PERSON_STATE);
+  const [state, formAction, pending] = useActionState(createPerson, INITIAL_PERSON_ACTION_STATE);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

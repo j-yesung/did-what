@@ -9,7 +9,7 @@ import { Button } from "@/shared/ui/button";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { createPlace } from "../model/actions";
-import { INITIAL_CREATE_PLACE_STATE } from "../model/place-form";
+import { INITIAL_PLACE_ACTION_STATE } from "../model/place-form";
 
 type CreatePlaceFormProps = {
   page: number;
@@ -19,7 +19,7 @@ type CreatePlaceFormProps = {
 };
 
 export function CreatePlaceForm({ page, placeId, query, saved }: CreatePlaceFormProps) {
-  const [state, formAction, pending] = useActionState(createPlace, INITIAL_CREATE_PLACE_STATE);
+  const [state, formAction, pending] = useActionState(createPlace, INITIAL_PLACE_ACTION_STATE);
   const isSaved = saved || state.status === "success";
 
   return (

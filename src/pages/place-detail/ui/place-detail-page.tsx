@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { getPlace, getPlaceRecords } from "@/entities/place";
-import { PlaceSaveButton } from "@/features/create-place";
+import { DeletePlaceDialog, PlaceSaveButton } from "@/features/manage-place";
 import { createClient } from "@/shared/api/supabase/server";
 import { isUuid } from "@/shared/lib/is-uuid";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
@@ -80,6 +80,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
                     : "방문 기록에 연결된 장소예요."}
                 </p>
                 <PlaceSaveButton placeId={place.id} saved={Boolean(place.saved_at)} />
+                <DeletePlaceDialog name={place.name} placeId={place.id} recordCount={records.length} />
               </div>
             </CardFooter>
           </Card>
