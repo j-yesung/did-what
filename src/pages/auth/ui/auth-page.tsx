@@ -41,7 +41,7 @@ function AuthPage({ mode }: AuthPageProps) {
   const SubmitIcon = isSignup ? UserRoundPlusIcon : LogInIcon;
 
   return (
-    <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-background px-5 py-10">
+    <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-background px-5 pt-[calc(40px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]">
       <div
         className="pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent_72%)]"
         aria-hidden="true"

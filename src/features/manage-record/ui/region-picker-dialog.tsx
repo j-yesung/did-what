@@ -47,7 +47,7 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
   }
 
   return (
-    <DialogContent className="flex max-h-[min(640px,calc(100dvh-2rem))] flex-col overflow-hidden sm:max-w-md">
+    <DialogContent className="flex max-h-[min(640px,calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] flex-col overflow-hidden sm:max-w-md">
       <DialogHeader>
         <DialogTitle>어느 지역에 갔나요?</DialogTitle>
         <DialogDescription>익숙한 지역명을 직접 입력해 보세요.</DialogDescription>

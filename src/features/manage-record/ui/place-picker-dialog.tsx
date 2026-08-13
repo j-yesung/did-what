@@ -199,7 +199,7 @@ export function PlacePickerDialog({ disabled, onAdd, region, savedPlaces, select
         <PlusIcon aria-hidden="true" data-icon="inline-start" />
         방문 장소 추가
       </DialogTrigger>
-      <DialogContent className="flex max-h-[min(680px,calc(100dvh-2rem))] flex-col overflow-hidden sm:max-w-md">
+      <DialogContent className="flex max-h-[min(680px,calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] flex-col overflow-hidden sm:max-w-md">
         <PlacePickerPanel
           onAdd={(place, placeRegion) => {
             onAdd(place, placeRegion);
