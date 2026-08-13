@@ -6,6 +6,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { CalendarDaysIcon, CircleAlertIcon, MessageSquareTextIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 
 import type { PersonOption } from "@/entities/person";
+import type { PlaceOption } from "@/entities/place";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
@@ -44,11 +45,12 @@ type RecordFormProps = {
   };
   mode?: "create" | "edit";
   people: PersonOption[];
+  savedPlaces: PlaceOption[];
 };
 
 const INITIAL_STATE: RecordActionState = { status: "idle" };
 
-export function RecordForm({ action, initialValues, mode = "create", people }: RecordFormProps) {
+export function RecordForm({ action, initialValues, mode = "create", people, savedPlaces }: RecordFormProps) {
   const [state, formAction, pending] = useActionState(action, INITIAL_STATE);
   const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>(initialValues?.personIds ?? []);
   const [hasPersonError, setHasPersonError] = useState(false);
@@ -159,6 +161,7 @@ export function RecordForm({ action, initialValues, mode = "create", people }: R
             initialRegion={initialValues?.region}
             placeError={state.fieldErrors?.places}
             regionError={state.fieldErrors?.regionCode}
+            savedPlaces={savedPlaces}
           />
 
           <FieldSeparator />

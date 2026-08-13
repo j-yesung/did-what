@@ -1,0 +1,108 @@
+import { CalendarRangeIcon, ChevronDownIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
+import Link from "next/link";
+
+import { buildRecordsHref, hasRecordFilters, type RecordFilters, type RecordSort } from "@/entities/record";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+
+const SORT_OPTIONS: { label: string; value: RecordSort }[] = [
+  { label: "최신순", value: "recent" },
+  { label: "오래된순", value: "oldest" },
+];
+
+type RecordFilterFormProps = {
+  filters: RecordFilters;
+};
+
+export function RecordFilterForm({ filters }: RecordFilterFormProps) {
+  const hasPeriod = Boolean(filters.from || filters.to);
+
+  return (
+    <form action="/records" className="flex flex-col gap-2.5" method="get" role="search">
+      <input name="sort" type="hidden" value={filters.sort} />
+
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <SearchIcon
+            className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            aria-label="기록 검색"
+            className="h-11 rounded-full pl-11"
+            defaultValue={filters.query}
+            maxLength={100}
+            name="q"
+            placeholder="한 일·메모·지역 검색"
+            type="search"
+          />
+        </div>
+        <Button aria-label="검색" className="h-11 rounded-full px-5" type="submit">
+          <SearchIcon aria-hidden="true" />
+        </Button>
+      </div>
+
+      <details className="group rounded-2xl border bg-card px-4 py-3" open={hasPeriod}>
+        <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
+          <CalendarRangeIcon className="size-[18px] text-primary" aria-hidden="true" />
+          기간
+          {hasPeriod ? (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-primary">
+              {filters.from || "처음"} ~ {filters.to || "오늘"}
+            </span>
+          ) : (
+            <span className="text-muted-foreground text-xs">전체</span>
+          )}
+          <ChevronDownIcon
+            className="ml-auto size-4 text-muted-foreground transition-transform group-open:rotate-180"
+            aria-hidden="true"
+          />
+        </summary>
+
+        <div className="mt-3 flex items-center gap-2">
+          <Input aria-label="시작일" className="h-10 flex-1" defaultValue={filters.from} name="from" type="date" />
+          <span className="text-muted-foreground text-sm" aria-hidden="true">
+            ~
+          </span>
+          <Input aria-label="종료일" className="h-10 flex-1" defaultValue={filters.to} name="to" type="date" />
+        </div>
+        <Button className="mt-3 w-full" type="submit" variant="outline">
+          기간 적용
+        </Button>
+      </details>
+
+      <div className="flex items-center gap-1.5">
+        <div className="flex gap-1.5" role="group" aria-label="정렬">
+          {SORT_OPTIONS.map(({ label, value }) => {
+            const active = filters.sort === value;
+
+            return (
+              <Link
+                aria-current={active ? "true" : undefined}
+                className={cn(
+                  "flex h-8 items-center rounded-full border px-3 font-[650] text-xs transition-colors",
+                  active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground",
+                )}
+                href={buildRecordsHref(filters, { sort: value })}
+                key={value}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+
+        {hasRecordFilters(filters) ? (
+          <Link
+            className="ml-auto flex h-8 items-center gap-1 rounded-full px-2.5 font-[650] text-muted-foreground text-xs"
+            href="/records"
+          >
+            <RotateCcwIcon className="size-3.5" aria-hidden="true" />
+            초기화
+          </Link>
+        ) : null}
+      </div>
+    </form>
+  );
+}

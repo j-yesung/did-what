@@ -1,3 +1,4 @@
+import { isIsoDate } from "#shared/lib/is-iso-date.ts";
 import { isUuid } from "#shared/lib/is-uuid.ts";
 
 export type RecordPlaceReference =
@@ -38,19 +39,9 @@ export type RecordActionState = {
 
 export const INITIAL_RECORD_ACTION_STATE: RecordActionState = { status: "idle" };
 
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const REGION_CODE_PATTERN = /^\d{10}$/;
 const KAKAO_PLACE_ID_PATTERN = /^\d{1,100}$/;
 const MAX_VISITED_PLACES = 10;
-
-function isValidDate(value: string) {
-  if (!DATE_PATTERN.test(value)) {
-    return false;
-  }
-
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
-}
 
 function parsePlaces(value: string): RecordPlaceReference[] | null {
   try {
@@ -115,7 +106,7 @@ export function validateRecordInput(
   const activity = values.activity.trim();
   const memo = values.memo.trim();
 
-  if (!isValidDate(values.recordedAt)) {
+  if (!isIsoDate(values.recordedAt)) {
     fieldErrors.recordedAt = "올바른 날짜를 입력해 주세요.";
   }
 

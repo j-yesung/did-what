@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
+import { getPlaces } from "@/entities/place";
 import { createRecord, RecordForm } from "@/features/manage-record";
 import { createClient } from "@/shared/api/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
@@ -18,7 +19,7 @@ export async function RecordNewPage() {
     redirect("/login");
   }
 
-  const peopleResult = await getPeople(userData.user.id);
+  const [peopleResult, placesResult] = await Promise.all([getPeople(userData.user.id), getPlaces(userData.user.id)]);
   const people = peopleResult.data ?? [];
   const hasLoadError = Boolean(peopleResult.error);
 
@@ -66,7 +67,7 @@ export async function RecordNewPage() {
           </EmptyContent>
         </Empty>
       ) : (
-        <RecordForm action={createRecord} people={people} />
+        <RecordForm action={createRecord} people={people} savedPlaces={placesResult.data ?? []} />
       )}
     </PageShell>
   );

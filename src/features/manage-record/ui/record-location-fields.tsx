@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { BookmarkIcon, MapPinIcon, MapPinnedIcon, Trash2Icon } from "lucide-react";
 
+import type { PlaceOption } from "@/entities/place";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +30,7 @@ type RecordLocationFieldsProps = {
   initialRegion?: RecordLocationRegion;
   placeError?: string;
   regionError?: string;
+  savedPlaces: PlaceOption[];
 };
 
 export function RecordLocationFields({
@@ -36,6 +38,7 @@ export function RecordLocationFields({
   initialRegion,
   placeError,
   regionError,
+  savedPlaces,
 }: RecordLocationFieldsProps) {
   const [region, setRegion] = useState<RecordLocationRegion | null>(initialRegion ?? null);
   const [places, setPlaces] = useState(initialPlaces);
@@ -107,7 +110,10 @@ export function RecordLocationFields({
           <MapPinIcon className={FIELD_ICON} aria-hidden="true" />
           방문 장소 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
         </FieldLabel>
-        <FieldDescription>같은 지역에서 방문한 카페나 식당을 최대 10곳까지 추가할 수 있어요.</FieldDescription>
+        <FieldDescription>
+          같은 지역에서 방문한 카페나 식당을 최대 10곳까지 추가할 수 있어요. 저장해 둔 장소는 검색 없이 바로 고를 수
+          있어요.
+        </FieldDescription>
 
         {places.length ? (
           <ul className="flex flex-col gap-2">
@@ -138,7 +144,7 @@ export function RecordLocationFields({
                       onCheckedChange={(checked) => toggleSave(place.key, checked)}
                     />
                     <BookmarkIcon className="size-4 text-primary" aria-hidden="true" />
-                    {place.saved ? "내 장소에 저장됨" : "내 장소에도 저장"}
+                    {place.saved ? "내 장소에 저장됨" : "기록을 저장할 때 내 장소에도 추가"}
                   </label>
                 </li>
               );
@@ -150,6 +156,7 @@ export function RecordLocationFields({
           disabled={places.length >= 10}
           onAdd={addPlace}
           region={region}
+          savedPlaces={savedPlaces}
           selectedKeys={selectedKeys}
         />
         <FieldError id="places-error">{placeError}</FieldError>

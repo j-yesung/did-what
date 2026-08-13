@@ -2,6 +2,7 @@ import { CircleAlertIcon } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { getPeople } from "@/entities/person";
+import { getPlaces } from "@/entities/place";
 import { getRecord } from "@/entities/record";
 import { RecordForm, updateRecord } from "@/features/manage-record";
 import { createClient } from "@/shared/api/supabase/server";
@@ -27,9 +28,10 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
     redirect("/login");
   }
 
-  const [recordResult, peopleResult] = await Promise.all([
+  const [recordResult, peopleResult, placesResult] = await Promise.all([
     getRecord(recordId, userData.user.id),
     getPeople(userData.user.id),
+    getPlaces(userData.user.id),
   ]);
 
   if (!recordResult.data && !recordResult.error) {
@@ -88,6 +90,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
           }}
           mode="edit"
           people={peopleResult.data ?? []}
+          savedPlaces={placesResult.data ?? []}
         />
       )}
     </PageShell>
