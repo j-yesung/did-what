@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { searchRecordRegions } from "../model/actions";
 import { INITIAL_REGION_SEARCH_STATE, type RecordLocationRegion } from "../model/location-picker";
@@ -47,7 +46,7 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
   }
 
   return (
-    <DialogContent className="flex max-h-[min(640px,calc(100dvh-2rem))] flex-col overflow-hidden sm:max-w-md">
+    <DialogContent className="flex max-h-[min(640px,calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] flex-col overflow-hidden sm:max-w-md">
       <DialogHeader>
         <DialogTitle>어느 지역에 갔나요?</DialogTitle>
         <DialogDescription>익숙한 지역명을 직접 입력해 보세요.</DialogDescription>
@@ -55,8 +54,8 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
 
       <form action={formAction} className="flex gap-2" onSubmit={stopPropagation}>
         <Input aria-label="지역 이름" maxLength={100} name="query" placeholder="예: 망원동, 홍대" required />
-        <Button disabled={pending} type="submit">
-          {pending ? <Spinner aria-label="지역 검색 중" /> : <SearchIcon aria-hidden="true" />}
+        <Button loading={pending} type="submit">
+          <SearchIcon aria-hidden="true" />
           <span className="sr-only">검색</span>
         </Button>
       </form>

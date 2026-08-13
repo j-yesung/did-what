@@ -43,6 +43,7 @@
 - 서버 전용 모듈(`shared/api/supabase/server`)을 import하는 파일에는 클라이언트가 쓰는 타입을 두지 않는다. 데이터 접근은 `api/`, 타입은 `model/`에 두고 `index.ts`에서 `export type`으로 내보낸다. 섞으면 클라이언트 컴포넌트가 `next/headers`까지 끌어와 빌드가 깨진다.
 - 루트 `app/**/page.tsx`는 `export { XxxPage as default } from "@/pages/xxx";` 형태의 re-export만 둔다.
 - shadcn 컴포넌트는 `src/shared/ui`, 공용 유틸은 `src/shared/lib`에 둔다. `src/components`, `src/lib`는 쓰지 않는다.
+- `src/shared/ui`에는 컴포넌트만 둔다. 여러 컴포넌트가 함께 쓰는 클래스 상수 같은 값은 `src/shared/lib`에 둔다(`cn`, `PRESS_FEEDBACK`).
 
 ## Imports
 

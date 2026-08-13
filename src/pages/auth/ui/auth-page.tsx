@@ -11,7 +11,7 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
+import { TextButton } from "@/shared/ui/text-button";
 
 type AuthPageProps = {
   mode: "login" | "signup";
@@ -41,25 +41,25 @@ function AuthPage({ mode }: AuthPageProps) {
   const SubmitIcon = isSignup ? UserRoundPlusIcon : LogInIcon;
 
   return (
-    <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-background px-5 py-10">
+    <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-background px-5 pt-[calc(40px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]">
       <div
         className="pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent_72%)]"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -top-32 left-1/2 size-80 -translate-x-1/2 rounded-full bg-brand-100 blur-3xl"
+        className="pointer-events-none absolute -top-32 left-1/2 size-80 -translate-x-1/2 rounded-full bg-blue-100 blur-3xl"
         aria-hidden="true"
       />
 
       <section className="relative z-10 flex w-full max-w-[430px] flex-col gap-6" aria-labelledby="auth-title">
-        <div className="flex items-center justify-center gap-2 font-heading font-semibold text-brand-800">
+        <div className="flex items-center justify-center gap-2 font-heading font-semibold text-blue-800">
           <span className="grid size-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
             <MapPinnedIcon className="size-5" strokeWidth={2} aria-hidden="true" />
           </span>
           <span className="text-lg tracking-[-0.02em]">뭐했지</span>
         </div>
 
-        <Card className="shadow-[0_24px_80px_color-mix(in_srgb,var(--brand-950),transparent_88%)]">
+        <Card className="shadow-[0_24px_80px_color-mix(in_srgb,var(--blue-950),transparent_88%)]">
           <CardHeader className="gap-2 pb-2 text-center">
             <CardTitle>
               <h1 id="auth-title" className="font-bold font-heading text-2xl tracking-[-0.03em]">
@@ -157,22 +157,18 @@ function AuthPage({ mode }: AuthPageProps) {
                   </Field>
                 ) : null}
 
-                <Button className="mt-1 h-11 w-full" size="lg" type="submit" disabled={pending}>
-                  {pending ? (
-                    <Spinner data-icon="inline-start" aria-label="처리 중" />
-                  ) : (
-                    <SubmitIcon data-icon="inline-start" />
-                  )}
-                  {pending ? "처리 중..." : copy.submitLabel}
+                <Button className="mt-1 h-11 w-full" loading={pending} size="lg" type="submit">
+                  <SubmitIcon data-icon="inline-start" />
+                  {copy.submitLabel}
                 </Button>
               </FieldGroup>
             </form>
           </CardContent>
 
           <CardFooter className="justify-center py-3">
-            <Button variant="link" render={<Link href={copy.linkHref} />} nativeButton={false}>
+            <TextButton nativeButton={false} render={<Link href={copy.linkHref} />} tone="brand" variant="underline">
               {copy.linkLabel}
-            </Button>
+            </TextButton>
           </CardFooter>
         </Card>
       </section>

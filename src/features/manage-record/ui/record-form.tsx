@@ -6,10 +6,10 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { CalendarDaysIcon, CircleAlertIcon, MessageSquareTextIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 
 import type { PersonOption } from "@/entities/person";
+import type { PlaceOption } from "@/entities/place";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { CheckboxChip } from "@/shared/ui/checkbox-chip";
 import {
   Field,
   FieldDescription,
@@ -21,7 +21,6 @@ import {
   FieldSet,
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
@@ -30,7 +29,7 @@ import { RecordLocationFields } from "./record-location-fields";
 
 const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
 
-const FIELD_ICON = "size-[18px] text-primary [stroke-width:2]";
+const FIELD_ICON = "size-[18px] text-foreground [stroke-width:2]";
 
 type RecordFormProps = {
   action: (state: RecordActionState, formData: FormData) => Promise<RecordActionState>;
@@ -44,13 +43,13 @@ type RecordFormProps = {
   };
   mode?: "create" | "edit";
   people: PersonOption[];
+  savedPlaces: PlaceOption[];
 };
 
 const INITIAL_STATE: RecordActionState = { status: "idle" };
 
-export function RecordForm({ action, initialValues, mode = "create", people }: RecordFormProps) {
+export function RecordForm({ action, initialValues, mode = "create", people, savedPlaces }: RecordFormProps) {
   const [state, formAction, pending] = useActionState(action, INITIAL_STATE);
-  const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>(initialValues?.personIds ?? []);
   const [hasPersonError, setHasPersonError] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -62,21 +61,15 @@ export function RecordForm({ action, initialValues, mode = "create", people }: R
     }
   }, [state]);
 
-  function togglePerson(personId: string, checked: boolean) {
-    setSelectedPersonIds((current) =>
-      checked ? [...current, personId] : current.filter((selectedId) => selectedId !== personId),
-    );
-    setHasPersonError(false);
-  }
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    if (selectedPersonIds.length > 0) {
+    // 선택 상태는 체크박스가 직접 들고 있으므로 제출 직전에 폼에서 읽는다.
+    if (event.currentTarget.querySelectorAll('input[name="personIds"]:checked').length > 0) {
       return;
     }
 
     event.preventDefault();
     setHasPersonError(true);
-    event.currentTarget.querySelector<HTMLElement>("[role=checkbox]")?.focus();
+    event.currentTarget.querySelector<HTMLElement>('input[name="personIds"]')?.focus();
   }
 
   return (
@@ -89,12 +82,12 @@ export function RecordForm({ action, initialValues, mode = "create", people }: R
         </Alert>
       ) : null}
 
-      <div className="rounded-xl border border-border bg-surface px-[18px] py-5 shadow-[0_18px_50px_color-mix(in_srgb,var(--brand-950),transparent_94%)] motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
+      <div className="rounded-xl border border-border bg-surface px-[18px] py-5 shadow-[0_18px_50px_color-mix(in_srgb,var(--blue-950),transparent_94%)] motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
           <Field data-invalid={Boolean(state.fieldErrors?.recordedAt)}>
             <FieldLabel htmlFor="recordedAt">
               <CalendarDaysIcon className={FIELD_ICON} aria-hidden="true" />
-              언제 <span className="font-[650] text-[11px] text-primary">필수</span>
+              언제 <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLabel>
             <Input
               className="h-12"
@@ -116,38 +109,25 @@ export function RecordForm({ action, initialValues, mode = "create", people }: R
             <FieldSet>
               <FieldLegend className="flex items-center gap-2" variant="label">
                 <UsersIcon className={FIELD_ICON} aria-hidden="true" />
-                누구와 <span className="font-[650] text-[11px] text-primary">필수</span>
+                누구와 <span className="font-[650] text-[11px] text-foreground">필수</span>
               </FieldLegend>
               <FieldDescription>한 명 이상 선택해 주세요.</FieldDescription>
-              <FieldGroup className="grid grid-cols-2 gap-2" data-slot="checkbox-group">
-                {people.map((person) => {
-                  const isSelected = selectedPersonIds.includes(person.id);
 
-                  return (
-                    <FieldLabel
-                      className="items-center has-[>[data-slot=field]]:flex-row"
-                      htmlFor={`person-${person.id}`}
-                      key={person.id}
-                    >
-                      <Field orientation="horizontal">
-                        <Checkbox
-                          aria-describedby={personError ? "people-error" : undefined}
-                          aria-invalid={Boolean(personError)}
-                          checked={isSelected}
-                          id={`person-${person.id}`}
-                          name="personIds"
-                          onCheckedChange={(checked) => togglePerson(person.id, checked)}
-                          value={person.id}
-                        />
-                        <Avatar className="size-8">
-                          <AvatarFallback>{person.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium text-sm">{person.name}</span>
-                      </Field>
-                    </FieldLabel>
-                  );
-                })}
-              </FieldGroup>
+              <div className="flex flex-wrap gap-1.5">
+                {people.map((person) => (
+                  <CheckboxChip
+                    aria-describedby={personError ? "people-error" : undefined}
+                    aria-invalid={Boolean(personError)}
+                    defaultChecked={initialValues?.personIds.includes(person.id)}
+                    key={person.id}
+                    name="personIds"
+                    onChange={() => setHasPersonError(false)}
+                    value={person.id}
+                  >
+                    {person.name}
+                  </CheckboxChip>
+                ))}
+              </div>
               <FieldError id="people-error">{personError}</FieldError>
             </FieldSet>
           </Field>
@@ -159,6 +139,7 @@ export function RecordForm({ action, initialValues, mode = "create", people }: R
             initialRegion={initialValues?.region}
             placeError={state.fieldErrors?.places}
             regionError={state.fieldErrors?.regionCode}
+            savedPlaces={savedPlaces}
           />
 
           <FieldSeparator />
@@ -166,7 +147,7 @@ export function RecordForm({ action, initialValues, mode = "create", people }: R
           <Field data-invalid={Boolean(state.fieldErrors?.activity)}>
             <FieldLabel htmlFor="activity">
               <NotebookPenIcon className={FIELD_ICON} aria-hidden="true" />
-              무엇을 했나요? <span className="font-[650] text-[11px] text-primary">필수</span>
+              무엇을 했나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLabel>
             <Input
               className="h-12"
@@ -205,13 +186,9 @@ export function RecordForm({ action, initialValues, mode = "create", people }: R
           </Field>
         </FieldGroup>
 
-        <Button className="mt-5 h-14 w-full" size="lg" type="submit" disabled={pending}>
-          {pending ? (
-            <Spinner data-icon="inline-start" aria-label={`기록 ${mode === "edit" ? "수정" : "저장"} 중`} />
-          ) : (
-            <NotebookPenIcon data-icon="inline-start" />
-          )}
-          {pending ? `${mode === "edit" ? "수정" : "저장"} 중...` : mode === "edit" ? "수정 완료" : "기록 남기기"}
+        <Button className="mt-5 h-14 w-full" loading={pending} size="lg" type="submit">
+          <NotebookPenIcon data-icon="inline-start" />
+          {mode === "edit" ? "수정 완료" : "기록 남기기"}
         </Button>
       </div>
     </form>

@@ -14,7 +14,7 @@ export function PageHeader({ back, eyebrow, title }: PageHeaderProps) {
     <header className="grid min-h-11 grid-cols-[40px_1fr_40px] items-center">
       {back ? <BackButton fallbackHref={back} /> : null}
       <div className={cn("text-center", !back && "col-start-2")}>
-        {eyebrow ? <p className="font-bold text-[9px] text-primary tracking-[0.16em]">{eyebrow}</p> : null}
+        {eyebrow ? <p className="font-bold text-[9px] text-foreground tracking-[0.16em]">{eyebrow}</p> : null}
         <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">{title}</h1>
       </div>
     </header>

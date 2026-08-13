@@ -2,7 +2,7 @@
 
 import { SearchIcon } from "lucide-react";
 
-import { CreatePlaceForm } from "@/features/create-place";
+import { CreatePlaceForm } from "@/features/manage-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";

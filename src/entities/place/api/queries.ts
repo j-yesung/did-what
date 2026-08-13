@@ -1,12 +1,14 @@
 import { createClient } from "@/shared/api/supabase/server";
 
 const COLUMNS = "id, name, address, created_at, saved_at, region_code, provider, provider_place_id";
+// 목록 카드에서 바로 삭제할 때 몇 개의 기록이 영향을 받는지 알려주려면 연결 수가 필요하다.
+const LIST_COLUMNS = `${COLUMNS}, record_places(count)`;
 
 // 사용자가 명시적으로 저장한 장소 목록. 이름순.
 export async function getPlaces(ownerId: string) {
   const supabase = await createClient();
 
-  return supabase.from("places").select(COLUMNS).eq("owner_id", ownerId).not("saved_at", "is", null).order("name");
+  return supabase.from("places").select(LIST_COLUMNS).eq("owner_id", ownerId).not("saved_at", "is", null).order("name");
 }
 
 // 소유자의 장소 한 곳. 없으면 data가 null이다.

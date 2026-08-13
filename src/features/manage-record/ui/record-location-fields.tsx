@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { BookmarkIcon, MapPinIcon, MapPinnedIcon, Trash2Icon } from "lucide-react";
 
+import type { PlaceOption } from "@/entities/place";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,13 +23,14 @@ import type { RecordLocationPlace, RecordLocationRegion } from "../model/locatio
 import { PlacePickerDialog } from "./place-picker-dialog";
 import { RegionPickerDialog } from "./region-picker-dialog";
 
-const FIELD_ICON = "size-[18px] text-primary [stroke-width:2]";
+const FIELD_ICON = "size-[18px] text-foreground [stroke-width:2]";
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
   initialRegion?: RecordLocationRegion;
   placeError?: string;
   regionError?: string;
+  savedPlaces: PlaceOption[];
 };
 
 export function RecordLocationFields({
@@ -36,6 +38,7 @@ export function RecordLocationFields({
   initialRegion,
   placeError,
   regionError,
+  savedPlaces,
 }: RecordLocationFieldsProps) {
   const [region, setRegion] = useState<RecordLocationRegion | null>(initialRegion ?? null);
   const [places, setPlaces] = useState(initialPlaces);
@@ -85,7 +88,7 @@ export function RecordLocationFields({
       <Field data-invalid={Boolean(regionError)}>
         <FieldLabel>
           <MapPinnedIcon className={FIELD_ICON} aria-hidden="true" />
-          어느 지역에 갔나요? <span className="font-[650] text-[11px] text-primary">필수</span>
+          어느 지역에 갔나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
         </FieldLabel>
         {region ? (
           <div className="flex items-center justify-between gap-3 rounded-xl border bg-muted/40 p-3">
@@ -107,7 +110,11 @@ export function RecordLocationFields({
           <MapPinIcon className={FIELD_ICON} aria-hidden="true" />
           방문 장소 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
         </FieldLabel>
-        <FieldDescription>같은 지역에서 방문한 카페나 식당을 최대 10곳까지 추가할 수 있어요.</FieldDescription>
+        <FieldDescription>
+          {
+            "같은 지역에서 방문한 카페나 식당을 최대 10곳까지 추가할 수 있어요.\n저장해 둔 장소는 검색 없이 바로 고를 수 있어요."
+          }
+        </FieldDescription>
 
         {places.length ? (
           <ul className="flex flex-col gap-2">
@@ -137,8 +144,8 @@ export function RecordLocationFields({
                       id={`save-${place.key}`}
                       onCheckedChange={(checked) => toggleSave(place.key, checked)}
                     />
-                    <BookmarkIcon className="size-4 text-primary" aria-hidden="true" />
-                    {place.saved ? "내 장소에 저장됨" : "내 장소에도 저장"}
+                    <BookmarkIcon className="size-4 text-foreground" aria-hidden="true" />
+                    {place.saved ? "내 장소에 저장됨" : "기록을 저장할 때 내 장소에도 추가"}
                   </label>
                 </li>
               );
@@ -150,6 +157,7 @@ export function RecordLocationFields({
           disabled={places.length >= 10}
           onAdd={addPlace}
           region={region}
+          savedPlaces={savedPlaces}
           selectedKeys={selectedKeys}
         />
         <FieldError id="places-error">{placeError}</FieldError>
@@ -160,7 +168,7 @@ export function RecordLocationFields({
           <AlertDialogHeader>
             <AlertDialogTitle>지역을 변경할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              선택한 방문 장소 {places.length}곳이 모두 해제돼요. 내 장소에 이미 저장된 곳은 사라지지 않아요.
+              {`선택한 방문 장소 ${places.length}곳이 모두 해제돼요.\n내 장소에 이미 저장된 곳은 사라지지 않아요.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -32,7 +32,7 @@ export async function login(_state: AuthActionState, formData: FormData): Promis
 
   if (profileError) {
     await supabase.auth.signOut();
-    return { message: "프로필을 준비하지 못했습니다. 다시 시도해 주세요.", status: "error" };
+    return { message: "프로필을 준비하지 못했습니다.\n다시 시도해 주세요.", status: "error" };
   }
 
   redirect("/");
@@ -69,7 +69,7 @@ export async function signup(_state: AuthActionState, formData: FormData): Promi
 
   if (!data.session) {
     return {
-      message: "인증 메일을 보냈습니다. 메일의 링크를 누르면 가입이 완료됩니다.",
+      message: "인증 메일을 보냈습니다.\n메일의 링크를 누르면 가입이 완료됩니다.",
       status: "success",
     };
   }
@@ -79,7 +79,7 @@ export async function signup(_state: AuthActionState, formData: FormData): Promi
   if (profileError) {
     await supabase.auth.signOut();
     return {
-      message: "계정은 생성됐지만 프로필을 준비하지 못했습니다. 다시 로그인해 주세요.",
+      message: "계정은 생성됐지만 프로필을 준비하지 못했습니다.\n다시 로그인해 주세요.",
       status: "error",
     };
   }

@@ -1,38 +1,29 @@
-import { UserRoundIcon } from "lucide-react";
-import { redirect } from "next/navigation";
-
 import { getProfileName } from "@/entities/profile";
 import { LogoutButton } from "@/features/auth";
-import { createClient } from "@/shared/api/supabase/server";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { getTheme, ThemeSelect } from "@/features/switch-theme";
+import { requireUser } from "@/shared/api/supabase/require-user";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 export async function SettingsPage() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
+  const { user } = await requireUser();
 
-  if (!data.user) {
-    redirect("/login");
-  }
-
-  const displayName = (await getProfileName(data.user.id)) || "기록자";
+  const [displayName, theme] = await Promise.all([getProfileName(user.id), getTheme()]);
 
   return (
     <PageShell>
       <PageHeader title="설정" />
 
-      <Card className="flex-1">
+      <Card>
         <CardHeader className="justify-items-center text-center">
-          <Avatar size="lg" className="mb-2 size-16">
-            <AvatarFallback className="bg-secondary text-secondary-foreground">
-              <UserRoundIcon className="size-6" aria-hidden="true" />
-            </AvatarFallback>
-          </Avatar>
-          <CardTitle className="text-lg">{displayName}</CardTitle>
-          <CardDescription>{data.user.email}</CardDescription>
+          <CardTitle className="text-lg">{displayName || "기록자"}</CardTitle>
+          <CardDescription>{user.email}</CardDescription>
         </CardHeader>
-        <CardContent>
+      </Card>
+
+      <Card className="flex-1">
+        <CardContent className="flex flex-col gap-6">
+          <ThemeSelect value={theme} />
           <LogoutButton />
         </CardContent>
       </Card>

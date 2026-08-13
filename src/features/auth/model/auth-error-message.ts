@@ -7,7 +7,7 @@ export function getLoginErrorMessage(code?: string) {
     return "이메일 또는 비밀번호를 확인해 주세요.";
   }
 
-  return "로그인 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+  return "로그인 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.";
 }
 
 export function getSignupErrorMessage(code?: string) {
@@ -16,8 +16,8 @@ export function getSignupErrorMessage(code?: string) {
   }
 
   if (code === "over_email_send_rate_limit") {
-    return "인증 메일 요청이 많습니다. 잠시 후 다시 시도해 주세요.";
+    return "인증 메일 요청이 많습니다.\n잠시 후 다시 시도해 주세요.";
   }
 
-  return "회원가입 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+  return "회원가입 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.";
 }
