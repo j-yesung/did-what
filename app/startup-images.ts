@@ -14,7 +14,12 @@ const DEVICES = [
   { height: 667, ratio: 2, width: 375 },
 ];
 
-export const APPLE_STARTUP_IMAGES = DEVICES.map(({ height, ratio, width }) => ({
-  media: `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${ratio}) and (orientation: portrait)`,
-  url: `/splash/apple-splash-${width * ratio}x${height * ratio}.png`,
-}));
+export const APPLE_STARTUP_IMAGES = DEVICES.flatMap(({ height, ratio, width }) => {
+  const media = `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${ratio}) and (orientation: portrait)`;
+  const size = `${width * ratio}x${height * ratio}`;
+
+  return [
+    { media: `${media} and (prefers-color-scheme: light)`, url: `/splash/apple-splash-${size}.png` },
+    { media: `${media} and (prefers-color-scheme: dark)`, url: `/splash/apple-splash-dark-${size}.png` },
+  ];
+});
