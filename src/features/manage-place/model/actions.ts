@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { resolveKakaoRegion, searchKakaoPlaces, validateKakaoPlaceId } from "@/shared/api/kakao-local";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { isUuid } from "@/shared/lib/is-uuid";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 import type { PlaceActionState } from "./place-form";
 

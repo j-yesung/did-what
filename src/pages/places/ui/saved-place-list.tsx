@@ -2,7 +2,7 @@ import { MapPinIcon } from "lucide-react";
 import Link from "next/link";
 
 import { DeletePlaceDialog, PlaceSaveButton } from "@/features/manage-place";
-import { formatShortDate } from "@/shared/lib/format-date";
+import { formatShortDate } from "@/shared/lib/date/format-date";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";

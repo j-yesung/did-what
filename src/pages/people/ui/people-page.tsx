@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getPeople } from "@/entities/person";
 import { CreatePersonForm } from "@/features/manage-person";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { formatShortDate } from "@/shared/lib/format-date";
+import { formatShortDate } from "@/shared/lib/date/format-date";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";

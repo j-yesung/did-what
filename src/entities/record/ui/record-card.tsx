@@ -1,7 +1,7 @@
 import { CalendarDaysIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
-import { formatRecordDate } from "@/shared/lib/format-date";
+import { formatRecordDate } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { TextButton } from "@/shared/ui/text-button";

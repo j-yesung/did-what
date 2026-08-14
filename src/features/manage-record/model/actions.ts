@@ -13,7 +13,7 @@ import {
   validateKakaoQuery,
 } from "@/shared/api/kakao-local";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { isUuid } from "@/shared/lib/is-uuid";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 import type { ResolveRecordPlaceResult } from "./location-picker";
 import type { RecordActionState, RecordInput, RecordInputValues, RecordPlaceReference } from "./record-form";

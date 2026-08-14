@@ -5,7 +5,7 @@ import { getPlaces } from "@/entities/place";
 import { getRecord } from "@/entities/record";
 import { RecordForm, updateRecord } from "@/features/manage-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { isUuid } from "@/shared/lib/is-uuid";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
