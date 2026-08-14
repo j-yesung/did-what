@@ -52,7 +52,6 @@ export function DeletePersonDialog({ name, personId, recordCount }: DeletePerson
         <AlertDialogFooter>
           <AlertDialogCancel disabled={remove.isPending}>취소</AlertDialogCancel>
           <AlertDialogAction
-            className="w-full"
             loading={remove.isPending}
             onClick={() => remove.mutate()}
             type="button"

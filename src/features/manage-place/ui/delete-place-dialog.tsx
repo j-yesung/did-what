@@ -11,7 +11,6 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
@@ -49,9 +48,6 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
       )}
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogMedia>
-            <Trash2Icon aria-hidden="true" />
-          </AlertDialogMedia>
           <AlertDialogTitle>{name}을(를) 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription>
             {recordCount > 0
@@ -62,7 +58,6 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
         <AlertDialogFooter>
           <AlertDialogCancel disabled={remove.isPending}>취소</AlertDialogCancel>
           <AlertDialogAction
-            className="w-full"
             loading={remove.isPending}
             onClick={() => remove.mutate()}
             type="button"
