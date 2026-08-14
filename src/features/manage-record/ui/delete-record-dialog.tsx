@@ -1,7 +1,5 @@
 "use client";
 
-import { Trash2Icon } from "lucide-react";
-
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
@@ -11,7 +9,6 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
@@ -35,9 +32,6 @@ export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogPro
       <AlertDialogTrigger render={<Button variant="destructive" />}>삭제</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogMedia>
-            <Trash2Icon aria-hidden="true" />
-          </AlertDialogMedia>
           <AlertDialogTitle>“{activity}” 기록을 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription>
             함께한 사람과 연결된 기록도 사라지며, 삭제한 뒤에는 되돌릴 수 없어요.

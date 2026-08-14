@@ -98,7 +98,7 @@
   --bookmark: var(--fill-bookmark);
   --info: var(--text-info);
   --border: var(--border-default);
-  --input: var(--border-default);
+  --input: var(--grey-300);
   --ring: var(--blue-300);
   --surface: var(--fill-surface);
   --radius: 0.875rem;
@@ -173,6 +173,7 @@
   --fill-bookmark: var(--yellow-400);
   --text-info: var(--blue-400);
   --border-default: var(--grey-800);
+  --input: var(--grey-700);
 
   /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
   --map-empty: var(--grey-800);
@@ -197,6 +198,7 @@
     --fill-bookmark: var(--yellow-400);
     --text-info: var(--blue-400);
     --border-default: var(--grey-800);
+    --input: var(--grey-700);
 
     /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
     --map-empty: var(--grey-800);

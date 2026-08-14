@@ -34,7 +34,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
 
   return (
     <PageShell>
-      <PageHeader back="/records" eyebrow="MEMORY DETAIL" title="기록 상세" />
+      <PageHeader back="/records" title="기록 상세" />
 
       {error ? (
         <LoadErrorAlert icon={<NotebookPenIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />

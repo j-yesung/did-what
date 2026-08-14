@@ -1,7 +1,5 @@
 "use client";
 
-import { Trash2Icon } from "lucide-react";
-
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
@@ -11,7 +9,6 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
@@ -36,9 +33,6 @@ export function DeletePersonDialog({ name, personId, recordCount }: DeletePerson
       <AlertDialogTrigger render={<Button className="flex-1" variant="destructive" />}>삭제</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogMedia>
-            <Trash2Icon aria-hidden="true" />
-          </AlertDialogMedia>
           <AlertDialogTitle>{name}님을 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription>
             {recordCount > 0
@@ -54,7 +48,7 @@ export function DeletePersonDialog({ name, personId, recordCount }: DeletePerson
             type="button"
             variant="destructive"
           >
-            사람 삭제
+            삭제
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

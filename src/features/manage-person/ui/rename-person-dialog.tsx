@@ -39,7 +39,7 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button className="flex-1" variant="outline" />}>이름 수정</DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="max-w-xs sm:max-w-sm" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>이름 수정</DialogTitle>
           <DialogDescription>바뀐 이름은 기록 목록과 작성 폼에도 함께 반영돼요.</DialogDescription>
@@ -67,7 +67,7 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
               취소
             </DialogClose>
             <Button loading={rename.isPending} type="submit">
-              수정 완료
+              확인
             </Button>
           </DialogFooter>
         </form>

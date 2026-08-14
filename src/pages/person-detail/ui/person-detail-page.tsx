@@ -38,7 +38,7 @@ export async function PersonDetailPage({ params }: PersonDetailPageProps) {
 
   return (
     <PageShell>
-      <PageHeader back="/people" eyebrow="PERSON DETAIL" title="함께한 사람" />
+      <PageHeader back="/people" title="함께한 사람" />
 
       {hasLoadError || !person ? (
         <LoadErrorAlert icon={<UserRoundIcon aria-hidden="true" />} title="사람의 기록을 불러오지 못했어요" />

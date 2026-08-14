@@ -15,7 +15,6 @@ type RecordCardProps = {
   region?: { label: string; name: string };
 };
 
-// 타임라인 위의 기록 한 칸. 왼쪽 점이 RecordTimeline의 세로선과 맞물린다.
 export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, region }: RecordCardProps) {
   return (
     <article className="relative pl-5">

@@ -3,11 +3,10 @@ import { notFound } from "next/navigation";
 
 import { getPlace, getPlaceRecords } from "@/entities/place";
 import { EmptyRecords, RecordCard, RecordTimeline } from "@/entities/record";
-import { DeletePlaceDialog, PlaceSaveButton } from "@/features/manage-place";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { formatDate } from "@/shared/lib/date/format-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
@@ -40,7 +39,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
 
   return (
     <PageShell>
-      <PageHeader back="/places" eyebrow="PLACE DETAIL" title="기억의 장소" />
+      <PageHeader back="/places" title="기억의 장소" />
 
       {hasLoadError || !place ? (
         <LoadErrorAlert icon={<MapPinIcon aria-hidden="true" />} title="장소의 기록을 불러오지 못했어요" />
@@ -55,16 +54,12 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
               <CardTitle className="text-xl">{place.name}</CardTitle>
               <CardDescription>{place.address ?? "주소 정보 없음"}</CardDescription>
             </CardHeader>
-            <CardFooter>
-              <div className="flex w-full flex-col gap-3">
-                <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                  <CalendarDaysIcon className="size-4" aria-hidden="true" />
-                  {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
-                </p>
-                <PlaceSaveButton placeId={place.id} saved={Boolean(place.saved_at)} />
-                <DeletePlaceDialog name={place.name} placeId={place.id} recordCount={records.length} />
-              </div>
-            </CardFooter>
+            <CardContent>
+              <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                <CalendarDaysIcon className="size-4" aria-hidden="true" />
+                {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
+              </p>
+            </CardContent>
           </Card>
 
           {records.length ? (
