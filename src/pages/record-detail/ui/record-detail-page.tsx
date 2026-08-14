@@ -102,7 +102,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
                           ) : null}
                           {!place.saved_at ? (
                             <div className="mt-2">
-                              <PlaceSaveButton placeId={place.id} saved={false} />
+                              <PlaceSaveButton placeId={place.id} />
                             </div>
                           ) : null}
                         </li>
