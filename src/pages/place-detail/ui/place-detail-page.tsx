@@ -70,7 +70,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
           {records.length ? (
             <RecordTimeline aria-labelledby="place-records-title">
               <div className="flex items-center justify-between gap-3 px-1">
-                <h2 className="flex items-center gap-2 font-bold font-heading" id="place-records-title">
+                <h2 className="flex items-center gap-2 font-bold" id="place-records-title">
                   <NotebookPenIcon className="size-5 text-foreground" aria-hidden="true" />
                   이곳의 기록
                 </h2>

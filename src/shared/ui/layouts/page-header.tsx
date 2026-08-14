@@ -17,7 +17,7 @@ export function PageHeader({ action, back, backGuardFormId, eyebrow, title }: Pa
       {back ? <BackButton fallbackHref={back} guardFormId={backGuardFormId} /> : <span aria-hidden="true" />}
       <div className="text-center">
         {eyebrow ? <p className="font-bold text-[9px] text-foreground tracking-[0.16em]">{eyebrow}</p> : null}
-        <h1 className="font-bold font-heading text-xl tracking-[-0.03em]">{title}</h1>
+        <h1 className="font-bold text-xl tracking-[-0.03em]">{title}</h1>
       </div>
       {action ?? <span aria-hidden="true" />}
     </header>

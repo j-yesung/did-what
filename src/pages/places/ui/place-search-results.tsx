@@ -44,7 +44,7 @@ export function PlaceSearchResults({
   return (
     <section aria-labelledby="place-search-results-title" className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3 px-1">
-        <h2 className="min-w-0 font-bold font-heading text-lg" id="place-search-results-title">
+        <h2 className="min-w-0 font-bold text-lg" id="place-search-results-title">
           ‘{query}’ 검색 결과 {pageableCount}곳 · {currentPage}페이지
         </h2>
         <Link

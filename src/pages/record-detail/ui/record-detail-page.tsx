@@ -43,7 +43,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
           <section aria-labelledby="record-activity-title" className="px-1 py-4">
             <p className="font-bold text-foreground text-xs">OUR MOMENT</p>
             <h2
-              className="mt-2 text-balance font-bold font-heading text-3xl leading-tight tracking-[-0.045em]"
+              className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
               id="record-activity-title"
             >
               {record.activity}

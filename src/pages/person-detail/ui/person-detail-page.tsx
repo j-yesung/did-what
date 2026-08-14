@@ -62,7 +62,7 @@ export async function PersonDetailPage({ params }: PersonDetailPageProps) {
           {records.length ? (
             <RecordTimeline aria-labelledby="person-records-title">
               <div className="flex items-center justify-between gap-3 px-1">
-                <h2 className="flex items-center gap-2 font-bold font-heading" id="person-records-title">
+                <h2 className="flex items-center gap-2 font-bold" id="person-records-title">
                   <NotebookPenIcon className="size-5 text-foreground" aria-hidden="true" />
                   함께한 기록
                 </h2>

@@ -41,7 +41,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
 
       <section className="px-1 pt-[22px] pb-5" aria-labelledby="record-edit-title">
         <h2
-          className="font-[780] font-heading text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
+          className="font-[780] text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
           id="record-edit-title"
         >
           그날의 기록을 다듬어보세요.

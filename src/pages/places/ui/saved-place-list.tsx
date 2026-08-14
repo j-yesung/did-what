@@ -43,7 +43,7 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
   return (
     <section aria-label={`저장한 장소 ${places.length}곳`} className="flex flex-col gap-3">
       <div className="px-1">
-        <h2 className="mt-1 font-bold font-heading text-lg">저장한 장소</h2>
+        <h2 className="mt-1 font-bold text-lg">저장한 장소</h2>
       </div>
       {places.map((place) => (
         <Card key={place.id} size="sm">

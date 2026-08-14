@@ -26,7 +26,7 @@ export async function RecordNewPage() {
         aria-labelledby="record-intro-title"
       >
         <h2
-          className="font-[780] font-heading text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
+          className="font-[780] text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
           id="record-intro-title"
         >
           오늘의 장면을 남겨보세요.
