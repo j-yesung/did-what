@@ -5,8 +5,8 @@ import { getPerson, getPersonRecords } from "@/entities/person";
 import { EmptyRecords, RecordCard, RecordTimeline } from "@/entities/record";
 import { DeletePersonDialog, RenamePersonDialog } from "@/features/manage-person";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { formatDate } from "@/shared/lib/format-date";
-import { isUuid } from "@/shared/lib/is-uuid";
+import { formatDate } from "@/shared/lib/date/format-date";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -38,7 +38,7 @@ export async function PersonDetailPage({ params }: PersonDetailPageProps) {
 
   return (
     <PageShell>
-      <PageHeader back="/people" eyebrow="PERSON DETAIL" title="함께한 사람" />
+      <PageHeader back="/people" title="함께한 사람" />
 
       {hasLoadError || !person ? (
         <LoadErrorAlert icon={<UserRoundIcon aria-hidden="true" />} title="사람의 기록을 불러오지 못했어요" />
@@ -62,7 +62,7 @@ export async function PersonDetailPage({ params }: PersonDetailPageProps) {
           {records.length ? (
             <RecordTimeline aria-labelledby="person-records-title">
               <div className="flex items-center justify-between gap-3 px-1">
-                <h2 className="flex items-center gap-2 font-bold font-heading" id="person-records-title">
+                <h2 className="flex items-center gap-2 font-bold" id="person-records-title">
                   <NotebookPenIcon className="size-5 text-foreground" aria-hidden="true" />
                   함께한 기록
                 </h2>

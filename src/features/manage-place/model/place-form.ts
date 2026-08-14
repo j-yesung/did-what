@@ -3,5 +3,3 @@ export type PlaceActionState = {
   message?: string;
   saved?: boolean;
 };
-
-export const INITIAL_PLACE_ACTION_STATE: PlaceActionState = { status: "idle" };

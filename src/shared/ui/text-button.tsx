@@ -5,10 +5,9 @@ import { ChevronRightIcon } from "lucide-react";
 import { FOCUS_RING, PRESS_FEEDBACK } from "#shared/lib/interaction.ts";
 import { cn } from "#shared/lib/utils.ts";
 
-/** 배경 없이 글자만으로 동작을 거는 버튼. 눌림 표현은 Button과 같다. */
 const textButtonVariants = cva(
   cn(
-    "inline-flex shrink-0 touch-manipulation select-none items-center gap-0.5 rounded-md font-medium after:-inset-x-1 after:-inset-y-0.5 disabled:pointer-events-none disabled:opacity-40",
+    "inline-flex shrink-0 touch-manipulation select-none items-center gap-0.5 rounded-md font-medium after:-inset-x-2 after:-inset-y-1 disabled:pointer-events-none disabled:opacity-40",
     FOCUS_RING,
     PRESS_FEEDBACK,
   ),

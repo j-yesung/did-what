@@ -5,7 +5,7 @@ import { getPlaces } from "@/entities/place";
 import { getRecord } from "@/entities/record";
 import { RecordForm, updateRecord } from "@/features/manage-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { isUuid } from "@/shared/lib/is-uuid";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
@@ -36,12 +36,12 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
   const hasLoadError = Boolean(recordResult.error || peopleResult.error);
 
   return (
-    <PageShell className="block min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--blue-950),transparent_92%)]">
-      <PageHeader back={`/records/${recordId}`} backGuardFormId="record-form" eyebrow="EDIT MEMORY" title="기록 수정" />
+    <PageShell className="block">
+      <PageHeader back={`/records/${recordId}`} backGuardFormId="record-form" title="기록 수정" />
 
       <section className="px-1 pt-[22px] pb-5" aria-labelledby="record-edit-title">
         <h2
-          className="font-[780] font-heading text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
+          className="font-[780] text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
           id="record-edit-title"
         >
           그날의 기록을 다듬어보세요.

@@ -1,4 +1,4 @@
-import { BookOpenIcon, CalendarDaysIcon, MapPinIcon, NotebookPenIcon, PencilIcon, UsersIcon } from "lucide-react";
+import { BookOpenIcon, CalendarDaysIcon, MapPinIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -6,8 +6,8 @@ import { getRecord } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/manage-place";
 import { DeleteRecordDialog } from "@/features/manage-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { formatRecordDate } from "@/shared/lib/format-date";
-import { isUuid } from "@/shared/lib/is-uuid";
+import { formatRecordDate } from "@/shared/lib/date/format-date";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
@@ -34,7 +34,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
 
   return (
     <PageShell>
-      <PageHeader back="/records" eyebrow="MEMORY DETAIL" title="기록 상세" />
+      <PageHeader back="/records" title="기록 상세" />
 
       {error ? (
         <LoadErrorAlert icon={<NotebookPenIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />
@@ -43,7 +43,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
           <section aria-labelledby="record-activity-title" className="px-1 py-4">
             <p className="font-bold text-foreground text-xs">OUR MOMENT</p>
             <h2
-              className="mt-2 text-balance font-bold font-heading text-3xl leading-tight tracking-[-0.045em]"
+              className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
               id="record-activity-title"
             >
               {record.activity}
@@ -51,7 +51,6 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
             <p className="mt-3 text-muted-foreground text-sm">함께한 날의 장면을 다시 꺼내봤어요.</p>
             <div className="mt-5 flex gap-2">
               <Button nativeButton={false} render={<Link href={`/records/${record.id}/edit`} />} variant="outline">
-                <PencilIcon data-icon="inline-start" />
                 수정
               </Button>
               <DeleteRecordDialog activity={record.activity} recordId={record.id} />

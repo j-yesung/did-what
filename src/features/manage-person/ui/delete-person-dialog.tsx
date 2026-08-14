@@ -1,10 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
-
-import { CircleAlertIcon, Trash2Icon } from "lucide-react";
-
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,14 +9,12 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 
 import { deletePerson } from "../model/actions";
-import { INITIAL_PERSON_ACTION_STATE } from "../model/person-form";
 
 type DeletePersonDialogProps = {
   name: string;
@@ -29,19 +23,16 @@ type DeletePersonDialogProps = {
 };
 
 export function DeletePersonDialog({ name, personId, recordCount }: DeletePersonDialogProps) {
-  const [state, formAction, pending] = useActionState(deletePerson.bind(null, personId), INITIAL_PERSON_ACTION_STATE);
+  const remove = useActionMutation(() => deletePerson(personId), {
+    error: "사람을 삭제하지 못했어요",
+    success: "사람을 삭제했어요",
+  });
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<Button className="flex-1" variant="destructive" />}>
-        <Trash2Icon data-icon="inline-start" />
-        삭제
-      </AlertDialogTrigger>
+      <AlertDialogTrigger render={<Button className="flex-1" variant="destructive" />}>삭제</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogMedia>
-            <Trash2Icon aria-hidden="true" />
-          </AlertDialogMedia>
           <AlertDialogTitle>{name}님을 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription>
             {recordCount > 0
@@ -49,20 +40,16 @@ export function DeletePersonDialog({ name, personId, recordCount }: DeletePerson
               : "삭제한 뒤에는 되돌릴 수 없어요."}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {state.message ? (
-          <Alert variant="destructive">
-            <CircleAlertIcon aria-hidden="true" />
-            <AlertTitle>사람을 삭제하지 못했어요</AlertTitle>
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        ) : null}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
-          <form action={formAction}>
-            <AlertDialogAction className="w-full" loading={pending} type="submit" variant="destructive">
-              사람 삭제
-            </AlertDialogAction>
-          </form>
+          <AlertDialogCancel disabled={remove.isPending}>취소</AlertDialogCancel>
+          <AlertDialogAction
+            loading={remove.isPending}
+            onClick={() => remove.mutate()}
+            type="button"
+            variant="destructive"
+          >
+            삭제
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

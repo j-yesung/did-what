@@ -1,7 +1,7 @@
 import { CalendarDaysIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
-import { formatRecordDate } from "@/shared/lib/format-date";
+import { formatRecordDate } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { TextButton } from "@/shared/ui/text-button";
@@ -15,7 +15,6 @@ type RecordCardProps = {
   region?: { label: string; name: string };
 };
 
-// 타임라인 위의 기록 한 칸. 왼쪽 점이 RecordTimeline의 세로선과 맞물린다.
 export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, region }: RecordCardProps) {
   return (
     <article className="relative pl-5">

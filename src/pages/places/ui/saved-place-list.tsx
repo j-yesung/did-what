@@ -2,7 +2,7 @@ import { MapPinIcon } from "lucide-react";
 import Link from "next/link";
 
 import { DeletePlaceDialog, PlaceSaveButton } from "@/features/manage-place";
-import { formatShortDate } from "@/shared/lib/format-date";
+import { formatShortDate } from "@/shared/lib/date/format-date";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -43,7 +43,7 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
   return (
     <section aria-label={`저장한 장소 ${places.length}곳`} className="flex flex-col gap-3">
       <div className="px-1">
-        <h2 className="mt-1 font-bold font-heading text-lg">저장한 장소</h2>
+        <h2 className="mt-1 font-bold text-lg">저장한 장소</h2>
       </div>
       {places.map((place) => (
         <Card key={place.id} size="sm">

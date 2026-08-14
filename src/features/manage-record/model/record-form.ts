@@ -1,5 +1,5 @@
-import { isIsoDate } from "#shared/lib/is-iso-date.ts";
-import { isUuid } from "#shared/lib/is-uuid.ts";
+import { isIsoDate } from "#shared/lib/validation/is-iso-date.ts";
+import { isUuid } from "#shared/lib/validation/is-uuid.ts";
 
 export type RecordPlaceReference =
   | { kind: "existing"; placeId: string; save: boolean }
@@ -36,8 +36,6 @@ export type RecordActionState = {
   message?: string;
   fieldErrors?: RecordFieldErrors;
 };
-
-export const INITIAL_RECORD_ACTION_STATE: RecordActionState = { status: "idle" };
 
 const REGION_CODE_PATTERN = /^\d{10}$/;
 const KAKAO_PLACE_ID_PATTERN = /^\d{1,100}$/;

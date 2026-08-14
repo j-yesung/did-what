@@ -1,10 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { Trash2Icon } from "lucide-react";
 
-import { CircleAlertIcon, Trash2Icon } from "lucide-react";
-
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,14 +11,12 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 
 import { deletePlace } from "../model/actions";
-import { INITIAL_PLACE_ACTION_STATE } from "../model/place-form";
 
 type DeletePlaceDialogProps = {
   iconOnly?: boolean;
@@ -30,7 +26,10 @@ type DeletePlaceDialogProps = {
 };
 
 export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: DeletePlaceDialogProps) {
-  const [state, formAction, pending] = useActionState(deletePlace.bind(null, placeId), INITIAL_PLACE_ACTION_STATE);
+  const remove = useActionMutation(() => deletePlace(placeId), {
+    error: "장소를 삭제하지 못했어요",
+    success: "장소를 삭제했어요",
+  });
 
   return (
     <AlertDialog>
@@ -42,16 +41,10 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
           <Trash2Icon aria-hidden="true" />
         </AlertDialogTrigger>
       ) : (
-        <AlertDialogTrigger render={<Button className="w-full" variant="destructive" />}>
-          <Trash2Icon data-icon="inline-start" />
-          장소 삭제
-        </AlertDialogTrigger>
+        <AlertDialogTrigger render={<Button className="w-full" variant="destructive" />}>장소 삭제</AlertDialogTrigger>
       )}
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogMedia>
-            <Trash2Icon aria-hidden="true" />
-          </AlertDialogMedia>
           <AlertDialogTitle>{name}을(를) 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription>
             {recordCount > 0
@@ -59,20 +52,16 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
               : "삭제한 뒤에는 되돌릴 수 없어요."}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {state.message ? (
-          <Alert variant="destructive">
-            <CircleAlertIcon aria-hidden="true" />
-            <AlertTitle>장소를 삭제하지 못했어요</AlertTitle>
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        ) : null}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
-          <form action={formAction}>
-            <AlertDialogAction className="w-full" loading={pending} type="submit" variant="destructive">
-              장소 삭제
-            </AlertDialogAction>
-          </form>
+          <AlertDialogCancel disabled={remove.isPending}>취소</AlertDialogCancel>
+          <AlertDialogAction
+            loading={remove.isPending}
+            onClick={() => remove.mutate()}
+            type="button"
+            variant="destructive"
+          >
+            장소 삭제
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

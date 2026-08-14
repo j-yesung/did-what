@@ -13,9 +13,9 @@ import {
   validateKakaoQuery,
 } from "@/shared/api/kakao-local";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { isUuid } from "@/shared/lib/is-uuid";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-import type { PlaceSearchState, RegionSearchState, ResolveRecordPlaceResult } from "./location-picker";
+import type { ResolveRecordPlaceResult } from "./location-picker";
 import type { RecordActionState, RecordInput, RecordInputValues, RecordPlaceReference } from "./record-form";
 import { validateRecordInput } from "./record-form";
 
@@ -157,29 +157,6 @@ async function validateSelections(data: RecordInput, ownerId: string, supabase: 
   return { placeIds, region };
 }
 
-export async function searchRecordRegions(_state: RegionSearchState, formData: FormData): Promise<RegionSearchState> {
-  await requireUser();
-  const query = String(formData.get("query") ?? "").trim();
-  const result = await searchKakaoRegions(query);
-  return "regions" in result
-    ? { query, regions: result.regions, related: result.related, status: "success" }
-    : { message: result.error, status: "error" };
-}
-
-export async function searchRecordPlaces(_state: PlaceSearchState, formData: FormData): Promise<PlaceSearchState> {
-  await requireUser();
-  const queryResult = validateKakaoQuery(String(formData.get("query") ?? ""));
-  if (!queryResult.valid) return { message: queryResult.error, status: "error" };
-
-  const regionName = String(formData.get("regionName") ?? "").trim();
-  const query = regionName ? `${regionName} ${queryResult.query}` : queryResult.query;
-  const page = normalizeKakaoPage(formData.get("page"));
-  const result = await searchKakaoPlaces(query, page);
-  return result.places
-    ? { page, places: result.places, query, status: "success" }
-    : { message: result.error, status: "error" };
-}
-
 export async function resolveRecordPlace(input: {
   expectedRegionCode?: string;
   page: number;
@@ -219,7 +196,7 @@ export async function resolveRecordPlace(input: {
   };
 }
 
-export async function createRecord(_state: RecordActionState, formData: FormData): Promise<RecordActionState> {
+export async function createRecord(formData: FormData): Promise<RecordActionState> {
   const { supabase, user } = await requireUser();
   const result = validateRecordInput(readRecordInput(formData));
   if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };
@@ -251,11 +228,7 @@ export async function createRecord(_state: RecordActionState, formData: FormData
   redirect("/records");
 }
 
-export async function updateRecord(
-  recordId: string,
-  _state: RecordActionState,
-  formData: FormData,
-): Promise<RecordActionState> {
+export async function updateRecord(recordId: string, formData: FormData): Promise<RecordActionState> {
   if (!isUuid(recordId)) return { message: "수정할 기록을 확인할 수 없습니다.", status: "error" };
 
   const { supabase, user } = await requireUser();
@@ -294,11 +267,7 @@ export async function updateRecord(
   redirect(`/records/${recordId}`);
 }
 
-export async function deleteRecord(
-  recordId: string,
-  _state: RecordActionState,
-  _formData: FormData,
-): Promise<RecordActionState> {
+export async function deleteRecord(recordId: string): Promise<RecordActionState> {
   if (!isUuid(recordId)) return { message: "삭제할 기록을 확인할 수 없습니다.", status: "error" };
 
   const { supabase, user } = await requireUser();

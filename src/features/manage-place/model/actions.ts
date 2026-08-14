@@ -5,11 +5,11 @@ import { redirect } from "next/navigation";
 
 import { resolveKakaoRegion, searchKakaoPlaces, validateKakaoPlaceId } from "@/shared/api/kakao-local";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { isUuid } from "@/shared/lib/is-uuid";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 import type { PlaceActionState } from "./place-form";
 
-export async function createPlace(_state: PlaceActionState, formData: FormData): Promise<PlaceActionState> {
+export async function createPlace(formData: FormData): Promise<PlaceActionState> {
   const { supabase, user } = await requireUser();
 
   const placeIdResult = validateKakaoPlaceId(String(formData.get("placeId") ?? ""));
@@ -56,11 +56,7 @@ export async function createPlace(_state: PlaceActionState, formData: FormData):
   return { status: "success" };
 }
 
-export async function deletePlace(
-  placeId: string,
-  _state: PlaceActionState,
-  _formData: FormData,
-): Promise<PlaceActionState> {
+export async function deletePlace(placeId: string): Promise<PlaceActionState> {
   if (!isUuid(placeId)) return { message: "삭제할 장소를 확인할 수 없어요.", status: "error" };
 
   const { supabase, user } = await requireUser();
@@ -80,12 +76,7 @@ export async function deletePlace(
   redirect("/places");
 }
 
-export async function setPlaceSaved(
-  placeId: string,
-  saved: boolean,
-  _state: PlaceActionState,
-  _formData: FormData,
-): Promise<PlaceActionState> {
+export async function setPlaceSaved(placeId: string, saved: boolean): Promise<PlaceActionState> {
   if (!isUuid(placeId)) return { message: "장소를 확인할 수 없어요.", status: "error" };
 
   const { supabase, user } = await requireUser();

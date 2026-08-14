@@ -1,4 +1,4 @@
-import { NotebookPenIcon, UsersIcon } from "lucide-react";
+import { NotebookPenIcon } from "lucide-react";
 import Link from "next/link";
 
 import { getPeople } from "@/entities/person";
@@ -18,7 +18,7 @@ export async function RecordNewPage() {
   const hasLoadError = Boolean(peopleResult.error);
 
   return (
-    <PageShell className="block min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--blue-950),transparent_92%)]">
+    <PageShell className="block">
       <PageHeader back="/records" backGuardFormId="record-form" title="새 기록" />
 
       <section
@@ -26,7 +26,7 @@ export async function RecordNewPage() {
         aria-labelledby="record-intro-title"
       >
         <h2
-          className="font-[780] font-heading text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
+          className="font-[780] text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
           id="record-intro-title"
         >
           오늘의 장면을 남겨보세요.
@@ -50,7 +50,6 @@ export async function RecordNewPage() {
           <EmptyContent>
             {people.length === 0 ? (
               <Button className="w-full" render={<Link href="/people" />} nativeButton={false}>
-                <UsersIcon data-icon="inline-start" />
                 사람 추가하러 가기
               </Button>
             ) : null}

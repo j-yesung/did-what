@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getPeople } from "@/entities/person";
 import { CreatePersonForm } from "@/features/manage-person";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { formatShortDate } from "@/shared/lib/format-date";
+import { formatShortDate } from "@/shared/lib/date/format-date";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
@@ -23,7 +23,7 @@ export async function PeoplePage() {
 
       <section className="px-1" aria-labelledby="people-intro-title">
         <p className="font-bold text-foreground text-xs">{personCount}명과 함께 기록 중</p>
-        <h2 id="people-intro-title" className="mt-2 font-bold font-heading text-2xl tracking-[-0.04em]">
+        <h2 id="people-intro-title" className="mt-2 font-bold text-2xl tracking-[-0.04em]">
           기억 속 사람들을 모아보세요.
         </h2>
         <p className="mt-2 text-muted-foreground text-sm leading-relaxed">

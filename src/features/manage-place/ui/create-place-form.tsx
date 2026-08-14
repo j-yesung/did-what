@@ -1,14 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
-
-import { CheckIcon, CircleAlertIcon, PlusIcon } from "lucide-react";
-
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 
 import { createPlace } from "../model/actions";
-import { INITIAL_PLACE_ACTION_STATE } from "../model/place-form";
 
 type CreatePlaceFormProps = {
   page: number;
@@ -18,31 +13,29 @@ type CreatePlaceFormProps = {
 };
 
 export function CreatePlaceForm({ page, placeId, query, saved }: CreatePlaceFormProps) {
-  const [state, formAction, pending] = useActionState(createPlace, INITIAL_PLACE_ACTION_STATE);
-  const isSaved = saved || state.status === "success";
+  const save = useActionMutation(createPlace, { error: "저장하지 못했어요", success: "내 장소에 저장했어요" });
+  const isSaved = saved || save.data?.status === "success";
 
   return (
-    <form action={formAction} className="flex w-full flex-col gap-2">
+    <form
+      className="flex w-full flex-col gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        save.mutate(new FormData(event.currentTarget));
+      }}
+    >
       <input name="page" type="hidden" value={page} />
       <input name="placeId" type="hidden" value={placeId} />
       <input name="query" type="hidden" value={query} />
       <Button
         className="w-full"
         disabled={isSaved}
-        loading={pending}
+        loading={save.isPending}
         type="submit"
         variant={isSaved ? "outline" : "default"}
       >
-        {isSaved ? <CheckIcon data-icon="inline-start" /> : <PlusIcon data-icon="inline-start" />}
         {isSaved ? "저장됨" : "이 장소 저장"}
       </Button>
-      {state.status === "error" ? (
-        <Alert variant="destructive">
-          <CircleAlertIcon aria-hidden="true" />
-          <AlertTitle>저장하지 못했어요</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      ) : null}
     </form>
   );
 }
