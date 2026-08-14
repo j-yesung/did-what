@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/**
+ * 문서와 스킬 파일은 클래스 스캔 대상에서 뺀다.
+ * 예시로 적어 둔 클래스 이름까지 실제 CSS로 만들어져 배포본에 섞인다.
+ */
+@source not "../../../docs";
+@source not "../../../.agents";
+
 @custom-variant dark {
   &:where(.dark, .dark *) {
     @slot;
