@@ -566,42 +566,53 @@ queryOptions({
 
 # 18. Record 생성 페이지 적용
 
-현재 `/records/new` 페이지는 실제 저장 기능이 없으므로 이후 다음 흐름으로 확장한다.
+`/records/new`의 저장 기능은 이미 구현되어 있다. Server Action `createRecord`가 담당하며 TanStack Query를 거치지 않는다.
 
-현재 필수 필드:
+필수 필드:
 
 ```text
 recordedAt
 personIds
-placeId
+regionCode
 activity
 ```
 
-저장 흐름:
+`places`(방문 장소)는 선택 사항이고 최대 10곳까지 담을 수 있다.
+
+현재 저장 흐름:
 
 ```text
 사용자 입력
    ↓
-validation
+validateRecordInput (필드별 오류 반환)
    ↓
-createRecord mutation
+createRecord Server Action
    ↓
 성공
    ↓
-record 관련 query invalidate
+revalidatePath("/", "/records", "/places")
    ↓
-필요 시 상세 페이지 또는 이전 페이지 이동
+redirect("/records")
 ```
 
-mutation 상태:
+`records`, `people`, `places` 조회는 모두 Server Component가 Supabase 서버 클라이언트로 직접 수행하므로,
+갱신은 클라이언트 캐시 무효화가 아니라 `revalidatePath`로 처리한다.
+클라이언트 query cache에 record 목록이 들어가면 그때 `invalidateQueries`를 함께 도입한다.
+
+mutation 상태는 `useActionState`가 돌려주는 값을 쓴다.
 
 ```ts
-mutation.isPending
-mutation.isError
-mutation.isSuccess
+const [state, formAction, pending] = useActionState(createRecord, INITIAL_STATE);
 ```
 
-CTA 중복 클릭을 막기 위해 `isPending` 상태 동안 저장 버튼을 disabled 처리한다.
+```text
+pending          → 저장 버튼 loading, 중복 제출 방지
+state.fieldErrors → 각 입력란 아래 Field Error
+state.message     → 저장 자체가 실패했을 때 error Toast
+```
+
+`useMutation`을 쓰지 않는 이유는 이 액션이 성공 시 `redirect()`로 끝나기 때문이다.
+`redirect()`는 `NEXT_REDIRECT`를 throw하므로 `useMutation`으로 감싸면 성공이 `onError`로 떨어진다.
 
 ---
 
@@ -644,7 +655,437 @@ mutation
 
 ---
 
-# 21. React Query Devtools
+
+# 21. Toast 및 Server-State Side Effect 정책
+
+현재 일부 API 상태에서 `useEffect`로 `isSuccess`, `isError` 등의 상태를 감시하여
+shadcn/ui 기반 Toast를 호출하고 있다면 이번 TanStack Query 도입 작업에서 함께 정리한다.
+
+목표는 다음과 같다.
+
+- API mutation 결과에 대한 Toast 처리를 `useEffect`에서 제거
+- mutation side effect를 TanStack Query lifecycle callback으로 이동
+- Toast / Error UI / Field Error의 책임을 명확히 분리
+- Axios 및 Supabase 오류를 UI가 직접 해석하지 않도록 구성
+- retry / refetch로 인한 중복 Toast 가능성을 방지
+
+---
+
+## 21.1 제거해야 하는 패턴
+
+다음처럼 mutation 상태를 `useEffect`에서 감시하여 Toast를 호출하는 패턴은 제거한다.
+
+```tsx
+const mutation = useMutation(...);
+
+useEffect(() => {
+  if (mutation.isSuccess) {
+    toast.success("저장되었습니다.");
+  }
+}, [mutation.isSuccess]);
+
+useEffect(() => {
+  if (mutation.isError) {
+    toast.error("저장에 실패했습니다.");
+  }
+}, [mutation.isError]);
+```
+
+이 방식은 다음 문제가 있다.
+
+- mutation lifecycle과 side effect가 분리됨
+- effect dependency 관리가 필요함
+- mutation reset 시점과 Toast 실행 시점이 불명확해질 수 있음
+- 동일 상태를 여러 컴포넌트가 감시할 경우 중복 처리가 발생할 수 있음
+- TanStack Query가 제공하는 mutation callback과 역할이 중복됨
+
+API mutation 결과 처리만을 목적으로 하는 `useEffect`는 만들지 않는다.
+
+---
+
+## 21.2 Mutation Side Effect 처리
+
+mutation 결과에 따른 side effect는 기본적으로 다음 callback을 사용한다.
+
+```text
+onSuccess
+→ 성공 후 처리
+→ success toast
+→ query invalidation
+→ 필요 시 navigation
+
+onError
+→ 실패 후 처리
+→ error toast
+→ 필요 시 error logging
+
+onSettled
+→ 성공/실패와 관계없이 필요한 공통 후처리
+```
+
+예:
+
+```tsx
+const queryClient = useQueryClient();
+
+const createRecordMutation = useMutation({
+  mutationFn: createRecord,
+
+  onSuccess: async () => {
+    toast.success("기록을 저장했어요.");
+
+    await queryClient.invalidateQueries({
+      queryKey: recordQueries.all(),
+    });
+  },
+
+  onError: (error) => {
+    toast.error(getErrorMessage(error));
+  },
+});
+```
+
+---
+
+## 21.3 Mutation 상태와 UI 상태 구분
+
+mutation 상태는 UI 렌더링에 직접 사용한다.
+
+예:
+
+```tsx
+<Button
+  type="submit"
+  disabled={createRecordMutation.isPending}
+>
+  {createRecordMutation.isPending ? "저장 중..." : "기록 저장"}
+</Button>
+```
+
+권장 역할:
+
+```text
+isPending
+→ 버튼 disabled
+→ loading indicator
+→ 중복 submit 방지
+
+isError
+→ 필요한 경우 inline error state 렌더링
+
+isSuccess
+→ UI가 지속적으로 성공 상태를 표현해야 할 때만 사용
+
+onSuccess
+→ 일회성 성공 side effect
+
+onError
+→ 일회성 실패 side effect
+```
+
+Toast 발생만을 위해 `isSuccess`, `isError`를 effect에서 관찰하지 않는다.
+
+---
+
+# 22. Toast 사용 기준
+
+Toast는 모든 에러를 표현하는 범용 상태 UI로 사용하지 않는다.
+
+didWhat에서는 다음 원칙을 따른다.
+
+```text
+Toast
+= 사용자 액션에 대한 일시적인 결과 피드백
+
+Error UI
+= 페이지 또는 서버 데이터 상태 자체의 오류
+
+Field Error
+= 사용자가 수정할 수 있는 입력 오류
+```
+
+예:
+
+| 상황 | 권장 처리 |
+|---|---|
+| 기록 생성 성공 | success Toast |
+| 기록 생성 실패 | error Toast |
+| 기록 수정 성공 | success Toast |
+| 기록 삭제 성공 | success Toast |
+| 기록 삭제 실패 | error Toast |
+| 사용자가 실행한 장소 검색 실패 | 상황에 따라 inline Error UI 또는 Toast |
+| 페이지 최초 데이터 조회 실패 | Error UI |
+| 목록 데이터 조회 실패 | Error UI |
+| background refetch 실패 | 기본적으로 Toast 표시 안 함 |
+| Form validation 실패 | Field Error |
+| 필수값 누락 | Field Error |
+| API 요청 중 | 버튼/영역 loading 상태 |
+
+Toast를 페이지의 영구적인 오류 표현 수단으로 사용하지 않는다.
+
+---
+
+# 23. Query 조회 실패 처리
+
+`useQuery` 조회 실패를 mutation과 동일하게 처리하지 않는다.
+
+특히 조회 query는 다음 상황에서 재실행될 수 있다.
+
+- retry
+- refetch
+- invalidate
+- reconnect
+- mount
+- background refetch
+
+따라서 조회 query 실패마다 Toast를 자동 호출하면 중복 Toast가 발생할 수 있다.
+
+페이지 또는 목록의 핵심 데이터 조회 실패는 기본적으로 Error UI로 표현한다.
+
+예:
+
+```tsx
+const recordsQuery = useQuery(recordQueries.list());
+
+if (recordsQuery.isPending) {
+  return <RecordListSkeleton />;
+}
+
+if (recordsQuery.isError) {
+  return <RecordListError />;
+}
+
+return <RecordList records={recordsQuery.data} />;
+```
+
+background refetch 실패는 기존 데이터가 화면에 남아 있다면
+사용자 경험을 방해하는 Toast를 기본적으로 노출하지 않는다.
+
+실제 서비스 요구사항이 생기면 개별 query 단위로 판단한다.
+
+---
+
+# 24. Form Validation Error
+
+폼 validation 오류는 Toast보다 해당 Field 근처에 표시한다.
+
+예:
+
+```text
+recordedAt 누락
+→ 날짜 Field Error
+
+personIds가 0명
+→ 함께한 사람 Field Error
+
+placeId 누락
+→ 장소 Field Error
+
+activity 누락
+→ 활동 내용 Field Error
+```
+
+서버 validation 오류도 특정 field에 명확히 매핑할 수 있다면
+Toast보다 Field Error를 우선한다.
+
+Toast는 사용자가 직접 수정하기 어려운 요청 실패나
+전체 작업 결과 피드백에 사용한다.
+
+---
+
+# 25. Error Message 정규화
+
+UI 컴포넌트가 Axios 또는 Supabase 내부 오류 구조를 직접 해석하지 않도록 한다.
+
+피해야 할 코드:
+
+```ts
+error.response?.data?.message
+```
+
+또는 UI 곳곳에서:
+
+```ts
+if (axios.isAxiosError(error)) {
+  ...
+}
+```
+
+같은 처리를 반복하지 않는다.
+
+공통적으로 사용할 필요가 생기면 `shared`에 error normalization 함수를 둔다.
+
+예시 위치:
+
+```text
+src/shared/api/
+├── axios-instance.ts
+├── get-error-message.ts
+└── index.ts
+```
+
+예:
+
+```ts
+import axios from "axios";
+
+const DEFAULT_ERROR_MESSAGE = "요청을 처리하지 못했어요.";
+
+export function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message;
+
+    if (typeof message === "string") {
+      return message;
+    }
+
+    return DEFAULT_ERROR_MESSAGE;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return DEFAULT_ERROR_MESSAGE;
+}
+```
+
+단, 실제 backend error response schema가 존재한다면
+해당 schema를 먼저 확인한 후 그 구조에 맞게 구현한다.
+
+임의로 `{ message: string }` 형식을 backend 표준이라고 가정하지 않는다.
+
+---
+
+# 26. Supabase Error 처리
+
+Supabase API 함수 내부에서는 SDK가 반환한 error를 무시하지 않는다.
+
+예:
+
+```ts
+export async function getRecords() {
+  const { data, error } = await supabase
+    .from("records")
+    .select("*");
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+```
+
+TanStack Query가 오류를 받을 수 있도록 반드시 throw한다.
+
+Mutation도 동일하다.
+
+```ts
+export async function createRecord(payload: CreateRecordPayload) {
+  const { data, error } = await supabase
+    .from("records")
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+```
+
+Supabase error message를 사용자에게 그대로 노출하는 것이 적절한지는 별도로 판단한다.
+
+내부 DB 정보나 개발자용 메시지가 포함될 가능성이 있다면
+사용자 친화적인 메시지로 변환한다.
+
+---
+
+# 27. Global Toast 처리 금지
+
+초기 구현에서는 QueryClient 또는 Axios interceptor에
+전역 success/error Toast 로직을 추가하지 않는다.
+
+다음과 같은 구조는 피한다.
+
+```text
+모든 HTTP 4xx/5xx
+→ interceptor
+→ 자동 error Toast
+```
+
+또는:
+
+```text
+모든 mutation 성공
+→ Global MutationCache
+→ 자동 success Toast
+```
+
+이유:
+
+- background query 오류까지 Toast가 발생할 수 있음
+- UI 문맥과 맞지 않는 메시지가 표시될 수 있음
+- Field Error로 보여야 할 오류까지 Toast로 노출될 수 있음
+- 중복 Toast가 발생하기 쉬움
+- 특정 mutation의 UX 제어가 어려워짐
+
+Toast는 기본적으로 해당 사용자 액션을 소유한 feature/page에서 명시적으로 처리한다.
+
+공통화 요구가 실제로 반복될 때만 추상화를 검토한다.
+
+---
+
+# 28. 기존 useEffect 정리 기준
+
+TanStack Query 도입 과정에서 기존 `useEffect`를 확인한다.
+
+다음 목적으로 사용 중인 effect는 제거 또는 리팩터링 후보이다.
+
+```text
+API 성공 감시 → Toast
+API 실패 감시 → Toast
+API 상태 변경 감시 → query invalidate
+API 완료 감시 → navigation
+서버 데이터 fetch
+```
+
+예:
+
+```tsx
+useEffect(() => {
+  if (isSuccess) {
+    toast.success(...);
+    router.push(...);
+  }
+}, [isSuccess]);
+```
+
+가능하면:
+
+```tsx
+useMutation({
+  mutationFn,
+
+  onSuccess: () => {
+    toast.success(...);
+    router.push(...);
+  },
+});
+```
+
+로 이동한다.
+
+단, 모든 `useEffect`를 제거하는 작업으로 확대하지 않는다.
+
+DOM synchronization, subscription, browser API synchronization 등
+React effect가 실제로 필요한 코드에는 그대로 사용한다.
+
+
+# 29. React Query Devtools
 
 개발 환경에서만 Devtools를 노출한다.
 
@@ -660,7 +1101,7 @@ mutation
 
 ---
 
-# 22. FSD 의존성 규칙
+# 30. FSD 의존성 규칙
 
 현재 프로젝트의 의존 방향을 유지한다.
 
@@ -688,7 +1129,7 @@ entities → _pages
 
 ---
 
-# 23. Public API 규칙
+# 31. Public API 규칙
 
 각 slice 외부에서는 가능한 `index.ts` Public API를 통해 import한다.
 
@@ -708,7 +1149,7 @@ import { recordQueries } from "@/entities/record/api/queries";
 
 ---
 
-# 24. 구현 순서
+# 32. 구현 순서
 
 다음 순서로 작업한다.
 
@@ -829,7 +1270,39 @@ useEffect(() => {
 
 ---
 
-## Phase 8. 검증
+## Phase 8. Toast / Error / useEffect 정리
+
+현재 API 상태와 관련된 Toast 구현을 검색한다.
+
+다음 패턴을 우선 확인한다.
+
+```text
+useEffect + isSuccess
+useEffect + isError
+useEffect + mutation status
+axios error 직접 접근
+Supabase error 직접 UI 출력
+```
+
+정리 원칙:
+
+- mutation 결과 Toast → `onSuccess` / `onError`
+- mutation 후 query 갱신 → `onSuccess`의 `invalidateQueries`
+- mutation 후 navigation → 필요한 경우 `onSuccess`
+- 페이지 조회 실패 → Error UI
+- validation 오류 → Field Error
+- background refetch 오류 → 기본적으로 Toast 없음
+- UI의 Axios/Supabase 오류 구조 직접 접근 → 필요한 경우 공통 error normalizer 사용
+
+기존 Toast 컴포넌트 또는 shadcn/ui Toast 사용 방식 자체는
+불필요하게 교체하지 않는다.
+
+이번 작업의 목적은 Toast 라이브러리 변경이 아니라
+server-state lifecycle과 side effect의 책임 정리이다.
+
+---
+
+## Phase 9. 검증
 
 다음을 실행한다.
 
@@ -855,7 +1328,7 @@ pnpm test
 
 ---
 
-# 25. 완료 조건
+# 33. 완료 조건
 
 아래 조건을 모두 만족하면 작업 완료로 판단한다.
 
@@ -877,10 +1350,21 @@ pnpm test
 - [ ] typecheck가 존재한다면 통과
 - [ ] 기존 테스트가 있다면 통과
 - [ ] 기존 UI 및 기능 regression 없음
+- [ ] mutation success/error Toast를 위한 `useEffect` 제거
+- [ ] mutation side effect를 `onSuccess` / `onError` / `onSettled` 중 적절한 callback으로 이동
+- [ ] mutation pending 상태를 UI loading / disabled 처리에 사용
+- [ ] 페이지 또는 핵심 데이터 조회 실패는 Error UI로 처리
+- [ ] Form validation 오류는 Field Error로 처리
+- [ ] background refetch 실패 시 불필요한 Toast가 발생하지 않음
+- [ ] UI 컴포넌트에서 Axios error 구조에 직접 의존하는 코드 제거 또는 최소화
+- [ ] Supabase 함수가 error 발생 시 throw하도록 구성
+- [ ] 사용자에게 내부 Supabase/DB 오류 메시지가 그대로 노출되지 않도록 검토
+- [ ] Axios interceptor에 전역 Toast 로직을 추가하지 않음
+- [ ] QueryClient 전역 callback에 무분별한 Toast 로직을 추가하지 않음
 
 ---
 
-# 26. 하지 말아야 할 것
+# 34. 하지 말아야 할 것
 
 다음 작업은 명확한 필요가 없다면 수행하지 않는다.
 
@@ -897,10 +1381,17 @@ pnpm test
 - queryKey 문자열을 컴포넌트마다 직접 작성
 - 기존 FSD 구조 전면 변경
 - 작업 범위와 무관한 UI 리팩터링
+- mutation 결과 Toast만을 위한 `useEffect`
+- 모든 query 실패에 자동 error Toast 표시
+- background refetch 실패에 무조건 Toast 표시
+- Axios interceptor에서 전역 Toast 호출
+- QueryClient / MutationCache에 무분별한 전역 Toast 처리
+- Field validation 오류를 모두 Toast로 표시
+- Supabase raw error를 사용자에게 그대로 노출
 
 ---
 
-# 27. 에이전트 실행 지침
+# 35. 에이전트 실행 지침
 
 이 문서를 읽는 구현 에이전트는 다음 규칙을 따른다.
 
@@ -922,8 +1413,10 @@ pnpm test
 4. Axios 구조
 5. Supabase 처리 방식
 6. Kakao API 처리 방식
-7. 검증 결과
-8. 남은 작업
+7. Toast / Error / Side Effect 정리 내용
+8. 제거 또는 변경한 useEffect
+9. 검증 결과
+10. 남은 작업
 ```
 
 ---
