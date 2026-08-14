@@ -2,9 +2,8 @@
 
 import { useActionState } from "react";
 
-import { CircleAlertIcon, Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
+import { useActionToast } from "@/shared/ui/toast";
 
 import { deleteRecord } from "../model/actions";
 import { INITIAL_RECORD_ACTION_STATE } from "../model/record-form";
@@ -29,6 +29,7 @@ type DeleteRecordDialogProps = {
 
 export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogProps) {
   const [state, formAction, pending] = useActionState(deleteRecord.bind(null, recordId), INITIAL_RECORD_ACTION_STATE);
+  useActionToast(state, { error: "기록을 삭제하지 못했어요" });
 
   return (
     <AlertDialog>
@@ -46,13 +47,6 @@ export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogPro
             함께한 사람과 연결된 기록도 사라지며, 삭제한 뒤에는 되돌릴 수 없어요.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {state.message ? (
-          <Alert variant="destructive">
-            <CircleAlertIcon aria-hidden="true" />
-            <AlertTitle>기록을 삭제하지 못했어요</AlertTitle>
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        ) : null}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
           <form action={formAction}>

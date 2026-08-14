@@ -2,9 +2,8 @@
 
 import { useActionState } from "react";
 
-import { CircleAlertIcon, Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
+import { useActionToast } from "@/shared/ui/toast";
 
 import { deletePlace } from "../model/actions";
 import { INITIAL_PLACE_ACTION_STATE } from "../model/place-form";
@@ -31,6 +31,7 @@ type DeletePlaceDialogProps = {
 
 export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: DeletePlaceDialogProps) {
   const [state, formAction, pending] = useActionState(deletePlace.bind(null, placeId), INITIAL_PLACE_ACTION_STATE);
+  useActionToast(state, { error: "장소를 삭제하지 못했어요" });
 
   return (
     <AlertDialog>
@@ -59,13 +60,6 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
               : "삭제한 뒤에는 되돌릴 수 없어요."}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {state.message ? (
-          <Alert variant="destructive">
-            <CircleAlertIcon aria-hidden="true" />
-            <AlertTitle>장소를 삭제하지 못했어요</AlertTitle>
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        ) : null}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
           <form action={formAction}>

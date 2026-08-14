@@ -3,11 +3,10 @@
 import type { FormEvent } from "react";
 import { useActionState, useEffect, useRef, useState } from "react";
 
-import { CalendarDaysIcon, CircleAlertIcon, MessageSquareTextIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
+import { CalendarDaysIcon, MessageSquareTextIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 
 import type { PersonOption } from "@/entities/person";
 import type { PlaceOption } from "@/entities/place";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { CheckboxChip } from "@/shared/ui/checkbox-chip";
 import {
@@ -22,6 +21,7 @@ import {
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
+import { useActionToast } from "@/shared/ui/toast";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import type { RecordActionState } from "../model/record-form";
@@ -52,14 +52,17 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
   const [state, formAction, pending] = useActionState(action, INITIAL_STATE);
   const [hasPersonError, setHasPersonError] = useState(false);
 
+  /** 어느 칸이 잘못됐는지는 입력란 아래에 남기고, 저장 자체가 실패한 것만 토스트로 알린다. */
+  useActionToast(state, { error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요` });
+
   const formRef = useRef<HTMLFormElement>(null);
   const personError = hasPersonError ? "함께한 사람을 선택해 주세요." : state.fieldErrors?.personIds;
 
   useEffect(() => {
-    if (state.status === "error") {
-      if (formRef.current) formRef.current.dataset.dirty = "true";
-      formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"], [role="alert"]')?.focus();
-    }
+    if (state.status !== "error") return;
+
+    if (formRef.current) formRef.current.dataset.dirty = "true";
+    formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }, [state]);
 
   useEffect(() => {
@@ -99,14 +102,6 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
       onChange={markDirty}
       onSubmit={handleSubmit}
     >
-      {state.message ? (
-        <Alert variant="destructive" tabIndex={-1}>
-          <CircleAlertIcon aria-hidden="true" />
-          <AlertTitle>기록을 {mode === "edit" ? "수정" : "저장"}하지 못했어요</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      ) : null}
-
       <div className="rounded-xl border border-border bg-surface px-[18px] py-5 motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
           <Field data-invalid={Boolean(state.fieldErrors?.recordedAt)}>

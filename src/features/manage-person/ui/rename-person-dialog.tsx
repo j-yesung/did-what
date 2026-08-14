@@ -2,9 +2,8 @@
 
 import { useActionState, useEffect, useState } from "react";
 
-import { CircleAlertIcon, PencilIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 
-import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import {
   Dialog,
@@ -18,6 +17,7 @@ import {
 } from "@/shared/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
+import { useActionToast } from "@/shared/ui/toast";
 
 import { renamePerson } from "../model/actions";
 import { INITIAL_PERSON_ACTION_STATE } from "../model/person-form";
@@ -31,10 +31,10 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(renamePerson.bind(null, personId), INITIAL_PERSON_ACTION_STATE);
 
+  useActionToast(state, { error: "이름을 바꾸지 못했어요" });
+
   useEffect(() => {
-    if (state.status === "success") {
-      setOpen(false);
-    }
+    if (state.status === "success") setOpen(false);
   }, [state]);
 
   return (
@@ -50,13 +50,6 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
         </DialogHeader>
 
         <form action={formAction} className="flex flex-col gap-4">
-          {state.status === "error" && state.message ? (
-            <Alert variant="destructive">
-              <CircleAlertIcon aria-hidden="true" />
-              <AlertDescription>{state.message}</AlertDescription>
-            </Alert>
-          ) : null}
-
           <Field data-invalid={Boolean(state.fieldError)}>
             <FieldLabel htmlFor="rename-person-name">이름</FieldLabel>
             <Input

@@ -2,10 +2,10 @@
 
 import { useActionState } from "react";
 
-import { BookmarkCheckIcon, BookmarkIcon, CircleAlertIcon } from "lucide-react";
+import { BookmarkCheckIcon, BookmarkIcon } from "lucide-react";
 
-import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
+import { useActionToast } from "@/shared/ui/toast";
 
 import { setPlaceSaved } from "../model/actions";
 import { INITIAL_PLACE_ACTION_STATE } from "../model/place-form";
@@ -22,6 +22,12 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
     INITIAL_PLACE_ACTION_STATE,
   );
   const currentSaved = state.saved ?? saved;
+
+  useActionToast(state, {
+    error: "바꾸지 못했어요",
+    success: saved ? "내 장소에서 해제했어요" : "내 장소에 저장했어요",
+  });
+
   const label = currentSaved ? (saved ? "내 장소에서 해제" : "내 장소에 저장됨") : "내 장소에 저장";
   const icon = currentSaved ? (
     <BookmarkCheckIcon aria-hidden="true" data-icon={iconOnly ? undefined : "inline-start"} />
@@ -30,7 +36,7 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
   );
 
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction}>
       {iconOnly ? (
         <Button
           aria-label={label}
@@ -49,12 +55,6 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
           {label}
         </Button>
       )}
-      {state.status === "error" ? (
-        <Alert variant="destructive">
-          <CircleAlertIcon aria-hidden="true" />
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      ) : null}
     </form>
   );
 }
