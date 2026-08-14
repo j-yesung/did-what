@@ -216,11 +216,17 @@
 
   html {
     background: var(--background);
+    /** 앱처럼 보이도록 문서 자체의 고무줄 스크롤을 막는다. 내용이 화면에 다 들어와도 iOS는 끝에서 끌려 움직인다. */
+    overscroll-behavior-y: none;
     @apply font-sans;
   }
 
   body {
-    min-height: 100vh;
+    /**
+     * 화면 뼈대(PageShell)가 쓰는 단위와 같아야 한다.
+     * vh는 툴바가 접힌 높이(lvh)라 svh보다 커서, 콘텐츠가 짧아도 그 차이만큼 스크롤이 생긴다.
+     */
+    min-height: 100svh;
     margin: 0;
     background: var(--background);
     color: var(--foreground);
