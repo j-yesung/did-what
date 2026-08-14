@@ -111,11 +111,11 @@
   --nav-clearance: calc(72px + env(safe-area-inset-bottom));
 
   /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
-  --map-empty: var(--grey-100);
-  --map-level-1: var(--blue-100);
-  --map-level-2: var(--blue-200);
-  --map-level-3: var(--blue-400);
-  --map-level-4: var(--blue-600);
+  --map-empty: var(--grey-200);
+  --map-level-1: var(--blue-200);
+  --map-level-2: var(--blue-300);
+  --map-level-3: var(--blue-500);
+  --map-level-4: var(--blue-700);
 }
 
 @theme inline {

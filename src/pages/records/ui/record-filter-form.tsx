@@ -34,7 +34,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
             defaultValue={filters.query}
             maxLength={100}
             name="q"
-            placeholder="한 일·메모·지역 검색"
+            placeholder="검색어를 입력하세요"
             type="search"
           />
         </div>
