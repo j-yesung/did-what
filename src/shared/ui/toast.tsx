@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
 
 import { Toast } from "@base-ui/react/toast";
 import { CircleAlertIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon, XIcon } from "lucide-react";
@@ -88,27 +88,3 @@ export function ToastProvider({ children, position = "top" }: ToastProviderProps
 }
 
 export const useToast = Toast.useToastManager;
-
-type ActionState = { message?: string; status?: string };
-
-/**
- * 서버 액션 결과를 토스트로 옮긴다.
- * 성공 문구를 넘기지 않으면 액션이 돌려준 message를 제목으로 쓰고, 실패는 제목 아래 message를 붙인다.
- */
-export function useActionToast(state: ActionState, titles: { error: string; success?: string }) {
-  const { add } = useToast();
-  const { error, success } = titles;
-
-  useEffect(() => {
-    if (state.status === "error" && state.message) {
-      add({ description: state.message, title: error, type: "error" });
-      return;
-    }
-
-    const successTitle = success ?? state.message;
-
-    if (state.status === "success" && successTitle) {
-      add({ title: successTitle, type: "success" });
-    }
-  }, [add, error, state, success]);
-}

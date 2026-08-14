@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 
 import { PencilIcon } from "lucide-react";
 
+import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import {
   Dialog,
@@ -17,10 +18,8 @@ import {
 } from "@/shared/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { useActionToast } from "@/shared/ui/toast";
 
 import { renamePerson } from "../model/actions";
-import { INITIAL_PERSON_ACTION_STATE } from "../model/person-form";
 
 type RenamePersonDialogProps = {
   name: string;
@@ -29,13 +28,15 @@ type RenamePersonDialogProps = {
 
 export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) {
   const [open, setOpen] = useState(false);
-  const [state, formAction, pending] = useActionState(renamePerson.bind(null, personId), INITIAL_PERSON_ACTION_STATE);
+  const rename = useActionMutation((formData: FormData) => renamePerson(personId, formData), {
+    error: "이름을 바꾸지 못했어요",
+    onSuccess: () => setOpen(false),
+  });
 
-  useActionToast(state, { error: "이름을 바꾸지 못했어요" });
-
-  useEffect(() => {
-    if (state.status === "success") setOpen(false);
-  }, [state]);
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    rename.mutate(new FormData(event.currentTarget));
+  }
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -49,12 +50,12 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
           <DialogDescription>바뀐 이름은 기록 목록과 작성 폼에도 함께 반영돼요.</DialogDescription>
         </DialogHeader>
 
-        <form action={formAction} className="flex flex-col gap-4">
-          <Field data-invalid={Boolean(state.fieldError)}>
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <Field data-invalid={Boolean(rename.data?.fieldError)}>
             <FieldLabel htmlFor="rename-person-name">이름</FieldLabel>
             <Input
-              aria-describedby={state.fieldError ? "rename-person-name-error" : undefined}
-              aria-invalid={Boolean(state.fieldError)}
+              aria-describedby={rename.data?.fieldError ? "rename-person-name-error" : undefined}
+              aria-invalid={Boolean(rename.data?.fieldError)}
               autoComplete="off"
               className="h-11"
               defaultValue={name}
@@ -63,14 +64,14 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
               name="name"
               required
             />
-            <FieldError id="rename-person-name-error">{state.fieldError}</FieldError>
+            <FieldError id="rename-person-name-error">{rename.data?.fieldError}</FieldError>
           </Field>
 
           <DialogFooter>
-            <DialogClose disabled={pending} render={<Button type="button" variant="outline" />}>
+            <DialogClose disabled={rename.isPending} render={<Button type="button" variant="outline" />}>
               취소
             </DialogClose>
-            <Button loading={pending} type="submit">
+            <Button loading={rename.isPending} type="submit">
               수정 완료
             </Button>
           </DialogFooter>

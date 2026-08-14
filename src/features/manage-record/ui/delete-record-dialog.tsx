@@ -1,9 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
-
 import { Trash2Icon } from "lucide-react";
 
+import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,10 +16,8 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import { useActionToast } from "@/shared/ui/toast";
 
 import { deleteRecord } from "../model/actions";
-import { INITIAL_RECORD_ACTION_STATE } from "../model/record-form";
 
 type DeleteRecordDialogProps = {
   activity: string;
@@ -28,8 +25,10 @@ type DeleteRecordDialogProps = {
 };
 
 export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogProps) {
-  const [state, formAction, pending] = useActionState(deleteRecord.bind(null, recordId), INITIAL_RECORD_ACTION_STATE);
-  useActionToast(state, { error: "기록을 삭제하지 못했어요" });
+  const remove = useActionMutation(() => deleteRecord(recordId), {
+    error: "기록을 삭제하지 못했어요",
+    success: "기록을 삭제했어요",
+  });
 
   return (
     <AlertDialog>
@@ -48,12 +47,16 @@ export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogPro
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
-          <form action={formAction}>
-            <AlertDialogAction className="w-full" loading={pending} type="submit" variant="destructive">
-              기록 삭제
-            </AlertDialogAction>
-          </form>
+          <AlertDialogCancel disabled={remove.isPending}>취소</AlertDialogCancel>
+          <AlertDialogAction
+            className="w-full"
+            loading={remove.isPending}
+            onClick={() => remove.mutate()}
+            type="button"
+            variant="destructive"
+          >
+            기록 삭제
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

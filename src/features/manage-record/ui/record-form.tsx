@@ -1,12 +1,13 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CalendarDaysIcon, MessageSquareTextIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 
 import type { PersonOption } from "@/entities/person";
 import type { PlaceOption } from "@/entities/place";
+import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { CheckboxChip } from "@/shared/ui/checkbox-chip";
 import {
@@ -21,7 +22,6 @@ import {
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
-import { useActionToast } from "@/shared/ui/toast";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import type { RecordActionState } from "../model/record-form";
@@ -32,7 +32,7 @@ const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).forma
 const FIELD_ICON = "size-[18px] text-foreground [stroke-width:2]";
 
 type RecordFormProps = {
-  action: (state: RecordActionState, formData: FormData) => Promise<RecordActionState>;
+  action: (formData: FormData) => Promise<RecordActionState>;
   initialValues?: {
     activity: string;
     memo: string;
@@ -46,24 +46,21 @@ type RecordFormProps = {
   savedPlaces: PlaceOption[];
 };
 
-const INITIAL_STATE: RecordActionState = { status: "idle" };
-
 export function RecordForm({ action, initialValues, mode = "create", people, savedPlaces }: RecordFormProps) {
-  const [state, formAction, pending] = useActionState(action, INITIAL_STATE);
   const [hasPersonError, setHasPersonError] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   /** 어느 칸이 잘못됐는지는 입력란 아래에 남기고, 저장 자체가 실패한 것만 토스트로 알린다. */
-  useActionToast(state, { error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요` });
-
-  const formRef = useRef<HTMLFormElement>(null);
-  const personError = hasPersonError ? "함께한 사람을 선택해 주세요." : state.fieldErrors?.personIds;
-
-  useEffect(() => {
-    if (state.status !== "error") return;
-
-    if (formRef.current) formRef.current.dataset.dirty = "true";
-    formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
-  }, [state]);
+  const save = useActionMutation(action, {
+    error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요`,
+    success: mode === "edit" ? "기록을 수정했어요" : "기록을 남겼어요",
+    onFail: () => {
+      if (formRef.current) formRef.current.dataset.dirty = "true";
+      formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    },
+  });
+  const fieldErrors = save.data?.fieldErrors;
+  const personError = hasPersonError ? "함께한 사람을 선택해 주세요." : fieldErrors?.personIds;
 
   useEffect(() => {
     function warnBeforeUnload(event: BeforeUnloadEvent) {
@@ -82,20 +79,22 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    if (event.currentTarget.querySelectorAll('input[name="personIds"]:checked').length > 0) {
-      event.currentTarget.dataset.dirty = "false";
+    event.preventDefault();
+
+    if (event.currentTarget.querySelectorAll('input[name="personIds"]:checked').length === 0) {
+      setHasPersonError(true);
+      event.currentTarget.querySelector<HTMLElement>('input[name="personIds"]')?.focus();
       return;
     }
 
-    event.preventDefault();
-    setHasPersonError(true);
-    event.currentTarget.querySelector<HTMLElement>('input[name="personIds"]')?.focus();
+    // 저장을 시작하면 이탈 경고를 끈다. 성공하면 화면이 바뀌고, 실패하면 onFail이 다시 켠다.
+    event.currentTarget.dataset.dirty = "false";
+    save.mutate(new FormData(event.currentTarget));
   }
 
   return (
     <form
       ref={formRef}
-      action={formAction}
       className="flex flex-col gap-4"
       data-dirty="false"
       id="record-form"
@@ -104,7 +103,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
     >
       <div className="rounded-xl border border-border bg-surface px-[18px] py-5 motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
-          <Field data-invalid={Boolean(state.fieldErrors?.recordedAt)}>
+          <Field data-invalid={Boolean(fieldErrors?.recordedAt)}>
             <FieldLabel htmlFor="recordedAt">
               <CalendarDaysIcon className={FIELD_ICON} aria-hidden="true" />
               언제 <span className="font-[650] text-[11px] text-foreground">필수</span>
@@ -116,10 +115,10 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               name="recordedAt"
               required
               type="date"
-              aria-invalid={Boolean(state.fieldErrors?.recordedAt)}
-              aria-describedby={state.fieldErrors?.recordedAt ? "recordedAt-error" : undefined}
+              aria-invalid={Boolean(fieldErrors?.recordedAt)}
+              aria-describedby={fieldErrors?.recordedAt ? "recordedAt-error" : undefined}
             />
-            <FieldError id="recordedAt-error">{state.fieldErrors?.recordedAt}</FieldError>
+            <FieldError id="recordedAt-error">{fieldErrors?.recordedAt}</FieldError>
           </Field>
 
           <FieldSeparator />
@@ -157,14 +156,14 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
             initialPlaces={initialValues?.places}
             initialRegion={initialValues?.region}
             onChange={markDirty}
-            placeError={state.fieldErrors?.places}
-            regionError={state.fieldErrors?.regionCode}
+            placeError={fieldErrors?.places}
+            regionError={fieldErrors?.regionCode}
             savedPlaces={savedPlaces}
           />
 
           <FieldSeparator />
 
-          <Field data-invalid={Boolean(state.fieldErrors?.activity)}>
+          <Field data-invalid={Boolean(fieldErrors?.activity)}>
             <FieldLabel htmlFor="activity">
               <NotebookPenIcon className={FIELD_ICON} aria-hidden="true" />
               무엇을 했나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
@@ -179,15 +178,15 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               name="activity"
               placeholder="예: 영화 보고 저녁 먹음"
               required
-              aria-invalid={Boolean(state.fieldErrors?.activity)}
-              aria-describedby={state.fieldErrors?.activity ? "activity-error" : undefined}
+              aria-invalid={Boolean(fieldErrors?.activity)}
+              aria-describedby={fieldErrors?.activity ? "activity-error" : undefined}
             />
-            <FieldError id="activity-error">{state.fieldErrors?.activity}</FieldError>
+            <FieldError id="activity-error">{fieldErrors?.activity}</FieldError>
           </Field>
 
           <FieldSeparator />
 
-          <Field data-invalid={Boolean(state.fieldErrors?.memo)}>
+          <Field data-invalid={Boolean(fieldErrors?.memo)}>
             <FieldLabel htmlFor="memo">
               <MessageSquareTextIcon className={FIELD_ICON} aria-hidden="true" />
               메모 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
@@ -200,14 +199,14 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               name="memo"
               placeholder="더 남기고 싶은 이야기가 있다면 적어 주세요."
               rows={4}
-              aria-invalid={Boolean(state.fieldErrors?.memo)}
-              aria-describedby={state.fieldErrors?.memo ? "memo-error" : undefined}
+              aria-invalid={Boolean(fieldErrors?.memo)}
+              aria-describedby={fieldErrors?.memo ? "memo-error" : undefined}
             />
-            <FieldError id="memo-error">{state.fieldErrors?.memo}</FieldError>
+            <FieldError id="memo-error">{fieldErrors?.memo}</FieldError>
           </Field>
         </FieldGroup>
 
-        <Button className="mt-5 h-14 w-full" loading={pending} size="lg" type="submit">
+        <Button className="mt-5 h-14 w-full" loading={save.isPending} size="lg" type="submit">
           <NotebookPenIcon data-icon="inline-start" />
           {mode === "edit" ? "수정 완료" : "기록 남기기"}
         </Button>

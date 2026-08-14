@@ -1,11 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import type { FormEvent } from "react";
 
+import { useMutation } from "@tanstack/react-query";
 import { CircleAlertIcon, LogInIcon, MailCheckIcon, UserRoundPlusIcon } from "lucide-react";
 import Link from "next/link";
 
 import { INITIAL_AUTH_STATE, login, signup } from "@/features/auth";
+import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardFooter } from "@/shared/ui/card";
@@ -33,7 +35,14 @@ const COPY = {
 function AuthPage({ mode }: AuthPageProps) {
   const isSignup = mode === "signup";
   const copy = COPY[mode];
-  const [state, formAction, pending] = useActionState(isSignup ? signup : login, INITIAL_AUTH_STATE);
+  /**
+   * 이 화면만 토스트를 쓰지 않는다. "메일을 확인해 주세요" 같은 안내는 사라지면 안 되고,
+   * 아직 로그인 전이라 화면에 남길 자리도 카드 안뿐이다.
+   */
+  const submit = useMutation({
+    mutationFn: (formData: FormData) => runServerAction(() => (isSignup ? signup : login)(formData)),
+  });
+  const state = submit.data ?? INITIAL_AUTH_STATE;
   const SubmitIcon = isSignup ? UserRoundPlusIcon : LogInIcon;
 
   return (
@@ -45,7 +54,12 @@ function AuthPage({ mode }: AuthPageProps) {
 
         <Card>
           <CardContent>
-            <form action={formAction}>
+            <form
+              onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                submit.mutate(new FormData(event.currentTarget));
+              }}
+            >
               <FieldGroup>
                 {state.message ? (
                   <Alert variant={state.status === "error" ? "destructive" : "default"}>
@@ -133,7 +147,7 @@ function AuthPage({ mode }: AuthPageProps) {
                   </Field>
                 ) : null}
 
-                <Button className="mt-1 h-11 w-full" loading={pending} size="lg" type="submit">
+                <Button className="mt-1 h-11 w-full" loading={submit.isPending} size="lg" type="submit">
                   <SubmitIcon data-icon="inline-start" />
                   {copy.submitLabel}
                 </Button>

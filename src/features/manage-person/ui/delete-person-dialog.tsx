@@ -1,9 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
-
 import { Trash2Icon } from "lucide-react";
 
+import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,10 +16,8 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import { useActionToast } from "@/shared/ui/toast";
 
 import { deletePerson } from "../model/actions";
-import { INITIAL_PERSON_ACTION_STATE } from "../model/person-form";
 
 type DeletePersonDialogProps = {
   name: string;
@@ -29,8 +26,10 @@ type DeletePersonDialogProps = {
 };
 
 export function DeletePersonDialog({ name, personId, recordCount }: DeletePersonDialogProps) {
-  const [state, formAction, pending] = useActionState(deletePerson.bind(null, personId), INITIAL_PERSON_ACTION_STATE);
-  useActionToast(state, { error: "사람을 삭제하지 못했어요" });
+  const remove = useActionMutation(() => deletePerson(personId), {
+    error: "사람을 삭제하지 못했어요",
+    success: "사람을 삭제했어요",
+  });
 
   return (
     <AlertDialog>
@@ -51,12 +50,16 @@ export function DeletePersonDialog({ name, personId, recordCount }: DeletePerson
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>취소</AlertDialogCancel>
-          <form action={formAction}>
-            <AlertDialogAction className="w-full" loading={pending} type="submit" variant="destructive">
-              사람 삭제
-            </AlertDialogAction>
-          </form>
+          <AlertDialogCancel disabled={remove.isPending}>취소</AlertDialogCancel>
+          <AlertDialogAction
+            className="w-full"
+            loading={remove.isPending}
+            onClick={() => remove.mutate()}
+            type="button"
+            variant="destructive"
+          >
+            사람 삭제
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

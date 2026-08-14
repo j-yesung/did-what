@@ -1,17 +1,19 @@
 "use client";
 
-import type { FormEvent } from "react";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 
 import { CircleAlertIcon, MapPinnedIcon, SearchIcon } from "lucide-react";
 
+import { useRegionSearch } from "@/entities/region";
+import { getErrorMessage } from "@/shared/api/http/get-error-message";
+import { useDebounce } from "@/shared/hooks/use-debounce";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
+import { Spinner } from "@/shared/ui/spinner";
 
-import { searchRecordRegions } from "../model/actions";
-import { INITIAL_REGION_SEARCH_STATE, type RecordLocationRegion } from "../model/location-picker";
+import type { RecordLocationRegion } from "../model/location-picker";
 
 type RegionPickerDialogProps = {
   onSelect: (region: RecordLocationRegion) => void;
@@ -38,12 +40,11 @@ export function RegionPickerDialog({ onSelect }: RegionPickerDialogProps) {
   );
 }
 
+/** 다이얼로그가 닫히면 이 내용이 통째로 언마운트되면서 검색어도 함께 사라진다. */
 function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
-  const [state, formAction, pending] = useActionState(searchRecordRegions, INITIAL_REGION_SEARCH_STATE);
-
-  function stopPropagation(event: FormEvent<HTMLFormElement>) {
-    event.stopPropagation();
-  }
+  const [keyword, setKeyword] = useState("");
+  const debouncedKeyword = useDebounce(keyword);
+  const search = useRegionSearch(debouncedKeyword);
 
   return (
     <DialogContent className="flex max-h-[min(640px,calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] flex-col overflow-hidden sm:max-w-md">
@@ -52,36 +53,42 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
         <DialogDescription>익숙한 지역명을 직접 입력해 보세요.</DialogDescription>
       </DialogHeader>
 
-      <form action={formAction} className="flex gap-2" onSubmit={stopPropagation}>
-        <Input aria-label="지역 이름" maxLength={100} name="query" placeholder="예: 망원동, 홍대" required />
-        <Button loading={pending} type="submit">
-          <SearchIcon aria-hidden="true" />
-          <span className="sr-only">검색</span>
-        </Button>
-      </form>
+      {/* 입력이 멈추면 스스로 검색한다. 검색 버튼이 없으므로 record-form 안에서 폼이 겹칠 일도 없다. */}
+      <div className="relative">
+        <Input
+          aria-label="지역 이름"
+          maxLength={100}
+          onChange={(event) => setKeyword(event.target.value)}
+          placeholder="예: 망원동, 홍대"
+          value={keyword}
+        />
+        {search.isFetching ? (
+          <Spinner aria-label="검색 중" className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground" />
+        ) : null}
+      </div>
 
-      {state.status === "error" ? (
+      {search.isError ? (
         <Alert variant="destructive">
           <CircleAlertIcon aria-hidden="true" />
-          <AlertDescription>{state.message}</AlertDescription>
+          <AlertDescription>{getErrorMessage(search.error)}</AlertDescription>
         </Alert>
       ) : null}
 
-      {state.status === "success" && state.regions?.length === 0 ? (
+      {search.data?.regions.length === 0 ? (
         <p className="py-8 text-center text-muted-foreground text-sm">선택할 수 있는 지역이 없어요.</p>
       ) : null}
 
-      {state.related && state.regions?.length ? (
+      {search.data?.related && search.data.regions.length ? (
         <p className="text-muted-foreground text-xs">입력한 검색어와 연관된 지역이에요.</p>
       ) : null}
 
-      {state.regions?.length ? (
+      {search.data?.regions.length ? (
         <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pr-1">
-          {state.regions.map((region) => (
+          {search.data.regions.map((region) => (
             <li key={region.code}>
               <Button
                 className="h-auto w-full justify-start whitespace-normal px-3 py-3 text-left"
-                onClick={() => onSelect({ ...region, label: state.query ?? region.name })}
+                onClick={() => onSelect({ ...region, label: search.data.query })}
                 type="button"
                 variant="outline"
               >

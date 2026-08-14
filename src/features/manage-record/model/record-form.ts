@@ -37,8 +37,6 @@ export type RecordActionState = {
   fieldErrors?: RecordFieldErrors;
 };
 
-export const INITIAL_RECORD_ACTION_STATE: RecordActionState = { status: "idle" };
-
 const REGION_CODE_PATTERN = /^\d{10}$/;
 const KAKAO_PLACE_ID_PATTERN = /^\d{1,100}$/;
 const MAX_VISITED_PLACES = 10;

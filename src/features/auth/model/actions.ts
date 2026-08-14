@@ -10,7 +10,7 @@ import { getLoginErrorMessage, getSignupErrorMessage } from "./auth-error-messag
 import type { AuthActionState } from "./auth-form";
 import { validateLoginInput, validateSignupInput } from "./auth-form";
 
-export async function login(_state: AuthActionState, formData: FormData): Promise<AuthActionState> {
+export async function login(formData: FormData): Promise<AuthActionState> {
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
@@ -38,7 +38,7 @@ export async function login(_state: AuthActionState, formData: FormData): Promis
   redirect("/");
 }
 
-export async function signup(_state: AuthActionState, formData: FormData): Promise<AuthActionState> {
+export async function signup(formData: FormData): Promise<AuthActionState> {
   const displayName = String(formData.get("displayName") ?? "").trim();
   const email = String(formData.get("email") ?? "")
     .trim()

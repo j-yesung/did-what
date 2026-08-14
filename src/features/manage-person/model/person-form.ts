@@ -4,8 +4,6 @@ export type PersonActionState = {
   fieldError?: string;
 };
 
-export const INITIAL_PERSON_ACTION_STATE: PersonActionState = { status: "idle" };
-
 export function validatePersonName(value: string): { name: string; error?: never } | { name?: never; error: string } {
   const name = value.trim();
 
