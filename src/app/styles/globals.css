@@ -56,7 +56,7 @@
   --green-700: #0d9c63;
 
   --yellow-400: #ffc84d;
-  --yellow-700: #b06a00;
+  --yellow-500: #ffb800;
 
   /* Semantic — 화면과 컴포넌트는 여기까지만 참조한다. */
   --fill-base: var(--grey-50);
@@ -71,7 +71,7 @@
   --text-brand: var(--grey-900);
   --text-danger: var(--red-500);
   --text-success: var(--green-700);
-  --text-warning: var(--yellow-700);
+  --fill-bookmark: var(--yellow-500);
   --text-info: var(--blue-600);
   --text-on-brand: var(--grey-0);
 
@@ -95,7 +95,7 @@
   --muted-foreground: var(--text-secondary);
   --destructive: var(--text-danger);
   --success: var(--text-success);
-  --warning: var(--text-warning);
+  --bookmark: var(--fill-bookmark);
   --info: var(--text-info);
   --border: var(--border-default);
   --input: var(--border-default);
@@ -128,7 +128,7 @@
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-success: var(--success);
-  --color-warning: var(--warning);
+  --color-bookmark: var(--bookmark);
   --color-info: var(--info);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
@@ -170,7 +170,7 @@
   --text-brand: var(--grey-50);
   --text-danger: var(--red-400);
   --text-success: var(--green-400);
-  --text-warning: var(--yellow-400);
+  --fill-bookmark: var(--yellow-400);
   --text-info: var(--blue-400);
   --border-default: var(--grey-800);
 
@@ -194,7 +194,7 @@
     --text-brand: var(--grey-50);
     --text-danger: var(--red-400);
     --text-success: var(--green-400);
-    --text-warning: var(--yellow-400);
+    --fill-bookmark: var(--yellow-400);
     --text-info: var(--blue-400);
     --border-default: var(--grey-800);
 

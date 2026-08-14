@@ -1,6 +1,6 @@
 "use client";
 
-import { BookmarkCheckIcon, BookmarkIcon } from "lucide-react";
+import { BookmarkIcon } from "lucide-react";
 
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
@@ -21,36 +21,34 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
   const currentSaved = toggle.data?.saved ?? saved;
 
   const label = currentSaved ? (saved ? "내 장소에서 해제" : "내 장소에 저장됨") : "내 장소에 저장";
-  const icon = currentSaved ? (
-    <BookmarkCheckIcon aria-hidden="true" data-icon={iconOnly ? undefined : "inline-start"} />
-  ) : (
-    <BookmarkIcon aria-hidden="true" data-icon={iconOnly ? undefined : "inline-start"} />
-  );
+  /**
+   * 아이콘만 있는 버튼일 때만 아이콘을 쓴다. 글자가 함께 있으면 아이콘 없이 라벨만 보여준다.
+   * 저장된 상태는 노란 덩어리로, 저장 전에는 윤곽선만으로 보여준다. 색이 아니라 채움 여부로도 구분된다.
+   */
+  const icon = <BookmarkIcon aria-hidden="true" className={currentSaved ? "fill-bookmark stroke-none" : undefined} />;
 
-  return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        toggle.mutate();
-      }}
+  return iconOnly ? (
+    <Button
+      aria-label={label}
+      className="size-11 text-foreground [&_svg]:size-[18px]"
+      disabled={toggle.isSuccess}
+      loading={toggle.isPending}
+      onClick={() => toggle.mutate()}
+      size="icon-lg"
+      type="button"
+      variant="ghost"
     >
-      {iconOnly ? (
-        <Button
-          aria-label={label}
-          className="size-11 text-foreground [&_svg]:size-[18px]"
-          disabled={toggle.isSuccess}
-          loading={toggle.isPending}
-          size="icon-lg"
-          type="submit"
-          variant="ghost"
-        >
-          {icon}
-        </Button>
-      ) : (
-        <Button disabled={toggle.isSuccess} loading={toggle.isPending} type="submit" variant="outline">
-          {label}
-        </Button>
-      )}
-    </form>
+      {icon}
+    </Button>
+  ) : (
+    <Button
+      disabled={toggle.isSuccess}
+      loading={toggle.isPending}
+      onClick={() => toggle.mutate()}
+      type="button"
+      variant="outline"
+    >
+      {label}
+    </Button>
   );
 }
