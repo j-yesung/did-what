@@ -274,6 +274,21 @@
   select {
     font: inherit;
   }
+
+  /**
+   * iOS는 날짜 입력의 네이티브 값 상자를 요소 너비에 맞춰 줄이지 않아 오른쪽으로 넘친다.
+   * 기본 꾸밈을 끄고 값이 왼쪽부터 자기 자리만 쓰게 고정한다. 데스크톱 달력 버튼은 그대로 남는다.
+   */
+  input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type="date"]::-webkit-date-and-time-value {
+    margin: 0;
+    min-width: 0;
+    text-align: left;
+  }
 }
 
 @media (min-width: 700px) {

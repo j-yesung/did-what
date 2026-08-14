@@ -16,7 +16,6 @@ export function CreatePersonForm() {
   const create = useActionMutation(createPerson, {
     error: "추가하지 못했어요",
     onSuccess: () => {
-      /** 여러 명을 잇달아 추가할 수 있게 입력란을 비우고 커서를 되돌린다. */
       formRef.current?.reset();
       formRef.current?.querySelector<HTMLInputElement>("#person-name")?.focus();
     },
@@ -40,14 +39,12 @@ export function CreatePersonForm() {
           <FieldGroup>
             <Field data-invalid={Boolean(fieldError)}>
               <FieldLabel htmlFor="person-name">이름</FieldLabel>
-              {/* 이름은 짧아서 한 줄이면 충분하다. 버튼을 옆에 두어 엄지가 닿는 높이에서 입력과 추가가 끝난다. */}
               <div className="flex gap-2">
                 <Input
                   id="person-name"
                   name="name"
                   className="h-11 flex-1"
                   maxLength={50}
-                  placeholder="예: 다연"
                   required
                   autoComplete="off"
                   aria-invalid={Boolean(fieldError)}
