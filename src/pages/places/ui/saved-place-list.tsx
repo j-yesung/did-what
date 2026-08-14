@@ -1,9 +1,9 @@
 import { MapPinIcon } from "lucide-react";
 import Link from "next/link";
 
-import { DeletePlaceDialog, PlaceSaveButton } from "@/features/manage-place";
+import { DeletePlaceDialog } from "@/features/manage-place";
 import { formatShortDate } from "@/shared/lib/date/format-date";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { TextButton } from "@/shared/ui/text-button";
@@ -52,9 +52,6 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
             <CardDescription>
               {place.saved_at ? `${formatShortDate(place.saved_at)} 저장` : "저장한 장소"}
             </CardDescription>
-            <CardAction className="-mt-1.5 -mr-1.5">
-              <PlaceSaveButton iconOnly placeId={place.id} saved={Boolean(place.saved_at)} />
-            </CardAction>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>

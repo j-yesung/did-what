@@ -120,11 +120,21 @@ export function parseKakaoSearchResponse(
   return { isEnd: payload.meta.is_end, pageableCount: payload.meta.pageable_count, places };
 }
 
+/**
+ * 지역 이름의 단위. 읍·면만 구분하고 나머지는 동으로 본다.
+ * 법정동은 성수동1가, 을지로3가, 세종로처럼 동으로 끝나지 않는 이름이 많아서, 접미사로 걸러내면 멀쩡한 지역이 탈락한다.
+ * 이름이 비어 있으면 시·도·구 단위라 지역으로 쓰지 않는다.
+ */
 function getRegionType(name: string): KakaoRegion["type"] | null {
-  if (name.endsWith("동")) return "dong";
+  if (!name) return null;
   if (name.endsWith("읍")) return "eup";
   if (name.endsWith("면")) return "myeon";
-  return null;
+  return "dong";
+}
+
+/** 주소에서 잘라낼 지점을 찾을 때 쓴다. "72-1" 같은 지번과 구분해야 해서 여기서는 접미사로 좁혀 본다. */
+function isLocalityName(name: string): boolean {
+  return /(?:동|읍|면|\d가)$/.test(name);
 }
 
 function parseRegionDocument(document: unknown): KakaoRegion | null {
@@ -226,7 +236,7 @@ export function getRelatedRegionQueries(places: KakaoPlace[]): string[] {
     const parts = place.parcelAddress?.split(/\s+/) ?? [];
     let localityIndex = -1;
     for (let partIndex = parts.length - 1; partIndex >= 0; partIndex -= 1) {
-      if (getRegionType(parts[partIndex])) {
+      if (isLocalityName(parts[partIndex])) {
         localityIndex = partIndex;
         break;
       }
