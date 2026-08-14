@@ -2,14 +2,14 @@
 
 import { useActionState } from "react";
 
-import { CircleAlertIcon, LogInIcon, MailCheckIcon, MapPinnedIcon, UserRoundPlusIcon } from "lucide-react";
+import { CircleAlertIcon, LogInIcon, MailCheckIcon, UserRoundPlusIcon } from "lucide-react";
 import Link from "next/link";
 
 import { INITIAL_AUTH_STATE, login, signup } from "@/features/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/shared/ui/card";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { TextButton } from "@/shared/ui/text-button";
 
@@ -19,18 +19,16 @@ type AuthPageProps = {
 
 const COPY = {
   login: {
-    description: "함께한 시간과 장소를 다시 이어 보세요.",
+    description: null,
     linkHref: "/signup",
     linkLabel: "처음이신가요? 회원가입",
     submitLabel: "로그인",
-    title: "다시 만나 반가워요",
   },
   signup: {
     description: "소중한 사람과의 발자취를 한곳에 모아 보세요.",
     linkHref: "/login",
     linkLabel: "이미 계정이 있나요? 로그인",
     submitLabel: "회원가입",
-    title: "첫 기록을 준비해요",
   },
 } as const;
 
@@ -41,33 +39,18 @@ function AuthPage({ mode }: AuthPageProps) {
   const SubmitIcon = isSignup ? UserRoundPlusIcon : LogInIcon;
 
   return (
-    <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-background px-5 pt-[calc(40px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent_72%)]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -top-32 left-1/2 size-80 -translate-x-1/2 rounded-full bg-blue-100 blur-3xl"
-        aria-hidden="true"
-      />
+    <main className="flex min-h-svh items-center justify-center bg-background px-5 pt-[calc(40px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]">
+      <section className="flex w-full max-w-[430px] flex-col gap-6" aria-labelledby="auth-title">
+        <h1 className="text-center font-bold font-heading text-2xl text-foreground tracking-[-0.03em]" id="auth-title">
+          뭐했지
+        </h1>
 
-      <section className="relative z-10 flex w-full max-w-[430px] flex-col gap-6" aria-labelledby="auth-title">
-        <div className="flex items-center justify-center gap-2 font-heading font-semibold text-blue-800">
-          <span className="grid size-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            <MapPinnedIcon className="size-5" strokeWidth={2} aria-hidden="true" />
-          </span>
-          <span className="text-lg tracking-[-0.02em]">뭐했지</span>
-        </div>
-
-        <Card className="shadow-[0_24px_80px_color-mix(in_srgb,var(--blue-950),transparent_88%)]">
-          <CardHeader className="gap-2 pb-2 text-center">
-            <CardTitle>
-              <h1 id="auth-title" className="font-bold font-heading text-2xl tracking-[-0.03em]">
-                {copy.title}
-              </h1>
-            </CardTitle>
-            <CardDescription>{copy.description}</CardDescription>
-          </CardHeader>
+        <Card>
+          {copy.description ? (
+            <CardHeader className="pb-2 text-center">
+              <CardDescription>{copy.description}</CardDescription>
+            </CardHeader>
+          ) : null}
 
           <CardContent>
             <form action={formAction}>
@@ -86,7 +69,7 @@ function AuthPage({ mode }: AuthPageProps) {
 
                 {isSignup ? (
                   <Field data-invalid={Boolean(state.fieldErrors?.displayName)}>
-                    <FieldLabel htmlFor="displayName">표시 이름</FieldLabel>
+                    <FieldLabel htmlFor="displayName">닉네임</FieldLabel>
                     <Input
                       id="displayName"
                       name="displayName"
@@ -98,7 +81,7 @@ function AuthPage({ mode }: AuthPageProps) {
                       aria-invalid={Boolean(state.fieldErrors?.displayName)}
                       aria-describedby={state.fieldErrors?.displayName ? "displayName-error" : undefined}
                       className="h-11"
-                      placeholder="예: 김뭐했지"
+                      placeholder="닉네임을 입력해 주세요"
                     />
                     <FieldError id="displayName-error">{state.fieldErrors?.displayName}</FieldError>
                   </Field>
@@ -123,17 +106,18 @@ function AuthPage({ mode }: AuthPageProps) {
 
                 <Field data-invalid={Boolean(state.fieldErrors?.password)}>
                   <FieldLabel htmlFor="password">비밀번호</FieldLabel>
+                  {isSignup ? <FieldDescription>6자 이상 입력해 주세요.</FieldDescription> : null}
                   <Input
                     id="password"
                     name="password"
                     type="password"
                     autoComplete={isSignup ? "new-password" : "current-password"}
-                    minLength={6}
+                    minLength={isSignup ? 6 : undefined}
                     required
                     aria-invalid={Boolean(state.fieldErrors?.password)}
                     aria-describedby={state.fieldErrors?.password ? "password-error" : undefined}
                     className="h-11"
-                    placeholder="6자 이상 입력해 주세요"
+                    placeholder={isSignup ? "비밀번호를 입력해 주세요" : "비밀번호"}
                   />
                   <FieldError id="password-error">{state.fieldErrors?.password}</FieldError>
                 </Field>
@@ -151,7 +135,7 @@ function AuthPage({ mode }: AuthPageProps) {
                       aria-invalid={Boolean(state.fieldErrors?.passwordConfirm)}
                       aria-describedby={state.fieldErrors?.passwordConfirm ? "passwordConfirm-error" : undefined}
                       className="h-11"
-                      placeholder="한 번 더 입력해 주세요"
+                      placeholder="비밀번호를 다시 입력해 주세요"
                     />
                     <FieldError id="passwordConfirm-error">{state.fieldErrors?.passwordConfirm}</FieldError>
                   </Field>
@@ -166,7 +150,7 @@ function AuthPage({ mode }: AuthPageProps) {
           </CardContent>
 
           <CardFooter className="justify-center py-3">
-            <TextButton nativeButton={false} render={<Link href={copy.linkHref} />} tone="brand" variant="underline">
+            <TextButton nativeButton={false} render={<Link href={copy.linkHref} />} tone="muted">
               {copy.linkLabel}
             </TextButton>
           </CardFooter>
