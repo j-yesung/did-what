@@ -8,7 +8,7 @@ import Link from "next/link";
 import { INITIAL_AUTH_STATE, login, signup } from "@/features/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/shared/ui/card";
+import { Card, CardContent, CardFooter } from "@/shared/ui/card";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { TextButton } from "@/shared/ui/text-button";
@@ -19,13 +19,11 @@ type AuthPageProps = {
 
 const COPY = {
   login: {
-    description: null,
     linkHref: "/signup",
     linkLabel: "처음이신가요? 회원가입",
     submitLabel: "로그인",
   },
   signup: {
-    description: "소중한 사람과의 발자취를 한곳에 모아 보세요.",
     linkHref: "/login",
     linkLabel: "이미 계정이 있나요? 로그인",
     submitLabel: "회원가입",
@@ -46,12 +44,6 @@ function AuthPage({ mode }: AuthPageProps) {
         </h1>
 
         <Card>
-          {copy.description ? (
-            <CardHeader className="pb-2 text-center">
-              <CardDescription>{copy.description}</CardDescription>
-            </CardHeader>
-          ) : null}
-
           <CardContent>
             <form action={formAction}>
               <FieldGroup>
