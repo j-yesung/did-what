@@ -23,7 +23,7 @@ import type { RecordLocationPlace, RecordLocationRegion } from "../model/locatio
 import { PlacePickerDialog } from "./place-picker-dialog";
 import { RegionPickerDialog } from "./region-picker-dialog";
 
-const FIELD_ICON = "size-[18px] text-foreground [stroke-width:2]";
+const FIELD_ICON = "size-4.5 text-foreground [stroke-width:2]";
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];

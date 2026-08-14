@@ -39,7 +39,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
     <PageShell className="block">
       <PageHeader back={`/records/${recordId}`} backGuardFormId="record-form" title="기록 수정" />
 
-      <section className="px-1 pt-[22px] pb-5" aria-labelledby="record-edit-title">
+      <section className="px-1 pt-5.5 pb-5" aria-labelledby="record-edit-title">
         <h2
           className="font-[780] text-[clamp(24px,7vw,30px)] leading-[1.25] tracking-[-0.045em]"
           id="record-edit-title"

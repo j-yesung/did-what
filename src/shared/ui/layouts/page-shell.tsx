@@ -16,7 +16,7 @@ export function PageShell({ children, className, withBottomNavigation = false }:
   return (
     <main
       className={cn(
-        "mx-auto flex min-h-svh w-full max-w-[430px] flex-col gap-5 bg-background px-5 pt-[calc(24px+env(safe-area-inset-top))]",
+        "mx-auto flex min-h-svh w-full max-w-(--app-width) flex-col gap-5 bg-background px-5 pt-[calc(24px+env(safe-area-inset-top))]",
         withBottomNavigation ? "pb-[var(--nav-clearance)]" : "pb-[calc(24px+env(safe-area-inset-bottom))]",
         className,
       )}

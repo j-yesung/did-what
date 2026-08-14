@@ -22,7 +22,7 @@ export async function RecordNewPage() {
       <PageHeader back="/records" backGuardFormId="record-form" title="새 기록" />
 
       <section
-        className="px-1 pt-[22px] pb-5 motion-safe:animate-[enter_360ms_ease-out_both]"
+        className="px-1 pt-5.5 pb-5 motion-safe:animate-[enter_360ms_ease-out_both]"
         aria-labelledby="record-intro-title"
       >
         <h2

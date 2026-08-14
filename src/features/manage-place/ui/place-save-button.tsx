@@ -30,7 +30,7 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
   return iconOnly ? (
     <Button
       aria-label={label}
-      className="size-11 text-foreground [&_svg]:size-[18px]"
+      className="size-11 text-foreground [&_svg]:size-4.5"
       disabled={toggle.isSuccess}
       loading={toggle.isPending}
       onClick={() => toggle.mutate()}

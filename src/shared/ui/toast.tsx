@@ -33,7 +33,7 @@ function ToastList() {
         swipeDirection="up"
         toast={toast}
       >
-        <Icon aria-hidden="true" className={cn("mt-px size-[18px] shrink-0", className)} />
+        <Icon aria-hidden="true" className={cn("mt-px size-4.5 shrink-0", className)} />
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 break-words">
           <Toast.Title className="font-[650] text-sm leading-snug" />
@@ -50,7 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
 
       <Toast.Portal>
-        <Toast.Viewport className="fixed top-[calc(76px+env(safe-area-inset-top))] left-1/2 z-70 flex w-full max-w-[430px] -translate-x-1/2 flex-col gap-2 px-3">
+        <Toast.Viewport className="fixed top-[calc(76px+env(safe-area-inset-top))] left-1/2 z-70 flex w-full max-w-(--app-width) -translate-x-1/2 flex-col gap-2 px-3">
           <ToastList />
         </Toast.Viewport>
       </Toast.Portal>

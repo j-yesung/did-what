@@ -29,7 +29,7 @@ import { RecordLocationFields } from "./record-location-fields";
 
 const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
 
-const FIELD_ICON = "size-[18px] text-foreground [stroke-width:2]";
+const FIELD_ICON = "size-4.5 text-foreground [stroke-width:2]";
 
 type RecordFormProps = {
   action: (formData: FormData) => Promise<RecordActionState>;
@@ -101,7 +101,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
       onChange={markDirty}
       onSubmit={handleSubmit}
     >
-      <div className="rounded-xl border border-border bg-surface px-[18px] py-5 motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
+      <div className="rounded-xl border border-border bg-surface px-4.5 py-5 motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
           <Field data-invalid={Boolean(fieldErrors?.recordedAt)}>
             <FieldLabel htmlFor="recordedAt">

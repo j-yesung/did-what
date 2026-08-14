@@ -95,7 +95,7 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
           >
             <BookmarkIcon className="size-3.5 text-foreground" aria-hidden="true" />내 장소에서 바로 추가
           </h3>
-          <ul className="flex max-h-[92px] flex-wrap gap-1.5 overflow-y-auto overscroll-contain">
+          <ul className="flex max-h-23 flex-wrap gap-1.5 overflow-y-auto overscroll-contain">
             {savedInRegion.map((place) => {
               const added = selectedKeys.has(`existing:${place.id}`);
 
@@ -151,7 +151,7 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
               <li className="rounded-xl border bg-card p-3" key={place.id}>
                 <div className="flex items-start gap-3">
                   <MapPinIcon
-                    className="mt-0.5 size-[18px] shrink-0 text-foreground [stroke-width:2]"
+                    className="mt-0.5 size-4.5 shrink-0 text-foreground [stroke-width:2]"
                     aria-hidden="true"
                   />
                   <div className="min-w-0 flex-1">

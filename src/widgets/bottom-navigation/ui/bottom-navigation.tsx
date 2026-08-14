@@ -21,7 +21,7 @@ export function BottomNavigation() {
     <nav
       aria-label="주요 메뉴"
       /** 화면 바닥에 붙되 본문과 같은 너비를 쓴다. 배경은 홈 인디케이터 영역까지 덮고 패딩으로 탭을 밀어 올린다. */
-      className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full border-border border-t bg-surface pb-[env(safe-area-inset-bottom)] min-[700px]:max-w-[430px]"
+      className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full border-border border-t bg-surface pb-[env(safe-area-inset-bottom)] min-[700px]:max-w-(--app-width)"
     >
       <ul className="grid" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}>
         {TABS.map(({ href, icon: Icon, label }) => {

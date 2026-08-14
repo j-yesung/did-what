@@ -7,7 +7,7 @@ export function RecordTimeline({ className, ...props }: React.ComponentProps<"se
   return (
     <section
       className={cn(
-        "relative flex flex-col gap-4 before:absolute before:top-9 before:bottom-4 before:left-[7px] before:w-px before:bg-border",
+        "relative flex flex-col gap-4 before:absolute before:top-9 before:bottom-4 before:left-1.75 before:w-px before:bg-border",
         className,
       )}
       {...props}

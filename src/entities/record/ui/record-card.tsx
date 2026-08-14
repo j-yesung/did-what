@@ -19,7 +19,7 @@ export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, 
   return (
     <article className="relative pl-5">
       <span
-        className="absolute top-5 left-0 size-[15px] rounded-full border-4 border-background bg-primary"
+        className="absolute top-5 left-0 size-3.75 rounded-full border-4 border-background bg-primary"
         aria-hidden="true"
       />
       <Card>

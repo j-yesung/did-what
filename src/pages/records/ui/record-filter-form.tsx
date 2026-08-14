@@ -25,7 +25,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
       <div className="flex gap-2">
         <div className="relative flex-1">
           <SearchIcon
-            className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
           <Input
@@ -45,7 +45,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
 
       <details className="group rounded-xl border bg-card px-4 py-3" open={hasPeriod}>
         <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
-          <CalendarRangeIcon className="size-[18px] text-foreground" aria-hidden="true" />
+          <CalendarRangeIcon className="size-4.5 text-foreground" aria-hidden="true" />
           기간
           {hasPeriod ? (
             <span className="rounded-md bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-foreground">

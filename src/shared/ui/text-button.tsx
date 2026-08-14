@@ -21,7 +21,7 @@ const textButtonVariants = cva(
       size: {
         sm: "text-xs [&_svg]:size-3.5",
         default: "text-sm [&_svg]:size-4",
-        lg: "text-base [&_svg]:size-[18px]",
+        lg: "text-base [&_svg]:size-4.5",
       },
       tone: {
         default: "text-foreground",
