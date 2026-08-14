@@ -7,7 +7,7 @@ import { cn } from "#shared/lib/utils.ts";
 
 const textButtonVariants = cva(
   cn(
-    "inline-flex shrink-0 touch-manipulation select-none items-center gap-0.5 rounded-md font-medium after:-inset-x-3 after:-inset-y-1 disabled:pointer-events-none disabled:opacity-40",
+    "inline-flex shrink-0 touch-manipulation select-none items-center gap-0.5 rounded-md font-medium after:-inset-x-2 after:-inset-y-1 disabled:pointer-events-none disabled:opacity-40",
     FOCUS_RING,
     PRESS_FEEDBACK,
   ),
