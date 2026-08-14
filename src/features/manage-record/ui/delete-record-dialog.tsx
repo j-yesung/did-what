@@ -32,10 +32,7 @@ export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogPro
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<Button variant="destructive" />}>
-        <Trash2Icon data-icon="inline-start" />
-        삭제
-      </AlertDialogTrigger>
+      <AlertDialogTrigger render={<Button variant="destructive" />}>삭제</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogMedia>

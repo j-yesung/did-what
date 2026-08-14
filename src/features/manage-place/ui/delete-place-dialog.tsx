@@ -41,10 +41,7 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
           <Trash2Icon aria-hidden="true" />
         </AlertDialogTrigger>
       ) : (
-        <AlertDialogTrigger render={<Button className="w-full" variant="destructive" />}>
-          <Trash2Icon data-icon="inline-start" />
-          장소 삭제
-        </AlertDialogTrigger>
+        <AlertDialogTrigger render={<Button className="w-full" variant="destructive" />}>장소 삭제</AlertDialogTrigger>
       )}
       <AlertDialogContent>
         <AlertDialogHeader>

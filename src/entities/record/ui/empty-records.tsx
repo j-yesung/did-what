@@ -1,4 +1,4 @@
-import { NotebookPenIcon, PlusIcon } from "lucide-react";
+import { NotebookPenIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/shared/ui/button";
@@ -25,7 +25,7 @@ export function EmptyRecords({
       </EmptyHeader>
       <EmptyContent>
         <Button nativeButton={false} render={<Link href="/records/new" />}>
-          <PlusIcon data-icon="inline-start" />첫 기록 남기기
+          첫 기록 남기기
         </Button>
       </EmptyContent>
     </Empty>

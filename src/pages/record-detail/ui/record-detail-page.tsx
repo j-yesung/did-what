@@ -1,4 +1,4 @@
-import { BookOpenIcon, CalendarDaysIcon, MapPinIcon, NotebookPenIcon, PencilIcon, UsersIcon } from "lucide-react";
+import { BookOpenIcon, CalendarDaysIcon, MapPinIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -51,7 +51,6 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
             <p className="mt-3 text-muted-foreground text-sm">함께한 날의 장면을 다시 꺼내봤어요.</p>
             <div className="mt-5 flex gap-2">
               <Button nativeButton={false} render={<Link href={`/records/${record.id}/edit`} />} variant="outline">
-                <PencilIcon data-icon="inline-start" />
                 수정
               </Button>
               <DeleteRecordDialog activity={record.activity} recordId={record.id} />

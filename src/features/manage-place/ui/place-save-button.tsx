@@ -48,7 +48,6 @@ export function PlaceSaveButton({ iconOnly, placeId, saved }: PlaceSaveButtonPro
         </Button>
       ) : (
         <Button disabled={toggle.isSuccess} loading={toggle.isPending} type="submit" variant="outline">
-          {icon}
           {label}
         </Button>
       )}

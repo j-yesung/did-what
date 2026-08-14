@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { LogOutIcon } from "lucide-react";
 
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { Button } from "@/shared/ui/button";
@@ -20,7 +19,6 @@ export function LogoutButton() {
       type="button"
       variant="outline"
     >
-      <LogOutIcon data-icon="inline-start" />
       로그아웃
     </Button>
   );

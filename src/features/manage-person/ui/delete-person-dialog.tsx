@@ -33,10 +33,7 @@ export function DeletePersonDialog({ name, personId, recordCount }: DeletePerson
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<Button className="flex-1" variant="destructive" />}>
-        <Trash2Icon data-icon="inline-start" />
-        삭제
-      </AlertDialogTrigger>
+      <AlertDialogTrigger render={<Button className="flex-1" variant="destructive" />}>삭제</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogMedia>

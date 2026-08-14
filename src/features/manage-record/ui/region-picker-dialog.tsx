@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { CircleAlertIcon, MapPinnedIcon, SearchIcon } from "lucide-react";
+import { CircleAlertIcon } from "lucide-react";
 
 import { useRegionSearch } from "@/entities/region";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
@@ -24,10 +24,7 @@ export function RegionPickerDialog({ onSelect }: RegionPickerDialogProps) {
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger render={<Button size="sm" type="button" variant="outline" />}>
-        <SearchIcon aria-hidden="true" data-icon="inline-start" />
-        지역 찾기
-      </DialogTrigger>
+      <DialogTrigger render={<Button size="sm" type="button" variant="outline" />}>지역 찾기</DialogTrigger>
       {open ? (
         <RegionSearchContent
           onSelect={(region) => {
@@ -92,7 +89,6 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
                 type="button"
                 variant="outline"
               >
-                <MapPinnedIcon aria-hidden="true" data-icon="inline-start" />
                 {region.fullName}
               </Button>
             </li>

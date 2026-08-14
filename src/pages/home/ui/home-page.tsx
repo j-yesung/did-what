@@ -1,4 +1,4 @@
-import { MapPinnedIcon, PlusIcon } from "lucide-react";
+import { MapPinnedIcon } from "lucide-react";
 import Link from "next/link";
 
 import { getRecordLocations } from "@/entities/record";
@@ -36,7 +36,7 @@ export async function HomePage() {
           </EmptyHeader>
           <EmptyContent>
             <Button render={<Link href="/records/new" />} nativeButton={false}>
-              <PlusIcon data-icon="inline-start" />첫 기록 남기기
+              첫 기록 남기기
             </Button>
           </EmptyContent>
         </Empty>
@@ -44,7 +44,7 @@ export async function HomePage() {
 
       {error || records.length > 0 ? (
         <Button className="h-14 w-full shrink-0" size="lg" render={<Link href="/records/new" />} nativeButton={false}>
-          <PlusIcon data-icon="inline-start" />새 기록 남기기
+          새 기록 남기기
         </Button>
       ) : null}
     </PageShell>

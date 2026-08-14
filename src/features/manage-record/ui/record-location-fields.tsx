@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { BookmarkIcon, MapPinIcon, MapPinnedIcon, Trash2Icon } from "lucide-react";
+import { MapPinIcon, MapPinnedIcon, Trash2Icon } from "lucide-react";
 
 import type { PlaceOption } from "@/entities/place";
 import {
@@ -150,7 +150,6 @@ export function RecordLocationFields({
                       id={`save-${place.key}`}
                       onCheckedChange={(checked) => toggleSave(place.key, checked)}
                     />
-                    <BookmarkIcon className="size-4 text-foreground" aria-hidden="true" />
                     {place.saved ? "내 장소에 저장됨" : "기록을 저장할 때 내 장소에도 추가"}
                   </label>
                 </li>

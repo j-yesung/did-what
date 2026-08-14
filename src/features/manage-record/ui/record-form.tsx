@@ -207,7 +207,6 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
         </FieldGroup>
 
         <Button className="mt-5 h-14 w-full" loading={save.isPending} size="lg" type="submit">
-          <NotebookPenIcon data-icon="inline-start" />
           {mode === "edit" ? "수정 완료" : "기록 남기기"}
         </Button>
       </div>

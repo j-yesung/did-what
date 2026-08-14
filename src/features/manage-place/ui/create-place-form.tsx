@@ -1,7 +1,5 @@
 "use client";
 
-import { CheckIcon, PlusIcon } from "lucide-react";
-
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 
@@ -36,7 +34,6 @@ export function CreatePlaceForm({ page, placeId, query, saved }: CreatePlaceForm
         type="submit"
         variant={isSaved ? "outline" : "default"}
       >
-        {isSaved ? <CheckIcon data-icon="inline-start" /> : <PlusIcon data-icon="inline-start" />}
         {isSaved ? "저장됨" : "이 장소 저장"}
       </Button>
     </form>

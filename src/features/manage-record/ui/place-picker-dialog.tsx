@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { BookmarkCheckIcon, BookmarkIcon, CircleAlertIcon, MapPinIcon, PlusIcon } from "lucide-react";
+import { BookmarkIcon, CircleAlertIcon, MapPinIcon } from "lucide-react";
 
 import type { PlaceOption } from "@/entities/place";
 import { usePlaceSearch } from "@/entities/place/api/search-queries";
@@ -109,11 +109,6 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
                     type="button"
                     variant={added ? "secondary" : "outline"}
                   >
-                    {added ? (
-                      <BookmarkCheckIcon aria-hidden="true" data-icon="inline-start" />
-                    ) : (
-                      <PlusIcon aria-hidden="true" data-icon="inline-start" />
-                    )}
                     {place.name}
                   </Button>
                 </li>
@@ -175,7 +170,6 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
                   type="button"
                   variant="outline"
                 >
-                  <PlusIcon aria-hidden="true" />
                   {selected ? "추가됨" : "방문 장소에 추가"}
                 </Button>
               </li>
@@ -204,7 +198,6 @@ export function PlacePickerDialog({ disabled, onAdd, region, savedPlaces, select
         disabled={disabled}
         render={<Button disabled={disabled} size="sm" type="button" variant="outline" />}
       >
-        <PlusIcon aria-hidden="true" data-icon="inline-start" />
         방문 장소 추가
       </DialogTrigger>
       <DialogContent className="flex max-h-[min(680px,calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] flex-col overflow-hidden sm:max-w-md">

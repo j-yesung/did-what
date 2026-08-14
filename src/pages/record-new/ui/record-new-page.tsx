@@ -1,4 +1,4 @@
-import { NotebookPenIcon, UsersIcon } from "lucide-react";
+import { NotebookPenIcon } from "lucide-react";
 import Link from "next/link";
 
 import { getPeople } from "@/entities/person";
@@ -50,7 +50,6 @@ export async function RecordNewPage() {
           <EmptyContent>
             {people.length === 0 ? (
               <Button className="w-full" render={<Link href="/people" />} nativeButton={false}>
-                <UsersIcon data-icon="inline-start" />
                 사람 추가하러 가기
               </Button>
             ) : null}

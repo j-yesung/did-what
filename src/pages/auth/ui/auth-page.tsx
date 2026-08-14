@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { CircleAlertIcon, LogInIcon, MailCheckIcon, UserRoundPlusIcon } from "lucide-react";
+import { CircleAlertIcon, MailCheckIcon } from "lucide-react";
 import Link from "next/link";
 
 import { INITIAL_AUTH_STATE, login, signup } from "@/features/auth";
@@ -43,7 +43,6 @@ function AuthPage({ mode }: AuthPageProps) {
     mutationFn: (formData: FormData) => runServerAction(() => (isSignup ? signup : login)(formData)),
   });
   const state = submit.data ?? INITIAL_AUTH_STATE;
-  const SubmitIcon = isSignup ? UserRoundPlusIcon : LogInIcon;
 
   return (
     <main className="flex min-h-svh items-center justify-center bg-background px-5 pt-[calc(40px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]">
@@ -148,7 +147,6 @@ function AuthPage({ mode }: AuthPageProps) {
                 ) : null}
 
                 <Button className="mt-1 h-11 w-full" loading={submit.isPending} size="lg" type="submit">
-                  <SubmitIcon data-icon="inline-start" />
                   {copy.submitLabel}
                 </Button>
               </FieldGroup>

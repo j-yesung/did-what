@@ -2,8 +2,6 @@
 
 import { type FormEvent, useState } from "react";
 
-import { PencilIcon } from "lucide-react";
-
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import {
@@ -40,10 +38,7 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger render={<Button className="flex-1" variant="outline" />}>
-        <PencilIcon data-icon="inline-start" />
-        이름 수정
-      </DialogTrigger>
+      <DialogTrigger render={<Button className="flex-1" variant="outline" />}>이름 수정</DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>이름 수정</DialogTitle>
