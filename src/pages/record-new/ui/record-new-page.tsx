@@ -18,7 +18,7 @@ export async function RecordNewPage() {
   const hasLoadError = Boolean(peopleResult.error);
 
   return (
-    <PageShell className="block min-[700px]:shadow-[0_0_80px_color-mix(in_srgb,var(--blue-950),transparent_92%)]">
+    <PageShell className="block">
       <PageHeader back="/records" backGuardFormId="record-form" title="새 기록" />
 
       <section
