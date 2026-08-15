@@ -9,8 +9,15 @@ const valid = validateRecordInput({
   regionLabel: "홍대",
   regionName: "서울 마포구 망원동",
   places: JSON.stringify([
-    { kind: "kakao", page: 1, providerPlaceId: "123", query: "망원 카페", save: false },
-    { kind: "kakao", page: 1, providerPlaceId: "123", query: "망원 카페", save: true },
+    { kind: "kakao", page: 1, providerPlaceId: "123", query: "카페", save: false, scope: null },
+    {
+      kind: "kakao",
+      page: 1,
+      providerPlaceId: "123",
+      query: "카페",
+      save: true,
+      scope: { latitude: 37.5563, longitude: 126.9013 },
+    },
   ]),
   activity: "  카페에서 이야기함  ",
   memo: "   ",
@@ -23,10 +30,34 @@ assert.deepEqual(valid, {
     regionCode: "1144012300",
     regionLabel: "홍대",
     regionName: "서울 마포구 망원동",
-    places: [{ kind: "kakao", page: 1, providerPlaceId: "123", query: "망원 카페", save: true }],
+    places: [
+      {
+        kind: "kakao",
+        page: 1,
+        providerPlaceId: "123",
+        query: "카페",
+        save: true,
+        scope: { latitude: 37.5563, longitude: 126.9013 },
+      },
+    ],
     activity: "카페에서 이야기함",
   },
 });
+
+// 기준점이 깨져서 오면 같은 검색을 재현할 수 없으니 통째로 거른다.
+const brokenScope = validateRecordInput({
+  recordedAt: "2026-08-10",
+  personIds: [personId],
+  regionCode: "1144012300",
+  regionLabel: "홍대",
+  regionName: "서울 마포구 망원동",
+  places: JSON.stringify([
+    { kind: "kakao", page: 1, providerPlaceId: "123", query: "카페", save: true, scope: { latitude: 37.5563 } },
+  ]),
+  activity: "카페에서 이야기함",
+  memo: "",
+});
+assert.deepEqual(Object.keys(brokenScope.fieldErrors ?? {}), ["places"]);
 
 const invalid = validateRecordInput({
   recordedAt: "2026-02-30",

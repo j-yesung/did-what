@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { normalizeKakaoPage, searchKakaoPlaces, validateKakaoQuery } from "@/shared/api/kakao-local";
+import {
+  normalizeKakaoPage,
+  normalizeKakaoScope,
+  searchKakaoPlaces,
+  validateKakaoQuery,
+} from "@/shared/api/kakao-local";
 import { createClient } from "@/shared/api/supabase/server";
 
 /**
@@ -22,11 +27,10 @@ export async function searchPlaces(request: NextRequest) {
     return NextResponse.json({ error: queryResult.error }, { status: 400 });
   }
 
-  // 지역 안에서 찾도록 지역 이름을 검색어 앞에 붙인다. 고른 장소를 서버가 다시 확인할 때 같은 검색어가 필요하다.
-  const regionName = (params.get("regionName") ?? "").trim();
-  const query = regionName ? `${regionName} ${queryResult.query}` : queryResult.query;
+  // 선택한 지역 좌표 주변으로 좁힌다. 고른 장소를 서버가 다시 확인할 때 같은 조건이 필요해 응답에 그대로 돌려준다.
+  const scope = normalizeKakaoScope(params.get("latitude"), params.get("longitude"));
   const page = normalizeKakaoPage(params.get("page"));
-  const result = await searchKakaoPlaces(query, page);
+  const result = await searchKakaoPlaces(queryResult.query, page, scope);
 
   if (!result.places) {
     return NextResponse.json({ error: result.error }, { status: 502 });
@@ -37,6 +41,7 @@ export async function searchPlaces(request: NextRequest) {
     page: result.page,
     pageableCount: result.pageableCount,
     places: result.places,
-    query,
+    query: queryResult.query,
+    scope,
   });
 }

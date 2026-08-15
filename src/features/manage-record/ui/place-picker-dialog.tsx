@@ -30,10 +30,15 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
   const [selectionError, setSelectionError] = useState<string>();
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState("");
-  const search = usePlaceSearch({ page: 1, query, regionName: region?.fullName });
+  const search = usePlaceSearch({ latitude: region?.latitude, longitude: region?.longitude, page: 1, query });
 
-  // 저장해 둔 장소는 선택한 지역 안에 있을 때만 검색 없이 바로 고를 수 있다.
-  const savedInRegion = region ? savedPlaces.filter((place) => place.region_code === region.code) : [];
+  /**
+   * 저장해 둔 장소는 지역과 상관없이 전부 바로 고를 수 있다. 이번 지역에 있는 곳만 앞으로 보낸다.
+   * 지역을 아직 안 골랐다면 고른 장소를 어느 지역에 붙일지 알 수 없어 검색으로만 시작한다.
+   */
+  const sortedSavedPlaces = region
+    ? [...savedPlaces].sort((a, b) => Number(b.region_code === region.code) - Number(a.region_code === region.code))
+    : [];
 
   function addSavedPlace(place: PlaceOption) {
     if (!region) return;
@@ -70,10 +75,10 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
     if (!searched) return;
 
     resolve.mutate({
-      expectedRegionCode: region?.code,
       page: searched.page,
       providerPlaceId: place.id,
       query: searched.query,
+      scope: searched.scope,
     });
   }
 
@@ -97,11 +102,11 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
       <DialogHeader>
         <DialogTitle>방문 장소 찾기</DialogTitle>
         <DialogDescription>
-          {region ? `${region.fullName} 안에서 방문한 곳을 찾아보세요.` : "첫 장소를 고르면 해당 지역이 자동 선택돼요."}
+          {region ? `${region.name} 주변에서 방문한 곳을 찾아보세요.` : "첫 장소를 고르면 해당 지역이 자동 선택돼요."}
         </DialogDescription>
       </DialogHeader>
 
-      {savedInRegion.length ? (
+      {sortedSavedPlaces.length ? (
         <section aria-labelledby="saved-place-quick-add" className="flex flex-col gap-2">
           <h3
             className="flex items-center gap-1.5 px-0.5 font-[650] text-muted-foreground text-xs"
@@ -111,7 +116,7 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
             추가
           </h3>
           <ul className="flex max-h-23 flex-wrap gap-1.5 overflow-y-auto overscroll-contain">
-            {savedInRegion.map((place) => {
+            {sortedSavedPlaces.map((place) => {
               const added = selectedKeys.has(`existing:${place.id}`);
 
               return (

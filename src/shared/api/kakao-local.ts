@@ -18,6 +18,15 @@ export type KakaoRegion = {
 
 export type KakaoRegionSearchResult = { regions: KakaoRegion[]; related: boolean } | { error: string };
 
+/**
+ * 장소 검색을 좁히는 기준점. 행정 경계가 아니라 거리로 좁힌다.
+ * 같은 시 안에서도 옆 동이 안 나오거나, 바로 옆 시·군에 잠깐 들른 곳이 빠지는 걸 막는다.
+ */
+export type KakaoSearchScope = { latitude: number; longitude: number };
+
+/** 카카오 키워드 검색이 허용하는 최대 반경(미터). 더 넓힐 수 없다. */
+const KAKAO_SEARCH_RADIUS = 20_000;
+
 const KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
 const KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json";
 const KAKAO_COORD_REGION_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json";
@@ -46,6 +55,27 @@ export function validateKakaoPlaceId(value: string): { valid: true; id: string }
   }
 
   return { id, valid: true };
+}
+
+/** 좌표 한 짝이 온전할 때만 기준점으로 인정한다. 빈 문자열이나 null이 0으로 둔갑하지 않도록 숫자 변환을 좁혀 둔다. */
+export function normalizeKakaoScope(latitudeValue: unknown, longitudeValue: unknown): KakaoSearchScope | null {
+  const toNumber = (value: unknown) =>
+    typeof value === "number" || (typeof value === "string" && value.trim()) ? Number(value) : Number.NaN;
+  const latitude = toNumber(latitudeValue);
+  const longitude = toNumber(longitudeValue);
+
+  if (
+    !Number.isFinite(latitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    !Number.isFinite(longitude) ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    return null;
+  }
+
+  return { latitude, longitude };
 }
 
 export function normalizeKakaoPage(value: unknown): number {
@@ -257,6 +287,7 @@ export function getRelatedRegionQueries(places: KakaoPlace[]): string[] {
 export async function searchKakaoPlaces(
   value: string,
   pageValue: unknown = 1,
+  scope?: KakaoSearchScope | null,
 ): Promise<
   | { isEnd: boolean; page: number; pageableCount: number; places: KakaoPlace[]; error?: never }
   | { places?: never; error: string }
@@ -278,6 +309,13 @@ export async function searchKakaoPlaces(
   const page = normalizeKakaoPage(pageValue);
   url.searchParams.set("page", String(page));
   url.searchParams.set("size", "15");
+
+  if (scope) {
+    url.searchParams.set("x", String(scope.longitude));
+    url.searchParams.set("y", String(scope.latitude));
+    url.searchParams.set("radius", String(KAKAO_SEARCH_RADIUS));
+    url.searchParams.set("sort", "distance");
+  }
 
   try {
     const response = await fetch(url, {

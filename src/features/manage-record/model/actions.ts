@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 
 import { findPersonIds } from "@/entities/person";
 import {
+  type KakaoSearchScope,
   normalizeKakaoPage,
+  normalizeKakaoScope,
   resolveKakaoRegion,
   searchKakaoPlaces,
   searchKakaoRegions,
@@ -40,7 +42,7 @@ async function verifyRegion(code: string, name: string) {
 }
 
 async function verifyKakaoPlace(reference: Extract<RecordPlaceReference, { kind: "kakao" }>) {
-  const result = await searchKakaoPlaces(reference.query, reference.page);
+  const result = await searchKakaoPlaces(reference.query, reference.page, reference.scope);
   const place = result.places?.find((item) => item.id === reference.providerPlaceId);
   if (!place) return null;
 
@@ -48,12 +50,7 @@ async function verifyKakaoPlace(reference: Extract<RecordPlaceReference, { kind:
   return region ? { place, reference, region } : null;
 }
 
-async function prepareRecordPlaces(
-  references: RecordPlaceReference[],
-  regionCode: string,
-  ownerId: string,
-  supabase: SupabaseClient,
-) {
+async function prepareRecordPlaces(references: RecordPlaceReference[], ownerId: string, supabase: SupabaseClient) {
   const existingReferences = references.filter(
     (reference): reference is Extract<RecordPlaceReference, { kind: "existing" }> => reference.kind === "existing",
   );
@@ -65,7 +62,7 @@ async function prepareRecordPlaces(
     existingReferences.length
       ? supabase
           .from("places")
-          .select("id, region_code, saved_at")
+          .select("id, saved_at")
           .eq("owner_id", ownerId)
           .in(
             "id",
@@ -78,8 +75,7 @@ async function prepareRecordPlaces(
   if (
     existingResult.error ||
     existingResult.data.length !== existingReferences.length ||
-    existingResult.data.some((place) => place.region_code !== regionCode) ||
-    verifiedKakaoPlaces.some((result) => !result || result.region.code !== regionCode)
+    verifiedKakaoPlaces.some((result) => !result)
   ) {
     return null;
   }
@@ -102,12 +98,12 @@ async function prepareRecordPlaces(
 
     const { data: existing, error: findError } = await supabase
       .from("places")
-      .select("id, region_code, saved_at")
+      .select("id, saved_at")
       .eq("owner_id", ownerId)
       .eq("provider", "kakao")
       .eq("provider_place_id", verified.place.id)
       .maybeSingle();
-    if (findError || (existing && existing.region_code !== regionCode)) return null;
+    if (findError) return null;
 
     if (existing) {
       placeIds.add(existing.id);
@@ -152,31 +148,29 @@ async function validateSelections(data: RecordInput, ownerId: string, supabase: 
 
   if (peopleResult.error || peopleResult.data.length !== data.personIds.length || !region) return null;
 
-  const placeIds = await prepareRecordPlaces(data.places, data.regionCode, ownerId, supabase);
+  const placeIds = await prepareRecordPlaces(data.places, ownerId, supabase);
   if (!placeIds) return null;
   return { placeIds, region };
 }
 
 export async function resolveRecordPlace(input: {
-  expectedRegionCode?: string;
   page: number;
   providerPlaceId: string;
   query: string;
+  scope: KakaoSearchScope | null;
 }): Promise<ResolveRecordPlaceResult> {
   await requireUser();
   const idResult = validateKakaoPlaceId(input.providerPlaceId);
   const queryResult = validateKakaoQuery(input.query);
   if (!idResult.valid || !queryResult.valid) return { error: "선택한 장소를 확인할 수 없어요." };
 
-  const result = await searchKakaoPlaces(queryResult.query, input.page);
+  const scope = normalizeKakaoScope(input.scope?.latitude, input.scope?.longitude);
+  const result = await searchKakaoPlaces(queryResult.query, input.page, scope);
   const place = result.places?.find((item) => item.id === idResult.id);
   if (!place) return { error: "선택한 장소를 다시 검색해 주세요." };
 
   const region = await resolveKakaoRegion(place.longitude, place.latitude);
   if (!region) return { error: "장소의 지역을 확인하지 못했어요." };
-  if (input.expectedRegionCode && region.code !== input.expectedRegionCode) {
-    return { error: `선택한 장소는 ${region.fullName}에 있어 추가할 수 없어요.` };
-  }
 
   return {
     place: {
@@ -189,6 +183,7 @@ export async function resolveRecordPlace(input: {
         providerPlaceId: place.id,
         query: queryResult.query,
         save: false,
+        scope,
       },
       saved: false,
     },

@@ -1,9 +1,18 @@
+import type { KakaoSearchScope } from "#shared/api/kakao-local.ts";
 import { isIsoDate } from "#shared/lib/validation/is-iso-date.ts";
 import { isUuid } from "#shared/lib/validation/is-uuid.ts";
 
 export type RecordPlaceReference =
   | { kind: "existing"; placeId: string; save: boolean }
-  | { kind: "kakao"; page: number; providerPlaceId: string; query: string; save: boolean };
+  | {
+      kind: "kakao";
+      page: number;
+      providerPlaceId: string;
+      query: string;
+      save: boolean;
+      /** 그 장소를 찾을 때 쓴 기준점. 저장 시점에 같은 검색을 재현하려면 함께 있어야 한다. */
+      scope: KakaoSearchScope | null;
+    };
 
 export type RecordFieldErrors = Partial<
   Record<"recordedAt" | "personIds" | "regionCode" | "places" | "activity" | "memo", string>
@@ -41,6 +50,28 @@ const REGION_CODE_PATTERN = /^\d{10}$/;
 const KAKAO_PLACE_ID_PATTERN = /^\d{1,100}$/;
 const MAX_VISITED_PLACES = 10;
 
+/** 지역을 고르기 전에 검색했다면 기준점이 없다. 없는 경우와 형태가 깨진 경우를 구분해야 해서 실패는 false로 돌려준다. */
+function parseScope(value: unknown): KakaoSearchScope | null | false {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== "object") return false;
+
+  const { latitude, longitude } = value as { latitude?: unknown; longitude?: unknown };
+  if (
+    typeof latitude !== "number" ||
+    !Number.isFinite(latitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    typeof longitude !== "number" ||
+    !Number.isFinite(longitude) ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    return false;
+  }
+
+  return { latitude, longitude };
+}
+
 function parsePlaces(value: string): RecordPlaceReference[] | null {
   try {
     const parsed: unknown = JSON.parse(value || "[]");
@@ -72,6 +103,9 @@ function parsePlaces(value: string): RecordPlaceReference[] | null {
         item.page >= 1 &&
         item.page <= 45
       ) {
+        const scope = parseScope("scope" in item ? item.scope : null);
+        if (scope === false) return null;
+
         const key = `kakao:${item.providerPlaceId}`;
         const previous = places.get(key);
         places.set(key, {
@@ -80,6 +114,7 @@ function parsePlaces(value: string): RecordPlaceReference[] | null {
           providerPlaceId: item.providerPlaceId,
           query: item.query.trim(),
           save: Boolean(item.save || previous?.save),
+          scope,
         });
         continue;
       }

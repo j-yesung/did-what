@@ -5,16 +5,6 @@ import { useState } from "react";
 import { MapPinAreaIcon, MapPinIcon, TrashIcon } from "@phosphor-icons/react";
 
 import type { PlaceOption } from "@/entities/place";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
@@ -44,26 +34,11 @@ export function RecordLocationFields({
 }: RecordLocationFieldsProps) {
   const [region, setRegion] = useState<RecordLocationRegion | null>(initialRegion ?? null);
   const [places, setPlaces] = useState(initialPlaces);
-  const [pendingRegion, setPendingRegion] = useState<RecordLocationRegion | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   function selectRegion(nextRegion: RecordLocationRegion) {
     if (nextRegion.code === region?.code) return;
-    if (places.length === 0) {
-      setRegion(nextRegion);
-      onChange?.();
-      return;
-    }
 
-    setPendingRegion(nextRegion);
-    setConfirmOpen(true);
-  }
-
-  function confirmRegionChange() {
-    if (pendingRegion) setRegion(pendingRegion);
-    setPlaces([]);
-    setPendingRegion(null);
-    setConfirmOpen(false);
+    setRegion(nextRegion);
     onChange?.();
   }
 
@@ -167,23 +142,6 @@ export function RecordLocationFields({
         />
         <FieldError id="places-error">{placeError}</FieldError>
       </Field>
-
-      <AlertDialog onOpenChange={setConfirmOpen} open={confirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>지역을 변경할까요?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {`선택한 방문 장소 ${places.length}곳이 모두 해제돼요.\n내 장소에 이미 저장된 곳은 사라지지 않아요.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmRegionChange} type="button">
-              지역 변경
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
