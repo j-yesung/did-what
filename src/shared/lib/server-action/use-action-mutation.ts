@@ -1,8 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-
-import { useToast } from "@/shared/ui/toast";
+import { toast } from "sonner";
 
 import { runServerAction } from "./run-server-action";
 
@@ -25,21 +24,19 @@ export function useActionMutation<TResult extends ActionResult, TArgs = void>(
   action: (args: TArgs) => Promise<TResult>,
   { error, success, onFail, onSuccess }: ActionMutationOptions<TResult>,
 ) {
-  const { add: addToast } = useToast();
-
   return useMutation({
     mutationFn: (args: TArgs) => runServerAction(() => action(args)),
     onSuccess: (result) => {
       if (result?.status === "error") {
-        if (result.message) addToast({ description: result.message, title: error, type: "error" });
+        if (result.message) toast.error(error, { description: result.message, duration: 4000 });
         onFail?.(result);
         return;
       }
 
       const title = success ?? result?.message;
-      if (title) addToast({ title, type: "success" });
+      if (title) toast.success(title, { duration: 2000 });
       onSuccess?.(result);
     },
-    onError: () => addToast({ title: error, type: "error" }),
+    onError: () => toast.error(error, { duration: 4000 }),
   });
 }

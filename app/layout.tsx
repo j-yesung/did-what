@@ -7,7 +7,7 @@ import { getTheme } from "@/features/switch-theme";
 import { QueryProvider } from "@/shared/lib/react-query";
 import { cn } from "@/shared/lib/utils";
 import { AppStartScreen } from "@/shared/ui/app-start-screen";
-import { ToastProvider } from "@/shared/ui/toast";
+import { Toaster } from "@/shared/ui/sonner";
 
 import "@/app/styles/globals.css";
 
@@ -55,9 +55,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <html className={cn(pretendard.variable, theme !== "system" && theme)} lang="ko">
       <body>
-        <QueryProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </QueryProvider>
+        <QueryProvider>{children}</QueryProvider>
+        <Toaster theme={theme} />
         <AppStartScreen />
       </body>
     </html>
