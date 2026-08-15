@@ -1,4 +1,4 @@
-import { MapPinnedIcon } from "lucide-react";
+import { MapPinAreaIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { getRecordLocations } from "@/entities/record";
@@ -22,14 +22,17 @@ export async function HomePage() {
       </section>
 
       {error ? (
-        <LoadErrorAlert icon={<MapPinnedIcon aria-hidden="true" />} title="발자취를 불러오지 못했어요" />
+        <LoadErrorAlert
+          icon={<MapPinAreaIcon strokeWidth={2} aria-hidden="true" />}
+          title="발자취를 불러오지 못했어요"
+        />
       ) : records.length > 0 ? (
         <p className="text-center text-muted-foreground text-sm">지금까지 남긴 발자취 {records.length}개</p>
       ) : (
         <Empty className="flex-none py-4">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <MapPinnedIcon aria-hidden="true" />
+              <MapPinAreaIcon strokeWidth={2} aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>아직 지도에 남긴 발자취가 없어요</EmptyTitle>
             <EmptyDescription>함께한 오늘의 지역을 첫 발자취로 남겨보세요.</EmptyDescription>

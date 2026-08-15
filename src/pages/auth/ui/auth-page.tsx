@@ -2,8 +2,8 @@
 
 import type { FormEvent } from "react";
 
+import { EnvelopeSimpleOpenIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
-import { CircleAlertIcon, MailCheckIcon } from "lucide-react";
 import Link from "next/link";
 
 import { INITIAL_AUTH_STATE, login, signup } from "@/features/auth";
@@ -63,9 +63,9 @@ function AuthPage({ mode }: AuthPageProps) {
                 {state.message ? (
                   <Alert variant={state.status === "error" ? "destructive" : "default"}>
                     {state.status === "error" ? (
-                      <CircleAlertIcon aria-hidden="true" />
+                      <WarningCircleIcon strokeWidth={2} aria-hidden="true" />
                     ) : (
-                      <MailCheckIcon aria-hidden="true" />
+                      <EnvelopeSimpleOpenIcon strokeWidth={2} aria-hidden="true" />
                     )}
                     <AlertTitle>{state.status === "error" ? "확인해 주세요" : "메일을 확인해 주세요"}</AlertTitle>
                     <AlertDescription>{state.message}</AlertDescription>

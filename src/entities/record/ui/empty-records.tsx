@@ -1,4 +1,4 @@
-import { NotebookPenIcon } from "lucide-react";
+import { NotePencilIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { Button } from "@/shared/ui/button";
@@ -18,7 +18,7 @@ export function EmptyRecords({
     <Empty className="border bg-card py-14">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <NotebookPenIcon aria-hidden="true" />
+          <NotePencilIcon strokeWidth={2} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>{title}</EmptyTitle>
         <EmptyDescription>{description}</EmptyDescription>

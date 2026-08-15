@@ -1,4 +1,4 @@
-import { BookOpenIcon, CalendarDaysIcon, MapPinIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
+import { BookOpenIcon, CalendarDotsIcon, MapPinIcon, NotePencilIcon, UsersIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -37,7 +37,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
       <PageHeader back="/records" title="기록 상세" />
 
       {error ? (
-        <LoadErrorAlert icon={<NotebookPenIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />
+        <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 불러오지 못했어요" />
       ) : record ? (
         <>
           <section aria-labelledby="record-activity-title" className="px-1 py-4">
@@ -64,14 +64,14 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
               <div className="grid grid-cols-[20px_1fr] gap-3">
-                <CalendarDaysIcon className="size-5 text-foreground" aria-hidden="true" />
+                <CalendarDotsIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
                 <div>
                   <p className="text-muted-foreground text-xs">날짜</p>
                   <p className="mt-1 font-medium">{formatRecordDate(record.recorded_at)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-[20px_1fr] gap-3">
-                <UsersIcon className="size-5 text-foreground" aria-hidden="true" />
+                <UsersIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
                 <div>
                   <p className="text-muted-foreground text-xs">함께한 사람</p>
                   <p className="mt-1 font-medium">
@@ -80,7 +80,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
                 </div>
               </div>
               <div className="grid grid-cols-[20px_1fr] gap-3">
-                <MapPinIcon className="size-5 text-foreground" aria-hidden="true" />
+                <MapPinIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
                 <div>
                   <p className="text-muted-foreground text-xs">지역</p>
                   <p className="mt-1 font-medium">
@@ -90,7 +90,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
               </div>
               {record.record_places.length ? (
                 <div className="grid grid-cols-[20px_1fr] gap-3">
-                  <MapPinIcon className="size-5 text-foreground" aria-hidden="true" />
+                  <MapPinIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
                   <div>
                     <p className="text-muted-foreground text-xs">방문 장소</p>
                     <ul className="mt-2 flex flex-col gap-2">
@@ -118,7 +118,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BookOpenIcon className="size-5 text-foreground" aria-hidden="true" />
+                  <BookOpenIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
                   남겨둔 메모
                 </CardTitle>
                 <CardDescription>그날 기억하고 싶었던 이야기</CardDescription>

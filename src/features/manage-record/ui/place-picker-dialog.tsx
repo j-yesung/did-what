@@ -2,8 +2,8 @@
 
 import { type FormEvent, useState } from "react";
 
+import { BookmarkIcon, MapPinIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
-import { BookmarkIcon, CircleAlertIcon, MapPinIcon } from "lucide-react";
 
 import type { PlaceOption } from "@/entities/place";
 import { usePlaceSearch } from "@/entities/place/api/search-queries";
@@ -107,7 +107,8 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
             className="flex items-center gap-1.5 px-0.5 font-[650] text-muted-foreground text-xs"
             id="saved-place-quick-add"
           >
-            <BookmarkIcon className="size-3.5 text-foreground" aria-hidden="true" />내 장소에서 바로 추가
+            <BookmarkIcon strokeWidth={2} className="size-3.5 text-foreground" aria-hidden="true" />내 장소에서 바로
+            추가
           </h3>
           <ul className="flex max-h-23 flex-wrap gap-1.5 overflow-y-auto overscroll-contain">
             {savedInRegion.map((place) => {
@@ -154,7 +155,7 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
 
       {search.isError || selectionError ? (
         <Alert variant="destructive">
-          <CircleAlertIcon aria-hidden="true" />
+          <WarningCircleIcon strokeWidth={2} aria-hidden="true" />
           <AlertDescription>{selectionError ?? getErrorMessage(search.error)}</AlertDescription>
         </Alert>
       ) : null}
@@ -171,6 +172,7 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
               <li className="rounded-xl border bg-card p-3" key={place.id}>
                 <div className="flex items-start gap-3">
                   <MapPinIcon
+                    strokeWidth={2}
                     className="mt-0.5 size-4.5 shrink-0 text-foreground [stroke-width:2]"
                     aria-hidden="true"
                   />

@@ -1,6 +1,6 @@
 import type * as React from "react";
 
-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
+import { CaretLeftIcon, CaretRightIcon, DotsThreeOutlineIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { cn } from "@/shared/lib/utils";
@@ -57,7 +57,7 @@ function PaginationPrevious({
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
   return (
     <PaginationLink aria-label="Go to previous page" size="default" className={cn("pl-1.5!", className)} {...props}>
-      <ChevronLeftIcon data-icon="inline-start" />
+      <CaretLeftIcon strokeWidth={2} data-icon="inline-start" />
       <span className="hidden sm:block">{text}</span>
     </PaginationLink>
   );
@@ -71,7 +71,7 @@ function PaginationNext({
   return (
     <PaginationLink aria-label="Go to next page" size="default" className={cn("pr-1.5!", className)} {...props}>
       <span className="hidden sm:block">{text}</span>
-      <ChevronRightIcon data-icon="inline-end" />
+      <CaretRightIcon strokeWidth={2} data-icon="inline-end" />
     </PaginationLink>
   );
 }
@@ -84,7 +84,7 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
       className={cn("flex size-8 items-center justify-center [&_svg:not([class*='size-'])]:size-4", className)}
       {...props}
     >
-      <MoreHorizontalIcon />
+      <DotsThreeOutlineIcon strokeWidth={2} />
       <span className="sr-only">More pages</span>
     </span>
   );

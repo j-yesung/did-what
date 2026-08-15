@@ -1,4 +1,4 @@
-import { CheckIcon } from "lucide-react";
+import { CheckIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { cn } from "@/shared/lib/utils";
 import { TextButton } from "@/shared/ui/text-button";
@@ -30,7 +30,7 @@ export function ThemeSelect({ value }: ThemeSelectProps) {
                 value={option.value}
               >
                 {option.label}
-                {selected ? <CheckIcon aria-hidden="true" /> : null}
+                {selected ? <CheckIcon strokeWidth={2} aria-hidden="true" /> : null}
               </TextButton>
             );
           })}

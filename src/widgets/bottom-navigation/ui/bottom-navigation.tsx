@@ -1,15 +1,15 @@
 "use client";
 
-import { MapIcon, MapPinIcon, NotebookPenIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import { Gear, MapPin, MapPinArea, PencilSimple, Users } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { href: "/", icon: MapIcon, label: "지도" },
-  { href: "/records", icon: NotebookPenIcon, label: "기록" },
-  { href: "/places", icon: MapPinIcon, label: "장소" },
-  { href: "/people", icon: UsersIcon, label: "사람" },
-  { href: "/settings", icon: SettingsIcon, label: "설정" },
+  { href: "/", icon: MapPinArea, label: "지도" },
+  { href: "/records", icon: PencilSimple, label: "기록" },
+  { href: "/places", icon: MapPin, label: "장소" },
+  { href: "/people", icon: Users, label: "사람" },
+  { href: "/settings", icon: Gear, label: "설정" },
 ] as const;
 
 export function BottomNavigation() {
@@ -20,7 +20,6 @@ export function BottomNavigation() {
   return (
     <nav
       aria-label="주요 메뉴"
-      /** 화면 바닥에 붙되 본문과 같은 너비를 쓴다. 배경은 홈 인디케이터 영역까지 덮고 패딩으로 탭을 밀어 올린다. */
       className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full border-border border-t bg-surface pb-[env(safe-area-inset-bottom)] min-[700px]:max-w-(--app-width)"
     >
       <ul className="grid" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}>
@@ -35,14 +34,7 @@ export function BottomNavigation() {
                 data-active={active}
                 href={href}
               >
-                {/** 활성 탭만 내부를 옅게 채워 색 말고도 구분되는 채널을 하나 더 둔다. */}
-                <Icon
-                  aria-hidden="true"
-                  className="size-5"
-                  fill={active ? "currentColor" : "none"}
-                  fillOpacity={active ? 0.22 : 0}
-                  strokeWidth={active ? 2.4 : 2}
-                />
+                <Icon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
                 {label}
               </Link>
             </li>

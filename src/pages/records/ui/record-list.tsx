@@ -1,4 +1,4 @@
-import { SearchXIcon } from "lucide-react";
+import { MagnifyingGlassMinusIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { EmptyRecords, type getRecords, RecordCard, RecordTimeline } from "@/entities/record";
@@ -18,7 +18,7 @@ export function RecordList({ isFiltered, records }: RecordListProps) {
       <Empty className="border bg-card py-14">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <SearchXIcon aria-hidden="true" />
+            <MagnifyingGlassMinusIcon strokeWidth={2} aria-hidden="true" />
           </EmptyMedia>
           <EmptyTitle>조건에 맞는 기록이 없어요</EmptyTitle>
           <EmptyDescription>검색어를 바꾸거나 기간을 넓혀 보세요.</EmptyDescription>

@@ -1,6 +1,6 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
+import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { cva, type VariantProps } from "class-variance-authority";
-import { ChevronRightIcon } from "lucide-react";
 
 import { FOCUS_RING, PRESS_FEEDBACK } from "#shared/lib/interaction.ts";
 import { cn } from "#shared/lib/utils.ts";
@@ -48,7 +48,7 @@ function TextButton({ children, className, size, tone, variant = "clear", ...pro
       {...props}
     >
       {children}
-      {variant === "arrow" ? <ChevronRightIcon aria-hidden="true" /> : null}
+      {variant === "arrow" ? <CaretRightIcon strokeWidth={2} aria-hidden="true" /> : null}
     </ButtonPrimitive>
   );
 }

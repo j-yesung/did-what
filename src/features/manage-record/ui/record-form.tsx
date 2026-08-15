@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
-import { CalendarDaysIcon, MessageSquareTextIcon, NotebookPenIcon, UsersIcon } from "lucide-react";
+import { CalendarDotsIcon, ChatTextIcon, NotePencilIcon, UsersIcon } from "@phosphor-icons/react";
 
 import type { PersonOption } from "@/entities/person";
 import type { PlaceOption } from "@/entities/place";
@@ -105,7 +105,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
         <FieldGroup>
           <Field data-invalid={Boolean(fieldErrors?.recordedAt)}>
             <FieldLabel htmlFor="recordedAt">
-              <CalendarDaysIcon className={FIELD_ICON} aria-hidden="true" />
+              <CalendarDotsIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
               언제 <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLabel>
             <Input
@@ -126,7 +126,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
           <Field data-invalid={Boolean(personError)}>
             <FieldSet>
               <FieldLegend className="flex items-center gap-2" variant="label">
-                <UsersIcon className={FIELD_ICON} aria-hidden="true" />
+                <UsersIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
                 누구와 <span className="font-[650] text-[11px] text-foreground">필수</span>
               </FieldLegend>
               <FieldDescription>한 명 이상 선택해 주세요.</FieldDescription>
@@ -165,7 +165,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
 
           <Field data-invalid={Boolean(fieldErrors?.activity)}>
             <FieldLabel htmlFor="activity">
-              <NotebookPenIcon className={FIELD_ICON} aria-hidden="true" />
+              <NotePencilIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
               무엇을 했나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLabel>
             <FieldDescription>가장 기억하고 싶은 일을 짧게 적어 주세요.</FieldDescription>
@@ -188,7 +188,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
 
           <Field data-invalid={Boolean(fieldErrors?.memo)}>
             <FieldLabel htmlFor="memo">
-              <MessageSquareTextIcon className={FIELD_ICON} aria-hidden="true" />
+              <ChatTextIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
               메모 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
             </FieldLabel>
             <Textarea

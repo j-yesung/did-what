@@ -116,7 +116,7 @@ type RecordFormValues = {
 지도 → 기록 → 장소 → 사람 → 설정
 ```
 
-아이콘은 `lucide-react`의 `Map`, `NotebookPen`, `MapPin`, `Users`, `Settings` 계열을 사용한다.
+아이콘은 `@phosphor-icons/react`의 `MapPinArea`, `PencilSimple`, `MapPin`, `Users`, `Gear`를 사용한다. 활성 탭은 `fill`, 비활성 탭은 `regular` 굵기로 표시한다.
 
 ## 목표 데이터 모델
 

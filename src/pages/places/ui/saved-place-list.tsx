@@ -1,4 +1,4 @@
-import { MapPinIcon } from "lucide-react";
+import { MapPinIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { DeletePlaceDialog } from "@/features/manage-place";
@@ -31,7 +31,7 @@ export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
       <Empty className="border bg-card py-12">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <MapPinIcon aria-hidden="true" />
+            <MapPinIcon strokeWidth={2} aria-hidden="true" />
           </EmptyMedia>
           <EmptyTitle>아직 저장한 장소가 없어요</EmptyTitle>
           <EmptyDescription>위 검색란에서 첫 번째 추억의 장소를 찾아 저장해 보세요.</EmptyDescription>

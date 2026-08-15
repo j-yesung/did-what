@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2Icon } from "lucide-react";
+import { TrashIcon } from "@phosphor-icons/react";
 
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
@@ -38,7 +38,7 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
           aria-label={`${name} 삭제`}
           render={<Button className="size-11 text-destructive [&_svg]:size-4.5" size="icon-lg" variant="ghost" />}
         >
-          <Trash2Icon aria-hidden="true" />
+          <TrashIcon strokeWidth={2} aria-hidden="true" />
         </AlertDialogTrigger>
       ) : (
         <AlertDialogTrigger render={<Button className="w-full" variant="destructive" />}>장소 삭제</AlertDialogTrigger>

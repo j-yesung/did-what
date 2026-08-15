@@ -1,6 +1,6 @@
 "use client";
 
-import { SearchIcon } from "lucide-react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 
 import { CreatePlaceForm } from "@/features/manage-place";
@@ -79,7 +79,7 @@ export function PlaceSearchResults({
         <Empty className="border bg-card py-10">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <SearchIcon aria-hidden="true" />
+              <MagnifyingGlassIcon strokeWidth={2} aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>검색 결과가 없어요</EmptyTitle>
             <EmptyDescription>지역명이나 장소 이름을 바꿔 다시 검색해 보세요.</EmptyDescription>

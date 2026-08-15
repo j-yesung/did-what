@@ -1,4 +1,4 @@
-import { UserRoundIcon, UsersIcon } from "lucide-react";
+import { UserCircleIcon, UsersIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { getPeople } from "@/entities/person";
@@ -34,7 +34,7 @@ export async function PeoplePage() {
       <CreatePersonForm />
 
       {error ? (
-        <LoadErrorAlert icon={<UsersIcon aria-hidden="true" />} title="사람 목록을 불러오지 못했어요" />
+        <LoadErrorAlert icon={<UsersIcon strokeWidth={2} aria-hidden="true" />} title="사람 목록을 불러오지 못했어요" />
       ) : people?.length ? (
         <section className="flex flex-col gap-3" aria-label={`함께한 사람 ${people.length}명`}>
           {people.map((person) => (
@@ -65,7 +65,7 @@ export async function PeoplePage() {
         <Empty className="border bg-card py-12">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <UserRoundIcon aria-hidden="true" />
+              <UserCircleIcon strokeWidth={2} aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>아직 추가한 사람이 없어요</EmptyTitle>
             <EmptyDescription>위 입력란에 첫 번째 이름을 적어 함께한 사람을 추가해 보세요.</EmptyDescription>

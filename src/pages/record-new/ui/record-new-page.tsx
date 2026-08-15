@@ -1,4 +1,4 @@
-import { NotebookPenIcon } from "lucide-react";
+import { NotePencilIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { getPeople } from "@/entities/person";
@@ -42,7 +42,7 @@ export async function RecordNewPage() {
         <Empty className="border bg-card py-12">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <NotebookPenIcon aria-hidden="true" />
+              <NotePencilIcon strokeWidth={2} aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>기록 전에 준비가 필요해요</EmptyTitle>
             <EmptyDescription>기록에 연결할 사람을 먼저 추가해 주세요.</EmptyDescription>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { MapPinIcon, MapPinnedIcon, Trash2Icon } from "lucide-react";
+import { MapPinAreaIcon, MapPinIcon, TrashIcon } from "@phosphor-icons/react";
 
 import type { PlaceOption } from "@/entities/place";
 import {
@@ -95,7 +95,7 @@ export function RecordLocationFields({
 
       <Field data-invalid={Boolean(regionError)}>
         <FieldLabel>
-          <MapPinnedIcon className={FIELD_ICON} aria-hidden="true" />
+          <MapPinAreaIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
           어느 지역에 갔나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
         </FieldLabel>
         {region ? (
@@ -114,7 +114,7 @@ export function RecordLocationFields({
 
       <Field data-invalid={Boolean(placeError)}>
         <FieldLabel>
-          <MapPinIcon className={FIELD_ICON} aria-hidden="true" />
+          <MapPinIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
           방문 장소 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
         </FieldLabel>
         <FieldDescription>최대 10곳까지 추가할 수 있어요.</FieldDescription>
@@ -140,7 +140,7 @@ export function RecordLocationFields({
                       type="button"
                       variant="ghost"
                     >
-                      <Trash2Icon aria-hidden="true" />
+                      <TrashIcon strokeWidth={2} aria-hidden="true" />
                     </Button>
                   </div>
                   <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm" htmlFor={`save-${place.key}`}>

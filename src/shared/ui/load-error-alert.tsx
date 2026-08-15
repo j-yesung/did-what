@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { CircleAlertIcon } from "lucide-react";
+import { WarningCircleIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 
@@ -16,7 +16,7 @@ type LoadErrorAlertProps = {
 export function LoadErrorAlert({ icon, title }: LoadErrorAlertProps) {
   return (
     <Alert variant="destructive">
-      {icon ?? <CircleAlertIcon aria-hidden="true" />}
+      {icon ?? <WarningCircleIcon strokeWidth={2} aria-hidden="true" />}
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>잠시 후 다시 시도해 주세요.</AlertDescription>
     </Alert>

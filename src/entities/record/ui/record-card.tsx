@@ -1,4 +1,4 @@
-import { CalendarDaysIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import { CalendarDotsIcon, MapPinIcon, UsersIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { formatRecordDate } from "@/shared/lib/date/format-date";
@@ -26,7 +26,7 @@ export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, 
         <CardHeader>
           <CardTitle>{activity}</CardTitle>
           <CardDescription className="flex items-center gap-1.5">
-            <CalendarDaysIcon className="size-4" aria-hidden="true" />
+            <CalendarDotsIcon strokeWidth={2} className="size-4" aria-hidden="true" />
             {formatRecordDate(recordedAt)}
           </CardDescription>
         </CardHeader>
@@ -35,7 +35,7 @@ export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, 
           <CardContent className="flex flex-col gap-3">
             {region ? (
               <p className="flex items-center gap-2 text-sm">
-                <MapPinIcon className="size-4 shrink-0 text-foreground" aria-hidden="true" />
+                <MapPinIcon strokeWidth={2} className="size-4 shrink-0 text-foreground" aria-hidden="true" />
                 {region.label} / {region.name}
               </p>
             ) : null}
@@ -46,7 +46,7 @@ export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, 
         <CardFooter className={cn("gap-3", peopleNames ? "justify-between" : "justify-end")}>
           {peopleNames ? (
             <div className="flex min-w-0 items-center gap-2">
-              <UsersIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <UsersIcon strokeWidth={2} className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <p className="truncate text-muted-foreground text-xs">{peopleNames.join(", ") || "함께한 사람 없음"}</p>
             </div>
           ) : null}

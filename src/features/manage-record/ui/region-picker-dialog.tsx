@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 
-import { CircleAlertIcon } from "lucide-react";
+import { WarningCircleIcon } from "@phosphor-icons/react";
 
 import { useRegionSearch } from "@/entities/region";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
@@ -85,7 +85,7 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
 
       {search.isError ? (
         <Alert variant="destructive">
-          <CircleAlertIcon aria-hidden="true" />
+          <WarningCircleIcon strokeWidth={2} aria-hidden="true" />
           <AlertDescription>{getErrorMessage(search.error)}</AlertDescription>
         </Alert>
       ) : null}

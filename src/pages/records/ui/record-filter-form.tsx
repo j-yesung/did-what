@@ -1,4 +1,9 @@
-import { CalendarRangeIcon, ChevronDownIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
+import {
+  ArrowCounterClockwiseIcon,
+  CalendarDotsIcon,
+  CaretDownIcon,
+  MagnifyingGlassIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { buildRecordsHref, hasRecordFilters, type RecordFilters, type RecordSort } from "@/entities/record";
@@ -24,7 +29,8 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
 
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <SearchIcon
+          <MagnifyingGlassIcon
+            strokeWidth={2}
             className="pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
@@ -39,13 +45,13 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
           />
         </div>
         <Button aria-label="검색" className="h-11 rounded-lg px-5" type="submit">
-          <SearchIcon aria-hidden="true" />
+          <MagnifyingGlassIcon strokeWidth={2} aria-hidden="true" />
         </Button>
       </div>
 
       <details className="group rounded-xl border bg-card px-4 py-3" open={hasPeriod}>
         <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
-          <CalendarRangeIcon className="size-4.5 text-foreground" aria-hidden="true" />
+          <CalendarDotsIcon strokeWidth={2} className="size-4.5 text-foreground" aria-hidden="true" />
           기간
           {hasPeriod ? (
             <span className="rounded-md bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-foreground">
@@ -54,7 +60,8 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
           ) : (
             <span className="text-muted-foreground text-xs">전체</span>
           )}
-          <ChevronDownIcon
+          <CaretDownIcon
+            strokeWidth={2}
             className="ml-auto size-4 text-muted-foreground transition-transform group-open:rotate-180"
             aria-hidden="true"
           />
@@ -98,7 +105,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
             className="ml-auto flex h-8 items-center gap-1 rounded-md px-2.5 font-[650] text-muted-foreground text-xs"
             href="/records"
           >
-            <RotateCcwIcon className="size-3.5" aria-hidden="true" />
+            <ArrowCounterClockwiseIcon strokeWidth={2} className="size-3.5" aria-hidden="true" />
             초기화
           </Link>
         ) : null}

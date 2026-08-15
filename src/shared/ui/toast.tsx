@@ -3,14 +3,14 @@
 import { type ReactNode, useCallback } from "react";
 
 import { Toast } from "@base-ui/react/toast";
-import { CircleAlertIcon, CircleCheckIcon, InfoIcon } from "lucide-react";
+import { CheckCircleIcon, InfoIcon, WarningCircleIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
 
 const TOAST_TYPES = {
-  success: { Icon: CircleCheckIcon, className: "text-success", timeout: 2000, priority: "low" },
+  success: { Icon: CheckCircleIcon, className: "text-success", timeout: 2000, priority: "low" },
   info: { Icon: InfoIcon, className: "text-info", timeout: 2000, priority: "low" },
-  error: { Icon: CircleAlertIcon, className: "text-destructive", timeout: 6000, priority: "high" },
+  error: { Icon: WarningCircleIcon, className: "text-destructive", timeout: 6000, priority: "high" },
 } as const;
 
 type ToastType = keyof typeof TOAST_TYPES;
@@ -33,7 +33,7 @@ function ToastList() {
         swipeDirection="up"
         toast={toast}
       >
-        <Icon aria-hidden="true" className={cn("mt-px size-4.5 shrink-0", className)} />
+        <Icon strokeWidth={2} aria-hidden="true" className={cn("mt-px size-4.5 shrink-0", className)} />
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 break-words">
           <Toast.Title className="font-[650] text-sm leading-snug" />

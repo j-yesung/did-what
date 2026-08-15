@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { ChevronLeftIcon } from "lucide-react";
+import { CaretLeftIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -47,7 +47,7 @@ export function BackButton({ fallbackHref = "/", guardFormId }: BackButtonProps)
   return (
     <>
       <Button aria-label="이전 화면으로" className="size-11" onClick={goBack} size="icon-lg" variant="ghost">
-        <ChevronLeftIcon aria-hidden="true" />
+        <CaretLeftIcon strokeWidth={2} aria-hidden="true" />
       </Button>
 
       {guardFormId ? (

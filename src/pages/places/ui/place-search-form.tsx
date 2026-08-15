@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 
-import { SearchIcon } from "lucide-react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
@@ -47,7 +47,7 @@ export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
               type="search"
             />
             <Button aria-label="장소 검색" className="size-11" size="icon-lg" type="submit">
-              <SearchIcon aria-hidden="true" />
+              <MagnifyingGlassIcon strokeWidth={2} aria-hidden="true" />
             </Button>
           </div>
           <FieldError id="place-query-error">{searchError}</FieldError>

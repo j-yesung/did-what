@@ -1,4 +1,4 @@
-import { NotebookPenIcon, PlusIcon } from "lucide-react";
+import { NotePencilIcon, PlusIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { getRecords, hasRecordFilters, parseRecordFilters, type RecordSearchParams } from "@/entities/record";
@@ -30,7 +30,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
             className={cn(buttonVariants({ size: "icon-lg", variant: "ghost" }), "size-11")}
             href="/records/new"
           >
-            <PlusIcon aria-hidden="true" />
+            <PlusIcon strokeWidth={2} aria-hidden="true" />
           </Link>
         }
         title="기록"
@@ -39,7 +39,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
       <RecordFilterForm filters={filters} />
 
       {error ? (
-        <LoadErrorAlert icon={<NotebookPenIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />
+        <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 불러오지 못했어요" />
       ) : (
         <RecordList isFiltered={hasRecordFilters(filters)} records={records ?? []} />
       )}

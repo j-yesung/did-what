@@ -1,6 +1,6 @@
 import type * as React from "react";
 
-import { CheckIcon } from "lucide-react";
+import { CheckIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { cn } from "@/shared/lib/utils";
 
@@ -9,7 +9,7 @@ function CheckboxChip({ children, className, ...props }: Omit<React.ComponentPro
     <label className={cn("cursor-pointer", className)} data-slot="checkbox-chip">
       <input className="peer sr-only" type="checkbox" {...props} />
       <span className="flex min-h-9 items-center gap-1.5 rounded-md border bg-card px-2.5 font-medium text-sm transition-colors peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-ring peer-focus-visible:outline-offset-2 peer-aria-invalid:border-destructive [&>svg]:text-muted-foreground/50 peer-checked:[&>svg]:text-foreground">
-        <CheckIcon aria-hidden="true" className="size-3.5" />
+        <CheckIcon strokeWidth={2} aria-hidden="true" className="size-3.5" />
         {children}
       </span>
     </label>

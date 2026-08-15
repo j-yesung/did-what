@@ -1,4 +1,4 @@
-import { CalendarDaysIcon, MapPinIcon, MapPinnedIcon, NotebookPenIcon } from "lucide-react";
+import { CalendarDotsIcon, MapPinAreaIcon, MapPinIcon, NotePencilIcon } from "@phosphor-icons/react/dist/ssr";
 import { notFound } from "next/navigation";
 
 import { getPlace, getPlaceRecords } from "@/entities/place";
@@ -42,13 +42,16 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
       <PageHeader back="/places" title="기억의 장소" />
 
       {hasLoadError || !place ? (
-        <LoadErrorAlert icon={<MapPinIcon aria-hidden="true" />} title="장소의 기록을 불러오지 못했어요" />
+        <LoadErrorAlert
+          icon={<MapPinIcon strokeWidth={2} aria-hidden="true" />}
+          title="장소의 기록을 불러오지 못했어요"
+        />
       ) : (
         <>
           <Card>
             <CardHeader>
               <CardDescription className="flex items-center gap-1.5 font-bold text-foreground text-xs">
-                <MapPinnedIcon className="size-4" aria-hidden="true" />
+                <MapPinAreaIcon strokeWidth={2} className="size-4" aria-hidden="true" />
                 기억의 장소
               </CardDescription>
               <CardTitle className="text-xl">{place.name}</CardTitle>
@@ -56,7 +59,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
             </CardHeader>
             <CardContent>
               <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                <CalendarDaysIcon className="size-4" aria-hidden="true" />
+                <CalendarDotsIcon strokeWidth={2} className="size-4" aria-hidden="true" />
                 {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
               </p>
             </CardContent>
@@ -66,7 +69,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
             <RecordTimeline aria-labelledby="place-records-title">
               <div className="flex items-center justify-between gap-3 px-1">
                 <h2 className="flex items-center gap-2 font-bold" id="place-records-title">
-                  <NotebookPenIcon className="size-5 text-foreground" aria-hidden="true" />
+                  <NotePencilIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
                   이곳의 기록
                 </h2>
                 <p className="text-muted-foreground text-xs">{records.length}개</p>
