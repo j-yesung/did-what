@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 
 import { CircleAlertIcon } from "lucide-react";
 
 import { useRegionSearch } from "@/entities/region";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
-import { useDebounce } from "@/shared/hooks/use-debounce";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
+import { Field, FieldGroup } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 
 import type { RecordLocationRegion } from "../model/location-picker";
 
@@ -40,8 +39,22 @@ export function RegionPickerDialog({ onSelect }: RegionPickerDialogProps) {
 /** 다이얼로그가 닫히면 이 내용이 통째로 언마운트되면서 검색어도 함께 사라진다. */
 function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
   const [keyword, setKeyword] = useState("");
-  const debouncedKeyword = useDebounce(keyword);
-  const search = useRegionSearch(debouncedKeyword);
+  const [query, setQuery] = useState("");
+  const search = useRegionSearch(query);
+
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    const nextQuery = keyword.trim();
+    if (!nextQuery) return;
+
+    if (nextQuery === query) {
+      void search.refetch();
+      return;
+    }
+
+    setQuery(nextQuery);
+  }
 
   return (
     <DialogContent className="flex max-h-[min(640px,calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] flex-col overflow-hidden sm:max-w-md">
@@ -50,19 +63,25 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
         <DialogDescription>익숙한 지역명을 직접 입력해 보세요.</DialogDescription>
       </DialogHeader>
 
-      {/* 입력이 멈추면 스스로 검색한다. 검색 버튼이 없으므로 record-form 안에서 폼이 겹칠 일도 없다. */}
-      <div className="relative">
-        <Input
-          aria-label="지역 이름"
-          maxLength={100}
-          onChange={(event) => setKeyword(event.target.value)}
-          placeholder="예: 망원동, 홍대"
-          value={keyword}
-        />
-        {search.isFetching ? (
-          <Spinner aria-label="검색 중" className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground" />
-        ) : null}
-      </div>
+      <form aria-label="지역 검색" onSubmit={handleSearch} role="search">
+        <FieldGroup>
+          <Field>
+            <div className="flex gap-2">
+              <Input
+                aria-label="지역 이름"
+                className="h-11 flex-1"
+                maxLength={100}
+                onChange={(event) => setKeyword(event.target.value)}
+                placeholder="예: 망원동, 홍대"
+                value={keyword}
+              />
+              <Button className="h-11 px-5" disabled={!keyword.trim()} loading={search.isFetching} type="submit">
+                검색
+              </Button>
+            </div>
+          </Field>
+        </FieldGroup>
+      </form>
 
       {search.isError ? (
         <Alert variant="destructive">

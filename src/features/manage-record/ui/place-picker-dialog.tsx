@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { BookmarkIcon, CircleAlertIcon, MapPinIcon } from "lucide-react";
@@ -9,12 +9,11 @@ import type { PlaceOption } from "@/entities/place";
 import { usePlaceSearch } from "@/entities/place/api/search-queries";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
-import { useDebounce } from "@/shared/hooks/use-debounce";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
+import { Field, FieldGroup } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { resolveRecordPlace } from "../model/actions";
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
@@ -30,8 +29,8 @@ type PlacePickerPanelProps = {
 function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePickerPanelProps) {
   const [selectionError, setSelectionError] = useState<string>();
   const [keyword, setKeyword] = useState("");
-  const debouncedKeyword = useDebounce(keyword);
-  const search = usePlaceSearch({ page: 1, query: debouncedKeyword, regionName: region?.fullName });
+  const [query, setQuery] = useState("");
+  const search = usePlaceSearch({ page: 1, query, regionName: region?.fullName });
 
   // 저장해 둔 장소는 선택한 지역 안에 있을 때만 검색 없이 바로 고를 수 있다.
   const savedInRegion = region ? savedPlaces.filter((place) => place.region_code === region.code) : [];
@@ -78,6 +77,21 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
     });
   }
 
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectionError(undefined);
+    const nextQuery = keyword.trim();
+    if (!nextQuery) return;
+
+    if (nextQuery === query) {
+      void search.refetch();
+      return;
+    }
+
+    setQuery(nextQuery);
+  }
+
   return (
     <>
       <DialogHeader>
@@ -118,19 +132,25 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
         </section>
       ) : null}
 
-      {/* 입력이 멈추면 스스로 검색한다. 검색 버튼이 없으므로 record-form 안에서 폼이 겹칠 일도 없다. */}
-      <div className="relative">
-        <Input
-          aria-label="방문 장소 이름"
-          maxLength={100}
-          onChange={(event) => setKeyword(event.target.value)}
-          placeholder="예: 메가커피"
-          value={keyword}
-        />
-        {search.isFetching ? (
-          <Spinner aria-label="검색 중" className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground" />
-        ) : null}
-      </div>
+      <form aria-label="방문 장소 검색" onSubmit={handleSearch} role="search">
+        <FieldGroup>
+          <Field>
+            <div className="flex gap-2">
+              <Input
+                aria-label="방문 장소 이름"
+                className="h-11 flex-1"
+                maxLength={100}
+                onChange={(event) => setKeyword(event.target.value)}
+                placeholder="예: 메가커피"
+                value={keyword}
+              />
+              <Button className="h-11 px-5" disabled={!keyword.trim()} loading={search.isFetching} type="submit">
+                검색
+              </Button>
+            </div>
+          </Field>
+        </FieldGroup>
+      </form>
 
       {search.isError || selectionError ? (
         <Alert variant="destructive">
