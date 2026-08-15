@@ -118,6 +118,8 @@ type RecordFormValues = {
 
 아이콘은 `@phosphor-icons/react`의 `MapPinArea`, `PencilSimple`, `MapPin`, `Users`, `Gear`를 사용한다. 활성 탭은 `fill`, 비활성 탭은 `regular` 굵기로 표시한다.
 
+다섯 탭은 모두 사용 빈도가 높은 고정 진입점이므로 배포 환경에서 기본 경로를 미리 불러온다. 검색 조건과 상세·작성·수정 경로는 프리패치 대상에 포함하지 않는다. 목록 데이터가 커지면 페이지네이션 또는 무한 스크롤과 함께 다시 판단한다.
+
 ## 목표 데이터 모델
 
 ### places
