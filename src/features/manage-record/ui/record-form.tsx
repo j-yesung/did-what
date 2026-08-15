@@ -48,6 +48,7 @@ type RecordFormProps = {
 
 export function RecordForm({ action, initialValues, mode = "create", people, savedPlaces }: RecordFormProps) {
   const [hasPersonError, setHasPersonError] = useState(false);
+  const [memoLength, setMemoLength] = useState(initialValues?.memo.length ?? 0);
   const formRef = useRef<HTMLFormElement>(null);
 
   /** 어느 칸이 잘못됐는지는 입력란 아래에 남기고, 저장 자체가 실패한 것만 토스트로 알린다. */
@@ -197,11 +198,18 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
               id="memo"
               maxLength={500}
               name="memo"
+              onChange={(event) => setMemoLength(event.currentTarget.value.length)}
               placeholder="더 남기고 싶은 이야기가 있다면 적어 주세요."
               rows={4}
               aria-invalid={Boolean(fieldErrors?.memo)}
-              aria-describedby={fieldErrors?.memo ? "memo-error" : undefined}
+              aria-describedby={fieldErrors?.memo ? "memo-count memo-error" : "memo-count"}
             />
+            <FieldDescription
+              className="invisible text-right tabular-nums group-focus-within/field:visible"
+              id="memo-count"
+            >
+              {memoLength}/500
+            </FieldDescription>
             <FieldError id="memo-error">{fieldErrors?.memo}</FieldError>
           </Field>
         </FieldGroup>

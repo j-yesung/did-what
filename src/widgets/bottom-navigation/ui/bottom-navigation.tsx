@@ -30,7 +30,7 @@ export function BottomNavigation() {
             <li key={href}>
               <Link
                 aria-current={active ? "page" : undefined}
-                className="flex h-14 touch-manipulation flex-col items-center justify-center gap-1 whitespace-nowrap text-[10px] transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-foreground"
+                className="flex h-14 touch-manipulation flex-col items-center justify-center gap-1 whitespace-nowrap text-[12px] transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-foreground"
                 data-active={active}
                 href={href}
               >
