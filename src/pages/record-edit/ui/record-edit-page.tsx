@@ -75,7 +75,6 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
               latitude: record.region_latitude,
               longitude: record.region_longitude,
               name: record.region_name.split(" ").at(-1) ?? record.region_name,
-              type: record.region_name.endsWith("읍") ? "eup" : record.region_name.endsWith("면") ? "myeon" : "dong",
             },
           }}
           mode="edit"

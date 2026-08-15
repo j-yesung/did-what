@@ -35,10 +35,10 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
   /**
    * 저장해 둔 장소는 지역과 상관없이 전부 바로 고를 수 있다. 이번 지역에 있는 곳만 앞으로 보낸다.
    * 지역을 아직 안 골랐다면 고른 장소를 어느 지역에 붙일지 알 수 없어 검색으로만 시작한다.
+   * 앞 5자리(시·군·구)로 비교한다. 예전에 동 단위로 저장된 장소도 같은 도시면 함께 앞으로 나온다.
    */
-  const sortedSavedPlaces = region
-    ? [...savedPlaces].sort((a, b) => Number(b.region_code === region.code) - Number(a.region_code === region.code))
-    : [];
+  const inRegion = (place: PlaceOption) => region && place.region_code.slice(0, 5) === region.code.slice(0, 5);
+  const sortedSavedPlaces = region ? [...savedPlaces].sort((a, b) => Number(inRegion(b)) - Number(inRegion(a))) : [];
 
   function addSavedPlace(place: PlaceOption) {
     if (!region) return;

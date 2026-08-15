@@ -13,7 +13,6 @@ export type KakaoRegion = {
   latitude: number;
   longitude: number;
   name: string;
-  type: "dong" | "eup" | "myeon";
 };
 
 export type KakaoRegionSearchResult = { regions: KakaoRegion[]; related: boolean } | { error: string };
@@ -150,21 +149,31 @@ export function parseKakaoSearchResponse(
   return { isEnd: payload.meta.is_end, pageableCount: payload.meta.pageable_count, places };
 }
 
-/**
- * 지역 이름의 단위. 읍·면만 구분하고 나머지는 동으로 본다.
- * 법정동은 성수동1가, 을지로3가, 세종로처럼 동으로 끝나지 않는 이름이 많아서, 접미사로 걸러내면 멀쩡한 지역이 탈락한다.
- * 이름이 비어 있으면 시·도·구 단위라 지역으로 쓰지 않는다.
- */
-function getRegionType(name: string): KakaoRegion["type"] | null {
-  if (!name) return null;
-  if (name.endsWith("읍")) return "eup";
-  if (name.endsWith("면")) return "myeon";
-  return "dong";
-}
-
 /** 주소에서 잘라낼 지점을 찾을 때 쓴다. "72-1" 같은 지번과 구분해야 해서 여기서는 접미사로 좁혀 본다. */
 function isLocalityName(name: string): boolean {
   return /(?:동|읍|면|\d가)$/.test(name);
+}
+
+/**
+ * 지역은 시·군·구 한 단위로 통일한다.
+ * 동까지 내려가면 같은 도시 안에서 기록이 쪼개지고, 시·도까지 올라가면 대표 지역으로도 검색 기준점으로도 너무 넓다.
+ * 법정동 코드는 앞 5자리가 시·군·구라, 뒤를 0으로 눕히면 같은 도시의 동들이 한 코드로 모인다.
+ */
+function toDistrict(code: string, depth1: string, depth2: string, depth3: string) {
+  const district = depth2.trim();
+  const locality = depth3.trim();
+
+  // 둘 다 비면 시·도 문서(서울, 경기)다. 세종처럼 시·군·구 단계가 없는 곳은 시·도 이름이 곧 그 단위다.
+  if ((!district && !locality) || !/^\d{10}$/.test(code)) return null;
+
+  const name = district || depth1.trim();
+  if (!name) return null;
+
+  return {
+    code: `${code.slice(0, 5)}00000`,
+    fullName: district ? `${depth1.trim()} ${district}` : name,
+    name,
+  };
 }
 
 function parseRegionDocument(document: unknown): KakaoRegion | null {
@@ -184,15 +193,17 @@ function parseRegionDocument(document: unknown): KakaoRegion | null {
     return null;
   }
 
-  const code = address.b_code.trim();
-  const name = address.region_3depth_name.trim();
-  const type = getRegionType(name);
+  const district = toDistrict(
+    address.b_code.trim(),
+    address.region_1depth_name,
+    address.region_2depth_name,
+    address.region_3depth_name,
+  );
   const longitude = Number(document.x);
   const latitude = Number(document.y);
 
   if (
-    !/^\d{10}$/.test(code) ||
-    !type ||
+    !district ||
     !Number.isFinite(longitude) ||
     !Number.isFinite(latitude) ||
     longitude < -180 ||
@@ -203,14 +214,7 @@ function parseRegionDocument(document: unknown): KakaoRegion | null {
     return null;
   }
 
-  return {
-    code,
-    fullName: [address.region_1depth_name, address.region_2depth_name, name].filter(Boolean).join(" "),
-    latitude,
-    longitude,
-    name,
-    type,
-  };
+  return { ...district, latitude, longitude };
 }
 
 export function parseKakaoRegionSearchResponse(payload: unknown): KakaoRegion[] | null {
@@ -218,10 +222,14 @@ export function parseKakaoRegionSearchResponse(payload: unknown): KakaoRegion[] 
     return null;
   }
 
+  /**
+   * 같은 시·군·구의 문서는 하나로 합친다. 좌표는 먼저 온 문서 것을 남긴다.
+   * 카카오가 검색어와 가까운 순으로 주므로, 시·군·구 중심점보다 사용자가 찾던 곳에 가깝다.
+   */
   const regions = new Map<string, KakaoRegion>();
   for (const document of payload.documents) {
     const region = parseRegionDocument(document);
-    if (region) regions.set(region.code, region);
+    if (region && !regions.has(region.code)) regions.set(region.code, region);
   }
 
   return [...regions.values()];
@@ -244,16 +252,13 @@ export function parseKakaoCoordinateRegionResponse(payload: unknown): { code: st
       continue;
     }
 
-    const name = document.region_3depth_name.trim();
-    if (!getRegionType(name) || !/^\d{10}$/.test(document.code)) {
-      continue;
-    }
-
-    const code = name.endsWith("읍") || name.endsWith("면") ? `${document.code.slice(0, 8)}00` : document.code;
-    return {
-      code,
-      fullName: [document.region_1depth_name, document.region_2depth_name, name].filter(Boolean).join(" "),
-    };
+    const district = toDistrict(
+      document.code,
+      document.region_1depth_name,
+      document.region_2depth_name,
+      document.region_3depth_name,
+    );
+    if (district) return { code: district.code, fullName: district.fullName };
   }
 
   return null;

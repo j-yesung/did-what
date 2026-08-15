@@ -36,9 +36,15 @@ function readRecordInput(formData: FormData): RecordInputValues {
   };
 }
 
+/**
+ * 고른 지역이 실재하는지 이름으로 다시 조회해 확인한다.
+ * 앞 5자리(시·군·구)로 맞춰 본다. 예전 기록은 동 단위 코드를 갖고 있는데, 통과하면 지금 단위로 다시 저장돼 그대로 옮겨간다.
+ */
 async function verifyRegion(code: string, name: string) {
   const result = await searchKakaoRegions(name);
-  return "regions" in result ? (result.regions.find((region) => region.code === code) ?? null) : null;
+  if (!("regions" in result)) return null;
+
+  return result.regions.find((region) => region.code.slice(0, 5) === code.slice(0, 5)) ?? null;
 }
 
 async function verifyKakaoPlace(reference: Extract<RecordPlaceReference, { kind: "kakao" }>) {

@@ -60,6 +60,7 @@ assert.equal(
 );
 assert.equal(parseKakaoSearchResponse({ documents: [], meta: {} }), null);
 
+// 같은 시·군·구의 동들은 한 지역으로 합쳐지고, 시·도 문서와 코드가 깨진 문서는 걸러진다.
 assert.deepEqual(
   parseKakaoRegionSearchResponse({
     documents: [
@@ -75,11 +76,21 @@ assert.deepEqual(
       },
       {
         address: {
-          b_code: "",
+          b_code: "1144013500",
           region_1depth_name: "서울",
           region_2depth_name: "마포구",
-          region_3depth_name: "",
+          region_3depth_name: "서교동",
         },
+        x: "126.92",
+        y: "37.55",
+      },
+      {
+        address: { b_code: "1100000000", region_1depth_name: "서울", region_2depth_name: "", region_3depth_name: "" },
+        x: "126.97",
+        y: "37.56",
+      },
+      {
+        address: { b_code: "", region_1depth_name: "서울", region_2depth_name: "마포구", region_3depth_name: "" },
         x: "126.9",
         y: "37.5",
       },
@@ -87,12 +98,38 @@ assert.deepEqual(
   }),
   [
     {
-      code: "1144012300",
-      fullName: "서울 마포구 망원동",
+      code: "1144000000",
+      fullName: "서울 마포구",
       latitude: 37.5567856576913,
       longitude: 126.901347294861,
-      name: "망원동",
-      type: "dong",
+      name: "마포구",
+    },
+  ],
+);
+
+// 세종처럼 시·군·구 단계가 없는 곳은 시·도 이름이 그 단위가 된다.
+assert.deepEqual(
+  parseKakaoRegionSearchResponse({
+    documents: [
+      {
+        address: {
+          b_code: "3611011900",
+          region_1depth_name: "세종특별자치시",
+          region_2depth_name: "",
+          region_3depth_name: "세종동",
+        },
+        x: "127.28",
+        y: "36.51",
+      },
+    ],
+  }),
+  [
+    {
+      code: "3611000000",
+      fullName: "세종특별자치시",
+      latitude: 36.51,
+      longitude: 127.28,
+      name: "세종특별자치시",
     },
   ],
 );
@@ -109,7 +146,7 @@ assert.deepEqual(
       },
     ],
   }),
-  { code: "5011025300", fullName: "제주특별자치도 제주시 애월읍" },
+  { code: "5011000000", fullName: "제주특별자치도 제주시" },
 );
 
 assert.deepEqual(
