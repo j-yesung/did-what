@@ -77,7 +77,6 @@
 - SQL aggregation
 - 데이터베이스 view 또는 materialized view
 - 개발·데모용 seed 데이터
-- 데이터 증가 시 하단 탭 프리패치 범위 재조정
 
 ## 이전 제외 범위에서 구현 완료
 
