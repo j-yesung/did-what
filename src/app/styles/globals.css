@@ -208,8 +208,11 @@
 
   html {
     background: var(--background);
-    /** 앱처럼 보이도록 문서 자체의 고무줄 스크롤을 막는다. 내용이 화면에 다 들어와도 iOS는 끝에서 끌려 움직인다. */
-    overscroll-behavior-y: none;
+    /**
+     * 안쪽 스크롤 영역이 끝에 닿았을 때 문서까지 딸려 스크롤되는 것만 막는다.
+     * none은 iOS 고무줄 반동까지 없애 스크롤이 벽에 부딪히듯 멈춰서, 반동은 남기는 contain을 쓴다.
+     */
+    overscroll-behavior-y: contain;
     @apply font-sans;
   }
 
