@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
 
-import { getPeople } from "@/entities/person";
-import { getPlaces } from "@/entities/place";
 import { getRecord } from "@/entities/record";
 import { RecordForm, updateRecord } from "@/features/manage-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
@@ -22,18 +20,14 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
 
   const { user } = await requireUser();
 
-  const [recordResult, peopleResult, placesResult] = await Promise.all([
-    getRecord(recordId, user.id),
-    getPeople(user.id),
-    getPlaces(user.id),
-  ]);
+  const recordResult = await getRecord(recordId, user.id);
 
   if (!recordResult.data && !recordResult.error) {
     notFound();
   }
 
   const record = recordResult.data;
-  const hasLoadError = Boolean(recordResult.error || peopleResult.error);
+  const hasLoadError = Boolean(recordResult.error);
 
   return (
     <PageShell className="block">
@@ -78,8 +72,6 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
             },
           }}
           mode="edit"
-          people={peopleResult.data ?? []}
-          savedPlaces={placesResult.data ?? []}
         />
       )}
     </PageShell>

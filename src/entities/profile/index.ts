@@ -1,1 +1,1 @@
-export { ensureProfile, getProfileName } from "./api/queries";
+export { ensureProfile } from "./api/queries";

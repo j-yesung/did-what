@@ -1,27 +1,44 @@
-import { MapPinAreaIcon } from "@phosphor-icons/react/dist/ssr";
+"use client";
+
+import { MapPinAreaIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
-import { getRecordLocations } from "@/entities/record";
-import { requireUser } from "@/shared/api/supabase/require-user";
+import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { Spinner } from "@/shared/ui/spinner";
 
 import { KoreaActivityMap } from "./korea-activity-map";
 
-export async function HomePage() {
-  const { user } = await requireUser();
+export function HomePage() {
+  const recordsQuery = useQuery(recordsQueryOptions);
+  const records = (recordsQuery.data ?? []).map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
+    id,
+    latitude,
+    longitude,
+  }));
 
-  const { locations: records, error } = await getRecordLocations(user.id);
+  if (recordsQuery.isPending) {
+    return (
+      <PageShell className="items-center justify-center" withBottomNavigation>
+        <Spinner
+          aria-label="발자취를 불러오는 중"
+          className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
+        />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell className="gap-3 pt-3" withBottomNavigation>
       <section className="grid min-h-0 flex-1 place-items-center px-1.5 py-1" aria-label="대한민국 활동 지도">
-        <KoreaActivityMap records={error ? [] : records} />
+        <KoreaActivityMap records={records} />
       </section>
 
-      {error ? (
+      {recordsQuery.isError ? (
         <LoadErrorAlert
           icon={<MapPinAreaIcon strokeWidth={2} aria-hidden="true" />}
           title="발자취를 불러오지 못했어요"
@@ -45,7 +62,7 @@ export async function HomePage() {
         </Empty>
       )}
 
-      {error || records.length > 0 ? (
+      {recordsQuery.isError || records.length > 0 ? (
         <Button className="h-14 w-full shrink-0" size="lg" render={<Link href="/records/new" />} nativeButton={false}>
           새 기록 남기기
         </Button>

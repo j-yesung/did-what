@@ -1,30 +1,47 @@
-import { MapPinIcon } from "@phosphor-icons/react/dist/ssr";
+"use client";
+
+import { MapPinIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { DeletePlaceDialog } from "@/features/manage-place";
 import { formatShortDate } from "@/shared/lib/date/format-date";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { Spinner } from "@/shared/ui/spinner";
 import { TextButton } from "@/shared/ui/text-button";
 
-type SavedPlace = {
-  id: string;
-  name: string;
-  address: string | null;
-  record_places: { count: number }[];
-  saved_at: string | null;
-};
+export function SavedPlaceCount() {
+  const places = useQuery(placesQueryOptions);
 
-type SavedPlaceListProps = {
-  hasError: boolean;
-  places: SavedPlace[];
-};
+  return (
+    <p className="font-bold text-foreground text-xs">
+      {places.isPending ? "저장한 장소를 불러오는 중" : `${places.data?.length ?? 0}곳에 추억 저장 중`}
+    </p>
+  );
+}
 
-export function SavedPlaceList({ hasError, places }: SavedPlaceListProps) {
-  if (hasError) {
+export function SavedPlaceList() {
+  const placesQuery = useQuery(placesQueryOptions);
+
+  if (placesQuery.isPending) {
+    return (
+      <div className="grid min-h-40 place-items-center">
+        <Spinner
+          aria-label="저장한 장소를 불러오는 중"
+          className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
+        />
+      </div>
+    );
+  }
+
+  if (placesQuery.isError) {
     return <LoadErrorAlert title="저장한 장소를 불러오지 못했어요" />;
   }
+
+  const places = placesQuery.data;
 
   if (places.length === 0) {
     return (

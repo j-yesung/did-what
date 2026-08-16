@@ -1,5 +1,7 @@
 "use client";
 
+import { placesQueryOptions } from "@/entities/place/api/places-query";
+import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
@@ -24,6 +26,7 @@ type DeleteRecordDialogProps = {
 export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogProps) {
   const remove = useActionMutation(() => deleteRecord(recordId), {
     error: "기록을 삭제하지 못했어요",
+    invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
     success: "기록을 삭제했어요",
   });
 

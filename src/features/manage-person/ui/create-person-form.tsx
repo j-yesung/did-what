@@ -2,6 +2,7 @@
 
 import { type FormEvent, useRef } from "react";
 
+import { peopleQueryOptions } from "@/entities/person/api/people-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -15,6 +16,7 @@ export function CreatePersonForm() {
 
   const create = useActionMutation(createPerson, {
     error: "추가하지 못했어요",
+    invalidate: [peopleQueryOptions.queryKey],
     onSuccess: () => {
       formRef.current?.reset();
       formRef.current?.querySelector<HTMLInputElement>("#person-name")?.focus();

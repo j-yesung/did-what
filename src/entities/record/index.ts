@@ -1,6 +1,7 @@
-export { getRecord, getRecordLocations, getRecords } from "./api/queries";
+export { getRecord } from "./api/queries";
 export {
   buildRecordsHref,
+  filterRecords,
   hasRecordFilters,
   parseRecordFilters,
   type RecordFilters,

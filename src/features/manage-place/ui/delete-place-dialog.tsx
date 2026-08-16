@@ -2,6 +2,7 @@
 
 import { TrashIcon } from "@phosphor-icons/react";
 
+import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
@@ -28,6 +29,7 @@ type DeletePlaceDialogProps = {
 export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: DeletePlaceDialogProps) {
   const remove = useActionMutation(() => deletePlace(placeId), {
     error: "장소를 삭제하지 못했어요",
+    invalidate: [placesQueryOptions.queryKey],
     success: "장소를 삭제했어요",
   });
 

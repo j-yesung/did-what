@@ -1,19 +1,15 @@
 import { createClient } from "@/shared/api/supabase/server";
 
-const COLUMNS = "id, name, created_at";
-
-// 소유자의 사람 목록. 이름순.
-export async function getPeople(ownerId: string) {
-  const supabase = await createClient();
-
-  return supabase.from("people").select(COLUMNS).eq("owner_id", ownerId).order("name");
-}
-
 // 소유자의 사람 한 명. 없으면 data가 null이다.
 export async function getPerson(personId: string, ownerId: string) {
   const supabase = await createClient();
 
-  return supabase.from("people").select(COLUMNS).eq("id", personId).eq("owner_id", ownerId).maybeSingle();
+  return supabase
+    .from("people")
+    .select("id, name, created_at")
+    .eq("id", personId)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
 }
 
 // 특정 사람과 함께한 소유자의 기록. 최신순.

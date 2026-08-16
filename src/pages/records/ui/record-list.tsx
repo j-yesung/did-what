@@ -1,18 +1,46 @@
-import { MagnifyingGlassMinusIcon } from "@phosphor-icons/react/dist/ssr";
+"use client";
+
+import { MagnifyingGlassMinusIcon, NotePencilIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
-import { EmptyRecords, type getRecords, RecordCard, RecordTimeline } from "@/entities/record";
+import { recordsQueryOptions } from "@/entities/record/api/records-query";
+import { filterRecords, hasRecordFilters, type RecordFilters } from "@/entities/record/model/record-filters";
+import { EmptyRecords } from "@/entities/record/ui/empty-records";
+import { RecordCard } from "@/entities/record/ui/record-card";
+import { RecordTimeline } from "@/entities/record/ui/record-timeline";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-
-type RecordListItem = NonNullable<Awaited<ReturnType<typeof getRecords>>["data"]>[number];
+import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { Spinner } from "@/shared/ui/spinner";
 
 type RecordListProps = {
-  isFiltered: boolean;
-  records: RecordListItem[];
+  filters: RecordFilters;
 };
 
-export function RecordList({ isFiltered, records }: RecordListProps) {
+export function RecordList({ filters }: RecordListProps) {
+  const recordsQuery = useQuery(recordsQueryOptions);
+
+  if (recordsQuery.isPending) {
+    return (
+      <div className="grid min-h-40 place-items-center">
+        <Spinner
+          aria-label="기록을 불러오는 중"
+          className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
+        />
+      </div>
+    );
+  }
+
+  if (recordsQuery.isError) {
+    return (
+      <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 불러오지 못했어요" />
+    );
+  }
+
+  const records = filterRecords(recordsQuery.data, filters);
+  const isFiltered = hasRecordFilters(filters);
+
   if (records.length === 0) {
     return isFiltered ? (
       <Empty className="border bg-card py-14">

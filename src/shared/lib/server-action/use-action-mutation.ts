@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { runServerAction } from "./run-server-action";
@@ -9,6 +9,7 @@ type ActionResult = { message?: string; status?: "idle" | "error" | "success" };
 
 type ActionMutationOptions<TResult> = {
   error: string;
+  invalidate?: readonly QueryKey[];
   success?: string;
   onSuccess?: (result: TResult | undefined) => void;
   onFail?: (result: TResult) => void;
@@ -22,11 +23,13 @@ type ActionMutationOptions<TResult> = {
  */
 export function useActionMutation<TResult extends ActionResult, TArgs = void>(
   action: (args: TArgs) => Promise<TResult>,
-  { error, success, onFail, onSuccess }: ActionMutationOptions<TResult>,
+  { error, invalidate = [], success, onFail, onSuccess }: ActionMutationOptions<TResult>,
 ) {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (args: TArgs) => runServerAction(() => action(args)),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       if (result?.status === "error") {
         if (result.message) toast.error(error, { description: result.message, duration: 4000 });
         onFail?.(result);
@@ -35,6 +38,7 @@ export function useActionMutation<TResult extends ActionResult, TArgs = void>(
 
       const title = success ?? result?.message;
       if (title) toast.success(title, { duration: 2000 });
+      await Promise.all(invalidate.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
       onSuccess?.(result);
     },
     onError: () => toast.error(error, { duration: 4000 }),

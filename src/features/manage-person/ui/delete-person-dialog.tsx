@@ -1,5 +1,7 @@
 "use client";
 
+import { peopleQueryOptions } from "@/entities/person/api/people-query";
+import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
@@ -25,6 +27,7 @@ type DeletePersonDialogProps = {
 export function DeletePersonDialog({ name, personId, recordCount }: DeletePersonDialogProps) {
   const remove = useActionMutation(() => deletePerson(personId), {
     error: "사람을 삭제하지 못했어요",
+    invalidate: [peopleQueryOptions.queryKey, recordsQueryOptions.queryKey],
     success: "사람을 삭제했어요",
   });
 

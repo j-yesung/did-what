@@ -1,88 +1,226 @@
-# 다음 단계: 하단 탭 즉시 전환
+# 메인 탭 데이터를 TanStack Query로 통합
 
-> 상태: 완료 (2026-08-16)
+> 상태: 구현 및 검증 완료 (2026-08-16)
 
-## 배경
+## 목표
 
-하단 탭 다섯 개에 `prefetch={true}`를 붙였는데도 탭을 누를 때마다 `?_rsc=` 요청이 다시 나갔다.
+로그인 후 메인 데이터를 한 번씩 병렬 조회하고 앱 세션 동안 TanStack Query 캐시에 보관한다. 하단 탭 전환에서는 같은 데이터를 다시 요청하지 않고, 사용자가 데이터를 변경했을 때만 관련 query를 무효화한다.
 
-원인은 Next.js의 `staleTimes.dynamic` 기본값이 0이라는 점이다. 이 앱의 화면은 인증과 Supabase 조회가 필요한 동적 라우트라, 미리 받아 둔 페이로드를 클라이언트 라우터 캐시가 도착 즉시 버렸다. 프리페치는 정상 동작하고 있었고 그 결과를 쓰지 못하는 상태였다. 매 진입마다 버려진 프리페치를 다시 받으므로 서버 요청은 오히려 늘어나 있었다.
+```text
+앱 최초 진입
+  ├─ records  ─┬─ 지도
+  │            └─ 기록 목록
+  ├─ people   ─── 사람 목록·기록 폼
+  ├─ places   ─── 장소 목록·기록 폼
+  └─ profile  ─── 설정
 
-인증 비용도 겹쳤다. 화면 하나를 그리는 데 인증을 세 번 세우고 그중 페이지 단계의 `getUser()`가 Auth 서버 왕복이었다. 여기에 프리페치 네 건이 곱해져 탭 화면 진입 한 번에 왕복이 다섯 번 발생했다.
+각 query를 한 번씩 병렬 요청
+  → 모든 화면이 같은 메모리 캐시 사용
+  → 변경된 query만 다시 조회
+```
 
-메인 화면 데이터를 클라이언트 TanStack Query로 옮기는 방안은 택하지 않는다. 페이지 껍데기가 여전히 동적 RSC라 서버 왕복은 그대로 남고 그 위에 클라이언트 조회가 한 단계 더 얹혀 첫 방문이 더 느려진다. 조회 엔드포인트를 새로 열어야 해서 RLS 노출면도 늘어난다. 데이터 계층은 그대로 두고 라우터 캐시 수명과 인증 비용만 고친다.
+## 구현 결정
 
-## 구현
+### 데이터 캐시의 단일 기준
 
-1. `next.config.ts`에 `experimental.staleTimes = { dynamic: 300 }`을 지정해 동적 라우트 페이로드를 300초 동안 재사용한다.
-2. `requireUser()`의 `getUser()`를 `getClaims()`로 바꾼다. 프로젝트가 비대칭 키(ES256)를 쓰므로 서명을 WebCrypto로 로컬 검증하고 Auth 서버를 다녀오지 않는다. JWKS는 프로세스당 한 번만 받는다.
-3. `requireUser()`를 React `cache()`로 감싸 layout과 page가 각각 불러도 요청당 한 번만 검증한다.
-4. `app/(app)/layout.tsx`가 직접 만들던 클라이언트와 `getClaims()` 호출을 `requireUser()`로 통일한다. 새 화면이 인증을 빠뜨려도 layout에서 막힌다.
-5. 하단 내비게이션의 다섯 `Link`에 `prefetch={true}`를 지정한다.
-6. 다섯 메인 화면의 `PageShell`이 렌더링될 때만 콘텐츠 진입 모션을 적용한다. 160ms 동안 `opacity 0 → 1`, `translateY 6px → 0`, `scale 0.99 → 1`로 전환하고, 하단 내비게이션은 상위 layout에 남겨 고정한다.
-7. `prefers-reduced-motion`에서는 진입 모션을 적용하지 않는다.
-8. 프리페치가 끝나기 전에 누른 전환에서는 기존 `loading.tsx`가 300ms 뒤 Spinner를 표시한다.
+- 메인 화면의 Server Component에서 실행하던 `getRecordLocations`, `getRecords`, `getPeople`, `getPlaces`, `getProfileName`을 제거했다.
+- 앱 레이아웃의 `MainDataPrefetch`가 네 query를 동시에 준비한다.
+- 실제 화면도 같은 query options를 `useQuery`로 사용한다. 현재 화면과 프리페처가 동시에 시작돼도 같은 query key의 요청은 하나로 합쳐진다.
+- 하단 내비게이션은 `prefetch={true}`로 전체 RSC 화면 구조를 준비한다. 메인 RSC에는 Supabase 조회가 없으므로 데이터 요청과 중복되지 않는다.
+- 상세 화면의 RSC 조회와 데이터 신뢰 경계인 서버 액션 검증은 그대로 유지한다.
 
-## 캐시 수명을 300초로 잡은 근거
+### API 구조
 
-화면 데이터는 본인의 뮤테이션으로만 바뀌고, 모든 서버 액션이 관련 경로를 `revalidatePath`로 무효화한다.
+새 `/api/app-data` Route Handler는 만들지 않았다. 이미 있는 Supabase 브라우저 클라이언트가 Data API를 직접 호출한다.
 
-| 액션 | 무효화 경로 |
+- 브라우저에는 publishable key만 사용한다.
+- `records`, `people`, `places`, `profiles`는 기존 RLS의 `auth.uid()` 소유권 조건으로 보호한다.
+- 클라이언트 SELECT에는 `owner_id` 필터를 넣지 않는다. 사용자 입력에 의존하지 않고 RLS가 소유 행을 제한한다.
+- 테마는 Supabase 데이터가 아니라 쿠키이므로 기존 서버 처리를 유지한다.
+
+## 호출과 캐시
+
+정상적인 앱 최초 진입의 Supabase Data API 호출은 다음 네 건이다.
+
+| query key | 데이터 | 소비 화면 |
+| --- | --- | --- |
+| `['records']` | 기록, 사람 이름, 지도 좌표 | 지도, 기록 |
+| `['people']` | 함께한 사람 | 사람, 기록 작성·수정 |
+| `['places']` | 저장한 장소와 연결 기록 수 | 장소, 기록 작성·수정 |
+| `['profile']` | 표시 이름 | 설정 |
+
+`records` SELECT에 지도 좌표를 포함해 기존 지도 전용 API 호출을 제거했다. 기록 검색·기간·정렬은 캐시된 배열에 적용한다.
+
+메인 query에는 다음 정책을 공통 적용한다.
+
+```ts
+export const MAIN_QUERY_OPTIONS = {
+  gcTime: Number.POSITIVE_INFINITY,
+  staleTime: Number.POSITIVE_INFINITY,
+} as const;
+```
+
+- 같은 앱 세션에서는 시간 경과나 창 포커스로 자동 재조회하지 않는다.
+- 새로고침과 앱 재실행에서는 메모리 캐시가 사라져 다시 조회한다.
+- 개인 데이터는 `localStorage`나 IndexedDB에 저장하지 않는다.
+- 로그아웃 성공 시 `queryClient.clear()`로 이전 사용자의 캐시를 지운다.
+- 네트워크 오류에서는 QueryClient 기본 정책에 따라 한 번 재시도할 수 있다.
+
+## 핵심 코드
+
+### 엔티티 query options
+
+```ts
+export const peopleQueryOptions = queryOptions({
+  ...MAIN_QUERY_OPTIONS,
+  queryKey: ["people"],
+  queryFn: async () => {
+    const { data, error } = await createClient()
+      .from("people")
+      .select("id, name, created_at")
+      .order("name");
+
+    if (error) throw error;
+    return data;
+  },
+});
+```
+
+### 최초 병렬 프리페치
+
+```tsx
+export function MainDataPrefetch() {
+  usePrefetchQuery(recordsQueryOptions);
+  usePrefetchQuery(peopleQueryOptions);
+  usePrefetchQuery(placesQueryOptions);
+  usePrefetchQuery(profileQueryOptions);
+
+  return null;
+}
+```
+
+설치된 TanStack Query의 `usePrefetchQuery`를 그대로 사용한다. 별도의 effect, Promise 조정 코드나 전역 상태는 만들지 않았다.
+
+### 화면 캐시 소비
+
+```tsx
+export function RecordList({ filters }: RecordListProps) {
+  const records = useQuery(recordsQueryOptions);
+
+  if (records.isPending) return <DelayedSpinner />;
+  if (records.isError) return <LoadErrorAlert title="기록을 불러오지 못했어요" />;
+
+  return <RecordTimeline records={filterRecords(records.data, filters)} />;
+}
+```
+
+실제 코드는 기존 UI 구조를 유지하기 위해 현재 컴포넌트 안에서 Spinner와 목록을 조합한다. 전용 `DelayedSpinner`, `RecordsContent`, `PlacesContent` 파일은 만들지 않았다.
+
+### 변경 후 query 무효화
+
+모든 서버 액션 mutation이 통과하는 `useActionMutation`에 선택적인 query key만 추가했다.
+
+```ts
+const create = useActionMutation(createPerson, {
+  error: "추가하지 못했어요",
+  invalidate: [peopleQueryOptions.queryKey],
+});
+```
+
+| 변경 | 무효화 query |
 | --- | --- |
-| 기록 생성·수정·삭제 | `/`, `/records`, `/places`, `/records/{id}` |
-| 사람 생성·수정·삭제 | `/people`, `/records`, `/records/new`, `/people/{id}` |
-| 장소 저장·수정·삭제 | `/places`, `/records`, `/records/new`, `/places/{id}` |
+| 기록 생성·수정·삭제 | `records`, `places` |
+| 사람 생성 | `people` |
+| 사람 이름 수정·삭제 | `people`, `records` |
+| 장소 저장·삭제 | `places` |
+| 로그아웃 | 전체 query cache |
 
-서버 액션이 무효화를 수행하면 응답의 `x-action-revalidated` 헤더를 보고 클라이언트 라우터 캐시도 함께 비운다. 따라서 본인 조작으로 낡은 화면이 남는 경로는 없다.
+기존 `revalidatePath`는 상세 RSC와 Next Router Cache 최신화를 위해 유지한다.
 
-남는 지연은 다른 기기에서 고친 내용이 이 기기에 최대 300초 늦게 보이는 것뿐이다. 개인 기록 앱이라 다중 기기 동시 사용이 드물고, 새로고침이나 앱 재진입이면 즉시 갱신된다.
+## 실제 변경 파일
 
-`static`은 지정하지 않는다. 값이 없으면 Next.js가 기본값 300초를 그대로 쓴다.
+### 새로 생성: 7개
 
-## 동작 기준
+| 파일 | 목적 |
+| --- | --- |
+| `src/entities/record/api/records-query.ts` | 지도와 목록이 공유하는 기록 query |
+| `src/entities/person/api/people-query.ts` | 사람 query |
+| `src/entities/place/api/places-query.ts` | 저장 장소 query |
+| `src/entities/profile/api/profile-query.ts` | 프로필 query |
+| `src/widgets/main-data-prefetch/index.ts` | 프리페처 공개 API |
+| `src/widgets/main-data-prefetch/ui/main-data-prefetch.tsx` | 네 query 최초 프리페치 |
+| `src/pages/settings/ui/settings-content.tsx` | 서버 이메일·테마와 클라이언트 프로필 경계 |
 
-- 프로덕션에서 앱에 진입하면 현재 화면을 제외한 나머지 탭의 전체 라우트를 백그라운드에서 준비한다.
-- 준비가 끝난 탭은 `?_rsc=` 요청 없이 콘텐츠 진입 모션과 함께 즉시 표시된다.
-- 화면을 그리는 동안 Auth 서버 왕복이 발생하지 않는다. 토큰 검증은 로컬 서명 확인으로 끝난다.
-- 프리페치가 늦어 Spinner가 먼저 표시되어도 실제 콘텐츠가 렌더링되는 시점에 진입 모션을 시작한다.
-- 기록·사람·장소를 변경하면 관련 탭이 다음 진입에서 최신 결과를 보여준다.
-- 마지막 준비 시점에서 300초가 지나면 다음 전환에서 한 번 다시 받아온다.
-- 새로고침이나 앱 프로세스 재시작 후에는 라우터 캐시가 초기화되어 다시 프리페치한다.
+### 기존 파일에 합친 내용
 
-## 범위 제외
+- 기록 클라이언트 필터와 테스트는 기존 `record-filters.ts`, `record-filters.test.mjs`에 추가했다.
+- 기록 타입은 `records-query.ts`의 반환 타입에서 추론한다.
+- 기록 목록 query는 기존 `record-list.tsx`가 소비한다.
+- 장소 query는 기존 `saved-place-list.tsx`, `place-search-results.tsx`가 소비한다.
+- 기록 작성·수정 선택지는 기존 `RecordForm`이 사람·장소 query를 직접 소비한다.
+- pending 화면은 기존 `Spinner`를 필요한 위치에 조합한다.
 
-- 메인 화면 데이터를 TanStack Query로 이전
-- `cacheComponents`와 `"use cache"` 기반 부분 프리렌더링. 개인 데이터라 사용자별 캐시 키 설계가 필요해 이번 범위에서 제외한다
-- 영속 캐시와 오프라인 데이터 저장
-- keep-alive와 React `Activity`
-- 상세·작성·수정 화면의 좌우 push 모션
-- 실험적인 Next.js `viewTransition`
-- 전역 상태 기반 라우트 로딩 관리
+## 예상 동작
 
-## 완료 조건
+### 첫 진입
 
-- 프로덕션에서 하단 탭 링크가 전체 RSC와 데이터를 미리 요청한다.
-- 프리페치가 끝난 탭을 누르면 새 `?_rsc=` 요청 없이 전환된다.
-- 하단 내비게이션은 고정되고 콘텐츠만 160ms 동안 움직인다.
-- 상세·작성·수정 화면에는 탭 진입 모션이 적용되지 않는다.
-- 모션 축소 환경에서는 애니메이션이 제거된다.
-- 데이터 변경 후 관련 탭에서 최신 결과가 보인다.
+1. 서버 레이아웃이 로그인 상태를 확인한다.
+2. 화면 RSC가 도착하면 메인 화면 구조가 즉시 렌더링된다.
+3. `records`, `people`, `places`, `profile` 요청이 병렬로 한 번씩 시작된다.
+4. 현재 화면 데이터가 300ms 안에 도착하면 Spinner를 인지하지 못한 채 콘텐츠가 표시된다.
+5. 300ms보다 느리면 현재 데이터 영역에만 Spinner가 나타난다.
 
-## 검증
+### 탭 전환
 
-프리페치는 프로덕션 빌드에서만 전체 라우트를 준비한다. `pnpm dev`로는 재현되지 않는다.
+1. 하단 탭을 누르면 `prefetch={true}`로 준비한 전체 RSC 화면 구조로 즉시 전환한다.
+2. 프리페치가 완료된 데이터는 TanStack Query 캐시에서 동기적으로 나온다.
+3. Supabase Data API를 다시 호출하지 않고 콘텐츠 진입 모션만 실행한다.
 
-1. `pnpm build && pnpm start`로 실행하고 로그인한다.
-2. 개발자 도구 Network에서 탭을 누르기 전에 나머지 네 경로의 RSC 요청이 발생하는지 확인한다.
-3. 그 요청들이 끝난 뒤 탭을 눌러 새 `?_rsc=` 요청 없이 콘텐츠 모션이 시작되는지 확인한다.
-4. 네트워크 속도를 낮춰 프리페치가 끝나기 전에 탭을 누르면 공통 로딩 화면이 동작하는지 확인한다.
-5. 운영체제의 모션 줄이기를 켜고 전환 애니메이션이 제거되는지 확인한다.
-6. 기록·사람·장소를 변경한 뒤 관련 탭이 최신 결과를 표시하는지 확인한다.
+### 데이터 변경
+
+1. 서버 액션이 인증·입력·소유권을 다시 검증하고 DB를 변경한다.
+2. 성공한 mutation이 관련 query만 무효화한다.
+3. 현재 사용 중인 query는 즉시 다시 받고, 비활성 query는 다음 화면 진입 때 받는다.
+4. 관계없는 query는 그대로 유지한다.
+
+### 검색과 상세
+
+- 기록 필터는 전체 기록 캐시를 클라이언트에서 검색·기간 필터·정렬한다.
+- Kakao 장소·지역 검색은 검색 버튼을 눌렀을 때만 호출한다.
+- 기록·사람·장소 상세는 메인 프리페치에 포함하지 않고 진입할 때만 RSC로 조회한다.
+
+## 범위와 한계
+
+- 현재 기록 규모가 작다는 전제로 전체 기록을 한 번 조회한다.
+- 페이지네이션이나 무한 스크롤을 도입하면 `records` query를 필터·페이지 key로 분리하고 지도 집계를 다시 독립시킨다.
+- 다른 기기의 변경은 자동 반영하지 않는다. 새로고침하면 최신 데이터를 다시 받는다.
+- Client Component 범위는 데이터 소비 영역으로 제한했다.
+
+## 완료 조건과 검증
+
+- 정상 첫 진입에서 네 메인 Data API가 각각 한 번만 호출된다.
+- 지도와 기록이 하나의 `records` 응답을 공유한다.
+- 프리페치 뒤 탭을 왕복해도 메인 Data API가 다시 호출되지 않는다.
+- 기록·사람·장소 변경 뒤 관련 query만 다시 호출된다.
+- 검색 버튼을 누르기 전에는 Kakao 검색 요청이 없다.
+- 로그아웃 뒤 이전 사용자의 query cache가 남지 않는다.
+- 브라우저 Supabase 클라이언트에서 다른 사용자의 행을 읽을 수 없다.
+
+검증 명령과 프로덕션 브라우저 확인은 `docs/verification.md` 기준으로 수행한다.
+
+### 검증 결과
+
+- 프로덕션 첫 진입에서 Supabase Data API 요청은 `records`, `people`, `places`, `profile` 각 한 번씩 총 네 건 발생했다.
+- 이후 지도 → 기록 → 장소 탭을 이동해도 네 Data API는 다시 호출되지 않았다.
+- 기록 검색 폼은 Next 라우터로 전환되어 검색 버튼을 눌러도 문서와 TanStack Query 캐시를 초기화하지 않으며, 캐시된 기록 네 건에서 한 건을 바로 필터링했다.
+- 프리페치가 끝난 상태에서 URL 전환까지 지도 → 기록은 약 62ms, 기록 → 장소는 약 20ms였다. 수치는 실행 환경에 따라 달라질 수 있다.
+- `pnpm exec biome check --write src app`, `pnpm exec tsc --noEmit`, `pnpm test`, Webpack 프로덕션 빌드를 통과했다.
+- 기본 Turbopack 빌드는 코드 오류가 아니라 실행 환경의 프로세스·포트 권한(`EPERM`)으로 완료하지 못했다.
+- mutation별 무효화와 로그아웃 캐시 초기화는 코드 경로를 확인했다. 테스트 계정 데이터를 바꾸는 생성·수정·삭제와 별도 계정을 이용한 RLS 교차 접근은 수행하지 않았다.
 
 ## 참고
 
-- [Next.js Link](https://nextjs.org/docs/app/api-reference/components/link)
+- [TanStack Query Prefetching](https://tanstack.com/query/latest/docs/framework/react/guides/prefetching)
+- [TanStack Query Query Invalidation](https://tanstack.com/query/latest/docs/framework/react/guides/query-invalidation)
+- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
 - [Next.js Prefetching](https://nextjs.org/docs/app/guides/prefetching)
-- [Next.js staleTimes](https://nextjs.org/docs/app/api-reference/config/next-config-js/staleTimes)
-- [Next.js loading.js](https://nextjs.org/docs/app/api-reference/file-conventions/loading)
-- [Supabase getClaims](https://supabase.com/docs/reference/javascript/auth-getclaims)

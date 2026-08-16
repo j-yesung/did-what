@@ -4,12 +4,16 @@ import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { CalendarDotsIcon, ChatTextIcon, NotePencilIcon, UsersIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
-import type { PersonOption } from "@/entities/person";
-import type { PlaceOption } from "@/entities/place";
+import { peopleQueryOptions } from "@/entities/person/api/people-query";
+import { placesQueryOptions } from "@/entities/place/api/places-query";
+import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { CheckboxChip } from "@/shared/ui/checkbox-chip";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import {
   Field,
   FieldDescription,
@@ -21,6 +25,8 @@ import {
   FieldSet,
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
+import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
@@ -42,11 +48,11 @@ type RecordFormProps = {
     region: RecordLocationRegion;
   };
   mode?: "create" | "edit";
-  people: PersonOption[];
-  savedPlaces: PlaceOption[];
 };
 
-export function RecordForm({ action, initialValues, mode = "create", people, savedPlaces }: RecordFormProps) {
+export function RecordForm({ action, initialValues, mode = "create" }: RecordFormProps) {
+  const peopleQuery = useQuery(peopleQueryOptions);
+  const placesQuery = useQuery(placesQueryOptions);
   const [hasPersonError, setHasPersonError] = useState(false);
   const [memoLength, setMemoLength] = useState(initialValues?.memo.length ?? 0);
   const formRef = useRef<HTMLFormElement>(null);
@@ -54,6 +60,7 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
   /** 어느 칸이 잘못됐는지는 입력란 아래에 남기고, 저장 자체가 실패한 것만 토스트로 알린다. */
   const save = useActionMutation(action, {
     error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요`,
+    invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
     success: mode === "edit" ? "기록을 수정했어요" : "기록을 남겼어요",
     onFail: () => {
       if (formRef.current) formRef.current.dataset.dirty = "true";
@@ -92,6 +99,43 @@ export function RecordForm({ action, initialValues, mode = "create", people, sav
     event.currentTarget.dataset.dirty = "false";
     save.mutate(new FormData(event.currentTarget));
   }
+
+  if (peopleQuery.isPending || placesQuery.isPending) {
+    return (
+      <div className="grid min-h-48 place-items-center">
+        <Spinner
+          aria-label="선택지를 불러오는 중"
+          className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
+        />
+      </div>
+    );
+  }
+
+  if (peopleQuery.isError || placesQuery.isError) {
+    return <LoadErrorAlert title="선택지를 불러오지 못했어요" />;
+  }
+
+  if (peopleQuery.data.length === 0) {
+    return (
+      <Empty className="border bg-card py-12">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <NotePencilIcon strokeWidth={2} aria-hidden="true" />
+          </EmptyMedia>
+          <EmptyTitle>기록 전에 준비가 필요해요</EmptyTitle>
+          <EmptyDescription>기록에 연결할 사람을 먼저 추가해 주세요.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button className="w-full" render={<Link href="/people" />} nativeButton={false}>
+            사람 추가하러 가기
+          </Button>
+        </EmptyContent>
+      </Empty>
+    );
+  }
+
+  const people = peopleQuery.data;
+  const savedPlaces = placesQuery.data;
 
   return (
     <form

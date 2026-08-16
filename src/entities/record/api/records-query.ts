@@ -1,0 +1,24 @@
+import { queryOptions } from "@tanstack/react-query";
+
+import { createClient } from "@/shared/api/supabase/client";
+import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
+
+const COLUMNS =
+  "id, activity, memo, recorded_at, created_at, region_label, region_name, region_latitude, region_longitude, record_people(person:people(name))";
+
+async function fetchRecords() {
+  const { data, error } = await createClient()
+    .from("records")
+    .select(COLUMNS)
+    .order("recorded_at", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+export const recordsQueryOptions = queryOptions({
+  ...MAIN_QUERY_OPTIONS,
+  queryKey: ["records"],
+  queryFn: fetchRecords,
+});

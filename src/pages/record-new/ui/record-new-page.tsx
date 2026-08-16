@@ -1,22 +1,7 @@
-import { NotePencilIcon } from "@phosphor-icons/react/dist/ssr";
-import Link from "next/link";
-
-import { getPeople } from "@/entities/person";
-import { getPlaces } from "@/entities/place";
 import { createRecord, RecordForm } from "@/features/manage-record";
-import { requireUser } from "@/shared/api/supabase/require-user";
-import { Button } from "@/shared/ui/button";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
-import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
-export async function RecordNewPage() {
-  const { user } = await requireUser();
-
-  const [peopleResult, placesResult] = await Promise.all([getPeople(user.id), getPlaces(user.id)]);
-  const people = peopleResult.data ?? [];
-  const hasLoadError = Boolean(peopleResult.error);
-
+export function RecordNewPage() {
   return (
     <PageShell className="block">
       <PageHeader back="/records" backGuardFormId="record-form" title="새 기록" />
@@ -36,28 +21,7 @@ export async function RecordNewPage() {
         </p>
       </section>
 
-      {hasLoadError ? (
-        <LoadErrorAlert title="선택지를 불러오지 못했어요" />
-      ) : people.length === 0 ? (
-        <Empty className="border bg-card py-12">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <NotePencilIcon strokeWidth={2} aria-hidden="true" />
-            </EmptyMedia>
-            <EmptyTitle>기록 전에 준비가 필요해요</EmptyTitle>
-            <EmptyDescription>기록에 연결할 사람을 먼저 추가해 주세요.</EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            {people.length === 0 ? (
-              <Button className="w-full" render={<Link href="/people" />} nativeButton={false}>
-                사람 추가하러 가기
-              </Button>
-            ) : null}
-          </EmptyContent>
-        </Empty>
-      ) : (
-        <RecordForm action={createRecord} people={people} savedPlaces={placesResult.data ?? []} />
-      )}
+      <RecordForm action={createRecord} />
     </PageShell>
   );
 }

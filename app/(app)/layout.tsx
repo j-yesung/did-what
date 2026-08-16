@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
+import { MainDataPrefetch } from "@/widgets/main-data-prefetch";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <MainDataPrefetch />
       {children}
       <BottomNavigation />
     </>

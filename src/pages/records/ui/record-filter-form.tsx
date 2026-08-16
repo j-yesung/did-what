@@ -1,12 +1,17 @@
-import {
-  ArrowCounterClockwiseIcon,
-  CalendarDotsIcon,
-  CaretDownIcon,
-  MagnifyingGlassIcon,
-} from "@phosphor-icons/react/dist/ssr";
-import Link from "next/link";
+"use client";
 
-import { buildRecordsHref, hasRecordFilters, type RecordFilters, type RecordSort } from "@/entities/record";
+import type { FormEvent } from "react";
+
+import { ArrowCounterClockwiseIcon, CalendarDotsIcon, CaretDownIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import {
+  buildRecordsHref,
+  hasRecordFilters,
+  type RecordFilters,
+  type RecordSort,
+} from "@/entities/record/model/record-filters";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -21,10 +26,22 @@ type RecordFilterFormProps = {
 };
 
 export function RecordFilterForm({ filters }: RecordFilterFormProps) {
+  const router = useRouter();
   const hasPeriod = Boolean(filters.from || filters.to);
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const params = new URLSearchParams();
+    for (const [key, value] of new FormData(event.currentTarget)) {
+      if (typeof value === "string" && value) params.set(key, value);
+    }
+
+    router.push(`/records?${params.toString()}`);
+  }
+
   return (
-    <form action="/records" className="flex flex-col gap-2.5" method="get" role="search">
+    <form action="/records" className="flex flex-col gap-2.5" method="get" onSubmit={handleSubmit} role="search">
       <input name="sort" type="hidden" value={filters.sort} />
 
       <div className="flex gap-2">

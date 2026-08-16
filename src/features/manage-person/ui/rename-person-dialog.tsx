@@ -2,6 +2,8 @@
 
 import { type FormEvent, useState } from "react";
 
+import { peopleQueryOptions } from "@/entities/person/api/people-query";
+import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import {
@@ -28,6 +30,7 @@ export function RenamePersonDialog({ name, personId }: RenamePersonDialogProps) 
   const [open, setOpen] = useState(false);
   const rename = useActionMutation((formData: FormData) => renamePerson(personId, formData), {
     error: "이름을 바꾸지 못했어요",
+    invalidate: [peopleQueryOptions.queryKey, recordsQueryOptions.queryKey],
     onSuccess: () => setOpen(false),
   });
 

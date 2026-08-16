@@ -1,8 +1,10 @@
 "use client";
 
 import { MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { CreatePlaceForm } from "@/features/manage-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { cn } from "@/shared/lib/utils";
@@ -16,6 +18,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/ui/pagination";
+import { Spinner } from "@/shared/ui/spinner";
 import { textButtonVariants } from "@/shared/ui/text-button";
 
 type PlaceSearchResultsProps = {
@@ -25,7 +28,6 @@ type PlaceSearchResultsProps = {
   pageableCount: number;
   places: KakaoPlace[];
   query: string;
-  savedKakaoIds: Set<string>;
 };
 
 function getSearchPageHref(query: string, page: number) {
@@ -39,8 +41,26 @@ export function PlaceSearchResults({
   pageableCount,
   places,
   query,
-  savedKakaoIds,
 }: PlaceSearchResultsProps) {
+  const savedPlacesQuery = useQuery(placesQueryOptions);
+
+  if (savedPlacesQuery.isPending) {
+    return (
+      <div className="grid min-h-40 place-items-center">
+        <Spinner
+          aria-label="저장한 장소를 확인하는 중"
+          className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
+        />
+      </div>
+    );
+  }
+
+  const savedKakaoIds = new Set(
+    (savedPlacesQuery.data ?? []).flatMap((place) =>
+      place.provider === "kakao" && place.provider_place_id ? [place.provider_place_id] : [],
+    ),
+  );
+
   return (
     <section aria-labelledby="place-search-results-title" className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3 px-1">

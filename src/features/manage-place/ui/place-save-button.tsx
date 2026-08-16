@@ -1,5 +1,6 @@
 "use client";
 
+import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 
@@ -12,6 +13,7 @@ type PlaceSaveButtonProps = {
 export function PlaceSaveButton({ placeId }: PlaceSaveButtonProps) {
   const save = useActionMutation(() => savePlace(placeId), {
     error: "저장하지 못했어요",
+    invalidate: [placesQueryOptions.queryKey],
     success: "내 장소에 저장했어요",
   });
 

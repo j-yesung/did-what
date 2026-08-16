@@ -1,21 +1,23 @@
-import { UserCircleIcon, UsersIcon } from "@phosphor-icons/react/dist/ssr";
+"use client";
+
+import { UserCircleIcon, UsersIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
-import { getPeople } from "@/entities/person";
+import { peopleQueryOptions } from "@/entities/person/api/people-query";
 import { CreatePersonForm } from "@/features/manage-person";
-import { requireUser } from "@/shared/api/supabase/require-user";
 import { formatShortDate } from "@/shared/lib/date/format-date";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { Spinner } from "@/shared/ui/spinner";
 import { TextButton } from "@/shared/ui/text-button";
 
-export async function PeoplePage() {
-  const { user } = await requireUser();
-
-  const { data: people, error } = await getPeople(user.id);
-  const personCount = people?.length ?? 0;
+export function PeoplePage() {
+  const peopleQuery = useQuery(peopleQueryOptions);
+  const people = peopleQuery.data ?? [];
+  const personCount = people.length;
 
   return (
     <PageShell withBottomNavigation>
@@ -33,9 +35,16 @@ export async function PeoplePage() {
 
       <CreatePersonForm />
 
-      {error ? (
+      {peopleQuery.isPending ? (
+        <div className="grid min-h-40 place-items-center">
+          <Spinner
+            aria-label="사람 목록을 불러오는 중"
+            className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
+          />
+        </div>
+      ) : peopleQuery.isError ? (
         <LoadErrorAlert icon={<UsersIcon strokeWidth={2} aria-hidden="true" />} title="사람 목록을 불러오지 못했어요" />
-      ) : people?.length ? (
+      ) : people.length ? (
         <section className="flex flex-col gap-3" aria-label={`함께한 사람 ${people.length}명`}>
           {people.map((person) => (
             <Card key={person.id} size="sm">
