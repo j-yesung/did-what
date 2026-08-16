@@ -18,6 +18,7 @@ export function PageShell({ children, className, withBottomNavigation = false }:
       className={cn(
         "mx-auto flex min-h-svh w-full max-w-(--app-width) flex-col gap-5 bg-background px-5 pt-[calc(24px+env(safe-area-inset-top))]",
         withBottomNavigation ? "pb-[var(--nav-clearance)]" : "pb-[calc(24px+env(safe-area-inset-bottom))]",
+        withBottomNavigation && "motion-safe:animate-[tab-content-enter_160ms_cubic-bezier(0.2,0,0,1)_both]",
         className,
       )}
     >
