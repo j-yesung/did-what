@@ -23,7 +23,7 @@ export function RegionPickerDialog({ onSelect }: RegionPickerDialogProps) {
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger render={<Button size="sm" type="button" variant="outline" />}>지역 찾기</DialogTrigger>
+      <DialogTrigger render={<Button size="lg" type="button" variant="outline" />}>지역 찾기</DialogTrigger>
       {open ? (
         <RegionSearchContent
           onSelect={(region) => {

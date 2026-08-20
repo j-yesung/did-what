@@ -223,7 +223,7 @@ export function PlacePickerDialog({ disabled, onAdd, region, savedPlaces, select
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger
         disabled={disabled}
-        render={<Button disabled={disabled} size="sm" type="button" variant="outline" />}
+        render={<Button size="lg" disabled={disabled} type="button" variant="outline" />}
       >
         방문 장소 추가
       </DialogTrigger>
