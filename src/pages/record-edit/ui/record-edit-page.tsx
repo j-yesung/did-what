@@ -62,6 +62,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
               saved: Boolean(place.saved_at),
             })),
             recordedAt: record.recorded_at,
+            recordedUntil: record.recorded_until,
             region: {
               code: record.region_code,
               fullName: record.region_name,

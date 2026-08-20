@@ -172,6 +172,7 @@ export type Database = {
           memo: string | null;
           owner_id: string;
           recorded_at: string;
+          recorded_until: string | null;
           region_code: string;
           region_label: string;
           region_latitude: number;
@@ -186,6 +187,7 @@ export type Database = {
           memo?: string | null;
           owner_id: string;
           recorded_at: string;
+          recorded_until?: string | null;
           region_code: string;
           region_label: string;
           region_latitude: number;
@@ -200,6 +202,7 @@ export type Database = {
           memo?: string | null;
           owner_id?: string;
           recorded_at?: string;
+          recorded_until?: string | null;
           region_code?: string;
           region_label?: string;
           region_latitude?: number;
@@ -214,37 +217,72 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      create_owned_record: {
-        Args: {
-          p_activity: string;
-          p_memo: string;
-          p_person_ids: string[];
-          p_place_ids: string[];
-          p_recorded_at: string;
-          p_region_code: string;
-          p_region_label: string;
-          p_region_latitude: number;
-          p_region_longitude: number;
-          p_region_name: string;
-        };
-        Returns: string;
-      };
-      update_owned_record: {
-        Args: {
-          p_activity: string;
-          p_memo: string;
-          p_person_ids: string[];
-          p_place_ids: string[];
-          p_record_id: string;
-          p_recorded_at: string;
-          p_region_code: string;
-          p_region_label: string;
-          p_region_latitude: number;
-          p_region_longitude: number;
-          p_region_name: string;
-        };
-        Returns: boolean;
-      };
+      create_owned_record:
+        | {
+            Args: {
+              p_activity: string;
+              p_memo: string;
+              p_person_ids: string[];
+              p_place_ids: string[];
+              p_recorded_at: string;
+              p_recorded_until: string | null;
+              p_region_code: string;
+              p_region_label: string;
+              p_region_latitude: number;
+              p_region_longitude: number;
+              p_region_name: string;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              p_activity: string;
+              p_memo: string;
+              p_person_ids: string[];
+              p_place_ids: string[];
+              p_recorded_at: string;
+              p_region_code: string;
+              p_region_label: string;
+              p_region_latitude: number;
+              p_region_longitude: number;
+              p_region_name: string;
+            };
+            Returns: string;
+          };
+      update_owned_record:
+        | {
+            Args: {
+              p_activity: string;
+              p_memo: string;
+              p_person_ids: string[];
+              p_place_ids: string[];
+              p_record_id: string;
+              p_recorded_at: string;
+              p_recorded_until: string | null;
+              p_region_code: string;
+              p_region_label: string;
+              p_region_latitude: number;
+              p_region_longitude: number;
+              p_region_name: string;
+            };
+            Returns: boolean;
+          }
+        | {
+            Args: {
+              p_activity: string;
+              p_memo: string;
+              p_person_ids: string[];
+              p_place_ids: string[];
+              p_record_id: string;
+              p_recorded_at: string;
+              p_region_code: string;
+              p_region_label: string;
+              p_region_latitude: number;
+              p_region_longitude: number;
+              p_region_name: string;
+            };
+            Returns: boolean;
+          };
     };
     Enums: {
       [_ in never]: never;

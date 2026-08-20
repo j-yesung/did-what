@@ -6,7 +6,7 @@ import { getRecord } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/manage-place";
 import { DeleteRecordDialog } from "@/features/manage-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { formatRecordDate } from "@/shared/lib/date/format-date";
+import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -67,7 +67,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
                 <CalendarDotsIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
                 <div>
                   <p className="text-muted-foreground text-xs">날짜</p>
-                  <p className="mt-1 font-medium">{formatRecordDate(record.recorded_at)}</p>
+                  <p className="mt-1 font-medium">{formatRecordPeriod(record.recorded_at, record.recorded_until)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-[20px_1fr] gap-3">

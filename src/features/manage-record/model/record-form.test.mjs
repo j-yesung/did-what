@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 const personId = "0198a393-4df4-4aed-894f-12b13a075e71";
 const valid = validateRecordInput({
   recordedAt: "2026-08-10",
+  recordedUntil: "2026-08-12",
   personIds: [personId, personId],
   regionCode: "1144012300",
   regionLabel: "홍대",
@@ -26,6 +27,7 @@ const valid = validateRecordInput({
 assert.deepEqual(valid, {
   data: {
     recordedAt: "2026-08-10",
+    recordedUntil: "2026-08-12",
     personIds: [personId],
     regionCode: "1144012300",
     regionLabel: "홍대",
@@ -47,6 +49,7 @@ assert.deepEqual(valid, {
 // 기준점이 깨져서 오면 같은 검색을 재현할 수 없으니 통째로 거른다.
 const brokenScope = validateRecordInput({
   recordedAt: "2026-08-10",
+  recordedUntil: "",
   personIds: [personId],
   regionCode: "1144012300",
   regionLabel: "홍대",
@@ -61,6 +64,7 @@ assert.deepEqual(Object.keys(brokenScope.fieldErrors ?? {}), ["places"]);
 
 const invalid = validateRecordInput({
   recordedAt: "2026-02-30",
+  recordedUntil: "2026-02-20",
   personIds: [],
   regionCode: "망원동",
   regionLabel: "",
@@ -74,5 +78,32 @@ assert.deepEqual(Object.keys(invalid.fieldErrors ?? {}).sort(), [
   "personIds",
   "places",
   "recordedAt",
+  "recordedUntil",
   "regionCode",
 ]);
+
+const invalidPeriod = validateRecordInput({
+  recordedAt: "2026-08-10",
+  recordedUntil: "2026-08-09",
+  personIds: [personId],
+  regionCode: "1144012300",
+  regionLabel: "홍대",
+  regionName: "서울 마포구 망원동",
+  places: "[]",
+  activity: "산책",
+  memo: "",
+});
+assert.equal(invalidPeriod.fieldErrors?.recordedUntil, "종료일은 시작일과 같거나 이후여야 해요.");
+
+const singleDay = validateRecordInput({
+  recordedAt: "2026-08-10",
+  recordedUntil: "2026-08-10",
+  personIds: [personId],
+  regionCode: "1144012300",
+  regionLabel: "홍대",
+  regionName: "서울 마포구 망원동",
+  places: "[]",
+  activity: "산책",
+  memo: "",
+});
+assert.equal(singleDay.data?.recordedUntil, undefined);

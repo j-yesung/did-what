@@ -4,7 +4,7 @@ import { createClient } from "@/shared/api/supabase/client";
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
 const COLUMNS =
-  "id, activity, memo, recorded_at, created_at, region_label, region_name, region_latitude, region_longitude, record_people(person:people(name))";
+  "id, activity, memo, recorded_at, recorded_until, created_at, region_label, region_name, region_latitude, region_longitude, record_people(person:people(name))";
 
 async function fetchRecords() {
   const { data, error } = await createClient()

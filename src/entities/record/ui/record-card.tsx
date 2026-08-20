@@ -1,7 +1,7 @@
 import { CalendarDotsIcon, MapPinIcon, UsersIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
-import { formatRecordDate } from "@/shared/lib/date/format-date";
+import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { TextButton } from "@/shared/ui/text-button";
@@ -12,10 +12,19 @@ type RecordCardProps = {
   peopleNames?: string[];
   recordId: string;
   recordedAt: string;
+  recordedUntil?: string | null;
   region?: { label: string; name: string };
 };
 
-export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, region }: RecordCardProps) {
+export function RecordCard({
+  activity,
+  memo,
+  peopleNames,
+  recordId,
+  recordedAt,
+  recordedUntil,
+  region,
+}: RecordCardProps) {
   return (
     <article className="relative pl-5">
       <span
@@ -27,7 +36,7 @@ export function RecordCard({ activity, memo, peopleNames, recordId, recordedAt, 
           <CardTitle>{activity}</CardTitle>
           <CardDescription className="flex items-center gap-1.5">
             <CalendarDotsIcon strokeWidth={2} className="size-4" aria-hidden="true" />
-            {formatRecordDate(recordedAt)}
+            {formatRecordPeriod(recordedAt, recordedUntil)}
           </CardDescription>
         </CardHeader>
 

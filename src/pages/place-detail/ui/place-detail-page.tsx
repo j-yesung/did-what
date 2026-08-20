@@ -82,6 +82,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
                   memo={record.memo}
                   recordId={record.id}
                   recordedAt={record.recorded_at}
+                  recordedUntil={record.recorded_until}
                 />
               ))}
             </RecordTimeline>

@@ -26,6 +26,7 @@ type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
 function readRecordInput(formData: FormData): RecordInputValues {
   return {
     recordedAt: String(formData.get("recordedAt") ?? ""),
+    recordedUntil: String(formData.get("recordedUntil") ?? ""),
     personIds: formData.getAll("personIds").map(String),
     regionCode: String(formData.get("regionCode") ?? ""),
     regionLabel: String(formData.get("regionLabel") ?? ""),
@@ -213,6 +214,7 @@ export async function createRecord(formData: FormData): Promise<RecordActionStat
     p_person_ids: result.data.personIds,
     p_place_ids: selections.placeIds,
     p_recorded_at: result.data.recordedAt,
+    p_recorded_until: result.data.recordedUntil ?? null,
     p_region_code: selections.region.code,
     p_region_label: result.data.regionLabel,
     p_region_latitude: selections.region.latitude,
@@ -251,6 +253,7 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
     p_place_ids: selections.placeIds,
     p_record_id: recordId,
     p_recorded_at: result.data.recordedAt,
+    p_recorded_until: result.data.recordedUntil ?? null,
     p_region_code: selections.region.code,
     p_region_label: result.data.regionLabel,
     p_region_latitude: selections.region.latitude,

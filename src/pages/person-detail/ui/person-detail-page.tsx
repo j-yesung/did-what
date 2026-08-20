@@ -79,6 +79,7 @@ export async function PersonDetailPage({ params }: PersonDetailPageProps) {
                   memo={record.memo}
                   recordId={record.id}
                   recordedAt={record.recorded_at}
+                  recordedUntil={record.recorded_until}
                   region={{ label: record.region_label, name: record.region_name }}
                 />
               ))}

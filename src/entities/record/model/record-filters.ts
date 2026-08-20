@@ -16,6 +16,7 @@ type FilterableRecord = {
   created_at: string;
   memo: string | null;
   recorded_at: string;
+  recorded_until: string | null;
   region_label: string;
   region_name: string;
 };
@@ -62,7 +63,7 @@ export function filterRecords<T extends FilterableRecord>(records: readonly T[],
 
   return records
     .filter((record) => {
-      if (filters.from && record.recorded_at < filters.from) return false;
+      if (filters.from && (record.recorded_until ?? record.recorded_at) < filters.from) return false;
       if (filters.to && record.recorded_at > filters.to) return false;
       if (!query) return true;
 

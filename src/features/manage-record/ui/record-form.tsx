@@ -2,9 +2,12 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
+import type { DateRange } from "react-day-picker";
+import { ko } from "react-day-picker/locale";
 
 import { CalendarDotsIcon, ChatTextIcon, NotePencilIcon, UsersIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
 import Link from "next/link";
 
 import { peopleQueryOptions } from "@/entities/person/api/people-query";
@@ -12,6 +15,7 @@ import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
+import { Calendar } from "@/shared/ui/calendar";
 import { CheckboxChip } from "@/shared/ui/checkbox-chip";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import {
@@ -26,6 +30,7 @@ import {
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
@@ -45,6 +50,7 @@ type RecordFormProps = {
     personIds: string[];
     places: RecordLocationPlace[];
     recordedAt: string;
+    recordedUntil: string | null;
     region: RecordLocationRegion;
   };
   mode?: "create" | "edit";
@@ -55,7 +61,17 @@ export function RecordForm({ action, initialValues, mode = "create" }: RecordFor
   const placesQuery = useQuery(placesQueryOptions);
   const [hasPersonError, setHasPersonError] = useState(false);
   const [memoLength, setMemoLength] = useState(initialValues?.memo.length ?? 0);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>(() => ({
+    from: parseISO(initialValues?.recordedAt ?? TODAY),
+    to: parseISO(initialValues?.recordedUntil ?? initialValues?.recordedAt ?? TODAY),
+  }));
+  const [draftDateRange, setDraftDateRange] = useState<DateRange>();
   const formRef = useRef<HTMLFormElement>(null);
+  const selectedStart = dateRange.from ?? parseISO(TODAY);
+  const selectedEnd = dateRange.to ?? selectedStart;
+  const recordedAt = format(selectedStart, "yyyy-MM-dd");
+  const recordedUntil = format(selectedEnd, "yyyy-MM-dd");
 
   /** 어느 칸이 잘못됐는지는 입력란 아래에 남기고, 저장 자체가 실패한 것만 토스트로 알린다. */
   const save = useActionMutation(action, {
@@ -148,23 +164,68 @@ export function RecordForm({ action, initialValues, mode = "create" }: RecordFor
     >
       <div className="rounded-xl border border-border bg-surface px-4.5 py-5 motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
-          <Field data-invalid={Boolean(fieldErrors?.recordedAt)}>
-            <FieldLabel htmlFor="recordedAt">
+          <FieldSet>
+            <FieldLegend className="flex items-center gap-2" variant="label">
               <CalendarDotsIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
               언제 <span className="font-[650] text-[11px] text-foreground">필수</span>
-            </FieldLabel>
-            <Input
-              className="h-12"
-              defaultValue={initialValues?.recordedAt ?? TODAY}
-              id="recordedAt"
-              name="recordedAt"
-              required
-              type="date"
-              aria-invalid={Boolean(fieldErrors?.recordedAt)}
-              aria-describedby={fieldErrors?.recordedAt ? "recordedAt-error" : undefined}
-            />
-            <FieldError id="recordedAt-error">{fieldErrors?.recordedAt}</FieldError>
-          </Field>
+            </FieldLegend>
+            <Field data-invalid={Boolean(fieldErrors?.recordedAt || fieldErrors?.recordedUntil)}>
+              <Popover
+                onOpenChange={(open) => {
+                  setDatePickerOpen(open);
+                  if (open) setDraftDateRange(dateRange);
+                }}
+                open={datePickerOpen}
+              >
+                <PopoverTrigger
+                  render={
+                    <Button
+                      className="h-auto min-h-12 w-full justify-start px-3 py-2 text-left [&>span]:w-full"
+                      type="button"
+                      variant="outline"
+                      aria-invalid={Boolean(fieldErrors?.recordedAt || fieldErrors?.recordedUntil)}
+                      aria-describedby={
+                        fieldErrors?.recordedAt || fieldErrors?.recordedUntil ? "record-date-error" : undefined
+                      }
+                    />
+                  }
+                >
+                  <span className="flex w-full items-center justify-between gap-3">
+                    <span>{recordedAt === recordedUntil ? recordedAt : `${recordedAt} ~ ${recordedUntil}`}</span>
+                    <span className="shrink-0 text-muted-foreground text-xs">기간 설정</span>
+                  </span>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-(--anchor-width) gap-0 p-0">
+                  <Calendar
+                    className="w-full"
+                    classNames={{ root: "w-full" }}
+                    defaultMonth={draftDateRange?.from ?? selectedStart}
+                    locale={ko}
+                    mode="range"
+                    onSelect={setDraftDateRange}
+                    selected={draftDateRange}
+                  />
+                  <div className="border-t p-2">
+                    <Button
+                      className="h-10 w-full"
+                      disabled={!draftDateRange?.from}
+                      onClick={() => {
+                        if (!draftDateRange?.from) return;
+                        setDateRange({ from: draftDateRange.from, to: draftDateRange.to ?? draftDateRange.from });
+                        setDatePickerOpen(false);
+                      }}
+                      type="button"
+                    >
+                      적용
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <input name="recordedAt" type="hidden" value={recordedAt} />
+              <input name="recordedUntil" type="hidden" value={recordedUntil} />
+              <FieldError id="record-date-error">{fieldErrors?.recordedAt ?? fieldErrors?.recordedUntil}</FieldError>
+            </Field>
+          </FieldSet>
 
           <FieldSeparator />
 

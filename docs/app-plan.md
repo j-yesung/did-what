@@ -156,6 +156,7 @@ region_name text NOT NULL
 region_latitude double precision NOT NULL
 region_longitude double precision NOT NULL
 recorded_at date NOT NULL
+recorded_until date NULL -- 기간 기록 종료일, 단일 날짜는 NULL
 activity text NOT NULL
 memo text nullable
 created_at timestamptz NOT NULL
