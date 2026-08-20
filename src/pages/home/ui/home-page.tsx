@@ -24,10 +24,7 @@ export function HomePage() {
   if (recordsQuery.isPending) {
     return (
       <PageShell className="items-center justify-center" withBottomNavigation>
-        <Spinner
-          aria-label="발자취를 불러오는 중"
-          className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
-        />
+        <Spinner aria-label="발자취를 불러오는 중" className="text-muted-foreground" />
       </PageShell>
     );
   }

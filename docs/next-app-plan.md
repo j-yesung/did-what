@@ -107,14 +107,14 @@ export function MainDataPrefetch() {
 export function RecordList({ filters }: RecordListProps) {
   const records = useQuery(recordsQueryOptions);
 
-  if (records.isPending) return <DelayedSpinner />;
+  if (records.isPending) return <Spinner />;
   if (records.isError) return <LoadErrorAlert title="기록을 불러오지 못했어요" />;
 
   return <RecordTimeline records={filterRecords(records.data, filters)} />;
 }
 ```
 
-실제 코드는 기존 UI 구조를 유지하기 위해 현재 컴포넌트 안에서 Spinner와 목록을 조합한다. 전용 `DelayedSpinner`, `RecordsContent`, `PlacesContent` 파일은 만들지 않았다.
+실제 코드는 기존 UI 구조를 유지하기 위해 현재 컴포넌트 안에서 Spinner와 목록을 조합한다. 전용 `RecordsContent`, `PlacesContent` 파일은 만들지 않았다.
 
 ### 변경 후 query 무효화
 
@@ -164,11 +164,10 @@ const create = useActionMutation(createPerson, {
 
 ### 첫 진입
 
-1. 서버 레이아웃이 로그인 상태를 확인한다.
-2. 화면 RSC가 도착하면 메인 화면 구조가 즉시 렌더링된다.
+1. 서버 레이아웃은 로그인 확인을 `Suspense` 안에서 진행하고 로딩 화면을 먼저 스트리밍한다.
+2. 로그인 확인이 끝나면 메인 화면 구조가 렌더링된다.
 3. `records`, `people`, `places`, `profile` 요청이 병렬로 한 번씩 시작된다.
-4. 현재 화면 데이터가 300ms 안에 도착하면 Spinner를 인지하지 못한 채 콘텐츠가 표시된다.
-5. 300ms보다 느리면 현재 데이터 영역에만 Spinner가 나타난다.
+4. 현재 화면 데이터가 도착할 때까지 Spinner를 바로 표시한다.
 
 ### 탭 전환
 

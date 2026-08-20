@@ -6,7 +6,6 @@ import localFont from "next/font/local";
 import { getTheme } from "@/features/switch-theme";
 import { QueryProvider } from "@/shared/lib/react-query";
 import { cn } from "@/shared/lib/utils";
-import { AppStartScreen } from "@/shared/ui/app-start-screen";
 import { Toaster } from "@/shared/ui/sonner";
 
 import "@/app/styles/globals.css";
@@ -57,7 +56,6 @@ export default async function Layout({ children }: { children: ReactNode }) {
       <body>
         <QueryProvider>{children}</QueryProvider>
         <Toaster theme={theme} />
-        <AppStartScreen />
       </body>
     </html>
   );
