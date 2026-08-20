@@ -29,7 +29,7 @@ export function PeoplePage() {
           기억 속 사람들을 모아보세요.
         </h2>
         <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-          추가한 사람은 새 기록을 남길 때 바로 선택할 수 있어요.
+          추가한 사람은 기록을 남길 때 바로 선택할 수 있어요.
         </p>
       </section>
 
@@ -53,7 +53,7 @@ export function PeoplePage() {
                 <CardDescription>함께한 사람</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-xs">새 기록에서 이 사람을 선택할 수 있어요.</p>
+                <p className="text-muted-foreground text-xs">기록에서 이 사람을 선택할 수 있어요.</p>
               </CardContent>
               <CardFooter className="justify-between gap-3">
                 <p className="text-muted-foreground text-xs">{formatShortDate(person.created_at)} 추가</p>

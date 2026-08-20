@@ -21,7 +21,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
       <PageHeader
         action={
           <Link
-            aria-label="새 기록 남기기"
+            aria-label="기록 남기기"
             className={cn(buttonVariants({ size: "icon-lg", variant: "ghost" }), "size-11")}
             href="/records/new"
           >

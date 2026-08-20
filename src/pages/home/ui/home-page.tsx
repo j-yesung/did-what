@@ -61,7 +61,7 @@ export function HomePage() {
 
       {recordsQuery.isError || records.length > 0 ? (
         <Button className="h-14 w-full shrink-0" size="lg" render={<Link href="/records/new" />} nativeButton={false}>
-          새 기록 남기기
+          기록 남기기
         </Button>
       ) : null}
     </PageShell>

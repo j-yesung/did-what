@@ -4,7 +4,7 @@ import { PageHeader, PageShell } from "@/shared/ui/layouts";
 export function RecordNewPage() {
   return (
     <PageShell className="block">
-      <PageHeader back="/records" backGuardFormId="record-form" title="새 기록" />
+      <PageHeader back="/records" backGuardFormId="record-form" title="기록" />
 
       <section
         className="px-1 pt-5.5 pb-5 motion-safe:animate-[enter_360ms_ease-out_both]"
