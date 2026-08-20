@@ -2,9 +2,9 @@ import { CalendarDotsIcon, MapPinIcon, UsersIcon } from "@phosphor-icons/react/d
 import Link from "next/link";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
-import { TextButton } from "@/shared/ui/text-button";
 
 type RecordCardProps = {
   activity: string;
@@ -31,45 +31,38 @@ export function RecordCard({
         className="absolute top-5 left-0 size-3.75 rounded-full border-4 border-background bg-primary"
         aria-hidden="true"
       />
-      <Card>
-        <CardHeader>
-          <CardTitle>{activity}</CardTitle>
-          <CardDescription className="flex items-center gap-1.5">
-            <CalendarDotsIcon strokeWidth={2} className="size-4" aria-hidden="true" />
-            {formatRecordPeriod(recordedAt, recordedUntil)}
-          </CardDescription>
-        </CardHeader>
+      <Link className={cn("block rounded-xl after:inset-0", FOCUS_RING, PRESS_FEEDBACK)} href={`/records/${recordId}`}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{activity}</CardTitle>
+            <CardDescription className="flex items-center gap-1.5">
+              <CalendarDotsIcon strokeWidth={2} className="size-4" aria-hidden="true" />
+              {formatRecordPeriod(recordedAt, recordedUntil)}
+            </CardDescription>
+          </CardHeader>
 
-        {region || memo ? (
-          <CardContent className="flex flex-col gap-3">
-            {region ? (
-              <p className="flex items-center gap-2 text-sm">
-                <MapPinIcon strokeWidth={2} className="size-4 shrink-0 text-foreground" aria-hidden="true" />
-                {region.label} / {region.name}
-              </p>
-            ) : null}
-            {memo ? <p className="text-muted-foreground text-sm leading-relaxed">{memo}</p> : null}
-          </CardContent>
-        ) : null}
-
-        <CardFooter className={cn("gap-3", peopleNames ? "justify-between" : "justify-end")}>
-          {peopleNames ? (
-            <div className="flex min-w-0 items-center gap-2">
-              <UsersIcon strokeWidth={2} className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <p className="truncate text-muted-foreground text-xs">{peopleNames.join(", ") || "함께한 사람 없음"}</p>
-            </div>
+          {region || memo ? (
+            <CardContent className="flex flex-col gap-3">
+              {region ? (
+                <p className="flex items-center gap-2 text-sm">
+                  <MapPinIcon strokeWidth={2} className="size-4 shrink-0 text-foreground" aria-hidden="true" />
+                  {region.label} / {region.name}
+                </p>
+              ) : null}
+              {memo ? <p className="text-muted-foreground text-sm leading-relaxed">{memo}</p> : null}
+            </CardContent>
           ) : null}
-          <TextButton
-            nativeButton={false}
-            render={<Link href={`/records/${recordId}`} />}
-            size="sm"
-            tone="muted"
-            variant="arrow"
-          >
-            기록 보기
-          </TextButton>
-        </CardFooter>
-      </Card>
+
+          {peopleNames ? (
+            <CardFooter>
+              <div className="flex min-w-0 items-center gap-2">
+                <UsersIcon strokeWidth={2} className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <p className="truncate text-muted-foreground text-xs">{peopleNames.join(", ") || "함께한 사람 없음"}</p>
+              </div>
+            </CardFooter>
+          ) : null}
+        </Card>
+      </Link>
     </article>
   );
 }

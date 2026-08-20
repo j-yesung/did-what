@@ -38,7 +38,7 @@ export function DeletePlaceDialog({ iconOnly, name, placeId, recordCount }: Dele
       {iconOnly ? (
         <AlertDialogTrigger
           aria-label={`${name} 삭제`}
-          render={<Button className="size-11 text-destructive [&_svg]:size-4.5" size="icon-lg" variant="ghost" />}
+          render={<Button className="size-11 text-destructive [&_svg]:size-4" size="icon-lg" variant="ghost" />}
         >
           <TrashIcon strokeWidth={2} aria-hidden="true" />
         </AlertDialogTrigger>

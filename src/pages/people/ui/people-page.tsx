@@ -7,12 +7,13 @@ import Link from "next/link";
 import { peopleQueryOptions } from "@/entities/person/api/people-query";
 import { CreatePersonForm } from "@/features/manage-person";
 import { formatShortDate } from "@/shared/lib/date/format-date";
+import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
-import { TextButton } from "@/shared/ui/text-button";
 
 export function PeoplePage() {
   const peopleQuery = useQuery(peopleQueryOptions);
@@ -47,27 +48,24 @@ export function PeoplePage() {
       ) : people.length ? (
         <section className="flex flex-col gap-3" aria-label={`함께한 사람 ${people.length}명`}>
           {people.map((person) => (
-            <Card key={person.id} size="sm">
-              <CardHeader>
-                <CardTitle>{person.name}</CardTitle>
-                <CardDescription>함께한 사람</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-xs">기록에서 이 사람을 선택할 수 있어요.</p>
-              </CardContent>
-              <CardFooter className="justify-between gap-3">
-                <p className="text-muted-foreground text-xs">{formatShortDate(person.created_at)} 추가</p>
-                <TextButton
-                  nativeButton={false}
-                  render={<Link href={`/people/${person.id}`} />}
-                  size="sm"
-                  tone="muted"
-                  variant="arrow"
-                >
-                  함께한 기록 보기
-                </TextButton>
-              </CardFooter>
-            </Card>
+            <Link
+              className={cn("block rounded-xl after:inset-0", FOCUS_RING, PRESS_FEEDBACK)}
+              href={`/people/${person.id}`}
+              key={person.id}
+            >
+              <Card size="sm">
+                <CardHeader>
+                  <CardTitle>{person.name}</CardTitle>
+                  <CardDescription>함께한 사람</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-xs">기록에서 이 사람을 선택할 수 있어요.</p>
+                </CardContent>
+                <CardFooter>
+                  <p className="text-muted-foreground text-xs">{formatShortDate(person.created_at)} 추가</p>
+                </CardFooter>
+              </Card>
+            </Link>
           ))}
         </section>
       ) : (

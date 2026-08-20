@@ -7,11 +7,12 @@ import Link from "next/link";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { DeletePlaceDialog } from "@/features/manage-place";
 import { formatShortDate } from "@/shared/lib/date/format-date";
+import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
-import { TextButton } from "@/shared/ui/text-button";
 
 export function SavedPlaceCount() {
   const places = useQuery(placesQueryOptions);
@@ -63,7 +64,7 @@ export function SavedPlaceList() {
         <h2 className="mt-1 font-bold text-lg">저장한 장소</h2>
       </div>
       {places.map((place) => (
-        <Card key={place.id} size="sm">
+        <Card className={cn("relative after:inset-0", PRESS_FEEDBACK)} key={place.id} size="sm">
           <CardHeader>
             <CardTitle>{place.name}</CardTitle>
             <CardDescription>
@@ -73,23 +74,21 @@ export function SavedPlaceList() {
           <CardContent>
             <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
           </CardContent>
-          <CardFooter className="justify-between gap-3 py-2">
-            <DeletePlaceDialog
-              iconOnly
-              name={place.name}
-              placeId={place.id}
-              recordCount={place.record_places[0]?.count ?? 0}
-            />
-            <TextButton
-              nativeButton={false}
-              render={<Link href={`/places/${place.id}`} />}
-              size="sm"
-              tone="muted"
-              variant="arrow"
-            >
-              기록 보기
-            </TextButton>
+          <CardFooter className="py-0">
+            <div className="relative z-10">
+              <DeletePlaceDialog
+                iconOnly
+                name={place.name}
+                placeId={place.id}
+                recordCount={place.record_places[0]?.count ?? 0}
+              />
+            </div>
           </CardFooter>
+          <Link
+            aria-label={`${place.name} 상세 보기`}
+            className={cn("absolute inset-0 rounded-xl", FOCUS_RING)}
+            href={`/places/${place.id}`}
+          />
         </Card>
       ))}
     </section>
