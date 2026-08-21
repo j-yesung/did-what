@@ -2,6 +2,7 @@
 
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
+import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import {
   AlertDialog,
@@ -24,10 +25,13 @@ type DeleteRecordDialogProps = {
 };
 
 export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogProps) {
+  const goBackTo = useGoBack();
   const remove = useActionMutation(() => deleteRecord(recordId), {
     error: "기록을 삭제하지 못했어요",
     invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
     success: "기록을 삭제했어요",
+    // 상세에서만 쓰인다. 삭제된 상세는 남겨둘 수 없으니 목록이든 타임라인이든 들어온 곳으로 돌아간다.
+    onSuccess: () => goBackTo("/records"),
   });
 
   return (

@@ -3,7 +3,8 @@
 import { useState } from "react";
 
 import { CaretLeftIcon } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
+
+import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 
 import {
   AlertDialog,
@@ -23,16 +24,11 @@ type BackButtonProps = {
 };
 
 export function BackButton({ fallbackHref = "/", guardFormId }: BackButtonProps) {
-  const router = useRouter();
+  const goBackTo = useGoBack();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   function navigateBack() {
-    if (window.history.length > 1) {
-      router.back();
-      return;
-    }
-
-    router.push(fallbackHref);
+    goBackTo(fallbackHref);
   }
 
   function goBack() {

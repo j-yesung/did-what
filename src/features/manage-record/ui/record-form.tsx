@@ -13,6 +13,7 @@ import Link from "next/link";
 import { peopleQueryOptions } from "@/entities/person/api/people-query";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
+import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
@@ -54,9 +55,12 @@ type RecordFormProps = {
     region: RecordLocationRegion;
   };
   mode?: "create" | "edit";
+  /** 히스토리가 없을 때 저장 후 갈 곳. 헤더 뒤로가기의 fallback과 같은 값을 준다. */
+  returnTo: string;
 };
 
-export function RecordForm({ action, initialValues, mode = "create" }: RecordFormProps) {
+export function RecordForm({ action, initialValues, mode = "create", returnTo }: RecordFormProps) {
+  const goBackTo = useGoBack();
   const peopleQuery = useQuery(peopleQueryOptions);
   const placesQuery = useQuery(placesQueryOptions);
   const [hasPersonError, setHasPersonError] = useState(false);
@@ -78,6 +82,7 @@ export function RecordForm({ action, initialValues, mode = "create" }: RecordFor
     error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요`,
     invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
     success: mode === "edit" ? "기록을 수정했어요" : "기록을 남겼어요",
+    onSuccess: () => goBackTo(returnTo),
     onFail: () => {
       if (formRef.current) formRef.current.dataset.dirty = "true";
       formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
@@ -111,7 +116,7 @@ export function RecordForm({ action, initialValues, mode = "create" }: RecordFor
       return;
     }
 
-    // 저장을 시작하면 이탈 경고를 끈다. 성공하면 화면이 바뀌고, 실패하면 onFail이 다시 켠다.
+    // 저장을 시작하면 이탈 경고를 끈다. 성공하면 왔던 화면으로 돌아가고, 실패하면 onFail이 다시 켠다.
     event.currentTarget.dataset.dirty = "false";
     save.mutate(new FormData(event.currentTarget));
   }

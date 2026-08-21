@@ -73,6 +73,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
             },
           }}
           mode="edit"
+          returnTo={`/records/${recordId}`}
         />
       )}
     </PageShell>

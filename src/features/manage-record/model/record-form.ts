@@ -43,7 +43,7 @@ export type RecordInputValues = {
 };
 
 export type RecordActionState = {
-  status: "idle" | "error";
+  status: "idle" | "error" | "success";
   message?: string;
   fieldErrors?: RecordFieldErrors;
 };

@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { findPersonIds } from "@/entities/person";
 import {
@@ -228,7 +227,7 @@ export async function createRecord(formData: FormData): Promise<RecordActionStat
   revalidatePath("/");
   revalidatePath("/records");
   revalidatePath("/places");
-  redirect("/records");
+  return { status: "success" };
 }
 
 export async function updateRecord(recordId: string, formData: FormData): Promise<RecordActionState> {
@@ -268,7 +267,7 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
   revalidatePath("/records");
   revalidatePath("/places");
   revalidatePath(`/records/${recordId}`);
-  redirect(`/records/${recordId}`);
+  return { status: "success" };
 }
 
 export async function deleteRecord(recordId: string): Promise<RecordActionState> {
@@ -289,5 +288,5 @@ export async function deleteRecord(recordId: string): Promise<RecordActionState>
 
   revalidatePath("/");
   revalidatePath("/records");
-  redirect("/records");
+  return { status: "success" };
 }

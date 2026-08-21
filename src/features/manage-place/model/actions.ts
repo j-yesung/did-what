@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { resolveKakaoRegion, searchKakaoPlaces, validateKakaoPlaceId } from "@/shared/api/kakao-local";
 import { requireUser } from "@/shared/api/supabase/require-user";
@@ -73,7 +72,7 @@ export async function deletePlace(placeId: string): Promise<PlaceActionState> {
 
   revalidatePath("/places");
   revalidatePath("/records");
-  redirect("/places");
+  return { status: "success" };
 }
 
 export async function savePlace(placeId: string): Promise<PlaceActionState> {

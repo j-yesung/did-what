@@ -21,7 +21,7 @@ export function RecordNewPage() {
         </p>
       </section>
 
-      <RecordForm action={createRecord} />
+      <RecordForm action={createRecord} returnTo="/records" />
     </PageShell>
   );
 }

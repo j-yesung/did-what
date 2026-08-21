@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
@@ -87,5 +86,5 @@ export async function deletePerson(personId: string): Promise<PersonActionState>
   }
 
   revalidatePerson(personId);
-  redirect("/people");
+  return { status: "success" };
 }
