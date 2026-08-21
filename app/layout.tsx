@@ -6,6 +6,7 @@ import localFont from "next/font/local";
 import { getTheme } from "@/features/switch-theme";
 import { QueryProvider } from "@/shared/lib/react-query";
 import { cn } from "@/shared/lib/utils";
+import { PressListener } from "@/shared/ui/press-listener";
 import { Toaster } from "@/shared/ui/sonner";
 
 import "@/app/styles/globals.css";
@@ -55,6 +56,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
     <html className={cn(pretendard.variable, theme !== "system" && theme)} lang="ko">
       <body>
         <QueryProvider>{children}</QueryProvider>
+        <PressListener />
         <Toaster theme={theme} />
       </body>
     </html>
