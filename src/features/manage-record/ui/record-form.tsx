@@ -17,6 +17,15 @@ import { useActionMutation } from "@/shared/lib/server-action/use-action-mutatio
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
 import { CheckboxChip } from "@/shared/ui/checkbox-chip";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/shared/ui/drawer";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import {
   Field,
@@ -32,7 +41,6 @@ import { Input } from "@/shared/ui/input";
 import type { LeaveGuardHandle } from "@/shared/ui/leave-guard";
 import { LeaveGuard } from "@/shared/ui/leave-guard";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
 
@@ -179,14 +187,15 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
               언제 <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLegend>
             <Field data-invalid={Boolean(fieldErrors?.recordedAt || fieldErrors?.recordedUntil)}>
-              <Popover
+              <Drawer
                 onOpenChange={(open) => {
                   setDatePickerOpen(open);
                   if (open) setDraftDateRange(dateRange);
                 }}
                 open={datePickerOpen}
+                showSwipeHandle
               >
-                <PopoverTrigger
+                <DrawerTrigger
                   render={
                     <Button
                       className="h-auto min-h-12 w-full justify-start px-3 py-2 text-left [&>span]:w-full"
@@ -203,20 +212,29 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
                     <span>{recordedAt === recordedUntil ? recordedAt : `${recordedAt} ~ ${recordedUntil}`}</span>
                     <span className="shrink-0 text-muted-foreground text-xs">기간 설정</span>
                   </span>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-(--anchor-width) gap-0 p-0">
-                  <Calendar
-                    className="w-full"
-                    classNames={{ root: "w-full" }}
-                    defaultMonth={draftDateRange?.from ?? selectedStart}
-                    locale={ko}
-                    mode="range"
-                    onSelect={setDraftDateRange}
-                    selected={draftDateRange}
-                  />
-                  <div className="border-t p-2">
+                </DrawerTrigger>
+                {/* 캘린더는 크기가 정해져 있어 높이를 내용에 맡긴다. 작은 기종에서 넘칠 때만 max-height가 잡아 준다. */}
+                <DrawerContent>
+                  <DrawerHeader>
+                    <DrawerTitle>언제 갔나요?</DrawerTitle>
+                    <DrawerDescription>하루만 갔다면 그날을, 여러 날이면 시작일과 끝날을 고르세요.</DrawerDescription>
+                  </DrawerHeader>
+
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
+                    <Calendar
+                      className="w-full rounded-xl"
+                      classNames={{ root: "w-full" }}
+                      defaultMonth={draftDateRange?.from ?? selectedStart}
+                      locale={ko}
+                      mode="range"
+                      onSelect={setDraftDateRange}
+                      selected={draftDateRange}
+                    />
+                  </div>
+
+                  <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
                     <Button
-                      className="h-10 w-full"
+                      className="h-12 w-full"
                       disabled={!draftDateRange?.from}
                       onClick={() => {
                         if (!draftDateRange?.from) return;
@@ -227,9 +245,9 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
                     >
                       적용
                     </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </DrawerFooter>
+                </DrawerContent>
+              </Drawer>
               <input name="recordedAt" type="hidden" value={recordedAt} />
               <input name="recordedUntil" type="hidden" value={recordedUntil} />
               <FieldError id="record-date-error">{fieldErrors?.recordedAt ?? fieldErrors?.recordedUntil}</FieldError>
