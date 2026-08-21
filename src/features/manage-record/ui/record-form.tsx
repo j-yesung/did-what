@@ -13,7 +13,6 @@ import Link from "next/link";
 import { peopleQueryOptions } from "@/entities/person/api/people-query";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
-import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
@@ -30,6 +29,7 @@ import {
   FieldSet,
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
+import type { LeaveGuardHandle } from "@/shared/ui/leave-guard";
 import { LeaveGuard } from "@/shared/ui/leave-guard";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
@@ -56,12 +56,14 @@ type RecordFormProps = {
     region: RecordLocationRegion;
   };
   mode?: "create" | "edit";
-  /** 돌아갈 화면이 없을 때 저장 후 갈 곳. 헤더 뒤로가기의 fallback과 같은 값을 준다. */
+  /** 헤더 뒤로가기의 fallback과 같은 값. 저장을 취소하고 나갈 때 돌아갈 곳이다. */
   returnTo: string;
+  /** 저장에 성공했을 때 갈 곳. 작성은 목록, 수정은 그 기록의 상세다. */
+  savedTo: string;
 };
 
-export function RecordForm({ action, initialValues, mode = "create", returnTo }: RecordFormProps) {
-  const goBackTo = useGoBack();
+export function RecordForm({ action, initialValues, mode = "create", returnTo, savedTo }: RecordFormProps) {
+  const guardRef = useRef<LeaveGuardHandle>(null);
   const peopleQuery = useQuery(peopleQueryOptions);
   const placesQuery = useQuery(placesQueryOptions);
   const [hasPersonError, setHasPersonError] = useState(false);
@@ -83,7 +85,7 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo }:
     error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요`,
     invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
     success: mode === "edit" ? "기록을 수정했어요" : "기록을 남겼어요",
-    onSuccess: () => goBackTo(returnTo),
+    onSuccess: () => guardRef.current?.finish(savedTo),
     onFail: () => {
       if (formRef.current) formRef.current.dataset.dirty = "true";
       formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
@@ -117,7 +119,7 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo }:
       return;
     }
 
-    // 저장을 시작하면 이탈 경고를 끈다. 성공하면 왔던 화면으로 돌아가고, 실패하면 onFail이 다시 켠다.
+    // 저장을 시작하면 이탈 경고를 끈다. 성공하면 화면이 바뀌고, 실패하면 onFail이 다시 켠다.
     event.currentTarget.dataset.dirty = "false";
     save.mutate(new FormData(event.currentTarget));
   }
@@ -168,7 +170,7 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo }:
       onChange={markDirty}
       onSubmit={handleSubmit}
     >
-      <LeaveGuard fallbackHref={returnTo} isDirty={() => formRef.current?.dataset.dirty === "true"} />
+      <LeaveGuard fallbackHref={returnTo} isDirty={() => formRef.current?.dataset.dirty === "true"} ref={guardRef} />
       <div className="rounded-xl border border-border bg-surface px-4.5 py-5 motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
           <FieldSet>

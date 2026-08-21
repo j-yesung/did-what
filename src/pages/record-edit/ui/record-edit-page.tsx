@@ -74,6 +74,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
           }}
           mode="edit"
           returnTo={`/records/${recordId}`}
+          savedTo={`/records/${recordId}`}
         />
       )}
     </PageShell>
