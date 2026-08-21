@@ -31,7 +31,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
 
   return (
     <PageShell className="block">
-      <PageHeader back={`/records/${recordId}`} backGuardFormId="record-form" title="기록 수정" />
+      <PageHeader back={`/records/${recordId}`} title="기록 수정" />
 
       <section className="px-1 pt-5.5 pb-5" aria-labelledby="record-edit-title">
         <h2

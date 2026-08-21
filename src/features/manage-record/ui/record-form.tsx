@@ -30,6 +30,7 @@ import {
   FieldSet,
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
+import { LeaveGuard } from "@/shared/ui/leave-guard";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Spinner } from "@/shared/ui/spinner";
@@ -55,7 +56,7 @@ type RecordFormProps = {
     region: RecordLocationRegion;
   };
   mode?: "create" | "edit";
-  /** 히스토리가 없을 때 저장 후 갈 곳. 헤더 뒤로가기의 fallback과 같은 값을 준다. */
+  /** 돌아갈 화면이 없을 때 저장 후 갈 곳. 헤더 뒤로가기의 fallback과 같은 값을 준다. */
   returnTo: string;
 };
 
@@ -167,6 +168,7 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo }:
       onChange={markDirty}
       onSubmit={handleSubmit}
     >
+      <LeaveGuard fallbackHref={returnTo} isDirty={() => formRef.current?.dataset.dirty === "true"} />
       <div className="rounded-xl border border-border bg-surface px-4.5 py-5 motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
         <FieldGroup>
           <FieldSet>
