@@ -2,7 +2,7 @@ import { CalendarDotsIcon, MapPinIcon, UsersIcon } from "@phosphor-icons/react/d
 import Link from "next/link";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 
@@ -27,12 +27,14 @@ export function RecordCard({
 }: RecordCardProps) {
   return (
     <article className="relative pl-5">
+      {/* 점은 세로선 위에 있어야 해서 카드와 같이 줄지 않는다. 누르는 동안 점과 카드 간격이 2px쯤 벌어지는데,
+          카드를 왼쪽 가장자리 기준으로 줄이면 이건 없어지지만 카드가 통째로 눌리는 느낌을 잃는다. 후자를 택했다. */}
       <span
         className="absolute top-5 left-0 size-3.75 rounded-full border-4 border-background bg-primary"
         aria-hidden="true"
       />
-      <Link className={cn("block rounded-xl after:inset-0", FOCUS_RING, PRESS_FEEDBACK)} href={`/records/${recordId}`}>
-        <Card>
+      <Link className={cn("block rounded-xl", FOCUS_RING, PRESS_FEEDBACK_LARGE)} href={`/records/${recordId}`}>
+        <Card className={PRESS_SURFACE}>
           <CardHeader>
             <CardTitle>{activity}</CardTitle>
             <CardDescription className="flex items-center gap-1.5">

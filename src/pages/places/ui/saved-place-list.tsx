@@ -7,7 +7,7 @@ import Link from "next/link";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { DeletePlaceDialog } from "@/features/manage-place";
 import { formatShortDate } from "@/shared/lib/date/format-date";
-import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
@@ -64,7 +64,7 @@ export function SavedPlaceList() {
         <h2 className="mt-1 font-bold text-lg">저장한 장소</h2>
       </div>
       {places.map((place) => (
-        <Card className={cn("relative after:inset-0", PRESS_FEEDBACK)} key={place.id} size="sm">
+        <Card className={cn("relative", PRESS_FEEDBACK_LARGE, PRESS_SURFACE)} key={place.id} size="sm">
           <CardHeader>
             <CardTitle>{place.name}</CardTitle>
             <CardDescription>

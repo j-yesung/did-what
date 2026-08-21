@@ -60,6 +60,8 @@
   --fill-surface: var(--grey-0);
   --fill-elevated: var(--grey-0);
   --fill-muted: var(--grey-100);
+  /* 눌린 표면. 라이트는 표면보다 어둡게, 다크는 밝게 가야 눌림으로 읽힌다. */
+  --fill-pressed: var(--grey-100);
   --fill-brand: var(--blue-600);
   --fill-brand-weak: var(--blue-50);
 
@@ -121,6 +123,7 @@
   --color-map-level-3: var(--map-level-3);
   --color-map-level-4: var(--map-level-4);
   --color-surface: var(--surface);
+  --color-pressed: var(--fill-pressed);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -160,6 +163,7 @@
   --fill-surface: var(--grey-850);
   --fill-elevated: var(--grey-800);
   --fill-muted: var(--grey-900);
+  --fill-pressed: var(--grey-800);
 
   /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
   --text-primary: var(--grey-50);
@@ -184,6 +188,7 @@
     --fill-surface: var(--grey-850);
     --fill-elevated: var(--grey-800);
     --fill-muted: var(--grey-900);
+    --fill-pressed: var(--grey-800);
 
     /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
     --text-primary: var(--grey-50);

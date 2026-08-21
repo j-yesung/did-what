@@ -7,7 +7,7 @@ import Link from "next/link";
 import { peopleQueryOptions } from "@/entities/person/api/people-query";
 import { CreatePersonForm } from "@/features/manage-person";
 import { formatShortDate } from "@/shared/lib/date/format-date";
-import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
@@ -49,11 +49,11 @@ export function PeoplePage() {
         <section className="flex flex-col gap-3" aria-label={`함께한 사람 ${people.length}명`}>
           {people.map((person) => (
             <Link
-              className={cn("block rounded-xl after:inset-0", FOCUS_RING, PRESS_FEEDBACK)}
+              className={cn("block rounded-xl", FOCUS_RING, PRESS_FEEDBACK_LARGE)}
               href={`/people/${person.id}`}
               key={person.id}
             >
-              <Card size="sm">
+              <Card className={PRESS_SURFACE} size="sm">
                 <CardHeader>
                   <CardTitle>{person.name}</CardTitle>
                   <CardDescription>함께한 사람</CardDescription>
