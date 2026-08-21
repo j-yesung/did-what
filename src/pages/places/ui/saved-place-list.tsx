@@ -64,7 +64,7 @@ export function SavedPlaceList() {
         <h2 className="mt-1 font-bold text-lg">저장한 장소</h2>
       </div>
       {places.map((place) => (
-        <Card className={cn("relative", PRESS_FEEDBACK_LARGE, PRESS_SURFACE)} key={place.id} size="sm">
+        <Card className={cn("relative", PRESS_FEEDBACK_LARGE, PRESS_SURFACE)} data-press="" key={place.id} size="sm">
           <CardHeader>
             <CardTitle>{place.name}</CardTitle>
             <CardDescription>

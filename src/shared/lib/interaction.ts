@@ -31,14 +31,18 @@ export const PRESS_FEEDBACK = [
 /**
  * 카드처럼 면적이 큰 요소의 누름 반응. 색은 PRESS_SURFACE가 맡고 여기서는 축소만 한다.
  *
+ * :active가 아니라 PressListener가 붙이는 `data-press="on"`으로 움직인다. 쓰는 요소에 `data-press=""`를 같이 달아야 한다.
+ * :active는 스크롤을 시작하려는 손가락과 진짜 탭을 구분하지 못해서, 목록을 훑을 때마다 카드가 움찔한다.
+ *
  * 축소는 비율이라 같은 값이어도 면적이 크면 가장자리가 움직이는 거리가 커진다. 그래서 버튼보다 조금 덜 줄인다.
  * 다만 너무 줄이면 배경색만 바뀌고 테두리는 제자리인 것처럼 보여서, 카드 전체가 아니라 속만 눌린 느낌이 난다.
  * 한 변이 눈에 보일 만큼은 움직여야 한다.
  */
 export const PRESS_FEEDBACK_LARGE = [
   PRESS_TOUCH,
-  `transition-[transform,background-color] ${PRESS_EASING}`,
-  "active:scale-[0.975] motion-reduce:active:scale-100",
+  "group/press transition-[transform,background-color] duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+  "data-[press=on]:scale-[0.975] data-[press=on]:duration-[80ms] data-[press=on]:ease-out",
+  "motion-reduce:data-[press=on]:scale-100",
 ].join(" ");
 
 /**
@@ -47,10 +51,14 @@ export const PRESS_FEEDBACK_LARGE = [
  * 음영을 덮으면 배경뿐 아니라 그 위의 글자까지 같이 흐려진다. 글자가 많은 카드에서는 눌린 게 아니라 흐려진 것처럼 보인다.
  * 배경색만 바꾸면 글자 대비가 그대로 남는다.
  *
- * :active는 눌린 요소와 그 조상에 모두 걸린다. 그래서 카드를 감싼 링크를 눌러도, 카드 안에 겹쳐 둔 링크를 눌러도
- * 카드는 :active가 된다. 두 구조 모두 이 한 줄로 덮인다.
+ * 카드를 링크로 감싼 구조와 카드 안에 링크를 겹쳐 둔 구조 둘 다 쓴다.
+ * 앞은 카드가 눌린 요소의 자식이라 group으로, 뒤는 카드 자신이 눌린 요소라 직접 잡는다.
  */
-export const PRESS_SURFACE = `transition-[transform,background-color] ${PRESS_EASING} active:bg-pressed`;
+export const PRESS_SURFACE = [
+  "transition-[transform,background-color] duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+  "data-[press=on]:bg-pressed data-[press=on]:duration-[80ms] data-[press=on]:ease-out",
+  "group-data-[press=on]/press:bg-pressed group-data-[press=on]/press:duration-[80ms] group-data-[press=on]/press:ease-out",
+].join(" ");
 
 /** 키보드 포커스 표시. 마우스·터치에는 나타나지 않는다. */
 export const FOCUS_RING = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";

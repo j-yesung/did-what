@@ -50,6 +50,7 @@ export function PeoplePage() {
           {people.map((person) => (
             <Link
               className={cn("block rounded-xl", FOCUS_RING, PRESS_FEEDBACK_LARGE)}
+              data-press=""
               href={`/people/${person.id}`}
               key={person.id}
             >

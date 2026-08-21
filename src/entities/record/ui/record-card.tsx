@@ -33,7 +33,11 @@ export function RecordCard({
         className="absolute top-5 left-0 size-3.75 rounded-full border-4 border-background bg-primary"
         aria-hidden="true"
       />
-      <Link className={cn("block rounded-xl", FOCUS_RING, PRESS_FEEDBACK_LARGE)} href={`/records/${recordId}`}>
+      <Link
+        className={cn("block rounded-xl", FOCUS_RING, PRESS_FEEDBACK_LARGE)}
+        data-press=""
+        href={`/records/${recordId}`}
+      >
         <Card className={PRESS_SURFACE}>
           <CardHeader>
             <CardTitle>{activity}</CardTitle>
