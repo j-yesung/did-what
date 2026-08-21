@@ -78,6 +78,9 @@ export function LeaveGuard({ fallbackHref, isDirty }: LeaveGuardProps) {
     }
 
     function onPopState() {
+      // 이미 떠나는 중이다. leave()가 부른 back()이 다시 여기로 들어오는데, 이탈로 또 판정하면 한 칸을 더 지나친다.
+      if (leaving.current) return;
+
       // 앞으로가기로 보초 위에 되돌아온 경우. 아직 폼 안이다.
       if (window.history.state?.[SENTINEL]) {
         setConfirmOpen(false);
