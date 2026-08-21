@@ -2,8 +2,10 @@
 
 import { type FormEvent, useState } from "react";
 
-import { WarningCircleIcon } from "@phosphor-icons/react";
+import { ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 
+import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { useRegionSearch } from "@/entities/region";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
@@ -21,6 +23,7 @@ import { Field, FieldGroup } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 
 import type { RecordLocationRegion } from "../model/location-picker";
+import { toRecentRegions } from "../model/location-picker";
 
 type RegionPickerDialogProps = {
   onSelect: (region: RecordLocationRegion) => void;
@@ -54,6 +57,12 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState("");
   const search = useRegionSearch(query);
+  /**
+   * 검색 전에도 고를 게 있도록 이미 기록한 지역을 깔아 둔다.
+   * 시트가 열릴 때만 마운트되므로 폼 진입을 늦추지 않고, 기록 목록을 이미 봤다면 캐시에서 그대로 온다.
+   */
+  const records = useQuery({ ...recordsQueryOptions, enabled: true });
+  const recentRegions = toRecentRegions(records.data ?? []);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,6 +86,34 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
       </DrawerHeader>
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+        {recentRegions.length ? (
+          <section aria-labelledby="recent-region-quick-pick" className="flex flex-col gap-2">
+            <h3
+              className="flex items-center gap-1.5 px-0.5 font-[650] text-muted-foreground text-xs"
+              id="recent-region-quick-pick"
+            >
+              <ClockCounterClockwiseIcon strokeWidth={2} className="size-3.5 text-foreground" aria-hidden="true" />
+              최근 간 지역
+            </h3>
+            <ul className="flex flex-wrap gap-1.5">
+              {recentRegions.map((region) => (
+                <li key={region.code}>
+                  <Button
+                    className="rounded-lg"
+                    onClick={() => onSelect(region)}
+                    size="sm"
+                    title={region.fullName}
+                    type="button"
+                    variant="outline"
+                  >
+                    {region.label}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <form aria-label="지역 검색" onSubmit={handleSearch} role="search">
           <FieldGroup>
             <Field>
