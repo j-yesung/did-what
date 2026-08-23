@@ -118,7 +118,7 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
           data-snap-points={hasSnapPoints ? "" : undefined}
           className={cn(
             // Base.
-            "group/drawer-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 m-(--drawer-inset,0px) flex h-(--drawer-content-height) max-h-(--drawer-content-max-height,none) min-h-0 w-(--drawer-content-width,auto) select-none flex-col bg-popover text-popover-foreground text-sm outline-none transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] data-[swipe-direction=down]:rounded-xl data-[swipe-direction=up]:rounded-xl data-[swipe-direction=left]:rounded-r-xl data-[swipe-direction=right]:rounded-l-xl data-[swipe-direction=down]:border data-[swipe-direction=up]:border data-[swipe-direction=left]:border-r data-[swipe-direction=right]:border-l motion-reduce:transition-none",
+            "group/drawer-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 m-(--drawer-inset,0px) flex h-(--drawer-content-height) max-h-(--drawer-content-max-height,none) min-h-0 w-(--drawer-content-width,auto) select-none flex-col bg-popover text-popover-foreground text-sm outline-none transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] data-[swipe-direction=down]:rounded-3xl data-[swipe-direction=up]:rounded-3xl data-[swipe-direction=left]:rounded-r-xl data-[swipe-direction=right]:rounded-l-xl data-[swipe-direction=down]:border data-[swipe-direction=up]:border data-[swipe-direction=left]:border-r data-[swipe-direction=right]:border-l motion-reduce:transition-none",
             // Nested.
             "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95",
             // Bleed.
@@ -132,7 +132,7 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
             // Axis: y. 화면 가장자리에서 띄운다. 닫힘 애니메이션이 이미 --drawer-inset을 계산에 넣고 있다.
             // 폭에서 좌우 여백만큼 빼야 넘치지 않고, 남는 자리를 auto 마진이 나눠 가지며 가운데로 모인다.
             // --drawer-bleed-background는 시트 아래로 이어 붙는 색이다. 끄지 않으면 아래 여백을 이 색이 메운다.
-            "data-[swipe-axis=y]:[--drawer-bleed-background:transparent] data-[swipe-axis=y]:[--drawer-inset:--spacing(2)]",
+            "data-[swipe-axis=y]:[--drawer-bleed-background:transparent] data-[swipe-axis=y]:[--drawer-inset:--spacing(4)]",
             "data-[swipe-axis=y]:w-[calc(100%-2*var(--drawer-inset,0px))]",
             // Axis: y. 위아래 시트는 화면 아래에 고정되므로 하단 내비게이션과 같은 폭 규칙을 쓴다.
             // 좁은 화면에서는 꽉 채우고, 넓어지면 앱 폭에 맞춰 가운데로 모은다.
