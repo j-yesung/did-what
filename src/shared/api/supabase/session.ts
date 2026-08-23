@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import type { Database } from "./database.types";
 import { getSupabaseEnv } from "./env";
+import { SUPABASE_JWKS } from "./jwks";
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -30,7 +31,7 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getClaims();
+  await supabase.auth.getClaims(undefined, { jwks: SUPABASE_JWKS });
 
   return response;
 }

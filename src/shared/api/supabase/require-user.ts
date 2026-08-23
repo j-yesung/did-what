@@ -2,6 +2,7 @@ import { cache } from "react";
 
 import { redirect } from "next/navigation";
 
+import { SUPABASE_JWKS } from "./jwks";
 import { createClient } from "./server";
 
 /**
@@ -12,7 +13,7 @@ import { createClient } from "./server";
  */
 export const requireUser = cache(async () => {
   const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims(undefined, { jwks: SUPABASE_JWKS });
   const claims = data?.claims;
 
   if (!claims?.sub) {
