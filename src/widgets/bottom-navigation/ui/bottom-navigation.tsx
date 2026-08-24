@@ -13,28 +13,35 @@ const TABS = [
 
 export function BottomNavigation() {
   const pathname = usePathname();
+  const activeIndex = TABS.findIndex(({ href }) => href === pathname);
 
-  if (!TABS.some(({ href }) => href === pathname)) return null;
+  if (activeIndex === -1) return null;
 
   return (
     <nav
       aria-label="주요 메뉴"
-      className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full border-border border-t bg-surface pb-[env(safe-area-inset-bottom)] min-[700px]:max-w-(--app-width)"
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--nav-bottom-gap)+env(safe-area-inset-bottom))] z-40 w-full pr-[max(12px,env(safe-area-inset-right))] pl-[max(12px,env(safe-area-inset-left))]"
     >
-      <ul className="grid" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}>
+      <ul className="pointer-events-auto relative isolate mx-auto grid h-(--nav-height) w-full max-w-[calc(var(--app-width)-24px)] grid-cols-4 rounded-full border border-border/70 bg-surface/95 p-1 shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
+        <li aria-hidden="true" className="pointer-events-none absolute inset-1 z-0 grid grid-cols-4">
+          <span
+            className="col-start-1 row-start-1 rounded-full bg-primary/10 shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
+            style={{ transform: `translateX(${activeIndex * 100}%)` }}
+          />
+        </li>
         {TABS.map(({ href, icon: Icon, label }) => {
           const active = pathname === href;
 
           return (
-            <li key={href}>
+            <li className="relative z-10 min-w-0" key={href}>
               <Link
                 aria-current={active ? "page" : undefined}
-                className="flex h-14 touch-manipulation flex-col items-center justify-center gap-1 whitespace-nowrap text-[12px] transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-foreground"
+                className="flex h-full touch-manipulation flex-col items-center justify-center gap-1 whitespace-nowrap rounded-full text-[12px] transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-primary"
                 data-active={active}
                 href={href}
                 prefetch={true}
               >
-                <Icon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
+                <Icon aria-hidden="true" className="size-5.5" weight={active ? "fill" : "regular"} />
                 {label}
               </Link>
             </li>

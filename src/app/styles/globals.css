@@ -104,8 +104,16 @@
   /* 본문 최대 폭. 모바일 화면 기준으로 잡고 넓은 화면에서도 이 폭을 유지한다. */
   --app-width: 430px;
 
-  /* 하단 고정 내비게이션이 가리는 높이. 화면 콘텐츠의 아래 여백 기준값이다. */
-  --nav-clearance: calc(72px + env(safe-area-inset-bottom));
+  /* 플로팅 내비게이션과 콘텐츠 사이의 안전 여백. iOS 홈 인디케이터 영역도 포함한다. */
+  --nav-height: 64px;
+  --nav-bottom-gap: 12px;
+  --nav-content-gap: 24px;
+  --nav-clearance: calc(
+    var(--nav-height) +
+    var(--nav-bottom-gap) +
+    var(--nav-content-gap) +
+    env(safe-area-inset-bottom)
+  );
 
   /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
   --map-empty: var(--grey-200);
