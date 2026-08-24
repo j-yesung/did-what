@@ -102,27 +102,23 @@ export function PushToggle() {
           이 브라우저에서는 알림을 받을 수 없어요. 홈 화면에 추가한 앱에서 열어 주세요.
         </FieldDescription>
       ) : (
-        <div className="flex flex-col gap-2">
-          <Field orientation="horizontal">
-            <FieldLabel className="min-h-11 items-center" htmlFor="push-switch">
-              새 기록 알림
-            </FieldLabel>
-            {pending ? (
-              <Spinner
-                aria-label="알림을 설정하는 중"
-                className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
-              />
-            ) : null}
-            <Switch
-              checked={optimistic ?? state === "on"}
-              disabled={state === "loading"}
-              id="push-switch"
-              onCheckedChange={handleToggle}
+        <Field orientation="horizontal">
+          <FieldLabel className="min-h-11 items-center" htmlFor="push-switch">
+            새 기록 알림
+          </FieldLabel>
+          {pending ? (
+            <Spinner
+              aria-label="알림을 설정하는 중"
+              className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
             />
-          </Field>
-
-          <FieldDescription>상대가 기록을 남기면 이 기기로 알려드려요. 기기마다 따로 켜야 해요.</FieldDescription>
-        </div>
+          ) : null}
+          <Switch
+            checked={optimistic ?? state === "on"}
+            disabled={state === "loading"}
+            id="push-switch"
+            onCheckedChange={handleToggle}
+          />
+        </Field>
       )}
     </fieldset>
   );
