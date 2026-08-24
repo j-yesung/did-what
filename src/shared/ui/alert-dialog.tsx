@@ -79,7 +79,7 @@ function AlertDialogFooter({
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-row gap-2 rounded-b-xl border-t bg-muted/50 p-4",
+        "-mx-4 -mb-4 flex flex-row gap-2 rounded-b-xl border-t bg-muted/50 p-4 *:min-h-12",
         layout === "equal" ? "*:flex-1" : "justify-between",
         className,
       )}
