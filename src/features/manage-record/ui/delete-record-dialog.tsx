@@ -40,9 +40,7 @@ export function DeleteRecordDialog({ activity, recordId }: DeleteRecordDialogPro
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>“{activity}” 기록을 삭제할까요?</AlertDialogTitle>
-          <AlertDialogDescription>
-            함께한 사람과 연결된 기록도 사라지며, 삭제한 뒤에는 되돌릴 수 없어요.
-          </AlertDialogDescription>
+          <AlertDialogDescription>이 기록은 삭제한 뒤 되돌릴 수 없어요.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={remove.isPending}>취소</AlertDialogCancel>

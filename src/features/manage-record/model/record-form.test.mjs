@@ -1,11 +1,9 @@
 import { validateRecordInput } from "./record-form.ts";
 import assert from "node:assert/strict";
 
-const personId = "0198a393-4df4-4aed-894f-12b13a075e71";
 const valid = validateRecordInput({
   recordedAt: "2026-08-10",
   recordedUntil: "2026-08-12",
-  personIds: [personId, personId],
   regionCode: "1144012300",
   regionLabel: "홍대",
   regionName: "서울 마포구 망원동",
@@ -28,7 +26,6 @@ assert.deepEqual(valid, {
   data: {
     recordedAt: "2026-08-10",
     recordedUntil: "2026-08-12",
-    personIds: [personId],
     regionCode: "1144012300",
     regionLabel: "홍대",
     regionName: "서울 마포구 망원동",
@@ -50,7 +47,6 @@ assert.deepEqual(valid, {
 const brokenScope = validateRecordInput({
   recordedAt: "2026-08-10",
   recordedUntil: "",
-  personIds: [personId],
   regionCode: "1144012300",
   regionLabel: "홍대",
   regionName: "서울 마포구 망원동",
@@ -65,7 +61,6 @@ assert.deepEqual(Object.keys(brokenScope.fieldErrors ?? {}), ["places"]);
 const invalid = validateRecordInput({
   recordedAt: "2026-02-30",
   recordedUntil: "2026-02-20",
-  personIds: [],
   regionCode: "망원동",
   regionLabel: "",
   regionName: "",
@@ -75,7 +70,6 @@ const invalid = validateRecordInput({
 });
 assert.deepEqual(Object.keys(invalid.fieldErrors ?? {}).sort(), [
   "activity",
-  "personIds",
   "places",
   "recordedAt",
   "recordedUntil",
@@ -85,7 +79,6 @@ assert.deepEqual(Object.keys(invalid.fieldErrors ?? {}).sort(), [
 const invalidPeriod = validateRecordInput({
   recordedAt: "2026-08-10",
   recordedUntil: "2026-08-09",
-  personIds: [personId],
   regionCode: "1144012300",
   regionLabel: "홍대",
   regionName: "서울 마포구 망원동",
@@ -98,7 +91,6 @@ assert.equal(invalidPeriod.fieldErrors?.recordedUntil, "종료일은 시작일�
 const singleDay = validateRecordInput({
   recordedAt: "2026-08-10",
   recordedUntil: "2026-08-10",
-  personIds: [personId],
   regionCode: "1144012300",
   regionLabel: "홍대",
   regionName: "서울 마포구 망원동",

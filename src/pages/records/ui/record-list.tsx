@@ -72,7 +72,6 @@ export function RecordList({ filters }: RecordListProps) {
           activity={record.activity}
           key={record.id}
           memo={record.memo}
-          peopleNames={record.record_people.map(({ person }) => person.name)}
           recordId={record.id}
           recordedAt={record.recorded_at}
           recordedUntil={record.recorded_until}

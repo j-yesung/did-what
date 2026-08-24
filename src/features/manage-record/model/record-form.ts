@@ -15,13 +15,12 @@ export type RecordPlaceReference =
     };
 
 export type RecordFieldErrors = Partial<
-  Record<"recordedAt" | "recordedUntil" | "personIds" | "regionCode" | "places" | "activity" | "memo", string>
+  Record<"recordedAt" | "recordedUntil" | "regionCode" | "places" | "activity" | "memo", string>
 >;
 
 export type RecordInput = {
   recordedAt: string;
   recordedUntil?: string;
-  personIds: string[];
   regionCode: string;
   regionLabel: string;
   regionName: string;
@@ -33,7 +32,6 @@ export type RecordInput = {
 export type RecordInputValues = {
   recordedAt: string;
   recordedUntil: string;
-  personIds: readonly string[];
   regionCode: string;
   regionLabel: string;
   regionName: string;
@@ -134,7 +132,6 @@ export function validateRecordInput(
   values: RecordInputValues,
 ): { data: RecordInput; fieldErrors?: never } | { data?: never; fieldErrors: RecordFieldErrors } {
   const fieldErrors: RecordFieldErrors = {};
-  const personIds = [...new Set(values.personIds)];
   const regionLabel = values.regionLabel.trim();
   const regionName = values.regionName.trim();
   const places = parsePlaces(values.places);
@@ -147,10 +144,6 @@ export function validateRecordInput(
 
   if (values.recordedUntil && (!isIsoDate(values.recordedUntil) || values.recordedUntil < values.recordedAt)) {
     fieldErrors.recordedUntil = "종료일은 시작일과 같거나 이후여야 해요.";
-  }
-
-  if (personIds.length === 0 || personIds.some((personId) => !isUuid(personId))) {
-    fieldErrors.personIds = "함께한 사람을 한 명 이상 선택해 주세요.";
   }
 
   if (
@@ -185,7 +178,6 @@ export function validateRecordInput(
       ...(values.recordedUntil && values.recordedUntil !== values.recordedAt
         ? { recordedUntil: values.recordedUntil }
         : {}),
-      personIds,
       regionCode: values.regionCode,
       regionLabel,
       regionName,

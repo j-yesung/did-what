@@ -1,30 +1,21 @@
-import { CalendarDotsIcon, MapPinIcon, UsersIcon } from "@phosphor-icons/react/dist/ssr";
+import { CalendarDotsIcon, MapPinIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 
 type RecordCardProps = {
   activity: string;
   memo?: string | null;
-  peopleNames?: string[];
   recordId: string;
   recordedAt: string;
   recordedUntil?: string | null;
   region?: { label: string; name: string };
 };
 
-export function RecordCard({
-  activity,
-  memo,
-  peopleNames,
-  recordId,
-  recordedAt,
-  recordedUntil,
-  region,
-}: RecordCardProps) {
+export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil, region }: RecordCardProps) {
   return (
     <article className="relative pl-5">
       {/* 점은 세로선 위에 있어야 해서 카드와 같이 줄지 않는다. 누르는 동안 점과 카드 간격이 2px쯤 벌어지는데,
@@ -57,15 +48,6 @@ export function RecordCard({
               ) : null}
               {memo ? <p className="text-muted-foreground text-sm leading-relaxed">{memo}</p> : null}
             </CardContent>
-          ) : null}
-
-          {peopleNames ? (
-            <CardFooter>
-              <div className="flex min-w-0 items-center gap-2">
-                <UsersIcon strokeWidth={2} className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                <p className="truncate text-muted-foreground text-xs">{peopleNames.join(", ") || "함께한 사람 없음"}</p>
-              </div>
-            </CardFooter>
           ) : null}
         </Card>
       </Link>

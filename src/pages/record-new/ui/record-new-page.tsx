@@ -17,7 +17,7 @@ export function RecordNewPage() {
           오늘의 장면을 남겨보세요.
         </h2>
         <p className="mt-2 text-[14px] text-muted-foreground leading-[1.6]">
-          날짜, 사람, 지역과 방문 장소를 한 화면에서 빠르게 기록할 수 있어요.
+          날짜, 지역과 방문 장소를 한 화면에서 빠르게 기록할 수 있어요.
         </p>
       </section>
 

@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 
-import { findPersonIds } from "@/entities/person";
 import { sendRecordPush } from "@/features/push-notification/model/send-record-push";
 import {
   type KakaoSearchScope,
@@ -27,7 +26,6 @@ function readRecordInput(formData: FormData): RecordInputValues {
   return {
     recordedAt: String(formData.get("recordedAt") ?? ""),
     recordedUntil: String(formData.get("recordedUntil") ?? ""),
-    personIds: formData.getAll("personIds").map(String),
     regionCode: String(formData.get("regionCode") ?? ""),
     regionLabel: String(formData.get("regionLabel") ?? ""),
     regionName: String(formData.get("regionName") ?? ""),
@@ -148,12 +146,8 @@ async function prepareRecordPlaces(references: RecordPlaceReference[], ownerId: 
 }
 
 async function validateSelections(data: RecordInput, ownerId: string, supabase: SupabaseClient) {
-  const [peopleResult, region] = await Promise.all([
-    findPersonIds(data.personIds, ownerId),
-    verifyRegion(data.regionCode, data.regionName),
-  ]);
-
-  if (peopleResult.error || peopleResult.data.length !== data.personIds.length || !region) return null;
+  const region = await verifyRegion(data.regionCode, data.regionName);
+  if (!region) return null;
 
   const placeIds = await prepareRecordPlaces(data.places, ownerId, supabase);
   if (!placeIds) return null;
@@ -205,13 +199,13 @@ export async function createRecord(formData: FormData): Promise<RecordActionStat
 
   const selections = await validateSelections(result.data, user.id, supabase);
   if (!selections) {
-    return { message: "선택한 지역·사람·장소를 확인할 수 없습니다.", status: "error" };
+    return { message: "선택한 지역·장소를 확인할 수 없습니다.", status: "error" };
   }
 
   const { data: recordId, error } = await supabase.rpc("create_owned_record", {
     p_activity: result.data.activity,
     p_memo: result.data.memo ?? "",
-    p_person_ids: result.data.personIds,
+    p_person_ids: [],
     p_place_ids: selections.placeIds,
     p_recorded_at: result.data.recordedAt,
     p_recorded_until: result.data.recordedUntil ?? null,
@@ -264,7 +258,7 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
   const { data: updated, error } = await supabase.rpc("update_owned_record", {
     p_activity: result.data.activity,
     p_memo: result.data.memo ?? "",
-    p_person_ids: result.data.personIds,
+    p_person_ids: [],
     p_place_ids: selections.placeIds,
     p_record_id: recordId,
     p_recorded_at: result.data.recordedAt,

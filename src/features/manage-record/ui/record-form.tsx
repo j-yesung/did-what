@@ -5,19 +5,16 @@ import { useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { ko } from "react-day-picker/locale";
 
-import { CalendarDotsIcon, ChatTextIcon, NotePencilIcon, UsersIcon } from "@phosphor-icons/react";
+import { CalendarDotsIcon, ChatTextIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import Link from "next/link";
 
-import { peopleQueryOptions } from "@/entities/person/api/people-query";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { getPushEndpoint } from "@/features/push-notification";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
-import { CheckboxChip } from "@/shared/ui/checkbox-chip";
 import {
   Drawer,
   DrawerContent,
@@ -27,7 +24,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/shared/ui/drawer";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import {
   Field,
   FieldDescription,
@@ -58,7 +54,6 @@ type RecordFormProps = {
   initialValues?: {
     activity: string;
     memo: string;
-    personIds: string[];
     places: RecordLocationPlace[];
     recordedAt: string;
     recordedUntil: string | null;
@@ -73,9 +68,7 @@ type RecordFormProps = {
 
 export function RecordForm({ action, initialValues, mode = "create", returnTo, savedTo }: RecordFormProps) {
   const guardRef = useRef<LeaveGuardHandle>(null);
-  const peopleQuery = useQuery(peopleQueryOptions);
   const placesQuery = useQuery(placesQueryOptions);
-  const [hasPersonError, setHasPersonError] = useState(false);
   const [memoLength, setMemoLength] = useState(initialValues?.memo.length ?? 0);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange>(() => ({
@@ -101,7 +94,6 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
     },
   });
   const fieldErrors = save.data?.fieldErrors;
-  const personError = hasPersonError ? "함께한 사람을 선택해 주세요." : fieldErrors?.personIds;
 
   useEffect(() => {
     function warnBeforeUnload(event: BeforeUnloadEvent) {
@@ -123,12 +115,6 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
     event.preventDefault();
     const form = event.currentTarget;
 
-    if (form.querySelectorAll('input[name="personIds"]:checked').length === 0) {
-      setHasPersonError(true);
-      form.querySelector<HTMLElement>('input[name="personIds"]')?.focus();
-      return;
-    }
-
     // 저장을 시작하면 이탈 경고를 끈다. 성공하면 화면이 바뀌고, 실패하면 onFail이 다시 켠다.
     form.dataset.dirty = "false";
     const formData = new FormData(form);
@@ -145,7 +131,7 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
     save.mutate(formData);
   }
 
-  if (peopleQuery.isPending || placesQuery.isPending) {
+  if (placesQuery.isPending) {
     return (
       <div className="grid min-h-48 place-items-center">
         <Spinner
@@ -156,30 +142,10 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
     );
   }
 
-  if (peopleQuery.isError || placesQuery.isError) {
+  if (placesQuery.isError) {
     return <LoadErrorAlert title="선택지를 불러오지 못했어요" />;
   }
 
-  if (peopleQuery.data.length === 0) {
-    return (
-      <Empty className="border bg-card py-12">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <NotePencilIcon strokeWidth={2} aria-hidden="true" />
-          </EmptyMedia>
-          <EmptyTitle>기록 전에 준비가 필요해요</EmptyTitle>
-          <EmptyDescription>기록에 연결할 사람을 먼저 추가해 주세요.</EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <Button className="w-full" render={<Link href="/people" />} nativeButton={false}>
-            사람 추가하러 가기
-          </Button>
-        </EmptyContent>
-      </Empty>
-    );
-  }
-
-  const people = peopleQuery.data;
   const savedPlaces = placesQuery.data;
 
   return (
@@ -266,35 +232,6 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
               <FieldError id="record-date-error">{fieldErrors?.recordedAt ?? fieldErrors?.recordedUntil}</FieldError>
             </Field>
           </FieldSet>
-
-          <FieldSeparator />
-
-          <Field data-invalid={Boolean(personError)}>
-            <FieldSet>
-              <FieldLegend className="flex items-center gap-2" variant="label">
-                <UsersIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
-                누구와 <span className="font-[650] text-[11px] text-foreground">필수</span>
-              </FieldLegend>
-              <FieldDescription>한 명 이상 선택해 주세요.</FieldDescription>
-
-              <div className="flex flex-wrap gap-1.5">
-                {people.map((person) => (
-                  <CheckboxChip
-                    aria-describedby={personError ? "people-error" : undefined}
-                    aria-invalid={Boolean(personError)}
-                    defaultChecked={initialValues?.personIds.includes(person.id)}
-                    key={person.id}
-                    name="personIds"
-                    onChange={() => setHasPersonError(false)}
-                    value={person.id}
-                  >
-                    {person.name}
-                  </CheckboxChip>
-                ))}
-              </div>
-              <FieldError id="people-error">{personError}</FieldError>
-            </FieldSet>
-          </Field>
 
           <FieldSeparator />
 

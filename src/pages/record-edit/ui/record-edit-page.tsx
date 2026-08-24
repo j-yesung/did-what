@@ -41,7 +41,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
           그날의 기록을 다듬어보세요.
         </h2>
         <p className="mt-2 text-[14px] text-muted-foreground leading-[1.6]">
-          바뀐 날짜, 사람, 지역과 방문 장소를 한 번에 수정할 수 있어요.
+          바뀐 날짜, 지역과 방문 장소를 한 번에 수정할 수 있어요.
         </p>
       </section>
 
@@ -53,7 +53,6 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
           initialValues={{
             activity: record.activity,
             memo: record.memo ?? "",
-            personIds: record.record_people.map(({ person_id }) => person_id),
             places: record.record_places.map(({ place }) => ({
               address: place.address,
               key: `existing:${place.id}`,

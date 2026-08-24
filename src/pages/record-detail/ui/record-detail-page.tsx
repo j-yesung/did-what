@@ -1,4 +1,4 @@
-import { BookOpenIcon, CalendarDotsIcon, MapPinIcon, NotePencilIcon, UsersIcon } from "@phosphor-icons/react/dist/ssr";
+import { BookOpenIcon, CalendarDotsIcon, MapPinIcon, NotePencilIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -60,7 +60,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
           <Card>
             <CardHeader>
               <CardTitle>이날의 기록</CardTitle>
-              <CardDescription>언제, 누구와, 어디서 함께했는지</CardDescription>
+              <CardDescription>언제, 어디서 함께했는지</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
               <div className="grid grid-cols-[20px_1fr] gap-3">
@@ -68,15 +68,6 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
                 <div>
                   <p className="text-muted-foreground text-xs">날짜</p>
                   <p className="mt-1 font-medium">{formatRecordPeriod(record.recorded_at, record.recorded_until)}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-[20px_1fr] gap-3">
-                <UsersIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
-                <div>
-                  <p className="text-muted-foreground text-xs">함께한 사람</p>
-                  <p className="mt-1 font-medium">
-                    {record.record_people.map(({ person }) => person.name).join(", ") || "함께한 사람 정보 없음"}
-                  </p>
                 </div>
               </div>
               <div className="grid grid-cols-[20px_1fr] gap-3">

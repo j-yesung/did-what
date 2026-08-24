@@ -1,6 +1,6 @@
 "use client";
 
-import { Gear, MapPin, MapPinArea, PencilSimple, Users } from "@phosphor-icons/react";
+import { Gear, MapPin, MapPinArea, PencilSimple } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -8,7 +8,6 @@ const TABS = [
   { href: "/", icon: MapPinArea, label: "지도" },
   { href: "/records", icon: PencilSimple, label: "기록" },
   { href: "/places", icon: MapPin, label: "장소" },
-  { href: "/people", icon: Users, label: "사람" },
   { href: "/settings", icon: Gear, label: "설정" },
 ] as const;
 
