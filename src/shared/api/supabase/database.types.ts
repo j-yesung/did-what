@@ -104,7 +104,6 @@ export type Database = {
           created_at: string;
           endpoint: string;
           id: string;
-          label: string | null;
           owner_id: string;
           p256dh: string;
           updated_at: string;
@@ -114,7 +113,6 @@ export type Database = {
           created_at?: string;
           endpoint: string;
           id?: string;
-          label?: string | null;
           owner_id: string;
           p256dh: string;
           updated_at?: string;
@@ -124,7 +122,6 @@ export type Database = {
           created_at?: string;
           endpoint?: string;
           id?: string;
-          label?: string | null;
           owner_id?: string;
           p256dh?: string;
           updated_at?: string;

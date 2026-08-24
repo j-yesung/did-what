@@ -47,15 +47,15 @@ type SendRecordPushInput = {
 /**
  * 같은 계정에 묶인 다른 기기로 새 기록 알림을 보낸다.
  *
- * 커플이 계정 하나를 함께 쓰는 것을 전제로 한다. 작성자 본인의 기기는 endpoint로 걸러내고,
- * 누가 썼는지는 구독을 만들 때 기기마다 저장해 둔 label에서 가져온다.
+ * 계정 하나를 둘이 함께 쓰는 것을 전제로 한다. 작성자 본인의 기기는 endpoint로 걸러낸다.
+ * 계정이 하나라 서버가 기기를 가를 수 있는 값이 그것뿐이다.
  */
 export async function sendRecordPush({ ownerId, recordId, senderEndpoint, supabase }: SendRecordPushInput) {
   if (!configured) return;
 
   const { data: subscriptions } = await supabase
     .from("push_subscriptions")
-    .select("endpoint, p256dh, auth_key, label")
+    .select("endpoint, p256dh, auth_key")
     .eq("owner_id", ownerId);
 
   if (!subscriptions?.length) return;
@@ -63,15 +63,13 @@ export async function sendRecordPush({ ownerId, recordId, senderEndpoint, supaba
   const targets = subscriptions.filter((subscription) => subscription.endpoint !== senderEndpoint);
   if (!targets.length) return;
 
-  const senderLabel = subscriptions.find((subscription) => subscription.endpoint === senderEndpoint)?.label;
-
   /**
    * 활동 내용은 담지 않는다. iOS가 앱 이름을 따로 붙이므로 제목 한 줄이면 알림으로 충분하고,
    * 잠금 화면에 기록 내용이 그대로 뜨는 것도 피한다.
    */
   const payload = JSON.stringify({
     tag: `record-${recordId}`,
-    title: senderLabel ? `${senderLabel}님이 기록을 남겼어요` : "새 기록이 추가됐어요",
+    title: "새 기록이 추가됐어요",
     url: `/records/${recordId}`,
   });
 
@@ -88,7 +86,7 @@ export async function sendRecordPush({ ownerId, recordId, senderEndpoint, supaba
         if (statusCode && GONE_STATUS_CODES.has(statusCode)) return target.endpoint;
 
         // 만료 말고 다른 이유로 실패하면 흔적이 없어 원인을 찾을 수 없다. 키 불일치(403)가 대표적이다.
-        console.warn("[push] 발송 실패", { label: target.label, statusCode });
+        console.warn("[push] 발송 실패", { statusCode });
         return null;
       }
     }),
