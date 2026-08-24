@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { getRecord } from "@/entities/record";
+import { getRecord, normalizeRecordWeather } from "@/entities/record";
 import { RecordForm, updateRecord } from "@/features/manage-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
@@ -62,6 +62,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
             })),
             recordedAt: record.recorded_at,
             recordedUntil: record.recorded_until,
+            weather: normalizeRecordWeather(record.weather),
             region: {
               code: record.region_code,
               fullName: record.region_name,

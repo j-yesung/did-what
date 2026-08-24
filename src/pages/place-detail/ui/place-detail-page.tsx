@@ -83,6 +83,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
                   recordId={record.id}
                   recordedAt={record.recorded_at}
                   recordedUntil={record.recorded_until}
+                  weather={record.weather}
                 />
               ))}
             </RecordTimeline>

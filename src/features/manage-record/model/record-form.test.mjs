@@ -18,6 +18,7 @@ const valid = validateRecordInput({
       scope: { latitude: 37.5563, longitude: 126.9013 },
     },
   ]),
+  weather: "rainy",
   activity: "  카페에서 이야기함  ",
   memo: "   ",
 });
@@ -39,6 +40,7 @@ assert.deepEqual(valid, {
         scope: { latitude: 37.5563, longitude: 126.9013 },
       },
     ],
+    weather: "rainy",
     activity: "카페에서 이야기함",
   },
 });
@@ -53,6 +55,7 @@ const brokenScope = validateRecordInput({
   places: JSON.stringify([
     { kind: "kakao", page: 1, providerPlaceId: "123", query: "카페", save: true, scope: { latitude: 37.5563 } },
   ]),
+  weather: "sunny",
   activity: "카페에서 이야기함",
   memo: "",
 });
@@ -65,6 +68,7 @@ const invalid = validateRecordInput({
   regionLabel: "",
   regionName: "",
   places: "not-json",
+  weather: "stormy",
   activity: " ",
   memo: "",
 });
@@ -74,6 +78,7 @@ assert.deepEqual(Object.keys(invalid.fieldErrors ?? {}).sort(), [
   "recordedAt",
   "recordedUntil",
   "regionCode",
+  "weather",
 ]);
 
 const invalidPeriod = validateRecordInput({
@@ -83,6 +88,7 @@ const invalidPeriod = validateRecordInput({
   regionLabel: "홍대",
   regionName: "서울 마포구 망원동",
   places: "[]",
+  weather: "cloudy",
   activity: "산책",
   memo: "",
 });
@@ -95,6 +101,7 @@ const singleDay = validateRecordInput({
   regionLabel: "홍대",
   regionName: "서울 마포구 망원동",
   places: "[]",
+  weather: "sunny",
   activity: "산책",
   memo: "",
 });

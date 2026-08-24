@@ -2,7 +2,7 @@ import { BookOpenIcon, CalendarDotsIcon, MapPinIcon, NotePencilIcon } from "@pho
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getRecord } from "@/entities/record";
+import { getRecord, getRecordWeatherLabel, normalizeRecordWeather, WeatherIcon } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/manage-place";
 import { DeleteRecordDialog } from "@/features/manage-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
@@ -31,6 +31,8 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
   if (!record && !error) {
     notFound();
   }
+
+  const weather = normalizeRecordWeather(record?.weather);
 
   return (
     <PageShell>
@@ -66,6 +68,13 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
                 <div>
                   <p className="text-muted-foreground text-xs">날짜</p>
                   <p className="mt-1 font-medium">{formatRecordPeriod(record.recorded_at, record.recorded_until)}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-[20px_1fr] gap-3">
+                <WeatherIcon weather={weather} className="size-5 text-foreground" aria-hidden="true" />
+                <div>
+                  <p className="text-muted-foreground text-xs">날씨</p>
+                  <p className="mt-1 font-medium">{getRecordWeatherLabel(weather)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-[20px_1fr] gap-3">

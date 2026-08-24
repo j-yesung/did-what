@@ -30,6 +30,7 @@ function readRecordInput(formData: FormData): RecordInputValues {
     regionLabel: String(formData.get("regionLabel") ?? ""),
     regionName: String(formData.get("regionName") ?? ""),
     places: String(formData.get("places") ?? "[]"),
+    weather: String(formData.get("weather") ?? ""),
     activity: String(formData.get("activity") ?? ""),
     memo: String(formData.get("memo") ?? ""),
   };
@@ -214,6 +215,7 @@ export async function createRecord(formData: FormData): Promise<RecordActionStat
     p_region_latitude: selections.region.latitude,
     p_region_longitude: selections.region.longitude,
     p_region_name: selections.region.fullName,
+    p_weather: result.data.weather,
   });
   if (error || !recordId) {
     return { message: "기록을 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
@@ -268,6 +270,7 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
     p_region_latitude: selections.region.latitude,
     p_region_longitude: selections.region.longitude,
     p_region_name: selections.region.fullName,
+    p_weather: result.data.weather,
   });
   if (error || !updated) {
     return { message: "기록을 수정하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };

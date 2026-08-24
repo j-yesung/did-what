@@ -209,6 +209,7 @@ export type Database = {
           region_longitude: number;
           region_name: string;
           updated_at: string;
+          weather: string;
         };
         Insert: {
           activity: string;
@@ -224,6 +225,7 @@ export type Database = {
           region_longitude: number;
           region_name: string;
           updated_at?: string;
+          weather?: string;
         };
         Update: {
           activity?: string;
@@ -239,6 +241,7 @@ export type Database = {
           region_longitude?: number;
           region_name?: string;
           updated_at?: string;
+          weather?: string;
         };
         Relationships: [];
       };
@@ -261,6 +264,23 @@ export type Database = {
               p_region_latitude: number;
               p_region_longitude: number;
               p_region_name: string;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              p_activity: string;
+              p_memo: string;
+              p_person_ids: string[];
+              p_place_ids: string[];
+              p_recorded_at: string;
+              p_recorded_until: string | null;
+              p_region_code: string;
+              p_region_label: string;
+              p_region_latitude: number;
+              p_region_longitude: number;
+              p_region_name: string;
+              p_weather: string;
             };
             Returns: string;
           }
@@ -294,6 +314,24 @@ export type Database = {
               p_region_latitude: number;
               p_region_longitude: number;
               p_region_name: string;
+            };
+            Returns: boolean;
+          }
+        | {
+            Args: {
+              p_activity: string;
+              p_memo: string;
+              p_person_ids: string[];
+              p_place_ids: string[];
+              p_record_id: string;
+              p_recorded_at: string;
+              p_recorded_until: string | null;
+              p_region_code: string;
+              p_region_label: string;
+              p_region_latitude: number;
+              p_region_longitude: number;
+              p_region_name: string;
+              p_weather: string;
             };
             Returns: boolean;
           }

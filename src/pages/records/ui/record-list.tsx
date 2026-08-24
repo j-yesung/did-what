@@ -76,6 +76,7 @@ export function RecordList({ filters }: RecordListProps) {
           recordedAt={record.recorded_at}
           recordedUntil={record.recorded_until}
           region={{ label: record.region_label, name: record.region_name }}
+          weather={record.weather}
         />
       ))}
     </RecordTimeline>

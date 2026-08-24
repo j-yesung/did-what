@@ -11,6 +11,13 @@ import { format, parseISO } from "date-fns";
 
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
+import {
+  DEFAULT_RECORD_WEATHER,
+  isRecordWeather,
+  RECORD_WEATHER_OPTIONS,
+  type RecordWeather,
+} from "@/entities/record/model/weather";
+import { WeatherIcon } from "@/entities/record/ui/weather-icon";
 import { getPushEndpoint } from "@/features/push-notification";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
@@ -40,6 +47,7 @@ import { LeaveGuard } from "@/shared/ui/leave-guard";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import type { RecordActionState } from "../model/record-form";
@@ -58,6 +66,7 @@ type RecordFormProps = {
     recordedAt: string;
     recordedUntil: string | null;
     region: RecordLocationRegion;
+    weather: RecordWeather;
   };
   mode?: "create" | "edit";
   /** 헤더 뒤로가기의 fallback과 같은 값. 저장을 취소하고 나갈 때 돌아갈 곳이다. */
@@ -70,6 +79,7 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
   const guardRef = useRef<LeaveGuardHandle>(null);
   const placesQuery = useQuery(placesQueryOptions);
   const [memoLength, setMemoLength] = useState(initialValues?.memo.length ?? 0);
+  const [weather, setWeather] = useState<RecordWeather>(initialValues?.weather ?? DEFAULT_RECORD_WEATHER);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange>(() => ({
     from: parseISO(initialValues?.recordedAt ?? TODAY),
@@ -230,6 +240,45 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
               <input name="recordedAt" type="hidden" value={recordedAt} />
               <input name="recordedUntil" type="hidden" value={recordedUntil} />
               <FieldError id="record-date-error">{fieldErrors?.recordedAt ?? fieldErrors?.recordedUntil}</FieldError>
+            </Field>
+          </FieldSet>
+
+          <FieldSeparator />
+
+          <FieldSet>
+            <FieldLegend className="flex items-center gap-2" id="record-weather-label" variant="label">
+              <WeatherIcon weather={weather} className={FIELD_ICON} aria-hidden="true" />
+              날씨
+            </FieldLegend>
+            <Field data-invalid={Boolean(fieldErrors?.weather)}>
+              <input name="weather" type="hidden" value={weather} />
+              <ToggleGroup
+                aria-describedby={fieldErrors?.weather ? "record-weather-error" : undefined}
+                aria-invalid={Boolean(fieldErrors?.weather)}
+                aria-labelledby="record-weather-label"
+                className="w-full gap-1 rounded-xl bg-muted p-1"
+                onValueChange={(values) => {
+                  const nextWeather = values.at(-1);
+                  if (!isRecordWeather(nextWeather)) return;
+                  setWeather(nextWeather);
+                  markDirty();
+                }}
+                value={[weather]}
+              >
+                {RECORD_WEATHER_OPTIONS.map((option) => (
+                  <ToggleGroupItem
+                    aria-label={option.label}
+                    className="h-14 min-w-0 flex-1 touch-manipulation flex-col gap-0.5 rounded-lg px-1 text-[11px] text-muted-foreground aria-pressed:bg-surface aria-pressed:text-foreground aria-pressed:shadow-sm [&_svg]:size-5"
+                    key={option.value}
+                    type="button"
+                    value={option.value}
+                  >
+                    <WeatherIcon weather={option.value} aria-hidden="true" />
+                    {option.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+              <FieldError id="record-weather-error">{fieldErrors?.weather}</FieldError>
             </Field>
           </FieldSet>
 

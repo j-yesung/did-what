@@ -1,6 +1,8 @@
 import { CalendarDotsIcon, MapPinIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
+import { getRecordWeatherLabel, normalizeRecordWeather } from "@/entities/record/model/weather";
+import { WeatherIcon } from "@/entities/record/ui/weather-icon";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
@@ -13,9 +15,12 @@ type RecordCardProps = {
   recordedAt: string;
   recordedUntil?: string | null;
   region?: { label: string; name: string };
+  weather: string;
 };
 
-export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil, region }: RecordCardProps) {
+export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil, region, weather }: RecordCardProps) {
+  const normalizedWeather = normalizeRecordWeather(weather);
+
   return (
     <article className="relative pl-5">
       {/* 점은 세로선 위에 있어야 해서 카드와 같이 줄지 않는다. 누르는 동안 점과 카드 간격이 2px쯤 벌어지는데,
@@ -35,6 +40,12 @@ export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil
             <CardDescription className="flex items-center gap-1.5">
               <CalendarDotsIcon strokeWidth={2} className="size-4" aria-hidden="true" />
               {formatRecordPeriod(recordedAt, recordedUntil)}
+              <span
+                className="ml-auto inline-flex shrink-0 items-center"
+                aria-label={getRecordWeatherLabel(normalizedWeather)}
+              >
+                <WeatherIcon weather={normalizedWeather} className="size-4" aria-hidden="true" />
+              </span>
             </CardDescription>
           </CardHeader>
 

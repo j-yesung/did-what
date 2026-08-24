@@ -15,7 +15,7 @@ export async function getPlaceRecords(placeId: string, ownerId: string) {
 
   return supabase
     .from("record_places")
-    .select("record:records!inner(id, activity, memo, recorded_at, recorded_until, owner_id)")
+    .select("record:records!inner(id, activity, memo, weather, recorded_at, recorded_until, owner_id)")
     .eq("place_id", placeId)
     .eq("record.owner_id", ownerId);
 }

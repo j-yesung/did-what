@@ -1,3 +1,4 @@
+import { isRecordWeather, type RecordWeather } from "#entities/record/model/weather.ts";
 import type { KakaoSearchScope } from "#shared/api/kakao-local.ts";
 import { isIsoDate } from "#shared/lib/validation/is-iso-date.ts";
 import { isUuid } from "#shared/lib/validation/is-uuid.ts";
@@ -15,7 +16,7 @@ export type RecordPlaceReference =
     };
 
 export type RecordFieldErrors = Partial<
-  Record<"recordedAt" | "recordedUntil" | "regionCode" | "places" | "activity" | "memo", string>
+  Record<"recordedAt" | "recordedUntil" | "regionCode" | "places" | "weather" | "activity" | "memo", string>
 >;
 
 export type RecordInput = {
@@ -25,6 +26,7 @@ export type RecordInput = {
   regionLabel: string;
   regionName: string;
   places: RecordPlaceReference[];
+  weather: RecordWeather;
   activity: string;
   memo?: string;
 };
@@ -36,6 +38,7 @@ export type RecordInputValues = {
   regionLabel: string;
   regionName: string;
   places: string;
+  weather: string;
   activity: string;
   memo: string;
 };
@@ -160,6 +163,10 @@ export function validateRecordInput(
     fieldErrors.places = `방문 장소는 ${MAX_VISITED_PLACES}곳까지 선택할 수 있어요.`;
   }
 
+  if (!isRecordWeather(values.weather)) {
+    fieldErrors.weather = "날씨를 선택해 주세요.";
+  }
+
   if (activity.length < 1 || activity.length > 120) {
     fieldErrors.activity = "한 일은 1자 이상 120자 이하로 입력해 주세요.";
   }
@@ -168,7 +175,7 @@ export function validateRecordInput(
     fieldErrors.memo = "메모는 500자 이하로 입력해 주세요.";
   }
 
-  if (Object.keys(fieldErrors).length > 0 || !places) {
+  if (Object.keys(fieldErrors).length > 0 || !places || !isRecordWeather(values.weather)) {
     return { fieldErrors };
   }
 
@@ -182,6 +189,7 @@ export function validateRecordInput(
       regionLabel,
       regionName,
       places,
+      weather: values.weather,
       activity,
       ...(memo ? { memo } : {}),
     },
