@@ -41,14 +41,13 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
       ) : record ? (
         <>
           <section aria-labelledby="record-activity-title" className="px-1 py-4">
-            <p className="font-bold text-foreground text-xs">OUR MOMENT</p>
             <h2
               className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
               id="record-activity-title"
             >
               {record.activity}
             </h2>
-            <p className="mt-3 text-muted-foreground text-sm">함께한 날의 장면을 다시 꺼내봤어요.</p>
+            <p className="mt-3 text-muted-foreground text-sm">함께한 날의 기억을 다시 꺼냄띠</p>
             <div className="mt-5 flex gap-2">
               <Button nativeButton={false} render={<Link href={`/records/${record.id}/edit`} />} variant="outline">
                 수정
@@ -60,7 +59,6 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
           <Card>
             <CardHeader>
               <CardTitle>이날의 기록</CardTitle>
-              <CardDescription>언제, 어디서 함께했는지</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
               <div className="grid grid-cols-[20px_1fr] gap-3">
