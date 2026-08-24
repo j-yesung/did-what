@@ -40,8 +40,7 @@ export function PageShell({ children, className, endSwipeBackFallback, withBotto
           withBottomNavigation
             ? "motion-safe:animate-[tab-content-enter_160ms_cubic-bezier(0.2,0,0,1)_both]"
             : "motion-safe:animate-[screen-content-enter_280ms_cubic-bezier(0.2,0,0,1)_both]",
-          endSwipeBackFallback &&
-            "touch-pan-y transition-[transform,opacity] duration-200 ease-[cubic-bezier(0.4,0,1,1)] data-[swipe-back-exit=true]:pointer-events-none data-[swipe-back-exit=true]:translate-x-6 data-[swiping=true]:select-none data-[swipe-back-exit=true]:opacity-0 motion-reduce:transition-none",
+          endSwipeBackFallback && "touch-pan-y data-[swiping=true]:select-none",
           className,
         )}
         ref={shellRef}

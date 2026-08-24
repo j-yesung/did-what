@@ -1,6 +1,6 @@
 "use client";
 
-import { type TouchEvent, useEffect, useRef } from "react";
+import { type TouchEvent, useRef } from "react";
 
 import { getEndSwipeBackProgress, isAtScrollEnd } from "./end-swipe-back";
 import { useGoBack } from "./use-go-back";
@@ -14,9 +14,6 @@ export function useEndSwipeBack(fallbackHref?: string) {
   const progressRef = useRef(0);
   const navigatingRef = useRef(false);
   const reduceMotionRef = useRef(false);
-  const navigationTimerRef = useRef<number>(undefined);
-
-  useEffect(() => () => window.clearTimeout(navigationTimerRef.current), []);
 
   const resetSwipe = () => {
     const indicator = indicatorRef.current;
@@ -74,24 +71,7 @@ export function useEndSwipeBack(fallbackHref?: string) {
 
     touchStartRef.current = null;
     navigatingRef.current = true;
-
-    if (reduceMotionRef.current) {
-      goBackTo(fallbackHref);
-      return;
-    }
-
-    const indicator = indicatorRef.current;
-    if (indicator) {
-      indicator.dataset.dragging = "false";
-      indicator.style.opacity = "0";
-      indicator.style.transform = "translate3d(0, -12px, 0) scale(0.92)";
-    }
-    if (shellRef.current) {
-      shellRef.current.style.willChange = "transform, opacity";
-      shellRef.current.dataset.swipeBackExit = "true";
-    }
-
-    navigationTimerRef.current = window.setTimeout(() => goBackTo(fallbackHref), 180);
+    goBackTo(fallbackHref);
   };
 
   return {
