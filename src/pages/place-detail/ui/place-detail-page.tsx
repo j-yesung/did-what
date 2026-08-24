@@ -38,7 +38,7 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
   const hasLoadError = Boolean(placeResult.error || recordsResult.error);
 
   return (
-    <PageShell>
+    <PageShell endSwipeBackFallback="/places">
       <PageHeader back="/places" title="기억의 장소" />
 
       {hasLoadError || !place ? (

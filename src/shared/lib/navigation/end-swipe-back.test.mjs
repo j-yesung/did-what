@@ -1,0 +1,19 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { getEndSwipeBackProgress, isAtScrollEnd } from "#shared/lib/navigation/end-swipe-back.ts";
+
+test("화면 끝에서 위로 72px 이상 당긴 수직 제스처만 뒤로가기를 활성화한다", () => {
+  const start = { x: 100, y: 500 };
+
+  assert.equal(getEndSwipeBackProgress(start, { x: 100, y: 464 }), 0.5);
+  assert.equal(getEndSwipeBackProgress(start, { x: 100, y: 428 }), 1);
+  assert.equal(getEndSwipeBackProgress(start, { x: 180, y: 450 }), 0);
+  assert.equal(getEndSwipeBackProgress(start, { x: 100, y: 540 }), 0);
+});
+
+test("소수점 위치와 iOS 오버스크롤을 포함해 문서 끝을 판정한다", () => {
+  assert.equal(isAtScrollEnd(1200, 700, 496.5), true);
+  assert.equal(isAtScrollEnd(1200, 700, 490), false);
+  assert.equal(isAtScrollEnd(1200, 700, 520), true);
+  assert.equal(isAtScrollEnd(700, 700, -20), true);
+});

@@ -35,7 +35,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
   const weather = normalizeRecordWeather(record?.weather);
 
   return (
-    <PageShell>
+    <PageShell endSwipeBackFallback="/records">
       <PageHeader back="/records" title="기록 상세" />
 
       {error ? (
