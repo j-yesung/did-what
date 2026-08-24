@@ -10,6 +10,11 @@ const TOAST_ICONS = {
   error: <WarningCircleIcon aria-hidden="true" className="text-destructive" strokeWidth={2} />,
   success: <CheckCircleIcon aria-hidden="true" className="text-success" strokeWidth={2} />,
 };
+
+const TOAST_CLASS_NAMES = {
+  icon: "mt-0.5",
+  toast: "items-start!",
+};
 const TOAST_STYLE = {
   "--border-radius": "var(--radius-xl)",
   "--normal-bg": "var(--background)",
@@ -25,6 +30,7 @@ export function Toaster(props: ToasterProps) {
       offset={{ top: TOAST_OFFSET }}
       position="top-center"
       style={TOAST_STYLE}
+      toastOptions={{ classNames: TOAST_CLASS_NAMES }}
       {...props}
     />
   );
