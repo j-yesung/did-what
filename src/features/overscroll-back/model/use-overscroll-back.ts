@@ -2,12 +2,12 @@
 
 import { type TouchEvent, useRef } from "react";
 
-import { getEndSwipeBackProgress, isAtScrollEnd } from "./end-swipe-back";
-import { useGoBack } from "./use-go-back";
+import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 
-export function useEndSwipeBack(fallbackHref?: string) {
+import { getOverscrollBackProgress, isAtScrollEnd } from "./overscroll-back";
+
+export function useOverscrollBack(fallbackHref: string) {
   const goBackTo = useGoBack();
-  const shellRef = useRef<HTMLElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -29,11 +29,10 @@ export function useEndSwipeBack(fallbackHref?: string) {
       indicator.style.transform = "translate3d(0, 24px, 0) scale(0.82)";
     }
     if (icon) icon.style.transform = "rotate(0deg)";
-    if (shellRef.current) shellRef.current.dataset.swiping = "false";
   };
 
-  const startSwipe = (event: TouchEvent<HTMLElement>) => {
-    if (!fallbackHref || navigatingRef.current || event.touches.length !== 1) return;
+  const startSwipe = (event: TouchEvent<HTMLDivElement>) => {
+    if (navigatingRef.current || event.touches.length !== 1) return;
     if (!isAtScrollEnd(document.documentElement.scrollHeight, window.innerHeight, window.scrollY)) return;
 
     const touch = event.touches[0];
@@ -41,17 +40,16 @@ export function useEndSwipeBack(fallbackHref?: string) {
     reduceMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   };
 
-  const moveSwipe = (event: TouchEvent<HTMLElement>) => {
+  const moveSwipe = (event: TouchEvent<HTMLDivElement>) => {
     const start = touchStartRef.current;
     const indicator = indicatorRef.current;
     const icon = iconRef.current;
     if (!start || !indicator || !icon || event.touches.length !== 1) return;
 
     const touch = event.touches[0];
-    const progress = getEndSwipeBackProgress(start, { x: touch.clientX, y: touch.clientY });
+    const progress = getOverscrollBackProgress(start, { x: touch.clientX, y: touch.clientY });
     progressRef.current = progress;
 
-    if (shellRef.current) shellRef.current.dataset.swiping = String(progress > 0);
     indicator.dataset.dragging = "true";
     indicator.dataset.ready = String(progress === 1);
     indicator.style.opacity = String(Math.min(progress * 1.6, 1));
@@ -61,8 +59,8 @@ export function useEndSwipeBack(fallbackHref?: string) {
     icon.style.transform = `rotate(${reduceMotionRef.current ? 90 : progress * 90}deg)`;
   };
 
-  const finishSwipe = (event: TouchEvent<HTMLElement>) => {
-    if (!touchStartRef.current || !fallbackHref) return;
+  const finishSwipe = (event: TouchEvent<HTMLDivElement>) => {
+    if (!touchStartRef.current) return;
 
     if (event.touches.length > 0 || progressRef.current < 1) {
       resetSwipe();
@@ -77,8 +75,7 @@ export function useEndSwipeBack(fallbackHref?: string) {
   return {
     iconRef,
     indicatorRef,
-    shellRef,
-    swipeHandlers: {
+    touchHandlers: {
       onTouchCancel: resetSwipe,
       onTouchEnd: finishSwipe,
       onTouchMove: moveSwipe,
