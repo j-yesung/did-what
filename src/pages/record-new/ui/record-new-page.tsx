@@ -6,10 +6,7 @@ export function RecordNewPage() {
     <PageShell className="block">
       <PageHeader back="/records" title="기록" />
 
-      <section
-        className="px-1 pt-5.5 pb-5 motion-safe:animate-[enter_360ms_ease-out_both]"
-        aria-labelledby="record-intro-title"
-      >
+      <section className="px-1 pt-5.5 pb-5" aria-labelledby="record-intro-title">
         <h2
           className="font-[780] text-[clamp(24px,7vw,30px)] leading-tight tracking-[-0.045em]"
           id="record-intro-title"

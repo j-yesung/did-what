@@ -107,7 +107,7 @@
   /* 플로팅 내비게이션과 콘텐츠 사이의 안전 여백. iOS 홈 인디케이터 영역도 포함한다. */
   --nav-height: 58px;
   --nav-bottom-gap: 6px;
-  --nav-content-gap: 24px;
+  --nav-content-gap: 16px;
   --nav-clearance: calc(
     var(--nav-height) +
     var(--nav-bottom-gap) +
@@ -221,6 +221,7 @@
 
   html {
     background: var(--background);
+    overflow-x: clip;
     /**
      * 안쪽 스크롤 영역이 끝에 닿았을 때 문서까지 딸려 스크롤되는 것만 막는다.
      * none은 iOS 고무줄 반동까지 없애 스크롤이 벽에 부딪히듯 멈춰서, 반동은 남기는 contain을 쓴다.
@@ -305,18 +306,6 @@
   }
 }
 
-@keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes loading-dot {
   0%,
   60%,
@@ -335,5 +324,13 @@
   from {
     opacity: 0;
     transform: translateY(6px) scale(0.99);
+  }
+}
+
+/** 상세 화면은 오른쪽에서 들어와 상위 화면 위에 쌓이는 계층을 보여준다. */
+@keyframes screen-content-enter {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
   }
 }

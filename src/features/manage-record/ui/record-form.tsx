@@ -158,7 +158,7 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
       onSubmit={handleSubmit}
     >
       <LeaveGuard fallbackHref={returnTo} isDirty={() => formRef.current?.dataset.dirty === "true"} ref={guardRef} />
-      <div className="rounded-xl border border-border bg-surface px-4.5 py-5 motion-safe:animate-[enter_360ms_ease-out_both] motion-safe:[animation-delay:70ms]">
+      <div className="rounded-xl border border-border bg-surface px-4.5 py-5">
         <FieldGroup>
           <FieldSet>
             <FieldLegend className="flex items-center gap-2" variant="label">

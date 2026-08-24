@@ -1,17 +1,29 @@
 "use client";
 
-import { MapPinAreaIcon } from "@phosphor-icons/react";
+import { MapPinAreaIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { IconButton } from "@/shared/ui/icon-button";
 import { PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { KoreaActivityMap } from "./korea-activity-map";
+
+const CREATE_RECORD_BUTTON = (
+  <IconButton
+    aria-label="기록 남기기"
+    icon={NotePencilIcon}
+    iconSize={24}
+    nativeButton={false}
+    render={<Link href="/records/new" />}
+    variant="fill"
+  />
+);
 
 export function HomePage() {
   const recordsQuery = useQuery(recordsQueryOptions);
@@ -36,12 +48,15 @@ export function HomePage() {
       </section>
 
       {recordsQuery.isError ? (
-        <LoadErrorAlert
-          icon={<MapPinAreaIcon strokeWidth={2} aria-hidden="true" />}
-          title="발자취를 불러오지 못했어요"
-        />
+        <div className="flex flex-col items-center gap-3">
+          <LoadErrorAlert
+            icon={<MapPinAreaIcon strokeWidth={2} aria-hidden="true" />}
+            title="발자취를 불러오지 못했어요"
+          />
+          {CREATE_RECORD_BUTTON}
+        </div>
       ) : records.length > 0 ? (
-        <p className="text-center text-muted-foreground text-sm">지금까지 남긴 발자취 {records.length}개</p>
+        <div className="mx-auto flex w-[min(calc(100vw-48px),320px)] justify-center">{CREATE_RECORD_BUTTON}</div>
       ) : (
         <Empty className="flex-none py-4">
           <EmptyHeader>
@@ -58,12 +73,6 @@ export function HomePage() {
           </EmptyContent>
         </Empty>
       )}
-
-      {recordsQuery.isError || records.length > 0 ? (
-        <Button className="h-14 w-full shrink-0" size="lg" render={<Link href="/records/new" />} nativeButton={false}>
-          기록 남기기
-        </Button>
-      ) : null}
     </PageShell>
   );
 }

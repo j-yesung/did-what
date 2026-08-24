@@ -20,13 +20,13 @@ export function BottomNavigation() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--nav-bottom-gap)+env(safe-area-inset-bottom))] z-40 w-full pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]"
+      className="pointer-events-none fixed inset-x-0 bottom-[max(var(--nav-bottom-gap),calc(var(--nav-bottom-gap)+env(safe-area-inset-bottom)-8px))] z-40 w-full pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]"
     >
-      <ul className="pointer-events-auto relative isolate mx-auto grid h-(--nav-height) w-[calc(100%-48px)] max-w-[360px] grid-cols-4 rounded-full border border-border/70 bg-surface/95 p-1 shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
-        <li aria-hidden="true" className="pointer-events-none absolute inset-1 z-0 grid grid-cols-4">
+      <ul className="pointer-events-auto relative isolate mx-auto grid h-(--nav-height) w-[calc(100%-48px)] max-w-[320px] auto-cols-fr grid-flow-col rounded-full border border-border/70 bg-surface/95 p-1 shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
+        <li aria-hidden="true" className="pointer-events-none absolute inset-1 z-0">
           <span
-            className="col-start-1 row-start-1 rounded-full bg-primary/10 shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
-            style={{ transform: `translateX(${activeIndex * 100}%)` }}
+            className="block h-full rounded-full bg-primary/10 shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
+            style={{ transform: `translateX(${activeIndex * 100}%)`, width: `${100 / TABS.length}%` }}
           />
         </li>
         {TABS.map(({ href, icon: Icon, label }) => {
@@ -41,7 +41,7 @@ export function BottomNavigation() {
                 href={href}
                 prefetch={true}
               >
-                <Icon aria-hidden="true" className="size-5.5" weight={active ? "fill" : "regular"} />
+                <Icon aria-hidden="true" className="size-4.5" weight={active ? "fill" : "regular"} />
                 {label}
               </Link>
             </li>
