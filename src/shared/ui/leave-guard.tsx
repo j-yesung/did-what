@@ -9,14 +9,13 @@ import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./alert-dialog";
+import { TextButton } from "./text-button";
 
 const SENTINEL = "leaveGuard";
 
@@ -26,12 +25,10 @@ function raiseSentinel() {
 }
 
 export type LeaveGuardHandle = {
-  /** 저장이 끝났을 때 부른다. 폼이 쌓아 둔 항목을 걷어내고 destination으로 보낸다. */
   finish: (destination: string) => void;
 };
 
 type LeaveGuardProps = {
-  /** 돌아갈 화면이 없을 때 대신 갈 곳. 헤더 뒤로가기의 fallback과 같은 값을 준다. */
   fallbackHref: string;
   isDirty: () => boolean;
   ref?: Ref<LeaveGuardHandle>;
@@ -132,15 +129,21 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
   return (
     <AlertDialog onOpenChange={(open) => (open ? setConfirmOpen(true) : stay())} open={confirmOpen}>
       <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>작성 중인 내용이 사라져요</AlertDialogTitle>
-          <AlertDialogDescription>이 화면을 나가면 입력한 내용이 저장되지 않아요.</AlertDialogDescription>
+        <AlertDialogHeader className="place-items-start text-left">
+          <AlertDialogTitle className="font-bold text-[20px] leading-[29px]">
+            작성 중인 내용이 사라져요
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-left font-medium text-[15px] leading-[22.5px]">
+            이 화면을 나가면 입력한 내용이 저장되지 않아요.
+          </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={stay}>계속 작성</AlertDialogCancel>
-          <AlertDialogAction onClick={leave} variant="destructive">
+        <AlertDialogFooter className="justify-end border-0 bg-transparent pt-2" layout="split">
+          <TextButton className="min-h-12 justify-center px-3 font-bold" size="lg" tone="muted" onClick={stay}>
+            계속 작성
+          </TextButton>
+          <TextButton className="min-h-12 justify-center px-3 font-bold" size="lg" tone="danger" onClick={leave}>
             나가기
-          </AlertDialogAction>
+          </TextButton>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
