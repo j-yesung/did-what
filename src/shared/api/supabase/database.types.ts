@@ -98,6 +98,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      push_subscriptions: {
+        Row: {
+          auth_key: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          label: string | null;
+          owner_id: string;
+          p256dh: string;
+          updated_at: string;
+        };
+        Insert: {
+          auth_key: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          label?: string | null;
+          owner_id: string;
+          p256dh: string;
+          updated_at?: string;
+        };
+        Update: {
+          auth_key?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          label?: string | null;
+          owner_id?: string;
+          p256dh?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       record_people: {
         Row: {
           created_at: string;

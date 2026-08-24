@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { findPersonIds } from "@/entities/person";
+import { sendRecordPush } from "@/features/push-notification/model/send-record-push";
 import {
   type KakaoSearchScope,
   normalizeKakaoPage,
@@ -222,6 +223,22 @@ export async function createRecord(formData: FormData): Promise<RecordActionStat
   });
   if (error || !recordId) {
     return { message: "기록을 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
+  }
+
+  /**
+   * 계정을 함께 쓰는 다른 기기에 알린다. 발송이 실패해도 기록은 이미 저장됐으므로 성공으로 끝낸다.
+   * 배럴이 아니라 모듈에서 직접 가져오는 이유는 그쪽 주석에 있다.
+   */
+  try {
+    await sendRecordPush({
+      activity: result.data.activity,
+      ownerId: user.id,
+      recordId,
+      senderEndpoint: String(formData.get("senderEndpoint") ?? ""),
+      supabase,
+    });
+  } catch {
+    // 알림은 부가 기능이라 저장 결과를 바꾸지 않는다.
   }
 
   revalidatePath("/");

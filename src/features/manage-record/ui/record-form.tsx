@@ -13,6 +13,7 @@ import Link from "next/link";
 import { peopleQueryOptions } from "@/entities/person/api/people-query";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
+import { getPushEndpoint } from "@/features/push-notification";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
@@ -118,18 +119,30 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
     if (formRef.current) formRef.current.dataset.dirty = "true";
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
 
-    if (event.currentTarget.querySelectorAll('input[name="personIds"]:checked').length === 0) {
+    if (form.querySelectorAll('input[name="personIds"]:checked').length === 0) {
       setHasPersonError(true);
-      event.currentTarget.querySelector<HTMLElement>('input[name="personIds"]')?.focus();
+      form.querySelector<HTMLElement>('input[name="personIds"]')?.focus();
       return;
     }
 
     // 저장을 시작하면 이탈 경고를 끈다. 성공하면 화면이 바뀌고, 실패하면 onFail이 다시 켠다.
-    event.currentTarget.dataset.dirty = "false";
-    save.mutate(new FormData(event.currentTarget));
+    form.dataset.dirty = "false";
+    const formData = new FormData(form);
+
+    /**
+     * 계정을 함께 쓰므로 서버는 어느 기기가 보냈는지 알 수 없다.
+     * 작성한 기기에는 알림이 가지 않도록 이 기기의 구독 endpoint를 실어 보낸다.
+     */
+    if (mode === "create") {
+      const endpoint = await getPushEndpoint();
+      if (endpoint) formData.set("senderEndpoint", endpoint);
+    }
+
+    save.mutate(formData);
   }
 
   if (peopleQuery.isPending || placesQuery.isPending) {
