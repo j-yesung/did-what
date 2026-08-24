@@ -12,11 +12,15 @@ type OverscrollBackProps = {
 };
 
 export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) {
-  const { iconRef, indicatorRef, touchHandlers } = useOverscrollBack(fallbackHref);
+  const { containerRef, iconRef, indicatorRef, progressRingRef, touchHandlers } = useOverscrollBack(fallbackHref);
 
   return (
     <>
-      <div className="touch-pan-y [&>main]:pb-[calc(76px+env(safe-area-inset-bottom))]" {...touchHandlers}>
+      <div
+        className="touch-pan-y [&>main]:pb-[calc(76px+env(safe-area-inset-bottom))]"
+        ref={containerRef}
+        {...touchHandlers}
+      >
         {children}
       </div>
 
@@ -28,9 +32,28 @@ export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) 
         ref={indicatorRef}
         style={{ transform: "translate3d(0, 24px, 0) scale(0.82)" }}
       >
-        <div className="flex size-12 items-center justify-center rounded-full bg-popover text-foreground shadow-lg ring-1 ring-border transition-colors duration-150 group-data-[ready=true]/overscroll-back:bg-foreground group-data-[ready=true]/overscroll-back:text-background">
+        <div className="relative flex size-12 items-center justify-center rounded-full bg-popover text-foreground shadow-lg transition-colors duration-150 group-data-[ready=true]/overscroll-back:bg-foreground group-data-[ready=true]/overscroll-back:text-background">
+          <svg
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 size-full -rotate-90"
+            viewBox="0 0 48 48"
+          >
+            <circle className="fill-none stroke-border" cx="24" cy="24" pathLength="1" r="22" strokeWidth="2" />
+            <circle
+              className="fill-none stroke-foreground transition-[stroke-dashoffset] duration-200 ease-out group-data-[dragging=true]/overscroll-back:duration-0"
+              cx="24"
+              cy="24"
+              pathLength="1"
+              r="22"
+              ref={progressRingRef}
+              strokeDasharray="1"
+              strokeDashoffset="1"
+              strokeLinecap="round"
+              strokeWidth="2"
+            />
+          </svg>
           <div
-            className="transition-transform duration-150 group-data-[dragging=true]/overscroll-back:duration-0"
+            className="relative transition-transform duration-150 group-data-[dragging=true]/overscroll-back:duration-0"
             ref={iconRef}
           >
             <CaretDownIcon className="size-5" weight="bold" />
