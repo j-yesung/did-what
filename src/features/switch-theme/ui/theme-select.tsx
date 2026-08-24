@@ -14,7 +14,7 @@ export function ThemeSelect({ value }: ThemeSelectProps) {
   return (
     <form action={setTheme}>
       <fieldset>
-        <legend className="mb-1 font-medium text-sm">화면 모드</legend>
+        <legend className="mb-1 font-medium text-lg">화면 모드</legend>
         <div className="flex flex-col">
           {THEME_OPTIONS.map((option) => {
             const selected = option.value === value;

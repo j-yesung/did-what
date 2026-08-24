@@ -95,7 +95,7 @@ export function PushToggle() {
 
   return (
     <fieldset>
-      <legend className="mb-1 font-medium text-sm">알림</legend>
+      <legend className="mb-1 font-medium text-lg">알림</legend>
 
       {state === "unsupported" ? (
         <FieldDescription>
@@ -104,7 +104,7 @@ export function PushToggle() {
       ) : (
         <Field orientation="horizontal">
           <FieldLabel className="min-h-11 items-center" htmlFor="push-switch">
-            새 기록 알림
+            기록 알림
           </FieldLabel>
           {pending ? (
             <Spinner
