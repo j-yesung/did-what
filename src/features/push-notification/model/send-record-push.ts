@@ -12,7 +12,13 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
  * 알림 설정 실수로 기록 저장까지 막히면 안 되므로 여기서 끊고, 알림만 조용히 꺼진 상태로 둔다.
  */
 const configured = (() => {
-  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return false;
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    console.warn("[push] VAPID 키가 없어 알림을 보내지 않습니다.", {
+      hasPrivateKey: Boolean(VAPID_PRIVATE_KEY),
+      hasPublicKey: Boolean(VAPID_PUBLIC_KEY),
+    });
+    return false;
+  }
 
   try {
     webpush.setVapidDetails(
@@ -21,7 +27,8 @@ const configured = (() => {
       VAPID_PRIVATE_KEY,
     );
     return true;
-  } catch {
+  } catch (error) {
+    console.warn("[push] VAPID 설정이 잘못돼 알림을 보내지 않습니다.", error);
     return false;
   }
 })();
@@ -30,7 +37,6 @@ const configured = (() => {
 const GONE_STATUS_CODES = new Set([404, 410]);
 
 type SendRecordPushInput = {
-  activity: string;
   ownerId: string;
   recordId: string;
   /** 기록을 작성한 기기의 구독 endpoint. 계정을 공유하므로 기기를 가르는 값은 이것뿐이다. */
@@ -44,7 +50,7 @@ type SendRecordPushInput = {
  * 커플이 계정 하나를 함께 쓰는 것을 전제로 한다. 작성자 본인의 기기는 endpoint로 걸러내고,
  * 누가 썼는지는 구독을 만들 때 기기마다 저장해 둔 label에서 가져온다.
  */
-export async function sendRecordPush({ activity, ownerId, recordId, senderEndpoint, supabase }: SendRecordPushInput) {
+export async function sendRecordPush({ ownerId, recordId, senderEndpoint, supabase }: SendRecordPushInput) {
   if (!configured) return;
 
   const { data: subscriptions } = await supabase
@@ -59,8 +65,11 @@ export async function sendRecordPush({ activity, ownerId, recordId, senderEndpoi
 
   const senderLabel = subscriptions.find((subscription) => subscription.endpoint === senderEndpoint)?.label;
 
+  /**
+   * 활동 내용은 담지 않는다. iOS가 앱 이름을 따로 붙이므로 제목 한 줄이면 알림으로 충분하고,
+   * 잠금 화면에 기록 내용이 그대로 뜨는 것도 피한다.
+   */
   const payload = JSON.stringify({
-    body: activity,
     tag: `record-${recordId}`,
     title: senderLabel ? `${senderLabel}님이 기록을 남겼어요` : "새 기록이 추가됐어요",
     url: `/records/${recordId}`,
@@ -76,7 +85,11 @@ export async function sendRecordPush({ activity, ownerId, recordId, senderEndpoi
         return null;
       } catch (error) {
         const statusCode = (error as { statusCode?: number }).statusCode;
-        return statusCode && GONE_STATUS_CODES.has(statusCode) ? target.endpoint : null;
+        if (statusCode && GONE_STATUS_CODES.has(statusCode)) return target.endpoint;
+
+        // 만료 말고 다른 이유로 실패하면 흔적이 없어 원인을 찾을 수 없다. 키 불일치(403)가 대표적이다.
+        console.warn("[push] 발송 실패", { label: target.label, statusCode });
+        return null;
       }
     }),
   );

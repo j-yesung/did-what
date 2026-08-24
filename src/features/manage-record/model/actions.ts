@@ -231,7 +231,6 @@ export async function createRecord(formData: FormData): Promise<RecordActionStat
    */
   try {
     await sendRecordPush({
-      activity: result.data.activity,
       ownerId: user.id,
       recordId,
       senderEndpoint: String(formData.get("senderEndpoint") ?? ""),
