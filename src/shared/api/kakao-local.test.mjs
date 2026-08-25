@@ -107,7 +107,7 @@ assert.deepEqual(
   ],
 );
 
-// 세종처럼 시·군·구 단계가 없는 곳은 시·도 이름이 그 단위가 된다.
+// 세종처럼 시·군·구 단계가 없는 곳은 읍·면·동을 한 단위로 쓴다.
 assert.deepEqual(
   parseKakaoRegionSearchResponse({
     documents: [
@@ -125,11 +125,11 @@ assert.deepEqual(
   }),
   [
     {
-      code: "3611000000",
-      fullName: "세종특별자치시",
+      code: "3611011900",
+      fullName: "세종특별자치시 세종동",
       latitude: 36.51,
       longitude: 127.28,
-      name: "세종특별자치시",
+      name: "세종동",
     },
   ],
 );

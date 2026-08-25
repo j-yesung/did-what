@@ -1,18 +1,19 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { MapPinAreaIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
+import { KoreaActivityMap } from "@/entities/region";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { IconButton } from "@/shared/ui/icon-button";
 import { PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
-
-import { KoreaActivityMap } from "./korea-activity-map";
 
 const CREATE_RECORD_BUTTON = (
   <IconButton
@@ -27,11 +28,15 @@ const CREATE_RECORD_BUTTON = (
 
 export function HomePage() {
   const recordsQuery = useQuery(recordsQueryOptions);
-  const records = (recordsQuery.data ?? []).map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
-    id,
-    latitude,
-    longitude,
-  }));
+  const records = useMemo(
+    () =>
+      (recordsQuery.data ?? []).map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
+        id,
+        latitude,
+        longitude,
+      })),
+    [recordsQuery.data],
+  );
 
   if (recordsQuery.isPending) {
     return (

@@ -154,24 +154,20 @@ function isLocalityName(name: string): boolean {
   return /(?:동|읍|면|\d가)$/.test(name);
 }
 
-/**
- * 지역은 시·군·구 한 단위로 통일한다.
- * 동까지 내려가면 같은 도시 안에서 기록이 쪼개지고, 시·도까지 올라가면 대표 지역으로도 검색 기준점으로도 너무 넓다.
- * 법정동 코드는 앞 5자리가 시·군·구라, 뒤를 0으로 눕히면 같은 도시의 동들이 한 코드로 모인다.
- */
+/** 시·군·구가 없는 세종은 읍·면·동, 나머지는 시·군·구 단위로 통일한다. */
 function toDistrict(code: string, depth1: string, depth2: string, depth3: string) {
+  const province = depth1.trim();
   const district = depth2.trim();
   const locality = depth3.trim();
 
-  // 둘 다 비면 시·도 문서(서울, 경기)다. 세종처럼 시·군·구 단계가 없는 곳은 시·도 이름이 곧 그 단위다.
   if ((!district && !locality) || !/^\d{10}$/.test(code)) return null;
 
-  const name = district || depth1.trim();
-  if (!name) return null;
+  const name = district || locality;
+  if (!province || !name) return null;
 
   return {
-    code: `${code.slice(0, 5)}00000`,
-    fullName: district ? `${depth1.trim()} ${district}` : name,
+    code: district ? `${code.slice(0, 5)}00000` : `${code.slice(0, 8)}00`,
+    fullName: `${province} ${name}`,
     name,
   };
 }
@@ -223,8 +219,8 @@ export function parseKakaoRegionSearchResponse(payload: unknown): KakaoRegion[] 
   }
 
   /**
-   * 같은 시·군·구의 문서는 하나로 합친다. 좌표는 먼저 온 문서 것을 남긴다.
-   * 카카오가 검색어와 가까운 순으로 주므로, 시·군·구 중심점보다 사용자가 찾던 곳에 가깝다.
+   * 같은 하위 지역의 문서는 하나로 합친다. 좌표는 먼저 온 문서 것을 남긴다.
+   * 카카오가 검색어와 가까운 순으로 주므로, 행정구역 중심점보다 사용자가 찾던 곳에 가깝다.
    */
   const regions = new Map<string, KakaoRegion>();
   for (const document of payload.documents) {

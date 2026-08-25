@@ -6,13 +6,24 @@ import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 
 import { getOverscrollBackProgress, isAtScrollEnd } from "./overscroll-back";
 
+type SwipeStart = { scrollDistanceToEnd: number; scrollY: number; x: number; y: number };
+
+function getSwipeProgress(start: SwipeStart, touch: { clientX: number; clientY: number }, container: HTMLDivElement) {
+  const scrollY = Math.max(0, container.scrollTop);
+  const atScrollEnd = isAtScrollEnd(container.scrollHeight, container.clientHeight, scrollY);
+  const consumedScrollDistance = Math.min(Math.max(0, scrollY - start.scrollY), start.scrollDistanceToEnd);
+  return atScrollEnd
+    ? getOverscrollBackProgress(start, { x: touch.clientX, y: touch.clientY }, consumedScrollDistance)
+    : 0;
+}
+
 export function useOverscrollBack(fallbackHref: string) {
   const goBackTo = useGoBack();
   const containerRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLDivElement>(null);
   const progressRingRef = useRef<SVGCircleElement>(null);
-  const touchStartRef = useRef<{ scrollDistanceToEnd: number; scrollY: number; x: number; y: number } | null>(null);
+  const touchStartRef = useRef<SwipeStart | null>(null);
   const swipeProgressRef = useRef(0);
   const navigatingRef = useRef(false);
   const reduceMotionRef = useRef(false);
@@ -41,12 +52,13 @@ export function useOverscrollBack(fallbackHref: string) {
   };
 
   const startSwipe = (event: TouchEvent<HTMLDivElement>) => {
-    if (navigatingRef.current || event.touches.length !== 1) return;
+    const container = containerRef.current;
+    if (!container || navigatingRef.current || event.touches.length !== 1) return;
 
     const touch = event.touches[0];
-    const scrollY = Math.max(0, window.scrollY);
+    const scrollY = Math.max(0, container.scrollTop);
     touchStartRef.current = {
-      scrollDistanceToEnd: Math.max(0, document.documentElement.scrollHeight - window.innerHeight - scrollY),
+      scrollDistanceToEnd: Math.max(0, container.scrollHeight - container.clientHeight - scrollY),
       scrollY,
       x: touch.clientX,
       y: touch.clientY,
@@ -56,16 +68,13 @@ export function useOverscrollBack(fallbackHref: string) {
 
   const moveSwipe = (event: TouchEvent<HTMLDivElement>) => {
     const start = touchStartRef.current;
+    const container = containerRef.current;
     const indicator = indicatorRef.current;
     const icon = iconRef.current;
-    if (!start || !indicator || !icon || event.touches.length !== 1) return;
+    if (!start || !container || !indicator || !icon || event.touches.length !== 1) return;
 
     const touch = event.touches[0];
-    const atScrollEnd = isAtScrollEnd(document.documentElement.scrollHeight, window.innerHeight, window.scrollY);
-    const consumedScrollDistance = Math.min(Math.max(0, window.scrollY - start.scrollY), start.scrollDistanceToEnd);
-    const progress = atScrollEnd
-      ? getOverscrollBackProgress(start, { x: touch.clientX, y: touch.clientY }, consumedScrollDistance)
-      : 0;
+    const progress = getSwipeProgress(start, touch, container);
     swipeProgressRef.current = progress;
 
     indicator.dataset.dragging = String(progress > 0);
@@ -76,10 +85,10 @@ export function useOverscrollBack(fallbackHref: string) {
       : `translate3d(0, ${(1 - progress) * 24}px, 0) scale(${0.82 + progress * 0.18})`;
     icon.style.transform = `rotate(${reduceMotionRef.current ? 90 : progress * 90}deg)`;
     if (progressRingRef.current) progressRingRef.current.style.strokeDashoffset = String(1 - progress);
-    if (containerRef.current && !reduceMotionRef.current) {
-      containerRef.current.dataset.dragging = String(progress > 0);
-      containerRef.current.style.transform = `translate3d(0, ${progress * -12}px, 0)`;
-      containerRef.current.style.willChange = progress > 0 ? "transform" : "auto";
+    if (!reduceMotionRef.current) {
+      container.dataset.dragging = String(progress > 0);
+      container.style.transform = `translate3d(0, ${progress * -12}px, 0)`;
+      container.style.willChange = progress > 0 ? "transform" : "auto";
     }
   };
 
@@ -93,8 +102,6 @@ export function useOverscrollBack(fallbackHref: string) {
 
     touchStartRef.current = null;
     navigatingRef.current = true;
-    // 손을 뗀 뒤의 관성이 복원된 이전 화면까지 이어지지 않도록 현재 문서 끝에서 끊는다.
-    window.scrollTo(window.scrollX, Math.max(0, document.documentElement.scrollHeight - window.innerHeight));
     goBackTo(fallbackHref);
   };
 
