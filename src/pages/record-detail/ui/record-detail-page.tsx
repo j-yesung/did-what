@@ -4,15 +4,15 @@ import { notFound } from "next/navigation";
 
 import { getRecord, getRecordWeatherLabel, normalizeRecordWeather, WeatherIcon } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/manage-place";
-import { DeleteRecordDialog } from "@/features/manage-record";
+import { DeleteRecordButton } from "@/features/manage-record";
 import { OverscrollBack } from "@/features/overscroll-back";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
-import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { TextButton } from "@/shared/ui/text-button";
 
 type RecordDetailPageProps = {
   params: Promise<{ recordId: string }>;
@@ -38,7 +38,17 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
   return (
     <OverscrollBack fallbackHref="/records">
       <PageShell>
-        <PageHeader back="/records" title="기록 상세" />
+        <PageHeader
+          action={
+            record ? (
+              <TextButton nativeButton={false} render={<Link href={`/records/${record.id}/edit`} />}>
+                수정
+              </TextButton>
+            ) : undefined
+          }
+          back="/records"
+          title="기록 상세"
+        />
 
         {error ? (
           <LoadErrorAlert
@@ -54,13 +64,7 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
               >
                 {record.activity}
               </h2>
-              <p className="mt-3 text-muted-foreground text-sm">함께한 날의 기억을 다시 꺼냄띠</p>
-              <div className="mt-5 flex gap-2">
-                <Button nativeButton={false} render={<Link href={`/records/${record.id}/edit`} />} variant="outline">
-                  수정
-                </Button>
-                <DeleteRecordDialog activity={record.activity} recordId={record.id} />
-              </div>
+              <p className="mt-3 text-muted-foreground text-sm">함께한 날의 기억을 다시 꺼내보세요.</p>
             </section>
 
             <Card>
@@ -131,6 +135,10 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
                 </CardContent>
               </Card>
             ) : null}
+
+            <footer className="flex justify-center py-2">
+              <DeleteRecordButton activity={record.activity} recordId={record.id} />
+            </footer>
           </>
         ) : null}
       </PageShell>

@@ -16,11 +16,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground",
+        neutral: "bg-foreground text-background",
         outline: "border-border bg-background aria-expanded:bg-muted dark:border-input dark:bg-input/30",
         secondary: "bg-secondary text-secondary-foreground aria-expanded:bg-secondary",
         ghost: "aria-expanded:bg-muted aria-expanded:text-foreground",
-        destructive:
-          "bg-destructive/10 text-destructive focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20",
+        destructive: "bg-danger-fill text-danger-fill-foreground focus-visible:ring-danger-fill/30",
         link: "text-primary underline underline-offset-4",
       },
       size: {

@@ -64,6 +64,7 @@
   --fill-pressed: var(--grey-100);
   --fill-brand: var(--blue-600);
   --fill-brand-weak: var(--blue-50);
+  --fill-danger: var(--red-600);
 
   --text-primary: var(--grey-900);
   --text-secondary: var(--grey-600);
@@ -72,6 +73,7 @@
   --text-success: var(--green-700);
   --text-info: var(--blue-600);
   --text-on-brand: var(--grey-0);
+  --text-on-danger: var(--grey-0);
 
   --border-default: var(--grey-200);
 
@@ -135,6 +137,8 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-danger-fill-foreground: var(--text-on-danger);
+  --color-danger-fill: var(--fill-danger);
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-info: var(--info);
@@ -172,6 +176,7 @@
   --fill-elevated: var(--grey-800);
   --fill-muted: var(--grey-900);
   --fill-pressed: var(--grey-800);
+  --fill-danger: var(--red-500);
 
   /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
   --text-primary: var(--grey-50);
@@ -197,6 +202,7 @@
     --fill-elevated: var(--grey-800);
     --fill-muted: var(--grey-900);
     --fill-pressed: var(--grey-800);
+    --fill-danger: var(--red-500);
 
     /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
     --text-primary: var(--grey-50);
@@ -250,8 +256,8 @@
    * JSX 텍스트의 줄바꿈은 컴파일 때 공백으로 합쳐지므로 코드 포매팅에는 영향받지 않는다.
    */
   [data-slot="alert-description"],
-  [data-slot="alert-dialog-description"],
   [data-slot="card-description"],
+  [data-slot="confirm-dialog-description"],
   [data-slot="dialog-description"],
   [data-slot="empty-description"],
   [data-slot="field-description"],

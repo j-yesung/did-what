@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { placesQueryOptions } from "@/entities/place/api/places-query";
-import { DeletePlaceDialog } from "@/features/manage-place";
+import { DeletePlaceButton } from "@/features/manage-place";
 import { formatShortDate } from "@/shared/lib/date/format-date";
 import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
@@ -76,7 +76,7 @@ export function SavedPlaceList() {
           </CardContent>
           <CardFooter className="py-0">
             <div className="relative z-10">
-              <DeletePlaceDialog
+              <DeletePlaceButton
                 iconOnly
                 name={place.name}
                 placeId={place.id}

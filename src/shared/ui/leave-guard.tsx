@@ -7,15 +7,8 @@ import { useRouter } from "next/navigation";
 
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "./alert-dialog";
-import { TextButton } from "./text-button";
+import { Button } from "./button";
+import { ConfirmDialog } from "./confirm-dialog";
 
 const SENTINEL = "leaveGuard";
 
@@ -127,25 +120,21 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
   }, [router]);
 
   return (
-    <AlertDialog onOpenChange={(open) => (open ? setConfirmOpen(true) : stay())} open={confirmOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader className="place-items-start text-left">
-          <AlertDialogTitle className="font-bold text-[20px] leading-[29px]">
-            작성 중인 내용이 사라져요
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-left font-medium text-[15px] leading-[22.5px]">
-            이 화면을 나가면 입력한 내용이 저장되지 않아요.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="justify-end border-0 bg-transparent pt-2" layout="split">
-          <TextButton className="min-h-12 justify-center px-3 font-bold" size="lg" tone="muted" onClick={stay}>
-            계속 작성
-          </TextButton>
-          <TextButton className="min-h-12 justify-center px-3 font-bold" size="lg" tone="danger" onClick={leave}>
-            나가기
-          </TextButton>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      cancelButton={
+        <Button onClick={stay} variant="neutral">
+          계속 작성
+        </Button>
+      }
+      confirmButton={
+        <Button onClick={leave} variant="destructive">
+          나가기
+        </Button>
+      }
+      description="이 화면을 나가면 입력한 내용이 저장되지 않아요."
+      onClose={stay}
+      open={confirmOpen}
+      title="작성 중인 내용이 사라져요"
+    />
   );
 }
