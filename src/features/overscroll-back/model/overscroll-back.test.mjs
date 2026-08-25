@@ -2,20 +2,20 @@ import { getOverscrollBackProgress, isAtScrollEnd } from "./overscroll-back.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 
-test("화면 끝에서 위로 220px 이상 당긴 수직 제스처만 뒤로가기를 활성화한다", () => {
+test("화면 끝에서 위로 180px 이상 당긴 수직 제스처만 뒤로가기를 활성화한다", () => {
   const start = { x: 100, y: 500 };
 
-  assert.equal(getOverscrollBackProgress(start, { x: 100, y: 390 }), 0.5);
-  assert.equal(getOverscrollBackProgress(start, { x: 100, y: 280 }), 1);
+  assert.equal(getOverscrollBackProgress(start, { x: 100, y: 410 }), 0.5);
+  assert.equal(getOverscrollBackProgress(start, { x: 100, y: 320 }), 1);
   assert.equal(getOverscrollBackProgress(start, { x: 180, y: 450 }), 0);
   assert.equal(getOverscrollBackProgress(start, { x: 100, y: 540 }), 0);
 });
 
-test("같은 제스처에서 문서가 스크롤한 거리를 제외한 추가 이동만 진행률로 쓴다", () => {
+test("같은 제스처에서 컨테이너가 스크롤한 거리를 제외한 추가 이동만 진행률로 쓴다", () => {
   const start = { x: 100, y: 500 };
 
-  assert.equal(getOverscrollBackProgress(start, { x: 100, y: 270 }, 120), 0.5);
-  assert.equal(getOverscrollBackProgress(start, { x: 100, y: 160 }, 120), 1);
+  assert.equal(getOverscrollBackProgress(start, { x: 100, y: 290 }, 120), 0.5);
+  assert.equal(getOverscrollBackProgress(start, { x: 100, y: 200 }, 120), 1);
   assert.equal(getOverscrollBackProgress(start, { x: 100, y: 400 }, 120), 0);
 });
 

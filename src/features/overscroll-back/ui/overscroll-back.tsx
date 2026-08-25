@@ -17,7 +17,7 @@ export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) 
   return (
     <>
       <div
-        className="h-svh touch-pan-y overflow-y-auto overscroll-contain transition-transform duration-200 ease-[cubic-bezier(0.4,0,1,1)] data-[dragging=true]:duration-0 motion-reduce:transition-none [&>main]:pb-[calc(76px+env(safe-area-inset-bottom))]"
+        className="h-svh touch-pan-y overflow-y-auto overscroll-contain transition-transform duration-200 ease-[cubic-bezier(0.4,0,1,1)] data-[dragging=true]:duration-0 motion-reduce:transition-none [&>main]:min-h-[calc(100svh+1px)] [&>main]:pb-[calc(76px+env(safe-area-inset-bottom))]"
         data-dragging="false"
         ref={containerRef}
         {...touchHandlers}
