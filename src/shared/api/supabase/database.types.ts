@@ -8,30 +8,6 @@ export type Database = {
   };
   public: {
     Tables: {
-      people: {
-        Row: {
-          created_at: string;
-          id: string;
-          name: string;
-          owner_id: string;
-          updated_at: string;
-        };
-        Insert: {
-          created_at?: string;
-          id?: string;
-          name: string;
-          owner_id: string;
-          updated_at?: string;
-        };
-        Update: {
-          created_at?: string;
-          id?: string;
-          name?: string;
-          owner_id?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       places: {
         Row: {
           address: string | null;
@@ -128,39 +104,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      record_people: {
-        Row: {
-          created_at: string;
-          person_id: string;
-          record_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          person_id: string;
-          record_id: string;
-        };
-        Update: {
-          created_at?: string;
-          person_id?: string;
-          record_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "record_people_person_id_fkey";
-            columns: ["person_id"];
-            isOneToOne: false;
-            referencedRelation: "people";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "record_people_record_id_fkey";
-            columns: ["record_id"];
-            isOneToOne: false;
-            referencedRelation: "records";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       record_places: {
         Row: {
           created_at: string;
@@ -250,107 +193,39 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      create_owned_record:
-        | {
-            Args: {
-              p_activity: string;
-              p_memo: string;
-              p_person_ids: string[];
-              p_place_ids: string[];
-              p_recorded_at: string;
-              p_recorded_until: string | null;
-              p_region_code: string;
-              p_region_label: string;
-              p_region_latitude: number;
-              p_region_longitude: number;
-              p_region_name: string;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
-              p_activity: string;
-              p_memo: string;
-              p_person_ids: string[];
-              p_place_ids: string[];
-              p_recorded_at: string;
-              p_recorded_until: string | null;
-              p_region_code: string;
-              p_region_label: string;
-              p_region_latitude: number;
-              p_region_longitude: number;
-              p_region_name: string;
-              p_weather: string;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
-              p_activity: string;
-              p_memo: string;
-              p_person_ids: string[];
-              p_place_ids: string[];
-              p_recorded_at: string;
-              p_region_code: string;
-              p_region_label: string;
-              p_region_latitude: number;
-              p_region_longitude: number;
-              p_region_name: string;
-            };
-            Returns: string;
-          };
-      update_owned_record:
-        | {
-            Args: {
-              p_activity: string;
-              p_memo: string;
-              p_person_ids: string[];
-              p_place_ids: string[];
-              p_record_id: string;
-              p_recorded_at: string;
-              p_recorded_until: string | null;
-              p_region_code: string;
-              p_region_label: string;
-              p_region_latitude: number;
-              p_region_longitude: number;
-              p_region_name: string;
-            };
-            Returns: boolean;
-          }
-        | {
-            Args: {
-              p_activity: string;
-              p_memo: string;
-              p_person_ids: string[];
-              p_place_ids: string[];
-              p_record_id: string;
-              p_recorded_at: string;
-              p_recorded_until: string | null;
-              p_region_code: string;
-              p_region_label: string;
-              p_region_latitude: number;
-              p_region_longitude: number;
-              p_region_name: string;
-              p_weather: string;
-            };
-            Returns: boolean;
-          }
-        | {
-            Args: {
-              p_activity: string;
-              p_memo: string;
-              p_person_ids: string[];
-              p_place_ids: string[];
-              p_record_id: string;
-              p_recorded_at: string;
-              p_region_code: string;
-              p_region_label: string;
-              p_region_latitude: number;
-              p_region_longitude: number;
-              p_region_name: string;
-            };
-            Returns: boolean;
-          };
+      create_owned_record: {
+        Args: {
+          p_activity: string;
+          p_memo: string;
+          p_place_ids: string[];
+          p_recorded_at: string;
+          p_recorded_until: string | null;
+          p_region_code: string;
+          p_region_label: string;
+          p_region_latitude: number;
+          p_region_longitude: number;
+          p_region_name: string;
+          p_weather: string;
+        };
+        Returns: string;
+      };
+      update_owned_record: {
+        Args: {
+          p_activity: string;
+          p_memo: string;
+          p_place_ids: string[];
+          p_record_id: string;
+          p_recorded_at: string;
+          p_recorded_until: string | null;
+          p_region_code: string;
+          p_region_label: string;
+          p_region_latitude: number;
+          p_region_longitude: number;
+          p_region_name: string;
+          p_weather: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: {
       [_ in never]: never;

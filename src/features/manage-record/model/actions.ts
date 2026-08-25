@@ -206,7 +206,6 @@ export async function createRecord(formData: FormData): Promise<RecordActionStat
   const { data: recordId, error } = await supabase.rpc("create_owned_record", {
     p_activity: result.data.activity,
     p_memo: result.data.memo ?? "",
-    p_person_ids: [],
     p_place_ids: selections.placeIds,
     p_recorded_at: result.data.recordedAt,
     p_recorded_until: result.data.recordedUntil ?? null,
@@ -260,7 +259,6 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
   const { data: updated, error } = await supabase.rpc("update_owned_record", {
     p_activity: result.data.activity,
     p_memo: result.data.memo ?? "",
-    p_person_ids: [],
     p_place_ids: selections.placeIds,
     p_record_id: recordId,
     p_recorded_at: result.data.recordedAt,
