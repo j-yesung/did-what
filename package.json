@@ -12,7 +12,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "clean:install": "rm -rf .next node_modules && pnpm install",
+    "clean:all": "rm -rf .next node_modules && pnpm store prune && pnpm install"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
