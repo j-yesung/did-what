@@ -1,12 +1,11 @@
-import { CalendarDotsIcon, MapPinIcon } from "@phosphor-icons/react/dist/ssr";
+import { MapPinIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { getRecordWeatherLabel, normalizeRecordWeather } from "@/entities/record/model/weather";
 import { WeatherIcon } from "@/entities/record/ui/weather-icon";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
+import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 
 type RecordCardProps = {
   activity: string;
@@ -23,44 +22,33 @@ export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil
 
   return (
     <article className="relative pl-5">
-      {/* 점은 세로선 위에 있어야 해서 카드와 같이 줄지 않는다. 누르는 동안 점과 카드 간격이 2px쯤 벌어지는데,
-          카드를 왼쪽 가장자리 기준으로 줄이면 이건 없어지지만 카드가 통째로 눌리는 느낌을 잃는다. 후자를 택했다. */}
       <span
-        className="absolute top-5 left-0 size-3.75 rounded-full border-4 border-background bg-primary"
+        className="absolute top-1.5 left-0 size-3.75 rounded-full border-4 border-background bg-primary"
         aria-hidden="true"
       />
       <Link
-        className={cn("block rounded-xl", FOCUS_RING, PRESS_FEEDBACK_LARGE)}
-        data-press=""
+        className={cn("block rounded-lg px-1 py-1.5 after:hidden", FOCUS_RING, PRESS_FEEDBACK)}
         href={`/records/${recordId}`}
       >
-        <Card className={PRESS_SURFACE}>
-          <CardHeader>
-            <CardTitle>{activity}</CardTitle>
-            <CardDescription className="flex items-center gap-1.5">
-              <CalendarDotsIcon strokeWidth={2} className="size-4" aria-hidden="true" />
-              {formatRecordPeriod(recordedAt, recordedUntil)}
-              <span
-                className="ml-auto inline-flex shrink-0 items-center"
-                aria-label={getRecordWeatherLabel(normalizedWeather)}
-              >
-                <WeatherIcon weather={normalizedWeather} className="size-4" aria-hidden="true" />
-              </span>
-            </CardDescription>
-          </CardHeader>
+        <header className="flex items-center gap-3 text-muted-foreground text-xs">
+          <time dateTime={recordedAt}>{formatRecordPeriod(recordedAt, recordedUntil)}</time>
+          <span
+            className="ml-auto inline-flex shrink-0 items-center"
+            aria-label={getRecordWeatherLabel(normalizedWeather)}
+          >
+            <WeatherIcon weather={normalizedWeather} className="size-4" aria-hidden="true" />
+          </span>
+        </header>
 
-          {region || memo ? (
-            <CardContent className="flex flex-col gap-3">
-              {region ? (
-                <p className="flex items-center gap-2 text-sm">
-                  <MapPinIcon strokeWidth={2} className="size-4 shrink-0 text-foreground" aria-hidden="true" />
-                  {region.label} / {region.name}
-                </p>
-              ) : null}
-              {memo ? <p className="text-muted-foreground text-sm leading-relaxed">{memo}</p> : null}
-            </CardContent>
-          ) : null}
-        </Card>
+        <h3 className="mt-1 line-clamp-2 font-bold text-base leading-snug tracking-[-0.02em]">{activity}</h3>
+
+        {region ? (
+          <p className="mt-1.5 flex items-center gap-1.5 text-muted-foreground text-xs">
+            <MapPinIcon strokeWidth={2} className="size-3.5 shrink-0" aria-hidden="true" />
+            {region.label} / {region.name}
+          </p>
+        ) : null}
+        {memo ? <p className="mt-1.5 line-clamp-2 text-[13px] text-muted-foreground leading-relaxed">{memo}</p> : null}
       </Link>
     </article>
   );
