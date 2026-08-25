@@ -16,7 +16,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground",
-        neutral: "bg-foreground text-background",
+        neutral: "bg-muted text-muted-foreground",
         outline: "border-border bg-background aria-expanded:bg-muted dark:border-input dark:bg-input/30",
         secondary: "bg-secondary text-secondary-foreground aria-expanded:bg-secondary",
         ghost: "aria-expanded:bg-muted aria-expanded:text-foreground",

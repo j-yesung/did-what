@@ -17,20 +17,20 @@ export function ConfirmDialog({ cancelButton, confirmButton, description, onClos
   return (
     <AlertDialogPrimitive.Root onOpenChange={(nextOpen) => !nextOpen && onClose()} open={open}>
       <AlertDialogPrimitive.Portal>
-        <AlertDialogPrimitive.Backdrop className="data-open:fade-in-0 data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-foreground/10 duration-100 data-closed:animate-out data-open:animate-in supports-backdrop-filter:backdrop-blur-xs" />
-        <AlertDialogPrimitive.Popup className="data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-xs -translate-x-1/2 -translate-y-1/2 gap-2 rounded-xl bg-popover p-5 text-popover-foreground outline-none ring-1 ring-foreground/10 duration-100 data-closed:animate-out data-open:animate-in">
+        <AlertDialogPrimitive.Backdrop className="data-open:fade-in-0 data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-foreground/10 data-closed:animate-out data-open:animate-in data-closed:duration-100 data-open:duration-300 data-closed:ease-out data-open:ease-[cubic-bezier(0.22,1,0.36,1)]" />
+        <AlertDialogPrimitive.Popup className="data-open:fade-in-0 data-open:slide-in-from-bottom-[100px] data-closed:fade-out-0 motion-reduce:data-open:slide-in-from-bottom-0 fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-1rem)] max-w-xs -translate-x-1/2 -translate-y-1/2 gap-2 rounded-2xl bg-popover p-5 text-popover-foreground outline-none data-closed:animate-out data-open:animate-in data-closed:duration-100 data-open:duration-300 data-closed:ease-out data-open:ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:data-open:duration-100">
           <AlertDialogPrimitive.Title className="font-bold text-xl leading-7" data-slot="confirm-dialog-title">
             {title}
           </AlertDialogPrimitive.Title>
           {description ? (
             <AlertDialogPrimitive.Description
-              className="whitespace-pre-line text-left font-medium text-muted-foreground text-sm leading-5.5"
+              className="whitespace-pre-line text-left font-medium text-[15px] text-muted-foreground leading-5.5"
               data-slot="confirm-dialog-description"
             >
               {description}
             </AlertDialogPrimitive.Description>
           ) : null}
-          <div className="mt-3 flex gap-2 *:min-h-12 *:flex-1">
+          <div className="-mx-1 mt-3 flex gap-2 *:min-h-12 *:flex-1 *:font-semibold *:text-base">
             {cancelButton}
             {confirmButton}
           </div>
