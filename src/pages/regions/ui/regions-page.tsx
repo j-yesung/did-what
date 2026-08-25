@@ -4,17 +4,17 @@ import { useMemo } from "react";
 
 import { MapTrifoldIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
-import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
-import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
 export function RegionsPage() {
+  const router = useRouter();
   const recordsQuery = useQuery(recordsQueryOptions);
   const recordLocations = useMemo(
     () =>
@@ -31,12 +31,11 @@ export function RegionsPage() {
   const regionMaps = useMemo(() => createRegionActivityMaps(recordLocations), [recordLocations]);
 
   return (
-    <PageShell className="gap-4" withBottomNavigation>
+    <PageShell withBottomNavigation>
       <PageHeader title="지역" />
 
       <div className="px-1">
-        <h2 className="font-bold text-lg tracking-[-0.025em]">17개 시·도에 쌓인 발자취</h2>
-        <p className="mt-1 text-muted-foreground text-sm">함께한 지역을 한눈에 돌아보세요.</p>
+        <h2 className="font-bold text-lg tracking-[-0.025em]">함께한 지역을 한눈에 돌아보세요.</h2>
       </div>
 
       {recordsQuery.isPending ? (
@@ -52,21 +51,17 @@ export function RegionsPage() {
         <ul className="-mx-1 grid grid-cols-2 gap-x-2 gap-y-1" aria-label="시·도별 발자취">
           {regionMaps.map((map) => (
             <li key={map.code}>
-              <Link
+              <Button
                 aria-label={`${map.name}, ${map.totalCount}곳 중 ${map.visitedCount}곳 방문`}
-                className={cn(
-                  "grid min-h-22 grid-cols-[44px_minmax(0,1fr)] items-center gap-2 rounded-2xl px-2 py-2.5 hover:bg-surface",
-                  FOCUS_RING,
-                  PRESS_FEEDBACK_LARGE,
-                  PRESS_SURFACE,
-                )}
-                data-press=""
-                href={`/regions/${map.code}`}
+                className="h-auto min-h-22 w-full justify-start gap-2 rounded-2xl px-2 py-2.5 text-left hover:bg-surface [&>span]:w-full"
+                onClick={() => router.push(`/regions/${map.code}`)}
+                type="button"
+                variant="ghost"
               >
-                <span className="grid size-11 place-items-center p-0.5">
+                <span className="grid size-11 shrink-0 place-items-center p-0.5">
                   <RegionMiniMap map={map} />
                 </span>
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1">
                   <span className="block break-keep font-bold text-[13px] leading-[1.35] tracking-[-0.02em]">
                     {map.name}
                   </span>
@@ -74,7 +69,7 @@ export function RegionsPage() {
                     {getRegionProgressLabel(map)}
                   </span>
                 </span>
-              </Link>
+              </Button>
             </li>
           ))}
         </ul>

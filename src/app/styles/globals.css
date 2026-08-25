@@ -109,13 +109,9 @@
   /* 플로팅 내비게이션과 콘텐츠 사이의 안전 여백. iOS 홈 인디케이터 영역도 포함한다. */
   --nav-height: 64px;
   --nav-bottom-gap: 6px;
+  --nav-bottom-offset: max(var(--nav-bottom-gap), calc(var(--nav-bottom-gap) + env(safe-area-inset-bottom) - 16px));
   --nav-content-gap: 16px;
-  --nav-clearance: calc(
-    var(--nav-height) +
-    var(--nav-bottom-gap) +
-    var(--nav-content-gap) +
-    env(safe-area-inset-bottom)
-  );
+  --nav-clearance: calc(var(--nav-height) + var(--nav-bottom-offset) + var(--nav-content-gap));
 
   /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
   --map-empty: var(--grey-200);
@@ -329,7 +325,6 @@
 @keyframes tab-content-enter {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.99);
   }
 }
 

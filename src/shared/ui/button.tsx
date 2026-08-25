@@ -4,24 +4,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/utils";
 import { Spinner } from "@/shared/ui/spinner";
 
-import { FOCUS_RING, PRESS_FEEDBACK } from "#shared/lib/interaction.ts";
+import { FOCUS_RING } from "#shared/lib/interaction.ts";
 
 const buttonVariants = cva(
   cn(
-    "inline-flex shrink-0 touch-manipulation select-none items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-clip-padding font-medium text-sm after:inset-0 focus-visible:border-ring disabled:pointer-events-none disabled:opacity-50",
+    "relative inline-flex shrink-0 cursor-pointer touch-manipulation select-none items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-clip-padding font-medium text-sm transition-transform duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:opacity-0 after:transition-opacity after:duration-[350ms] after:ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-ring active:scale-[0.96] active:duration-[200ms] active:ease-[cubic-bezier(0.2,0,0,1)] active:after:opacity-[0.26] disabled:pointer-events-none disabled:opacity-50 disabled:after:opacity-0 motion-reduce:active:scale-100",
     FOCUS_RING,
-    PRESS_FEEDBACK,
   ),
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground",
-        neutral: "bg-muted text-muted-foreground",
-        outline: "border-border bg-background aria-expanded:bg-muted dark:border-input dark:bg-input/30",
-        secondary: "bg-secondary text-secondary-foreground aria-expanded:bg-secondary",
-        ghost: "aria-expanded:bg-muted aria-expanded:text-foreground",
-        destructive: "bg-danger-fill text-danger-fill-foreground focus-visible:ring-danger-fill/30",
-        link: "text-primary underline underline-offset-4",
+        default: "bg-primary text-primary-foreground after:bg-black",
+        neutral: "bg-muted text-muted-foreground after:bg-current",
+        outline:
+          "border-border bg-background after:bg-current aria-expanded:bg-muted dark:border-input dark:bg-input/30",
+        secondary: "bg-secondary text-secondary-foreground after:bg-primary aria-expanded:bg-secondary",
+        ghost: "after:bg-current aria-expanded:bg-muted aria-expanded:text-foreground",
+        destructive: "bg-danger-fill text-danger-fill-foreground after:bg-black focus-visible:ring-danger-fill/30",
+        link: "text-primary underline underline-offset-4 after:bg-current",
       },
       size: {
         default: "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
@@ -64,10 +64,6 @@ function Button({
       disabled={disabled || loading}
       {...props}
     >
-      {/**
-       * 로딩 중에도 내용을 자리에 남겨 버튼 너비가 흔들리지 않게 한다.
-       * visibility가 아니라 투명도로 감춘다. visibility:hidden은 접근성 트리에서도 빠져 버튼 이름이 사라진다.
-       */}
       <span className={cn("inline-flex items-center gap-[inherit]", loading && "opacity-0")}>{children}</span>
       {loading ? <Spinner aria-hidden="true" className="absolute" /> : null}
     </ButtonPrimitive>
