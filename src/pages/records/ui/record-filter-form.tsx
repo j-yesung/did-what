@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { ArrowCounterClockwiseIcon, CalendarDotsIcon, CaretDownIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -29,6 +29,17 @@ type RecordFilterFormProps = {
 export function RecordFilterForm({ filters }: RecordFilterFormProps) {
   const router = useRouter();
   const hasPeriod = Boolean(filters.from || filters.to);
+  const [query, setQuery] = useState(filters.query);
+  const [from, setFrom] = useState(filters.from);
+  const [to, setTo] = useState(filters.to);
+  const [periodOpen, setPeriodOpen] = useState(hasPeriod);
+
+  useEffect(() => {
+    setQuery(filters.query);
+    setFrom(filters.from);
+    setTo(filters.to);
+    setPeriodOpen(Boolean(filters.from || filters.to));
+  }, [filters.query, filters.from, filters.to]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,11 +66,12 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
           <Input
             aria-label="기록 검색"
             className="h-11 rounded-lg pl-11"
-            defaultValue={filters.query}
             maxLength={100}
             name="q"
+            onChange={(event) => setQuery(event.target.value)}
             placeholder="검색어를 입력하세요"
             type="search"
+            value={query}
           />
         </div>
         <Button aria-label="검색" className="h-11 rounded-lg px-5" type="submit">
@@ -67,7 +79,11 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         </Button>
       </div>
 
-      <details className="group rounded-xl border bg-card px-4 py-3" open={hasPeriod}>
+      <details
+        className="group rounded-xl border bg-card px-4 py-3"
+        onToggle={(event) => setPeriodOpen(event.currentTarget.open)}
+        open={periodOpen}
+      >
         <summary className="flex min-w-0 cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
           <CalendarDotsIcon strokeWidth={2} className="size-4.5 text-foreground" aria-hidden="true" />
           기간
@@ -86,11 +102,25 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         </summary>
 
         <div className="mt-3 flex items-center gap-2">
-          <Input aria-label="시작일" className="h-10 flex-1" defaultValue={filters.from} name="from" type="date" />
+          <Input
+            aria-label="시작일"
+            className="h-10 flex-1"
+            name="from"
+            onChange={(event) => setFrom(event.target.value)}
+            type="date"
+            value={from}
+          />
           <span className="text-muted-foreground text-sm" aria-hidden="true">
             ~
           </span>
-          <Input aria-label="종료일" className="h-10 flex-1" defaultValue={filters.to} name="to" type="date" />
+          <Input
+            aria-label="종료일"
+            className="h-10 flex-1"
+            name="to"
+            onChange={(event) => setTo(event.target.value)}
+            type="date"
+            value={to}
+          />
         </div>
         <Button className="mt-3 w-full" type="submit" variant="outline">
           기간 적용
