@@ -75,19 +75,19 @@ export async function deletePlace(placeId: string): Promise<PlaceActionState> {
   return { status: "success" };
 }
 
-export async function savePlace(placeId: string): Promise<PlaceActionState> {
+export async function setPlaceSaved(placeId: string, saved: boolean): Promise<PlaceActionState> {
   if (!isUuid(placeId)) return { message: "장소를 확인할 수 없어요.", status: "error" };
 
   const { supabase, user } = await requireUser();
 
   const { data, error } = await supabase
     .from("places")
-    .update({ saved_at: new Date().toISOString() })
+    .update({ saved_at: saved ? new Date().toISOString() : null })
     .eq("id", placeId)
     .eq("owner_id", user.id)
     .select("id")
     .maybeSingle();
-  if (error || !data) return { message: "장소를 저장하지 못했어요.", status: "error" };
+  if (error || !data) return { message: "장소 저장 상태를 변경하지 못했어요.", status: "error" };
 
   revalidatePath("/places");
   revalidatePath(`/places/${placeId}`);
