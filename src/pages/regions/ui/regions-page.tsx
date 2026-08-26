@@ -35,7 +35,7 @@ export function RegionsPage() {
       <PageHeader title="지역" />
 
       <div className="px-1">
-        <h2 className="font-bold text-lg tracking-[-0.025em]">함께한 지역을 한눈에 돌아보세요.</h2>
+        <h2 className="font-bold text-lg tracking-tight">함께한 지역을 한눈에 돌아보세요.</h2>
       </div>
 
       {recordsQuery.isPending ? (
@@ -53,7 +53,7 @@ export function RegionsPage() {
             <li key={map.code}>
               <Button
                 aria-label={`${map.name}, ${map.totalCount}곳 중 ${map.visitedCount}곳 방문`}
-                className="h-auto min-h-22 w-full justify-start gap-2 rounded-2xl px-2 py-2.5 text-left hover:bg-surface [&>span]:w-full"
+                className="h-auto min-h-22 w-full justify-start gap-2 rounded-2xl px-2 py-2.5 text-left after:hidden [&>span]:w-full"
                 onClick={() => router.push(`/regions/${map.code}`)}
                 type="button"
                 variant="ghost"

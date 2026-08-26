@@ -1,14 +1,14 @@
 "use client";
 
-import { MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { ArrowCounterClockwiseIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { placesQueryOptions } from "@/entities/place/api/places-query";
-import { CreatePlaceForm } from "@/features/manage-place";
+import { PlaceSearchSaveToggle } from "@/features/manage-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
-import { cn } from "@/shared/lib/utils";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import {
   Pagination,
@@ -19,7 +19,8 @@ import {
   PaginationPrevious,
 } from "@/shared/ui/pagination";
 import { Spinner } from "@/shared/ui/spinner";
-import { textButtonVariants } from "@/shared/ui/text-button";
+
+import { getSavedKakaoPlaces } from "../model/get-saved-kakao-places";
 
 type PlaceSearchResultsProps = {
   currentPage: number;
@@ -42,6 +43,7 @@ export function PlaceSearchResults({
   places,
   query,
 }: PlaceSearchResultsProps) {
+  const router = useRouter();
   const savedPlacesQuery = useQuery(placesQueryOptions);
 
   if (savedPlacesQuery.isPending) {
@@ -55,11 +57,7 @@ export function PlaceSearchResults({
     );
   }
 
-  const savedKakaoIds = new Set(
-    (savedPlacesQuery.data ?? []).flatMap((place) =>
-      place.provider === "kakao" && place.provider_place_id ? [place.provider_place_id] : [],
-    ),
-  );
+  const savedKakaoPlaces = getSavedKakaoPlaces(savedPlacesQuery.data ?? []);
 
   return (
     <section aria-labelledby="place-search-results-title" className="flex flex-col gap-3">
@@ -67,34 +65,42 @@ export function PlaceSearchResults({
         <h2 className="min-w-0 font-bold text-lg" id="place-search-results-title">
           ‘{query}’ 검색 결과 {pageableCount}곳 · {currentPage}페이지
         </h2>
-        <Link
-          className={cn(textButtonVariants({ size: "sm", tone: "muted" }), "mt-0.5 whitespace-nowrap")}
-          href="/places"
+        <Button
+          aria-label="장소 검색 초기화"
+          className="mt-0.5"
+          onClick={() => router.replace("/places")}
+          size="icon-sm"
+          type="button"
+          variant="ghost"
         >
-          저장한 장소 보기
-        </Link>
+          <ArrowCounterClockwiseIcon aria-hidden="true" strokeWidth={3} />
+        </Button>
       </div>
 
       {places.length > 0 ? (
-        places.map((place) => (
-          <Card key={place.id} size="sm">
-            <CardHeader>
-              <CardTitle>{place.name}</CardTitle>
-              <CardDescription>Kakao 장소 검색 결과</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
-            </CardContent>
-            <CardFooter>
-              <CreatePlaceForm
-                page={currentPage}
-                placeId={place.id}
-                query={query}
-                saved={savedKakaoIds.has(place.id)}
-              />
-            </CardFooter>
-          </Card>
-        ))
+        places.map((place) => {
+          const savedPlaceId = savedKakaoPlaces.get(place.id);
+
+          return (
+            <Card key={place.id} size="sm">
+              <CardHeader>
+                <CardTitle className="min-w-0 truncate">{place.name}</CardTitle>
+                <CardDescription>Kakao 장소 검색 결과</CardDescription>
+                <CardAction>
+                  <PlaceSearchSaveToggle
+                    page={currentPage}
+                    placeId={place.id}
+                    query={query}
+                    savedPlaceId={savedPlaceId}
+                  />
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
+              </CardContent>
+            </Card>
+          );
+        })
       ) : (
         <Empty className="border bg-card py-10">
           <EmptyHeader>

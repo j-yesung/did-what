@@ -55,6 +55,8 @@
   --green-400: #3ddc9a;
   --green-700: #0d9c63;
 
+  --yellow-500: #f5b700;
+
   /* Semantic — 화면과 컴포넌트는 여기까지만 참조한다. */
   --fill-base: var(--grey-50);
   --fill-surface: var(--grey-0);
@@ -96,6 +98,7 @@
   --destructive: var(--text-danger);
   --success: var(--text-success);
   --info: var(--text-info);
+  --bookmark: var(--yellow-500);
   --border: var(--border-default);
   --input: var(--grey-300);
   --ring: var(--blue-300);
@@ -138,6 +141,7 @@
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-info: var(--info);
+  --color-bookmark: var(--bookmark);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);

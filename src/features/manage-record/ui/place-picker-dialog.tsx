@@ -20,8 +20,7 @@ import {
   DrawerTrigger,
   DrawerVirtualKeyboardProvider,
 } from "@/shared/ui/drawer";
-import { Field, FieldGroup } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { SearchField } from "@/shared/ui/search-field";
 
 import { resolveRecordPlace } from "../model/actions";
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
@@ -148,23 +147,18 @@ function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePic
         ) : null}
 
         <form aria-label="방문 장소 검색" onSubmit={handleSearch} role="search">
-          <FieldGroup>
-            <Field>
-              <div className="flex gap-2">
-                <Input
-                  aria-label="방문 장소 이름"
-                  className="h-11 flex-1"
-                  maxLength={100}
-                  onChange={(event) => setKeyword(event.target.value)}
-                  placeholder="예: 메가커피"
-                  value={keyword}
-                />
-                <Button className="h-11 px-5" disabled={!keyword.trim()} loading={search.isFetching} type="submit">
-                  검색
-                </Button>
-              </div>
-            </Field>
-          </FieldGroup>
+          <SearchField
+            aria-label="방문 장소 이름"
+            loading={search.isFetching}
+            maxLength={100}
+            onClear={() => {
+              setQuery("");
+              setSelectionError(undefined);
+            }}
+            onValueChange={setKeyword}
+            placeholder="예: 메가커피"
+            value={keyword}
+          />
         </form>
 
         {search.isError || selectionError ? (

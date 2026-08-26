@@ -4,14 +4,14 @@ import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 
-import { savePlace } from "../model/actions";
+import { setPlaceSaved } from "../model/actions";
 
 type PlaceSaveButtonProps = {
   placeId: string;
 };
 
 export function PlaceSaveButton({ placeId }: PlaceSaveButtonProps) {
-  const save = useActionMutation(() => savePlace(placeId), {
+  const save = useActionMutation(() => setPlaceSaved(placeId, true), {
     error: "저장하지 못했어요",
     invalidate: [placesQueryOptions.queryKey],
     success: "내 장소에 저장했어요",

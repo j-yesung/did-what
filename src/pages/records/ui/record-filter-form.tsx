@@ -1,8 +1,8 @@
 "use client";
 
-import type { FormEvent } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
-import { ArrowCounterClockwiseIcon, CalendarDotsIcon, CaretDownIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { ArrowCounterClockwiseIcon, CalendarDotsIcon, CaretDownIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -13,8 +13,10 @@ import {
   type RecordSort,
 } from "@/entities/record/model/record-filters";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { SearchField } from "@/shared/ui/search-field";
 
 const SORT_OPTIONS: { label: string; value: RecordSort }[] = [
   { label: "최신순", value: "recent" },
@@ -28,6 +30,17 @@ type RecordFilterFormProps = {
 export function RecordFilterForm({ filters }: RecordFilterFormProps) {
   const router = useRouter();
   const hasPeriod = Boolean(filters.from || filters.to);
+  const [query, setQuery] = useState(filters.query);
+  const [from, setFrom] = useState(filters.from);
+  const [to, setTo] = useState(filters.to);
+  const [periodOpen, setPeriodOpen] = useState(hasPeriod);
+
+  useEffect(() => {
+    setQuery(filters.query);
+    setFrom(filters.from);
+    setTo(filters.to);
+    setPeriodOpen(Boolean(filters.from || filters.to));
+  }, [filters.query, filters.from, filters.to]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,36 +57,27 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
     <form action="/records" className="flex flex-col gap-2.5" method="get" onSubmit={handleSubmit} role="search">
       <input name="sort" type="hidden" value={filters.sort} />
 
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <MagnifyingGlassIcon
-            strokeWidth={2}
-            className="pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <Input
-            aria-label="기록 검색"
-            className="h-11 rounded-lg pl-11"
-            defaultValue={filters.query}
-            maxLength={100}
-            name="q"
-            placeholder="검색어를 입력하세요"
-            type="search"
-          />
-        </div>
-        <Button aria-label="검색" className="h-11 rounded-lg px-5" type="submit">
-          <MagnifyingGlassIcon strokeWidth={2} aria-hidden="true" />
-        </Button>
-      </div>
+      <SearchField
+        aria-label="기록 검색"
+        maxLength={100}
+        name="q"
+        onValueChange={setQuery}
+        placeholder="검색어를 입력하세요"
+        value={query}
+      />
 
-      <details className="group rounded-xl border bg-card px-4 py-3" open={hasPeriod}>
-        <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
+      <details
+        className="group rounded-xl border bg-card px-4 py-3"
+        onToggle={(event) => setPeriodOpen(event.currentTarget.open)}
+        open={periodOpen}
+      >
+        <summary className="flex min-w-0 cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
           <CalendarDotsIcon strokeWidth={2} className="size-4.5 text-foreground" aria-hidden="true" />
           기간
           {hasPeriod ? (
-            <span className="rounded-md bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-foreground">
+            <Badge className="min-w-0 shrink truncate" tone="primary">
               {filters.from || "처음"} ~ {filters.to || "오늘"}
-            </span>
+            </Badge>
           ) : (
             <span className="text-muted-foreground text-xs">전체</span>
           )}
@@ -85,11 +89,25 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         </summary>
 
         <div className="mt-3 flex items-center gap-2">
-          <Input aria-label="시작일" className="h-10 flex-1" defaultValue={filters.from} name="from" type="date" />
+          <Input
+            aria-label="시작일"
+            className="h-10 flex-1"
+            name="from"
+            onChange={(event) => setFrom(event.target.value)}
+            type="date"
+            value={from}
+          />
           <span className="text-muted-foreground text-sm" aria-hidden="true">
             ~
           </span>
-          <Input aria-label="종료일" className="h-10 flex-1" defaultValue={filters.to} name="to" type="date" />
+          <Input
+            aria-label="종료일"
+            className="h-10 flex-1"
+            name="to"
+            onChange={(event) => setTo(event.target.value)}
+            type="date"
+            value={to}
+          />
         </div>
         <Button className="mt-3 w-full" type="submit" variant="outline">
           기간 적용
