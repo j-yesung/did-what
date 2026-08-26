@@ -9,6 +9,7 @@ import { DeletePlaceButton } from "@/features/manage-place";
 import { formatShortDate } from "@/shared/lib/date/format-date";
 import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -66,7 +67,10 @@ export function SavedPlaceList() {
       {places.map((place) => (
         <Card className={cn("relative", PRESS_FEEDBACK_LARGE, PRESS_SURFACE)} data-press="" key={place.id} size="sm">
           <CardHeader>
-            <CardTitle>{place.name}</CardTitle>
+            <CardTitle className="flex min-w-0 items-center gap-2">
+              <span className="min-w-0 truncate">{place.name}</span>
+              <Badge>{`기록 ${place.record_places[0]?.count ?? 0}개`}</Badge>
+            </CardTitle>
             <CardDescription>
               {place.saved_at ? `${formatShortDate(place.saved_at)} 저장` : "저장한 장소"}
             </CardDescription>

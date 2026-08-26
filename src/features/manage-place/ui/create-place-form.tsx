@@ -10,16 +10,15 @@ type CreatePlaceFormProps = {
   page: number;
   placeId: string;
   query: string;
-  saved: boolean;
 };
 
-export function CreatePlaceForm({ page, placeId, query, saved }: CreatePlaceFormProps) {
+export function CreatePlaceForm({ page, placeId, query }: CreatePlaceFormProps) {
   const save = useActionMutation(createPlace, {
     error: "저장하지 못했어요",
     invalidate: [placesQueryOptions.queryKey],
     success: "내 장소에 저장했어요",
   });
-  const isSaved = saved || save.data?.status === "success";
+  const isSaved = save.data?.status === "success";
 
   return (
     <form

@@ -13,6 +13,7 @@ import {
   type RecordSort,
 } from "@/entities/record/model/record-filters";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 
@@ -67,13 +68,13 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
       </div>
 
       <details className="group rounded-xl border bg-card px-4 py-3" open={hasPeriod}>
-        <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
+        <summary className="flex min-w-0 cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
           <CalendarDotsIcon strokeWidth={2} className="size-4.5 text-foreground" aria-hidden="true" />
           기간
           {hasPeriod ? (
-            <span className="rounded-md bg-primary/10 px-2 py-0.5 font-[650] text-[11px] text-foreground">
+            <Badge className="min-w-0 shrink truncate" tone="primary">
               {filters.from || "처음"} ~ {filters.to || "오늘"}
-            </span>
+            </Badge>
           ) : (
             <span className="text-muted-foreground text-xs">전체</span>
           )}

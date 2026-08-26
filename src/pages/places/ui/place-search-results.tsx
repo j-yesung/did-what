@@ -8,6 +8,7 @@ import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { CreatePlaceForm } from "@/features/manage-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import {
@@ -76,25 +77,29 @@ export function PlaceSearchResults({
       </div>
 
       {places.length > 0 ? (
-        places.map((place) => (
-          <Card key={place.id} size="sm">
-            <CardHeader>
-              <CardTitle>{place.name}</CardTitle>
-              <CardDescription>Kakao 장소 검색 결과</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
-            </CardContent>
-            <CardFooter>
-              <CreatePlaceForm
-                page={currentPage}
-                placeId={place.id}
-                query={query}
-                saved={savedKakaoIds.has(place.id)}
-              />
-            </CardFooter>
-          </Card>
-        ))
+        places.map((place) => {
+          const isSaved = savedKakaoIds.has(place.id);
+
+          return (
+            <Card key={place.id} size="sm">
+              <CardHeader>
+                <CardTitle className="flex min-w-0 items-center gap-2">
+                  <span className="min-w-0 truncate">{place.name}</span>
+                  {isSaved ? <Badge tone="success">저장됨</Badge> : null}
+                </CardTitle>
+                <CardDescription>Kakao 장소 검색 결과</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
+              </CardContent>
+              {isSaved ? null : (
+                <CardFooter>
+                  <CreatePlaceForm page={currentPage} placeId={place.id} query={query} />
+                </CardFooter>
+              )}
+            </Card>
+          );
+        })
       ) : (
         <Empty className="border bg-card py-10">
           <EmptyHeader>
