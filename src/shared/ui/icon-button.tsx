@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 
-import type { Icon } from "@phosphor-icons/react";
+import type { Icon, IconWeight } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -17,10 +17,18 @@ type IconButtonProps = Omit<ComponentProps<typeof Button>, "aria-label" | "child
   "aria-label": string;
   icon: Icon;
   iconSize?: number;
+  iconWeight?: IconWeight;
   variant?: IconButtonVariant;
 };
 
-function IconButton({ className, icon: Icon, iconSize = 24, variant = "clear", ...props }: IconButtonProps) {
+function IconButton({
+  className,
+  icon: Icon,
+  iconSize = 24,
+  iconWeight,
+  variant = "clear",
+  ...props
+}: IconButtonProps) {
   return (
     <Button
       className={cn("size-12 rounded-full", ICON_BUTTON_VARIANT[variant], className)}
@@ -30,7 +38,7 @@ function IconButton({ className, icon: Icon, iconSize = 24, variant = "clear", .
       variant="ghost"
       {...props}
     >
-      <Icon aria-hidden="true" size={iconSize} />
+      <Icon aria-hidden="true" data-icon="inline-start" size={iconSize} weight={iconWeight} />
     </Button>
   );
 }
