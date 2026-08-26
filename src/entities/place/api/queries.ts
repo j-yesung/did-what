@@ -1,6 +1,6 @@
 import { createClient } from "@/shared/api/supabase/server";
 
-const COLUMNS = "id, name, address, created_at, saved_at, region_code, provider, provider_place_id";
+const COLUMNS = "id, name, address, created_at, saved_at, region_code, region_name, provider, provider_place_id";
 
 // 소유자의 장소 한 곳. 없으면 data가 null이다.
 export async function getPlace(placeId: string, ownerId: string) {

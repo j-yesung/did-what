@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { TrashIcon } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
@@ -12,38 +13,33 @@ import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { deletePlace } from "../model/actions";
 
 type DeletePlaceButtonProps = {
-  iconOnly?: boolean;
   name: string;
   placeId: string;
   recordCount: number;
 };
 
-export function DeletePlaceButton({ iconOnly, name, placeId, recordCount }: DeletePlaceButtonProps) {
+export function DeletePlaceButton({ name, placeId, recordCount }: DeletePlaceButtonProps) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const remove = useActionMutation(() => deletePlace(placeId), {
     error: "장소를 삭제하지 못했어요",
     invalidate: [placesQueryOptions.queryKey],
+    onSuccess: () => router.replace("/places"),
     success: "장소를 삭제했어요",
   });
 
   return (
     <>
-      {iconOnly ? (
-        <Button
-          aria-label={`${name} 삭제`}
-          className="size-11 text-destructive [&_svg]:size-4"
-          onClick={() => setOpen(true)}
-          size="icon-lg"
-          variant="ghost"
-        >
-          <TrashIcon strokeWidth={2} aria-hidden="true" />
-        </Button>
-      ) : (
-        <Button className="w-full" onClick={() => setOpen(true)} variant="destructive">
-          장소 삭제
-        </Button>
-      )}
+      <Button
+        aria-label={`${name} 삭제`}
+        className="size-11 text-destructive [&_svg]:size-4"
+        onClick={() => setOpen(true)}
+        size="icon-lg"
+        variant="ghost"
+      >
+        <TrashIcon strokeWidth={2} aria-hidden="true" />
+      </Button>
       <ConfirmDialog
         cancelButton={
           <Button disabled={remove.isPending} onClick={() => setOpen(false)} variant="neutral">

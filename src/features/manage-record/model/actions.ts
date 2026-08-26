@@ -119,14 +119,16 @@ async function prepareRecordPlaces(references: RecordPlaceReference[], ownerId: 
 
     if (existing) {
       placeIds.add(existing.id);
-      if (verified.reference.save && !existing.saved_at) {
-        const { error } = await supabase
-          .from("places")
-          .update({ saved_at: new Date().toISOString() })
-          .eq("id", existing.id)
-          .eq("owner_id", ownerId);
-        if (error) return null;
-      }
+      const { error } = await supabase
+        .from("places")
+        .update({
+          region_code: verified.region.code,
+          region_name: verified.region.fullName,
+          saved_at: verified.reference.save ? (existing.saved_at ?? new Date().toISOString()) : existing.saved_at,
+        })
+        .eq("id", existing.id)
+        .eq("owner_id", ownerId);
+      if (error) return null;
       continue;
     }
 
@@ -141,6 +143,7 @@ async function prepareRecordPlaces(references: RecordPlaceReference[], ownerId: 
         provider: "kakao",
         provider_place_id: verified.place.id,
         region_code: verified.region.code,
+        region_name: verified.region.fullName,
         saved_at: verified.reference.save ? new Date().toISOString() : null,
       })
       .select("id")

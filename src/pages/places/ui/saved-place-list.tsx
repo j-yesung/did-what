@@ -2,16 +2,13 @@
 
 import { MapPinIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
+import { getPlaceRegionLabel } from "@/entities/place";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
-import { DeletePlaceButton } from "@/features/manage-place";
-import { formatShortDate } from "@/shared/lib/date/format-date";
-import { FOCUS_RING, PRESS_FEEDBACK_LARGE, PRESS_SURFACE } from "@/shared/lib/interaction";
-import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -26,6 +23,7 @@ export function SavedPlaceCount() {
 }
 
 export function SavedPlaceList() {
+  const router = useRouter();
   const placesQuery = useQuery(placesQueryOptions);
 
   if (placesQuery.isPending) {
@@ -64,37 +62,29 @@ export function SavedPlaceList() {
       <div className="px-1">
         <h2 className="mt-1 font-bold text-lg">저장한 장소</h2>
       </div>
-      {places.map((place) => (
-        <Card className={cn("relative", PRESS_FEEDBACK_LARGE, PRESS_SURFACE)} data-press="" key={place.id} size="sm">
-          <CardHeader>
-            <CardTitle className="flex min-w-0 items-center gap-2">
-              <span className="min-w-0 truncate">{place.name}</span>
-              <Badge>{`기록 ${place.record_places[0]?.count ?? 0}개`}</Badge>
-            </CardTitle>
-            <CardDescription>
-              {place.saved_at ? `${formatShortDate(place.saved_at)} 저장` : "저장한 장소"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
-          </CardContent>
-          <CardFooter className="py-0">
-            <div className="relative z-10">
-              <DeletePlaceButton
-                iconOnly
-                name={place.name}
-                placeId={place.id}
-                recordCount={place.record_places[0]?.count ?? 0}
-              />
-            </div>
-          </CardFooter>
-          <Link
+      <div className="flex flex-col gap-2.5 overflow-hidden">
+        {places.map((place) => (
+          <ListRow
+            key={place.id}
             aria-label={`${place.name} 상세 보기`}
-            className={cn("absolute inset-0 rounded-xl", FOCUS_RING)}
-            href={`/places/${place.id}`}
-          />
-        </Card>
-      ))}
+            onClick={() => router.push(`/places/${place.id}`)}
+            right={
+              (place.record_places[0]?.count ?? 0) > 0 ? (
+                <Badge
+                  aria-label={`기록 ${place.record_places[0]?.count}개`}
+                  className="min-h-6 min-w-6 justify-center rounded-full bg-primary px-1.5 py-1 text-primary-foreground text-xs"
+                  tone="primary"
+                >
+                  {place.record_places[0]?.count}
+                </Badge>
+              ) : null
+            }
+            type="button"
+          >
+            <ListRowTexts description={`${getPlaceRegionLabel(place.region_name, place.address)}`} title={place.name} />
+          </ListRow>
+        ))}
+      </div>
     </section>
   );
 }

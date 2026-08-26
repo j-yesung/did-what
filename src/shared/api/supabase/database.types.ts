@@ -20,6 +20,7 @@ export type Database = {
           provider: string;
           provider_place_id: string;
           region_code: string;
+          region_name: string | null;
           saved_at: string | null;
           updated_at: string;
         };
@@ -34,6 +35,7 @@ export type Database = {
           provider: string;
           provider_place_id: string;
           region_code: string;
+          region_name?: string | null;
           saved_at?: string | null;
           updated_at?: string;
         };
@@ -48,6 +50,7 @@ export type Database = {
           provider?: string;
           provider_place_id?: string;
           region_code?: string;
+          region_name?: string | null;
           saved_at?: string | null;
           updated_at?: string;
         };

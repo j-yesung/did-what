@@ -33,7 +33,11 @@ export async function createPlace(formData: FormData): Promise<PlaceActionState>
   const { error } = existing
     ? await supabase
         .from("places")
-        .update({ saved_at: existing.saved_at ?? new Date().toISOString() })
+        .update({
+          region_code: region.code,
+          region_name: region.fullName,
+          saved_at: existing.saved_at ?? new Date().toISOString(),
+        })
         .eq("id", existing.id)
         .eq("owner_id", user.id)
     : await supabase.from("places").insert({
@@ -45,6 +49,7 @@ export async function createPlace(formData: FormData): Promise<PlaceActionState>
         provider: "kakao",
         provider_place_id: place.id,
         region_code: region.code,
+        region_name: region.fullName,
         saved_at: new Date().toISOString(),
       });
 

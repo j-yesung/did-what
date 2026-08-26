@@ -1,13 +1,14 @@
 import { CalendarDotsIcon, MapPinAreaIcon, MapPinIcon, NotePencilIcon } from "@phosphor-icons/react/dist/ssr";
 import { notFound } from "next/navigation";
 
-import { getPlace, getPlaceRecords } from "@/entities/place";
+import { getPlace, getPlaceRecords } from "@/entities/place/api/queries";
 import { EmptyRecords, RecordCard, RecordTimeline } from "@/entities/record";
+import { DeletePlaceButton } from "@/features/manage-place";
 import { OverscrollBack } from "@/features/overscroll-back";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { formatDate } from "@/shared/lib/date/format-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
@@ -58,6 +59,9 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
                 </CardDescription>
                 <CardTitle className="text-xl">{place.name}</CardTitle>
                 <CardDescription>{place.address ?? "주소 정보 없음"}</CardDescription>
+                <CardAction>
+                  <DeletePlaceButton name={place.name} placeId={place.id} recordCount={records.length} />
+                </CardAction>
               </CardHeader>
               <CardContent>
                 <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
