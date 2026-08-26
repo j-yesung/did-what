@@ -1,13 +1,11 @@
 "use client";
 
-import type { FormEvent } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
-import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/shared/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { SearchField } from "@/shared/ui/search-field";
 
 type PlaceSearchFormProps = {
   query: string;
@@ -16,41 +14,37 @@ type PlaceSearchFormProps = {
 
 export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
   const router = useRouter();
+  const [keyword, setKeyword] = useState(query);
+  const fieldError = keyword === query ? searchError : undefined;
+
+  useEffect(() => setKeyword(query), [query]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const searchQuery = new FormData(event.currentTarget).get("q");
 
-    router.push(`/places?${new URLSearchParams({ q: String(searchQuery ?? "") })}`);
+    router.push(`/places?${new URLSearchParams({ q: keyword })}`);
   }
 
   return (
     <form id="place-search-form" method="get" onSubmit={handleSubmit} role="search">
       <FieldGroup>
-        <Field data-invalid={Boolean(searchError)}>
+        <Field data-invalid={Boolean(fieldError)}>
           <FieldLabel className="sr-only" htmlFor="place-query">
             장소 검색
           </FieldLabel>
-          <div className="flex gap-2">
-            <Input
-              aria-describedby={searchError ? "place-query-error" : undefined}
-              aria-invalid={Boolean(searchError)}
-              autoComplete="off"
-              className="h-11 flex-1"
-              defaultValue={query}
-              id="place-query"
-              key={query}
-              maxLength={100}
-              name="q"
-              placeholder="예: 성수 카페"
-              required
-              type="search"
-            />
-            <Button aria-label="장소 검색" className="size-11" size="icon-lg" type="submit">
-              <MagnifyingGlassIcon strokeWidth={2} aria-hidden="true" />
-            </Button>
-          </div>
-          <FieldError id="place-query-error">{searchError}</FieldError>
+          <SearchField
+            aria-describedby={fieldError ? "place-query-error" : undefined}
+            aria-invalid={Boolean(fieldError)}
+            autoComplete="off"
+            id="place-query"
+            maxLength={100}
+            name="q"
+            onValueChange={setKeyword}
+            placeholder="예: 성수 카페"
+            required
+            value={keyword}
+          />
+          <FieldError id="place-query-error">{fieldError}</FieldError>
         </Field>
       </FieldGroup>
     </form>

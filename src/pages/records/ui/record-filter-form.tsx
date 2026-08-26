@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 
-import { ArrowCounterClockwiseIcon, CalendarDotsIcon, CaretDownIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { ArrowCounterClockwiseIcon, CalendarDotsIcon, CaretDownIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +16,7 @@ import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { SearchField } from "@/shared/ui/search-field";
 
 const SORT_OPTIONS: { label: string; value: RecordSort }[] = [
   { label: "최신순", value: "recent" },
@@ -56,28 +57,14 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
     <form action="/records" className="flex flex-col gap-2.5" method="get" onSubmit={handleSubmit} role="search">
       <input name="sort" type="hidden" value={filters.sort} />
 
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <MagnifyingGlassIcon
-            strokeWidth={2}
-            className="pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <Input
-            aria-label="기록 검색"
-            className="h-11 rounded-lg pl-11"
-            maxLength={100}
-            name="q"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="검색어를 입력하세요"
-            type="search"
-            value={query}
-          />
-        </div>
-        <Button aria-label="검색" className="h-11 rounded-lg px-5" type="submit">
-          <MagnifyingGlassIcon strokeWidth={2} aria-hidden="true" />
-        </Button>
-      </div>
+      <SearchField
+        aria-label="기록 검색"
+        maxLength={100}
+        name="q"
+        onValueChange={setQuery}
+        placeholder="검색어를 입력하세요"
+        value={query}
+      />
 
       <details
         className="group rounded-xl border bg-card px-4 py-3"

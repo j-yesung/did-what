@@ -19,8 +19,7 @@ import {
   DrawerTrigger,
   DrawerVirtualKeyboardProvider,
 } from "@/shared/ui/drawer";
-import { Field, FieldGroup } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { SearchField } from "@/shared/ui/search-field";
 
 import type { RecordLocationRegion } from "../model/location-picker";
 import { toRecentRegions } from "../model/location-picker";
@@ -115,23 +114,15 @@ function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
         ) : null}
 
         <form aria-label="지역 검색" onSubmit={handleSearch} role="search">
-          <FieldGroup>
-            <Field>
-              <div className="flex gap-2">
-                <Input
-                  aria-label="지역 이름"
-                  className="h-11 flex-1"
-                  maxLength={100}
-                  onChange={(event) => setKeyword(event.target.value)}
-                  placeholder="예: 망원동, 홍대"
-                  value={keyword}
-                />
-                <Button className="h-11 px-5" disabled={!keyword.trim()} loading={search.isFetching} type="submit">
-                  검색
-                </Button>
-              </div>
-            </Field>
-          </FieldGroup>
+          <SearchField
+            aria-label="지역 이름"
+            loading={search.isFetching}
+            maxLength={100}
+            onClear={() => setQuery("")}
+            onValueChange={setKeyword}
+            placeholder="예: 망원동, 홍대"
+            value={keyword}
+          />
         </form>
 
         {search.isError ? (
