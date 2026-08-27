@@ -55,7 +55,6 @@ export function PlaceSearchSaveToggle({ page, placeId, query, savedPlaceId }: Pl
         aria-pressed={isSaved}
         className={cn(isSaved && "text-bookmark")}
         icon={BookmarkSimpleIcon}
-        iconSize={24}
         iconWeight={isSaved ? "fill" : "regular"}
         title={isSaved ? "저장 해제" : "저장"}
         type="submit"

@@ -52,7 +52,6 @@ function IconButton({
       aria-label={ariaLabel}
       className={cn("gap-0 rounded-lg p-0", ICON_BUTTON_SIZE[size], ICON_BUTTON_VARIANT[variant], className)}
       data-slot="icon-button"
-      data-size={size}
       data-variant={variant}
       variant="ghost"
       {...props}
