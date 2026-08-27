@@ -131,11 +131,9 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
             "data-ending-style:transform-(--closed-transform) data-starting-style:transform-(--closed-transform) data-ending-style:data-nested-drawer-swiping:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-ending-style:opacity-[0.9999] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-nested-drawer-swiping:duration-0 data-swiping:duration-0",
             // Axis: y. 화면 가장자리에서 띄운다. 닫힘 애니메이션이 이미 --drawer-inset을 계산에 넣고 있다.
             // 폭에서 좌우 여백만큼 빼야 넘치지 않고, 남는 자리를 auto 마진이 나눠 가지며 가운데로 모인다.
-            // --drawer-bleed-background는 시트 아래로 이어 붙는 색이다. 끄지 않으면 아래 여백을 이 색이 메운다.
-            "data-[swipe-axis=y]:[--drawer-bleed-background:transparent] data-[swipe-axis=y]:[--drawer-inset:--spacing(6)]",
-            "data-[swipe-axis=y]:w-[calc(100%-2*var(--drawer-inset,0px))]",
+            "data-[swipe-axis=y]:[--drawer-bleed-background:transparent] data-[swipe-axis=y]:[--drawer-inline-inset:--spacing(4)] data-[swipe-axis=y]:[--drawer-inset:--spacing(6)]",
+            "data-[swipe-axis=y]:w-[calc(100%-2*var(--drawer-inline-inset))]",
             // Axis: y. 위아래 시트는 화면 아래에 고정되므로 하단 내비게이션과 같은 폭 규칙을 쓴다.
-            // 좁은 화면에서는 꽉 채우고, 넓어지면 앱 폭에 맞춰 가운데로 모은다.
             "data-[swipe-axis=y]:mx-auto data-[swipe-axis=y]:min-[700px]:max-w-(--app-width)",
             // Axis: y.
             "data-[swipe-axis=y]:data-nested-drawer-open:h-(--stack-height) data-[swipe-axis=y]:inset-x-0",
@@ -213,15 +211,15 @@ function DrawerDescription({ className, ...props }: DrawerPrimitive.Description.
 
 export {
   Drawer,
-  DrawerPortal,
-  DrawerOverlay,
-  DrawerSwipeHandle,
-  DrawerTrigger,
   DrawerClose,
   DrawerContent,
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
   DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerPortal,
+  DrawerSwipeHandle,
+  DrawerTitle,
+  DrawerTrigger,
   DrawerVirtualKeyboardProvider,
 };

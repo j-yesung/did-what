@@ -45,20 +45,19 @@ import { Input } from "@/shared/ui/input";
 import type { LeaveGuardHandle } from "@/shared/ui/leave-guard";
 import { LeaveGuard } from "@/shared/ui/leave-guard";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 import { Spinner } from "@/shared/ui/spinner";
 import { Textarea } from "@/shared/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import type { RecordActionState } from "../model/record-form";
 import { RecordLocationFields } from "./record-location-fields";
 
-const TODAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
-
 const FIELD_ICON = "size-4.5 text-foreground [stroke-width:2]";
 
 type RecordFormProps = {
   action: (formData: FormData) => Promise<RecordActionState>;
+  defaultRecordedAt: string;
   initialValues?: {
     activity: string;
     memo: string;
@@ -75,19 +74,27 @@ type RecordFormProps = {
   savedTo: string;
 };
 
-export function RecordForm({ action, initialValues, mode = "create", returnTo, savedTo }: RecordFormProps) {
+export function RecordForm({
+  action,
+  defaultRecordedAt,
+  initialValues,
+  mode = "create",
+  returnTo,
+  savedTo,
+}: RecordFormProps) {
   const guardRef = useRef<LeaveGuardHandle>(null);
   const placesQuery = useQuery(placesQueryOptions);
   const [memoLength, setMemoLength] = useState(initialValues?.memo.length ?? 0);
   const [weather, setWeather] = useState<RecordWeather>(initialValues?.weather ?? DEFAULT_RECORD_WEATHER);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const initialRecordedAt = initialValues?.recordedAt ?? defaultRecordedAt;
   const [dateRange, setDateRange] = useState<DateRange>(() => ({
-    from: parseISO(initialValues?.recordedAt ?? TODAY),
-    to: parseISO(initialValues?.recordedUntil ?? initialValues?.recordedAt ?? TODAY),
+    from: parseISO(initialRecordedAt),
+    to: parseISO(initialValues?.recordedUntil ?? initialRecordedAt),
   }));
   const [draftDateRange, setDraftDateRange] = useState<DateRange>();
   const formRef = useRef<HTMLFormElement>(null);
-  const selectedStart = dateRange.from ?? parseISO(TODAY);
+  const selectedStart = dateRange.from ?? parseISO(initialRecordedAt);
   const selectedEnd = dateRange.to ?? selectedStart;
   const recordedAt = format(selectedStart, "yyyy-MM-dd");
   const recordedUntil = format(selectedEnd, "yyyy-MM-dd");
@@ -125,7 +132,6 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
     event.preventDefault();
     const form = event.currentTarget;
 
-    // 저장을 시작하면 이탈 경고를 끈다. 성공하면 화면이 바뀌고, 실패하면 onFail이 다시 켠다.
     form.dataset.dirty = "false";
     const formData = new FormData(form);
 
@@ -187,7 +193,8 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
                 <DrawerTrigger
                   render={
                     <Button
-                      className="h-auto min-h-12 w-full justify-start px-3 py-2 text-left [&>span]:w-full"
+                      className="w-full justify-start [&>span]:w-full"
+                      size="field"
                       type="button"
                       variant="outline"
                       aria-invalid={Boolean(fieldErrors?.recordedAt || fieldErrors?.recordedUntil)}
@@ -202,7 +209,6 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
                     <span className="shrink-0 text-muted-foreground text-xs">기간 설정</span>
                   </span>
                 </DrawerTrigger>
-                {/* 캘린더는 크기가 정해져 있어 높이를 내용에 맡긴다. 작은 기종에서 넘칠 때만 max-height가 잡아 준다. */}
                 <DrawerContent>
                   <DrawerHeader>
                     <DrawerTitle>언제 갔나요?</DrawerTitle>
@@ -251,33 +257,25 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
               날씨
             </FieldLegend>
             <Field data-invalid={Boolean(fieldErrors?.weather)}>
-              <input name="weather" type="hidden" value={weather} />
-              <ToggleGroup
+              <SegmentedControl
                 aria-describedby={fieldErrors?.weather ? "record-weather-error" : undefined}
                 aria-invalid={Boolean(fieldErrors?.weather)}
                 aria-labelledby="record-weather-label"
-                className="w-full gap-1 rounded-xl bg-muted p-1"
-                onValueChange={(values) => {
-                  const nextWeather = values.at(-1);
+                name="weather"
+                onValueChange={(nextWeather) => {
                   if (!isRecordWeather(nextWeather)) return;
                   setWeather(nextWeather);
                   markDirty();
                 }}
-                value={[weather]}
+                size="large"
+                value={weather}
               >
                 {RECORD_WEATHER_OPTIONS.map((option) => (
-                  <ToggleGroupItem
-                    aria-label={option.label}
-                    className="h-14 min-w-0 flex-1 touch-manipulation flex-col gap-0.5 rounded-lg px-1 text-[11px] text-muted-foreground aria-pressed:bg-surface aria-pressed:text-foreground aria-pressed:shadow-sm [&_svg]:size-5"
-                    key={option.value}
-                    type="button"
-                    value={option.value}
-                  >
-                    <WeatherIcon weather={option.value} aria-hidden="true" />
+                  <SegmentedControlItem key={option.value} value={option.value}>
                     {option.label}
-                  </ToggleGroupItem>
+                  </SegmentedControlItem>
                 ))}
-              </ToggleGroup>
+              </SegmentedControl>
               <FieldError id="record-weather-error">{fieldErrors?.weather}</FieldError>
             </Field>
           </FieldSet>

@@ -212,6 +212,12 @@ export type Database = {
         };
         Returns: string;
       };
+      save_owned_places: {
+        Args: {
+          p_places: Json;
+        };
+        Returns: boolean;
+      };
       update_owned_record: {
         Args: {
           p_activity: string;

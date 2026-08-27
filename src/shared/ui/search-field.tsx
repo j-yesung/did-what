@@ -5,7 +5,7 @@ import { type ComponentProps, useRef } from "react";
 import { MagnifyingGlassIcon, XCircleIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
+import { IconButton } from "@/shared/ui/icon-button";
 import { Input } from "@/shared/ui/input";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -60,20 +60,21 @@ function SearchField({
           className="absolute top-1/2 right-3 size-4.5 -translate-y-1/2 text-muted-foreground"
         />
       ) : clearable ? (
-        <Button
+        <IconButton
           aria-label="검색어 지우기"
-          className="absolute top-1/2 right-2 size-7 -translate-y-1/2 rounded-full text-muted-foreground"
+          className="absolute top-1/2 right-2 -translate-y-1/2"
+          icon={XCircleIcon}
+          iconSize={18}
+          iconStrokeWidth={2}
+          iconWeight="fill"
           onClick={() => {
             onValueChange("");
             onClear?.();
             inputRef.current?.focus();
           }}
-          size="icon-sm"
+          size="sm"
           type="button"
-          variant="ghost"
-        >
-          <XCircleIcon aria-hidden="true" className="size-4.5" strokeWidth={2} weight="fill" />
-        </Button>
+        />
       ) : null}
     </div>
   );

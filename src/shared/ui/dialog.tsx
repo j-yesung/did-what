@@ -7,6 +7,7 @@ import { XIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { IconButton } from "@/shared/ui/icon-button";
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -60,11 +61,16 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            render={<Button variant="ghost" className="absolute top-2 right-2" size="icon-sm" />}
-          >
-            <XIcon strokeWidth={2} aria-hidden="true" />
-            <span className="sr-only">닫기</span>
-          </DialogPrimitive.Close>
+            render={
+              <IconButton
+                aria-label="닫기"
+                className="absolute top-2 right-2"
+                icon={XIcon}
+                iconStrokeWidth={2}
+                size="sm"
+              />
+            }
+          />
         )}
       </DialogPrimitive.Popup>
     </DialogPortal>

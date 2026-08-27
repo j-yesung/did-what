@@ -31,12 +31,12 @@ type PaginationLinkProps = {
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
   React.ComponentProps<typeof Link>;
 
-function PaginationLink({ className, isActive, size = "icon", ...props }: PaginationLinkProps) {
+function PaginationLink({ className, isActive, size, ...props }: PaginationLinkProps) {
   return (
     <Button
       variant={isActive ? "outline" : "ghost"}
-      size={size}
-      className={cn(className)}
+      size={size ?? "default"}
+      className={cn(size ? undefined : "size-8 gap-0 p-0", className)}
       nativeButton={false}
       render={
         <Link

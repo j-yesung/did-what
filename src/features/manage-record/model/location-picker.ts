@@ -44,7 +44,7 @@ export function toRecentRegions(records: RecordRegionRow[], limit = RECENT_REGIO
       label: record.region_label,
       latitude: record.region_latitude,
       longitude: record.region_longitude,
-      name: record.region_name.split(" ").at(-1) ?? record.region_name,
+      name: record.region_name.split(" ").pop() ?? record.region_name,
     });
 
     if (regions.length >= limit) break;

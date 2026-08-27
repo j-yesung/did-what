@@ -4,7 +4,7 @@ import { CaretLeftIcon } from "@phosphor-icons/react";
 
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 
-import { Button } from "../button";
+import { IconButton } from "../icon-button";
 
 type BackButtonProps = {
   fallbackHref?: string;
@@ -15,14 +15,11 @@ export function BackButton({ fallbackHref = "/" }: BackButtonProps) {
   const goBackTo = useGoBack();
 
   return (
-    <Button
+    <IconButton
       aria-label="이전 화면으로"
-      className="size-11"
+      icon={CaretLeftIcon}
+      iconStrokeWidth={2}
       onClick={() => goBackTo(fallbackHref)}
-      size="icon-lg"
-      variant="ghost"
-    >
-      <CaretLeftIcon strokeWidth={2} aria-hidden="true" />
-    </Button>
+    />
   );
 }
