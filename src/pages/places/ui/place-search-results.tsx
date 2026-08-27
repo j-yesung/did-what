@@ -1,13 +1,19 @@
 "use client";
 
+import { type KeyboardEvent, useState } from "react";
+
 import { ArrowCounterClockwiseIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { placesQueryOptions } from "@/entities/place/api/places-query";
-import { PlaceSearchSaveToggle } from "@/features/manage-place";
+import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/manage-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
+import { FOCUS_RING } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Checkbox } from "@/shared/ui/checkbox";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { IconButton } from "@/shared/ui/icon-button";
 import {
@@ -45,6 +51,7 @@ export function PlaceSearchResults({
 }: PlaceSearchResultsProps) {
   const router = useRouter();
   const savedPlacesQuery = useQuery(placesQueryOptions);
+  const [selectedPlaces, setSelectedPlaces] = useState<Map<string, CreatePlaceInput>>(() => new Map());
 
   if (savedPlacesQuery.isPending) {
     return (
@@ -59,6 +66,25 @@ export function PlaceSearchResults({
 
   const savedKakaoPlaces = getSavedKakaoPlaces(savedPlacesQuery.data ?? []);
 
+  function selectPlace(place: KakaoPlace, savedPlaceId?: string) {
+    if (savedPlaceId) return;
+    setSelectedPlaces((current) => {
+      const next = new Map(current);
+      if (next.has(place.id)) {
+        next.delete(place.id);
+      } else {
+        next.set(place.id, { page: currentPage, placeId: place.id, query });
+      }
+      return next;
+    });
+  }
+
+  function handlePlaceKeyDown(event: KeyboardEvent<HTMLLIElement>, place: KakaoPlace, savedPlaceId?: string) {
+    if (savedPlaceId || (event.key !== "Enter" && event.key !== " ")) return;
+    event.preventDefault();
+    selectPlace(place, savedPlaceId);
+  }
+
   return (
     <section aria-labelledby="place-search-results-title" className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3 px-1">
@@ -70,36 +96,69 @@ export function PlaceSearchResults({
           className="mt-0.5"
           icon={ArrowCounterClockwiseIcon}
           iconStrokeWidth={3}
-          onClick={() => router.replace("/places")}
+          onClick={() => {
+            setSelectedPlaces(new Map());
+            router.replace("/places");
+          }}
           size="sm"
           type="button"
         />
       </div>
 
       {places.length > 0 ? (
-        places.map((place) => {
-          const savedPlaceId = savedKakaoPlaces.get(place.id);
+        <ul aria-label="저장할 장소 선택" className="flex flex-col gap-2" role="group">
+          {places.map((place) => {
+            const savedPlaceId = savedKakaoPlaces.get(place.id);
+            const selected = selectedPlaces.has(place.id);
 
-          return (
-            <Card key={place.id} size="sm">
-              <CardHeader>
-                <CardTitle className="min-w-0 truncate">{place.name}</CardTitle>
-                <CardDescription>Kakao 장소 검색 결과</CardDescription>
-                <CardAction>
-                  <PlaceSearchSaveToggle
-                    page={currentPage}
-                    placeId={place.id}
-                    query={query}
-                    savedPlaceId={savedPlaceId}
-                  />
-                </CardAction>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
-              </CardContent>
-            </Card>
-          );
-        })
+            return (
+              <li
+                aria-checked={selected}
+                aria-disabled={Boolean(savedPlaceId)}
+                className={cn(
+                  "rounded-xl transition-transform duration-200 active:scale-[0.99]",
+                  FOCUS_RING,
+                  savedPlaceId ? "cursor-default" : "cursor-pointer",
+                )}
+                key={place.id}
+                onClick={() => selectPlace(place, savedPlaceId)}
+                onKeyDown={(event) => handlePlaceKeyDown(event, place, savedPlaceId)}
+                role="checkbox"
+                tabIndex={savedPlaceId ? -1 : 0}
+              >
+                <Card
+                  className={cn(
+                    "transition-[background-color,box-shadow] duration-200",
+                    selected && "bg-secondary ring-2 ring-primary/40",
+                  )}
+                  data-selected={selected}
+                  size="sm"
+                >
+                  <CardHeader>
+                    <CardTitle className="min-w-0 truncate">{place.name}</CardTitle>
+                    <CardDescription>Kakao 장소 검색 결과</CardDescription>
+                    <CardAction>
+                      {savedPlaceId ? (
+                        <Badge>저장됨</Badge>
+                      ) : (
+                        <Checkbox
+                          aria-hidden="true"
+                          checked={selected}
+                          className="pointer-events-none size-6"
+                          tabIndex={-1}
+                          variant="circle"
+                        />
+                      )}
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
+                  </CardContent>
+                </Card>
+              </li>
+            );
+          })}
+        </ul>
       ) : (
         <Empty className="border bg-card py-10">
           <EmptyHeader>
@@ -111,6 +170,24 @@ export function PlaceSearchResults({
           </EmptyHeader>
         </Empty>
       )}
+
+      {selectedPlaces.size > 0 ? (
+        <div className="sticky bottom-(--nav-clearance) z-10 -mx-1 mt-1 rounded-xl border border-border bg-background/95 p-2 shadow-lg backdrop-blur-sm">
+          <p className="px-2 pb-2 font-medium text-muted-foreground text-sm">
+            장소 {selectedPlaces.size}곳을 선택했어요
+          </p>
+          <PlaceSearchSaveButton
+            onSaved={(savedPlaceIds) =>
+              setSelectedPlaces((current) => {
+                const next = new Map(current);
+                for (const placeId of savedPlaceIds) next.delete(placeId);
+                return next;
+              })
+            }
+            selections={[...selectedPlaces.values()].map(({ page, placeId, query }) => ({ page, placeId, query }))}
+          />
+        </div>
+      ) : null}
 
       {hasPreviousPage || hasNextPage ? (
         <Pagination aria-label="장소 검색 결과 페이지">
