@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
@@ -10,29 +11,37 @@ import { Spinner } from "@/shared/ui/spinner";
 import { Switch } from "@/shared/ui/switch";
 
 import { removeSubscription, saveSubscription } from "../model/actions";
-import { disablePush, enablePush, getPushEndpoint, isPushSupported } from "../model/subscribe";
+import { pushEndpointQueryOptions } from "../model/push-query";
+import { disablePush, enablePush, isPushSupported } from "../model/subscribe";
 
 type ToggleState = "loading" | "off" | "on" | "unsupported";
 
 export function PushToggle() {
-  const [state, setState] = useState<ToggleState>("loading");
+  const queryClient = useQueryClient();
+  const [hydrated, setHydrated] = useState(false);
   const [pending, setPending] = useState(false);
   const [optimistic, setOptimistic] = useState<boolean | null>(null);
+  const supported = hydrated && isPushSupported();
+  const pushEndpointQuery = useQuery({ ...pushEndpointQueryOptions, enabled: supported });
+  const state: ToggleState = !hydrated
+    ? "loading"
+    : !supported
+      ? "unsupported"
+      : pushEndpointQuery.isPending
+        ? "loading"
+        : pushEndpointQuery.data
+          ? "on"
+          : "off";
 
   useEffect(() => {
-    if (!isPushSupported()) {
-      setState("unsupported");
-      return;
-    }
-
-    getPushEndpoint().then((endpoint) => setState(endpoint ? "on" : "off"));
+    setHydrated(true);
   }, []);
 
   async function turnOn() {
     const result = await enablePush();
 
     if (result.status === "unsupported") {
-      setState("unsupported");
+      queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
       return;
     }
 
@@ -57,19 +66,20 @@ export function PushToggle() {
     // 서버에 남지 않은 구독은 알림이 오지 않는다. 켜진 것처럼 보이지 않게 브라우저 구독도 되돌린다.
     if (saved?.status === "error") {
       await disablePush();
+      queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
       toast.error("알림을 켜지 못했어요", { description: saved.message, duration: 4000 });
       return;
     }
 
-    setState("on");
+    queryClient.setQueryData(pushEndpointQueryOptions.queryKey, result.keys.endpoint);
     toast.success("이 기기로 알림을 받아요", { duration: 2000 });
   }
 
   async function turnOff() {
     const endpoint = await disablePush();
+    queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
     if (endpoint) await runServerAction(() => removeSubscription(endpoint));
 
-    setState("off");
     toast.success("알림을 껐어요", { duration: 2000 });
   }
 
