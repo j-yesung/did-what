@@ -19,6 +19,12 @@ type VerifiedPlace = {
   region: NonNullable<Awaited<ReturnType<typeof resolveKakaoRegion>>>;
 };
 
+type PlaceSearchGroup = {
+  inputs: CreatePlaceInput[];
+  page: number;
+  query: string;
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -37,13 +43,47 @@ function normalizeCreatePlaceInput(value: unknown): CreatePlaceInput | null {
   };
 }
 
-async function verifyPlace(input: CreatePlaceInput): Promise<VerifiedPlace | null> {
-  const searchResult = await searchKakaoPlaces(input.query, input.page);
-  const place = searchResult.places?.find((item) => item.id === input.placeId);
-  if (!place) return null;
+async function verifyPlaceSearchGroup(group: PlaceSearchGroup): Promise<VerifiedPlace[] | null> {
+  const searchResult = await searchKakaoPlaces(group.query, group.page);
+  if (!searchResult.places) return null;
 
-  const region = await resolveKakaoRegion(place.longitude, place.latitude);
-  return region ? { place, region } : null;
+  const placesById = new Map(searchResult.places.map((place) => [place.id, place]));
+  const verifiedPlaces = await Promise.all(
+    group.inputs.map(async (input): Promise<VerifiedPlace | null> => {
+      const place = placesById.get(input.placeId);
+      if (!place) return null;
+
+      const region = await resolveKakaoRegion(place.longitude, place.latitude);
+      return region ? { place, region } : null;
+    }),
+  );
+
+  return verifiedPlaces.some((place) => place === null)
+    ? null
+    : verifiedPlaces.filter((place): place is VerifiedPlace => place !== null);
+}
+
+async function verifyPlaces(inputs: CreatePlaceInput[]): Promise<VerifiedPlace[] | null> {
+  const groups = new Map<string, PlaceSearchGroup>();
+
+  for (const input of inputs) {
+    const key = JSON.stringify([input.query, input.page]);
+    const group = groups.get(key);
+    if (group) {
+      group.inputs.push(input);
+    } else {
+      groups.set(key, { inputs: [input], page: input.page, query: input.query });
+    }
+  }
+
+  const results = await Promise.all([...groups.values()].map(verifyPlaceSearchGroup));
+  const verifiedPlaces: VerifiedPlace[] = [];
+  for (const result of results) {
+    if (!result) return null;
+    verifiedPlaces.push(...result);
+  }
+
+  return verifiedPlaces;
 }
 
 export async function createPlaces(inputs: CreatePlaceInput[]): Promise<PlaceActionState> {
@@ -54,49 +94,25 @@ export async function createPlaces(inputs: CreatePlaceInput[]): Promise<PlaceAct
 
   const validInputs = normalizedInputs.filter((input): input is CreatePlaceInput => input !== null);
   const uniqueInputs = [...new Map(validInputs.map((input) => [input.placeId, input])).values()];
-  const { supabase, user } = await requireUser();
-  const verifiedPlaces = await Promise.all(uniqueInputs.map(verifyPlace));
-  if (verifiedPlaces.some((verified): verified is null => verified === null)) {
+  const { supabase } = await requireUser();
+  const verifiedPlaces = await verifyPlaces(uniqueInputs);
+  if (!verifiedPlaces) {
     return { message: "선택한 장소를 확인할 수 없습니다. 다시 검색해 주세요.", status: "error" };
   }
 
-  const savedAt = new Date().toISOString();
-  for (const verified of verifiedPlaces) {
-    if (!verified) return { message: "선택한 장소를 확인할 수 없습니다. 다시 검색해 주세요.", status: "error" };
-
-    const { data: existing, error: findError } = await supabase
-      .from("places")
-      .select("id, saved_at")
-      .eq("owner_id", user.id)
-      .eq("provider", "kakao")
-      .eq("provider_place_id", verified.place.id)
-      .maybeSingle();
-    if (findError) return { message: "장소를 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
-
-    const { error } = existing
-      ? await supabase
-          .from("places")
-          .update({
-            region_code: verified.region.code,
-            region_name: verified.region.fullName,
-            saved_at: existing.saved_at ?? savedAt,
-          })
-          .eq("id", existing.id)
-          .eq("owner_id", user.id)
-      : await supabase.from("places").insert({
-          address: verified.place.address,
-          latitude: verified.place.latitude,
-          longitude: verified.place.longitude,
-          name: verified.place.name,
-          owner_id: user.id,
-          provider: "kakao",
-          provider_place_id: verified.place.id,
-          region_code: verified.region.code,
-          region_name: verified.region.fullName,
-          saved_at: savedAt,
-        });
-
-    if (error) return { message: "장소를 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
+  const { data: saved, error } = await supabase.rpc("save_owned_places", {
+    p_places: verifiedPlaces.map(({ place, region }) => ({
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      name: place.name,
+      provider_place_id: place.id,
+      region_code: region.code,
+      region_name: region.fullName,
+    })),
+  });
+  if (error || !saved) {
+    return { message: "장소를 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   revalidatePath("/places");

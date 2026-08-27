@@ -21,7 +21,8 @@ export function PushToggle() {
   const [hydrated, setHydrated] = useState(false);
   const [pending, setPending] = useState(false);
   const [optimistic, setOptimistic] = useState<boolean | null>(null);
-  const supported = hydrated && isPushSupported();
+  const [unsupported, setUnsupported] = useState(false);
+  const supported = hydrated && !unsupported && isPushSupported();
   const pushEndpointQuery = useQuery({ ...pushEndpointQueryOptions, enabled: supported });
   const state: ToggleState = !hydrated
     ? "loading"
@@ -41,6 +42,7 @@ export function PushToggle() {
     const result = await enablePush();
 
     if (result.status === "unsupported") {
+      setUnsupported(true);
       queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
       return;
     }
