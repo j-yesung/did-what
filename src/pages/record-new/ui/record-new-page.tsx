@@ -2,6 +2,8 @@ import { createRecord, RecordForm } from "@/features/manage-record";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 export function RecordNewPage() {
+  const defaultRecordedAt = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
+
   return (
     <PageShell className="block">
       <PageHeader back="/records" title="기록" />
@@ -18,7 +20,7 @@ export function RecordNewPage() {
         </p>
       </section>
 
-      <RecordForm action={createRecord} returnTo="/records" savedTo="/records" />
+      <RecordForm action={createRecord} defaultRecordedAt={defaultRecordedAt} returnTo="/records" savedTo="/records" />
     </PageShell>
   );
 }

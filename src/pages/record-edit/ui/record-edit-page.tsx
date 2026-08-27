@@ -50,6 +50,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
       ) : (
         <RecordForm
           action={updateRecord.bind(null, recordId)}
+          defaultRecordedAt={record.recorded_at}
           initialValues={{
             activity: record.activity,
             memo: record.memo ?? "",
@@ -69,7 +70,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
               label: record.region_label,
               latitude: record.region_latitude,
               longitude: record.region_longitude,
-              name: record.region_name.split(" ").at(-1) ?? record.region_name,
+              name: record.region_name.split(" ").pop() ?? record.region_name,
             },
           }}
           mode="edit"
