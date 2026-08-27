@@ -9,6 +9,7 @@ import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { IconButton } from "@/shared/ui/icon-button";
 
 import { deletePlace } from "../model/actions";
 
@@ -31,15 +32,14 @@ export function DeletePlaceButton({ name, placeId, recordCount }: DeletePlaceBut
 
   return (
     <>
-      <Button
+      <IconButton
         aria-label={`${name} 삭제`}
-        className="size-11 text-destructive [&_svg]:size-4"
+        className="text-destructive"
+        icon={TrashIcon}
+        iconSize={16}
+        iconStrokeWidth={2}
         onClick={() => setOpen(true)}
-        size="icon-lg"
-        variant="ghost"
-      >
-        <TrashIcon strokeWidth={2} aria-hidden="true" />
-      </Button>
+      />
       <ConfirmDialog
         cancelButton={
           <Button disabled={remove.isPending} onClick={() => setOpen(false)} variant="neutral">

@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 
-import { BookmarkIcon, MapPinIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { BookmarkIcon, MapPinIcon, PlusIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 
 import type { PlaceOption } from "@/entities/place";
@@ -227,12 +227,12 @@ export function PlacePickerDialog({ disabled, onAdd, region, savedPlaces, select
     <Drawer onOpenChange={setOpen} open={open} showSwipeHandle>
       <DrawerTrigger
         disabled={disabled}
-        render={<Button size="lg" disabled={disabled} type="button" variant="outline" />}
+        render={<Button disabled={disabled} type="button" variant="neutral" size="lg" />}
       >
+        <PlusIcon aria-hidden="true" className="size-4" strokeWidth={2} />
         방문 장소 추가
       </DrawerTrigger>
       <DrawerVirtualKeyboardProvider>
-        {/* 검색 결과에 따라 내용이 늘었다 줄었다 한다. 높이를 맡기면 결과가 도착할 때 시트가 손가락 밑에서 솟는다. */}
         <DrawerContent className="[--drawer-height:var(--drawer-content-max-height)]">
           <PlacePickerPanel
             onAdd={(place, placeRegion) => {

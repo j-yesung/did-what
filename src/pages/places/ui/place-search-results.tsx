@@ -7,9 +7,9 @@ import { useRouter } from "next/navigation";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { PlaceSearchSaveToggle } from "@/features/manage-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
-import { Button } from "@/shared/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { IconButton } from "@/shared/ui/icon-button";
 import {
   Pagination,
   PaginationContent,
@@ -65,16 +65,15 @@ export function PlaceSearchResults({
         <h2 className="min-w-0 font-bold text-lg" id="place-search-results-title">
           ‘{query}’ 검색 결과 {pageableCount}곳 · {currentPage}페이지
         </h2>
-        <Button
+        <IconButton
           aria-label="장소 검색 초기화"
           className="mt-0.5"
+          icon={ArrowCounterClockwiseIcon}
+          iconStrokeWidth={3}
           onClick={() => router.replace("/places")}
-          size="icon-sm"
+          size="sm"
           type="button"
-          variant="ghost"
-        >
-          <ArrowCounterClockwiseIcon aria-hidden="true" strokeWidth={3} />
-        </Button>
+        />
       </div>
 
       {places.length > 0 ? (

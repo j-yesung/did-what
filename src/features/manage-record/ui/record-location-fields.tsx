@@ -5,9 +5,9 @@ import { useState } from "react";
 import { MapPinAreaIcon, MapPinIcon, TrashIcon } from "@phosphor-icons/react";
 
 import type { PlaceOption } from "@/entities/place";
-import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
+import { IconButton } from "@/shared/ui/icon-button";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import { PlacePickerDialog } from "./place-picker-dialog";
@@ -73,17 +73,12 @@ export function RecordLocationFields({
           <MapPinAreaIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
           어느 지역에 갔나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
         </FieldLabel>
-        {region ? (
-          <div className="flex items-center justify-between gap-3 rounded-xl border bg-muted/40 p-3">
-            <div className="min-w-0">
-              <p className="font-medium text-sm">{region.label}</p>
-              <p className="mt-1 text-muted-foreground text-xs">{region.fullName}</p>
-            </div>
-            <RegionPickerDialog onSelect={selectRegion} />
-          </div>
-        ) : (
-          <RegionPickerDialog onSelect={selectRegion} />
-        )}
+        <RegionPickerDialog
+          aria-describedby={regionError ? "regionCode-error" : undefined}
+          aria-invalid={Boolean(regionError)}
+          onSelect={selectRegion}
+          region={region}
+        />
         <FieldError id="regionCode-error">{regionError}</FieldError>
       </Field>
 
@@ -105,18 +100,17 @@ export function RecordLocationFields({
                       <p className="font-medium text-sm">{place.name}</p>
                       <p className="mt-1 text-muted-foreground text-xs">{place.address ?? "주소 정보 없음"}</p>
                     </div>
-                    <Button
+                    <IconButton
                       aria-label={`${place.name} 방문 장소에서 제거`}
+                      icon={TrashIcon}
+                      iconStrokeWidth={2}
                       onClick={() => {
                         setPlaces((current) => current.filter((item) => item.key !== place.key));
                         onChange?.();
                       }}
-                      size="icon-sm"
+                      size="sm"
                       type="button"
-                      variant="ghost"
-                    >
-                      <TrashIcon strokeWidth={2} aria-hidden="true" />
-                    </Button>
+                    />
                   </div>
                   <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm" htmlFor={`save-${place.key}`}>
                     <Checkbox

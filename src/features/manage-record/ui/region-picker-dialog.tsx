@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 
-import { ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { CaretRightIcon, ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
@@ -25,15 +25,42 @@ import type { RecordLocationRegion } from "../model/location-picker";
 import { toRecentRegions } from "../model/location-picker";
 
 type RegionPickerDialogProps = {
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
   onSelect: (region: RecordLocationRegion) => void;
+  region: RecordLocationRegion | null;
 };
 
-export function RegionPickerDialog({ onSelect }: RegionPickerDialogProps) {
+export function RegionPickerDialog({ onSelect, region, ...ariaProps }: RegionPickerDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <Drawer onOpenChange={setOpen} open={open} showSwipeHandle>
-      <DrawerTrigger render={<Button size="lg" type="button" variant="outline" />}>지역 찾기</DrawerTrigger>
+      <DrawerTrigger
+        render={
+          <Button
+            {...ariaProps}
+            className="w-full justify-start [&>span]:w-full"
+            size="field"
+            type="button"
+            variant="outline"
+          />
+        }
+      >
+        <span className="flex w-full items-center justify-between gap-3">
+          <span className="min-w-0">
+            {region ? (
+              <>
+                <span className="block truncate font-medium text-sm">{region.label}</span>
+                <span className="mt-1 block truncate text-muted-foreground text-xs">{region.fullName}</span>
+              </>
+            ) : (
+              <span className="text-muted-foreground text-sm">지역을 선택해 주세요</span>
+            )}
+          </span>
+          <CaretRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" strokeWidth={2} />
+        </span>
+      </DrawerTrigger>
       <DrawerVirtualKeyboardProvider>
         <RegionSearchContent
           onSelect={(region) => {
@@ -46,13 +73,7 @@ export function RegionPickerDialog({ onSelect }: RegionPickerDialogProps) {
   );
 }
 
-/**
- * 시트가 닫히면 이 내용이 통째로 언마운트되면서 검색어도 함께 사라진다.
- *
- * 언마운트는 Portal이 맡는다(keepMounted 기본값 false). 닫힘 애니메이션이 끝난 뒤에 걷어내므로
- * 여기서 open으로 직접 걸러내면 안 된다. 그러면 내용이 즉시 사라져 닫히는 모습이 보이지 않는다.
- */
-function RegionSearchContent({ onSelect }: RegionPickerDialogProps) {
+function RegionSearchContent({ onSelect }: Pick<RegionPickerDialogProps, "onSelect">) {
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState("");
   const search = useRegionSearch(query);

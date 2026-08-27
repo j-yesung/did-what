@@ -187,7 +187,8 @@ export function RecordForm({ action, initialValues, mode = "create", returnTo, s
                 <DrawerTrigger
                   render={
                     <Button
-                      className="h-auto min-h-12 w-full justify-start px-3 py-2 text-left [&>span]:w-full"
+                      className="w-full justify-start [&>span]:w-full"
+                      size="field"
                       type="button"
                       variant="outline"
                       aria-invalid={Boolean(fieldErrors?.recordedAt || fieldErrors?.recordedUntil)}
