@@ -26,7 +26,7 @@ export function PlacePickerDialog({ disabled, onAdd, region, savedPlaces, select
     <Drawer onOpenChange={setOpen} open={open} showSwipeHandle>
       <DrawerTrigger
         disabled={disabled}
-        render={<Button disabled={disabled} type="button" variant="neutral" size="lg" />}
+        render={<Button disabled={disabled} size="large" type="button" variant="neutral" />}
       >
         <PlusIcon aria-hidden="true" className="size-4" strokeWidth={2} />
         방문 장소 추가

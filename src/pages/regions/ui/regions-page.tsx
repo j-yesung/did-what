@@ -53,7 +53,8 @@ export function RegionsPage() {
             <li key={map.code}>
               <Button
                 aria-label={`${map.name}, ${map.totalCount}곳 중 ${map.visitedCount}곳 방문`}
-                className="h-auto min-h-22 w-full justify-start gap-2 rounded-2xl px-2 py-2.5 text-left after:hidden [&>span]:w-full"
+                className="h-auto min-h-22 justify-start gap-2 rounded-2xl px-2 py-2.5 text-left after:hidden [&>span]:w-full"
+                fullWidth
                 onClick={() => router.push(`/regions/${map.code}`)}
                 type="button"
                 variant="ghost"

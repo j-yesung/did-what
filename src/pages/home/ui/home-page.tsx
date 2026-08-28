@@ -36,7 +36,12 @@ export function HomePage() {
   }
 
   const createRecordButton = (
-    <Button className="h-12 rounded-full px-5 font-bold" onClick={() => router.push("/records/new")} type="button">
+    <Button
+      className="rounded-full px-5 font-bold"
+      onClick={() => router.push("/records/new")}
+      size="large"
+      type="button"
+    >
       우리 지도에 콕!
     </Button>
   );

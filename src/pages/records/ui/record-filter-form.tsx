@@ -109,7 +109,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
             value={to}
           />
         </div>
-        <Button className="mt-3 w-full" type="submit" variant="outline">
+        <Button className="mt-3" fullWidth size="medium" type="submit" variant="outline">
           기간 적용
         </Button>
       </details>

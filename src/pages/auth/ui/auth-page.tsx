@@ -146,7 +146,7 @@ function AuthPage({ mode }: AuthPageProps) {
                   </Field>
                 ) : null}
 
-                <Button className="mt-1 h-11 w-full" loading={submit.isPending} size="lg" type="submit">
+                <Button className="mt-1" fullWidth loading={submit.isPending} size="large" type="submit">
                   {copy.submitLabel}
                 </Button>
               </FieldGroup>

@@ -35,7 +35,7 @@ function PaginationLink({ className, isActive, size, ...props }: PaginationLinkP
   return (
     <Button
       variant={isActive ? "outline" : "ghost"}
-      size={size ?? "default"}
+      size={size ?? "small"}
       className={cn(size ? undefined : "size-8 gap-0 p-0", className)}
       nativeButton={false}
       render={
@@ -56,7 +56,7 @@ function PaginationPrevious({
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
   return (
-    <PaginationLink aria-label="Go to previous page" size="default" className={cn("pl-1.5!", className)} {...props}>
+    <PaginationLink aria-label="Go to previous page" size="small" className={cn("pl-1.5!", className)} {...props}>
       <CaretLeftIcon strokeWidth={2} data-icon="inline-start" />
       <span className="hidden sm:block">{text}</span>
     </PaginationLink>
@@ -69,7 +69,7 @@ function PaginationNext({
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
   return (
-    <PaginationLink aria-label="Go to next page" size="default" className={cn("pr-1.5!", className)} {...props}>
+    <PaginationLink aria-label="Go to next page" size="small" className={cn("pr-1.5!", className)} {...props}>
       <span className="hidden sm:block">{text}</span>
       <CaretRightIcon strokeWidth={2} data-icon="inline-end" />
     </PaginationLink>
