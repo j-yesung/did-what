@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { getRegionCode } from "@/entities/region";
 import { sendRecordPush } from "@/features/push-notification/model/send-record-push";
 import {
   type KakaoSearchScope,
@@ -21,6 +22,8 @@ import type { RecordActionState, RecordInput, RecordInputValues, RecordPlaceRefe
 import { validateRecordInput } from "./record-form";
 
 type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
+
+const LEGACY_INTEGRATED_REGION_PREFIXES = new Set(["29", "46"]);
 
 function readRecordInput(formData: FormData): RecordInputValues {
   return {
@@ -50,7 +53,21 @@ async function verifyRegion(code: string, name: string) {
   }
 
   const codeLength = code.startsWith("36") ? 8 : 5;
-  return result.regions.find((region) => region.code.slice(0, codeLength) === code.slice(0, codeLength)) ?? null;
+  const requestedRegionCode = getRegionCode(code);
+  const requestedDistrictName = name.trim().split(/\s+/).at(-1);
+  const isLegacyIntegratedRegion = LEGACY_INTEGRATED_REGION_PREFIXES.has(code.slice(0, 2));
+  return (
+    result.regions.find((region) => {
+      if (region.code.slice(0, codeLength) === code.slice(0, codeLength)) return true;
+
+      return (
+        isLegacyIntegratedRegion &&
+        requestedRegionCode === "KR-12" &&
+        region.name === requestedDistrictName &&
+        getRegionCode(region.code) === "KR-12"
+      );
+    }) ?? null
+  );
 }
 
 async function verifyKakaoPlace(reference: Extract<RecordPlaceReference, { kind: "kakao" }>) {

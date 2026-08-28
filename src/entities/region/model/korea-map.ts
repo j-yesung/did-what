@@ -18,7 +18,8 @@ export const REGIONS = [
   { administrativeCodes: ["26"], code: "KR-26", name: "부산광역시", subdivisionCount: 16 },
   { administrativeCodes: ["27"], code: "KR-27", name: "대구광역시", subdivisionCount: 9 },
   { administrativeCodes: ["28"], code: "KR-28", name: "인천광역시", subdivisionCount: 11 },
-  { administrativeCodes: ["29"], code: "KR-29", name: "광주광역시", subdivisionCount: 5 },
+  // 통합 후 코드(12)와 통합 전 광주·전남 코드(29·46)를 함께 인식해 기존 기록도 이어서 집계한다.
+  { administrativeCodes: ["12", "29", "46"], code: "KR-12", name: "전남광주통합특별시", subdivisionCount: 27 },
   { administrativeCodes: ["30"], code: "KR-30", name: "대전광역시", subdivisionCount: 5 },
   { administrativeCodes: ["31"], code: "KR-31", name: "울산광역시", subdivisionCount: 5 },
   { administrativeCodes: ["36"], code: "KR-50", name: "세종특별자치시", subdivisionCount: 33 },
@@ -27,7 +28,6 @@ export const REGIONS = [
   { administrativeCodes: ["43"], code: "KR-43", name: "충청북도", subdivisionCount: 14 },
   { administrativeCodes: ["44"], code: "KR-44", name: "충청남도", subdivisionCount: 16 },
   { administrativeCodes: ["45", "52"], code: "KR-45", name: "전북특별자치도", subdivisionCount: 15 },
-  { administrativeCodes: ["46"], code: "KR-46", name: "전라남도", subdivisionCount: 22 },
   { administrativeCodes: ["47"], code: "KR-47", name: "경상북도", subdivisionCount: 23 },
   { administrativeCodes: ["48"], code: "KR-48", name: "경상남도", subdivisionCount: 22 },
   { administrativeCodes: ["49"], code: "KR-49", name: "제주특별자치도", subdivisionCount: 2 },
@@ -82,6 +82,10 @@ const CELL_GAP = 1.1;
 const CELL_PITCH = CELL_SIZE + CELL_GAP;
 const LONGITUDE_SCALE = Math.cos((36 * Math.PI) / 180);
 const REGION_CODES = new Set<string>(REGIONS.map(({ code }) => code));
+const REGION_CODE_ALIASES = new Map<string, RegionCode>([
+  ["KR-29", "KR-12"],
+  ["KR-46", "KR-12"],
+]);
 
 export const KOREA_MAP_CELL_STYLE = {
   size: CELL_SIZE,
@@ -102,7 +106,8 @@ export function isRegionCode(value: string): value is RegionCode {
 }
 
 export function getRegion(regionCode: string) {
-  return REGIONS.find(({ code }) => code === regionCode);
+  const canonicalCode = REGION_CODE_ALIASES.get(regionCode) ?? regionCode;
+  return REGIONS.find(({ code }) => code === canonicalCode);
 }
 
 export function getRegionCode(administrativeCode: string): RegionCode | null {
@@ -151,6 +156,11 @@ function containsPoint(geometry: Geometry, point: Position) {
   return polygons.some((polygon) => isPointInPolygon(point, polygon));
 }
 
+function getBoundaryRegionCode(value: string): RegionCode | null {
+  const canonicalCode = REGION_CODE_ALIASES.get(value) ?? value;
+  return isRegionCode(canonicalCode) ? canonicalCode : null;
+}
+
 function getBounds(geometries: Geometry[]) {
   let minLongitude = Number.POSITIVE_INFINITY;
   let maxLongitude = Number.NEGATIVE_INFINITY;
@@ -185,8 +195,9 @@ function generateCells(columns: number): KoreaMapGrid {
     for (let column = 0; column < columns; column++) {
       const longitude = bounds.minLongitude + ((column + 0.5) * projectedStep) / LONGITUDE_SCALE;
       const region = BOUNDARIES.find((feature) => containsPoint(feature.geometry, [longitude, latitude]));
+      const regionCode = region ? getBoundaryRegionCode(region.properties.shapeISO) : null;
 
-      if (!region || !isRegionCode(region.properties.shapeISO)) continue;
+      if (!regionCode) continue;
 
       cells.push({
         id: `${row}-${column}`,
@@ -196,7 +207,7 @@ function generateCells(columns: number): KoreaMapGrid {
         longitude,
         count: 0,
         level: 0,
-        regionCode: region.properties.shapeISO,
+        regionCode,
       });
     }
   }
@@ -211,10 +222,12 @@ function generateCells(columns: number): KoreaMapGrid {
 }
 
 function generateRegionCells(regionCode: RegionCode): KoreaMapGrid {
-  const region = BOUNDARIES.find(({ properties }) => properties.shapeISO === regionCode);
-  if (!region) return { cells: [], columns: 0, height: 0, rows: 0, width: 0 };
+  const geometries = BOUNDARIES.filter(
+    ({ properties }) => getBoundaryRegionCode(properties.shapeISO) === regionCode,
+  ).map(({ geometry }) => geometry);
+  if (geometries.length === 0) return { cells: [], columns: 0, height: 0, rows: 0, width: 0 };
 
-  const bounds = getBounds([region.geometry]);
+  const bounds = getBounds(geometries);
   const minimumCellCount = getRegion(regionCode)?.subdivisionCount ?? 1;
   let cells: KoreaMapCell[] = [];
   let columns = REGION_GRID_MIN_COLUMNS;
@@ -231,7 +244,7 @@ function generateRegionCells(regionCode: RegionCode): KoreaMapGrid {
 
       for (let column = 0; column < columns; column++) {
         const longitude = bounds.minLongitude + ((column + 0.5) * projectedStep) / LONGITUDE_SCALE;
-        if (!containsPoint(region.geometry, [longitude, latitude])) continue;
+        if (!geometries.some((geometry) => containsPoint(geometry, [longitude, latitude]))) continue;
 
         cells.push({
           count: 0,
