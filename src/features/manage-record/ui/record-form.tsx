@@ -220,6 +220,7 @@ export function RecordForm({
                       className="w-full rounded-xl"
                       classNames={{ root: "w-full" }}
                       defaultMonth={draftDateRange?.from ?? selectedStart}
+                      fixedWeeks
                       locale={ko}
                       mode="range"
                       onSelect={setDraftDateRange}
