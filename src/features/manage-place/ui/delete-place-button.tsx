@@ -53,8 +53,8 @@ export function DeletePlaceButton({ name, placeId, recordCount }: DeletePlaceBut
         }
         description={
           recordCount > 0
-            ? `이곳의 기록 ${recordCount}개에서 방문 장소만 빠지고 기록 자체는 남아요.\n되돌릴 수 없어요.`
-            : "삭제한 뒤에는 되돌릴 수 없어요."
+            ? `저장된 장소 목록에서만 삭제되고 기록 ${recordCount}개의 방문 장소는 남아요.`
+            : "저장된 장소 목록에서 삭제돼요."
         }
         onClose={() => setOpen(false)}
         open={open}

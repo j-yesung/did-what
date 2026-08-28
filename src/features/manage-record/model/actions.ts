@@ -293,14 +293,8 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
 export async function deleteRecord(recordId: string): Promise<RecordActionState> {
   if (!isUuid(recordId)) return { message: "삭제할 기록을 확인할 수 없습니다.", status: "error" };
 
-  const { supabase, user } = await requireUser();
-  const { data: deleted, error } = await supabase
-    .from("records")
-    .delete()
-    .eq("id", recordId)
-    .eq("owner_id", user.id)
-    .select("id")
-    .maybeSingle();
+  const { supabase } = await requireUser();
+  const { data: deleted, error } = await supabase.rpc("delete_owned_record", { p_record_id: recordId });
 
   if (error || !deleted) {
     return { message: "기록을 삭제하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
