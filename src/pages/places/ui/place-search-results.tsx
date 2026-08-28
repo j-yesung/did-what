@@ -65,6 +65,7 @@ export function PlaceSearchResults({
   }
 
   const savedKakaoPlaces = getSavedKakaoPlaces(savedPlacesQuery.data ?? []);
+  const hasSelectedPlaces = selectedPlaces.size > 0;
 
   function selectPlace(place: KakaoPlace, savedPlaceId?: string) {
     if (savedPlaceId) return;
@@ -86,7 +87,10 @@ export function PlaceSearchResults({
   }
 
   return (
-    <section aria-labelledby="place-search-results-title" className="flex flex-col gap-3">
+    <section
+      aria-labelledby="place-search-results-title"
+      className={cn("flex flex-col gap-3", hasSelectedPlaces && "pb-26")}
+    >
       <div className="flex items-start justify-between gap-3 px-1">
         <h2 className="min-w-0 font-bold text-lg" id="place-search-results-title">
           ‘{query}’ 검색 결과 {pageableCount}곳 · {currentPage}페이지
@@ -171,24 +175,6 @@ export function PlaceSearchResults({
         </Empty>
       )}
 
-      {selectedPlaces.size > 0 ? (
-        <div className="sticky bottom-(--nav-clearance) z-10 -mx-1 mt-1 rounded-xl border border-border bg-background/95 p-2 shadow-lg backdrop-blur-sm">
-          <p className="px-2 pb-2 font-medium text-muted-foreground text-sm">
-            장소 {selectedPlaces.size}곳을 선택했어요
-          </p>
-          <PlaceSearchSaveButton
-            onSaved={(savedPlaceIds) =>
-              setSelectedPlaces((current) => {
-                const next = new Map(current);
-                for (const placeId of savedPlaceIds) next.delete(placeId);
-                return next;
-              })
-            }
-            selections={[...selectedPlaces.values()].map(({ page, placeId, query }) => ({ page, placeId, query }))}
-          />
-        </div>
-      ) : null}
-
       {hasPreviousPage || hasNextPage ? (
         <Pagination aria-label="장소 검색 결과 페이지">
           <PaginationContent>
@@ -217,6 +203,26 @@ export function PlaceSearchResults({
             ) : null}
           </PaginationContent>
         </Pagination>
+      ) : null}
+
+      {hasSelectedPlaces ? (
+        <div className="fixed inset-x-0 bottom-(--nav-clearance) z-10 mx-auto w-full max-w-(--app-width) px-4">
+          <div className="rounded-xl border border-border bg-background/95 p-2 shadow-lg backdrop-blur-sm">
+            <p className="px-2 pb-2 font-medium text-muted-foreground text-sm">
+              장소 {selectedPlaces.size}곳을 선택했어요
+            </p>
+            <PlaceSearchSaveButton
+              onSaved={(savedPlaceIds) =>
+                setSelectedPlaces((current) => {
+                  const next = new Map(current);
+                  for (const placeId of savedPlaceIds) next.delete(placeId);
+                  return next;
+                })
+              }
+              selections={[...selectedPlaces.values()].map(({ page, placeId, query }) => ({ page, placeId, query }))}
+            />
+          </div>
+        </div>
       ) : null}
     </section>
   );
