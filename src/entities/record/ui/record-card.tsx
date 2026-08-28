@@ -30,7 +30,8 @@ export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil
         aria-hidden="true"
       />
       <Button
-        className="h-auto w-full justify-start whitespace-normal rounded-lg px-1 py-1.5 text-left font-normal after:hidden [&>span]:block [&>span]:w-full"
+        className="h-auto justify-start whitespace-normal rounded-lg px-1 py-1.5 text-left font-normal after:hidden [&>span]:block [&>span]:w-full"
+        fullWidth
         onClick={() => router.push(`/records/${recordId}`)}
         type="button"
         variant="ghost"

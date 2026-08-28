@@ -133,16 +133,9 @@ export async function createPlace(formData: FormData): Promise<PlaceActionState>
 export async function deletePlace(placeId: string): Promise<PlaceActionState> {
   if (!isUuid(placeId)) return { message: "삭제할 장소를 확인할 수 없어요.", status: "error" };
 
-  const { supabase, user } = await requireUser();
+  const { supabase } = await requireUser();
 
-  /** record_places는 장소 삭제를 따라 정리되므로 기록은 남고 방문 장소만 빠진다. */
-  const { data, error } = await supabase
-    .from("places")
-    .delete()
-    .eq("id", placeId)
-    .eq("owner_id", user.id)
-    .select("id")
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("remove_saved_place", { p_place_id: placeId });
   if (error || !data) return { message: "장소를 삭제하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
 
   revalidatePath("/places");

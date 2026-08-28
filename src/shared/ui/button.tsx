@@ -24,21 +24,29 @@ const buttonVariants = cva(
         link: "text-primary underline underline-offset-4 after:bg-current",
       },
       size: {
-        default: "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 in-data-[slot=button-group]:rounded-lg rounded-[min(var(--radius-md),10px)] px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 in-data-[slot=button-group]:rounded-lg rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        small:
+          "h-8 min-w-13 gap-1 px-2.5 font-semibold text-[13px] leading-[1.252] has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
+        medium:
+          "h-[38px] min-w-16 gap-1.5 px-4 font-semibold text-[15px] leading-[1.252] has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5",
+        large:
+          "h-12 min-w-20 gap-1.5 px-4 font-semibold text-[17px] leading-[1.252] has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5",
+        xlarge:
+          "h-14 min-w-24 gap-2 px-7 font-semibold text-[17px] leading-[1.252] has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
         field: "h-auto min-h-12 gap-3 px-3 py-2 text-left",
+      },
+      fullWidth: {
+        true: "w-full",
       },
     },
     defaultVariants: {
       variant: "default",
-      size: "default",
+      size: "small",
+      fullWidth: false,
     },
   },
 );
 
-type ButtonProps = ButtonPrimitive.Props &
+type ButtonProps = Omit<ButtonPrimitive.Props, "size"> &
   VariantProps<typeof buttonVariants> & {
     loading?: boolean;
   };
@@ -48,14 +56,15 @@ function Button({
   className,
   disabled,
   loading,
+  fullWidth = false,
   variant = "default",
-  size = "default",
+  size = "small",
   ...props
 }: ButtonProps) {
   return (
     <ButtonPrimitive
       aria-busy={loading || undefined}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ fullWidth, size, variant }), className)}
       data-slot="button"
       disabled={disabled || loading}
       {...props}

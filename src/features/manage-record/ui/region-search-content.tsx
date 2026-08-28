@@ -65,7 +65,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
                   <Button
                     className="rounded-lg"
                     onClick={() => onSelect(region)}
-                    size="sm"
+                    size="small"
                     title={region.fullName}
                     type="button"
                     variant="outline"
@@ -110,7 +110,8 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
             {search.data.regions.map((region) => (
               <li key={region.code}>
                 <Button
-                  className="h-auto w-full justify-start whitespace-normal px-3 py-3 text-left"
+                  className="h-auto justify-start whitespace-normal px-3 py-3 text-left"
+                  fullWidth
                   onClick={() => onSelect({ ...region, label: search.data.query })}
                   type="button"
                   variant="outline"

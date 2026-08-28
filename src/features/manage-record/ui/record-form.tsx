@@ -193,7 +193,8 @@ export function RecordForm({
                 <DrawerTrigger
                   render={
                     <Button
-                      className="w-full justify-start [&>span]:w-full"
+                      className="justify-start [&>span]:w-full"
+                      fullWidth
                       size="field"
                       type="button"
                       variant="outline"
@@ -220,6 +221,7 @@ export function RecordForm({
                       className="w-full rounded-xl"
                       classNames={{ root: "w-full" }}
                       defaultMonth={draftDateRange?.from ?? selectedStart}
+                      fixedWeeks
                       locale={ko}
                       mode="range"
                       onSelect={setDraftDateRange}
@@ -229,13 +231,14 @@ export function RecordForm({
 
                   <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
                     <Button
-                      className="h-12 w-full"
                       disabled={!draftDateRange?.from}
+                      fullWidth
                       onClick={() => {
                         if (!draftDateRange?.from) return;
                         setDateRange({ from: draftDateRange.from, to: draftDateRange.to ?? draftDateRange.from });
                         setDatePickerOpen(false);
                       }}
+                      size="large"
                       type="button"
                     >
                       적용
@@ -343,7 +346,7 @@ export function RecordForm({
           </Field>
         </FieldGroup>
 
-        <Button className="mt-5 h-14 w-full" loading={save.isPending} size="lg" type="submit">
+        <Button className="mt-5" fullWidth loading={save.isPending} size="xlarge" type="submit">
           {mode === "edit" ? "수정 완료" : "기록 남기기"}
         </Button>
       </div>

@@ -119,7 +119,7 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
                       className="rounded-lg"
                       disabled={added || resolve.isPending}
                       onClick={() => addSavedPlace(place)}
-                      size="sm"
+                      size="small"
                       type="button"
                       variant={added ? "secondary" : "outline"}
                     >
@@ -178,11 +178,12 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
                     </div>
                   </div>
                   <Button
-                    className="mt-3 w-full"
+                    className="mt-3"
                     disabled={selected || resolve.isPending}
+                    fullWidth
                     loading={resolve.isPending && resolve.variables.providerPlaceId === place.id}
                     onClick={() => selectPlace(place)}
-                    size="sm"
+                    size="small"
                     type="button"
                     variant="outline"
                   >

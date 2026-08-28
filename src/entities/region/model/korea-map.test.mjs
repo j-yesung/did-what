@@ -5,6 +5,7 @@ const {
   createRegionActivityMaps,
   filterRecordsByRegion,
   getActivityLevel,
+  getRegion,
   getRegionCode,
   getRegionProgressLabel,
   REGIONS,
@@ -19,7 +20,7 @@ assert.equal(
 );
 
 const emptyRegions = createRegionActivityMaps([]);
-assert.equal(REGIONS.length, 17);
+assert.equal(REGIONS.length, 16);
 assert.deepEqual(
   emptyRegions.map(({ code }) => code),
   REGIONS.map(({ code }) => code),
@@ -43,6 +44,11 @@ assert.ok(emptySeoul);
 assert.equal(emptySeoul.totalCount, 25);
 assert.ok(emptySeoul.cells.length > emptySeoul.totalCount, "서울 미니 지도는 자치구 수보다 촘촘해야 합니다.");
 assert.equal(getRegionProgressLabel(emptySeoul), `0 / ${emptySeoul.totalCount} · 미기록`);
+
+const emptyIntegratedCity = emptyRegions.find(({ code }) => code === "KR-12");
+assert.ok(emptyIntegratedCity);
+assert.equal(emptyIntegratedCity.name, "전남광주통합특별시");
+assert.equal(emptyIntegratedCity.totalCount, 27);
 
 const seoulCellRecords = Array.from({ length: emptySeoul.totalCount }, (_, index) => {
   const cell = emptySeoul.cells[index % emptySeoul.cells.length];
@@ -81,9 +87,28 @@ assert.equal(getRegionCode(regionalRecords[0].region_code), "KR-11");
 assert.equal(getRegionCode("3611010100"), "KR-50");
 assert.equal(getRegionCode("5111010100"), "KR-42");
 assert.equal(getRegionCode("5211010100"), "KR-45");
+assert.equal(getRegionCode("1211000000"), "KR-12");
+assert.equal(getRegionCode("2911010100"), "KR-12");
+assert.equal(getRegionCode("4611010100"), "KR-12");
+assert.equal(getRegion("KR-29")?.code, "KR-12");
+assert.equal(getRegion("KR-46")?.code, "KR-12");
 assert.deepEqual(
   filterRecordsByRegion(regionalRecords, "KR-11").map(({ id }) => id),
   ["seoul"],
+);
+
+const mokpoRecord = { id: "mokpo", region_code: "1211000000" };
+assert.deepEqual(filterRecordsByRegion([mokpoRecord], "KR-12"), [mokpoRecord]);
+assert.equal(
+  createRegionActivityMaps([
+    {
+      administrativeCode: "1211000000",
+      id: "mokpo",
+      latitude: 34.8120715259044,
+      longitude: 126.41184491201,
+    },
+  ]).find(({ code }) => code === "KR-12")?.visitedCount,
+  1,
 );
 
 const map = createKoreaMap([
@@ -99,6 +124,10 @@ assert.ok(map.cells.length > 500, "대한민국 실루엣은 500개 이상의 ce
 assert.ok(
   map.cells.some((cell) => cell.regionCode === "KR-49"),
   "제주도 cell이 포함되어야 합니다.",
+);
+assert.ok(
+  map.cells.some((cell) => cell.regionCode === "KR-12"),
+  "전남광주통합특별시 cell이 포함되어야 합니다.",
 );
 assert.equal(map.cells.filter((cell) => cell.count > 0).length, 2);
 assert.equal(map.cells.find((cell) => cell.count === 7)?.level, 4);

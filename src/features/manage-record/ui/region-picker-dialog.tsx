@@ -26,7 +26,8 @@ export function RegionPickerDialog({ onSelect, region, ...ariaProps }: RegionPic
         render={
           <Button
             {...ariaProps}
-            className="w-full justify-start [&>span]:w-full"
+            className="justify-start [&>span]:w-full"
+            fullWidth
             size="field"
             type="button"
             variant="outline"

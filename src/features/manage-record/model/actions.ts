@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { getRegionCode } from "@/entities/region";
 import { sendRecordPush } from "@/features/push-notification/model/send-record-push";
 import {
   type KakaoSearchScope,
@@ -21,6 +22,8 @@ import type { RecordActionState, RecordInput, RecordInputValues, RecordPlaceRefe
 import { validateRecordInput } from "./record-form";
 
 type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
+
+const LEGACY_INTEGRATED_REGION_PREFIXES = new Set(["29", "46"]);
 
 function readRecordInput(formData: FormData): RecordInputValues {
   return {
@@ -50,7 +53,21 @@ async function verifyRegion(code: string, name: string) {
   }
 
   const codeLength = code.startsWith("36") ? 8 : 5;
-  return result.regions.find((region) => region.code.slice(0, codeLength) === code.slice(0, codeLength)) ?? null;
+  const requestedRegionCode = getRegionCode(code);
+  const requestedDistrictName = name.trim().split(/\s+/).at(-1);
+  const isLegacyIntegratedRegion = LEGACY_INTEGRATED_REGION_PREFIXES.has(code.slice(0, 2));
+  return (
+    result.regions.find((region) => {
+      if (region.code.slice(0, codeLength) === code.slice(0, codeLength)) return true;
+
+      return (
+        isLegacyIntegratedRegion &&
+        requestedRegionCode === "KR-12" &&
+        region.name === requestedDistrictName &&
+        getRegionCode(region.code) === "KR-12"
+      );
+    }) ?? null
+  );
 }
 
 async function verifyKakaoPlace(reference: Extract<RecordPlaceReference, { kind: "kakao" }>) {
@@ -293,14 +310,8 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
 export async function deleteRecord(recordId: string): Promise<RecordActionState> {
   if (!isUuid(recordId)) return { message: "삭제할 기록을 확인할 수 없습니다.", status: "error" };
 
-  const { supabase, user } = await requireUser();
-  const { data: deleted, error } = await supabase
-    .from("records")
-    .delete()
-    .eq("id", recordId)
-    .eq("owner_id", user.id)
-    .select("id")
-    .maybeSingle();
+  const { supabase } = await requireUser();
+  const { data: deleted, error } = await supabase.rpc("delete_owned_record", { p_record_id: recordId });
 
   if (error || !deleted) {
     return { message: "기록을 삭제하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };

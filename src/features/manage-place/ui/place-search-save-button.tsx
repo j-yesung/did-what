@@ -29,7 +29,7 @@ export function PlaceSearchSaveButton({ onSaved, selections }: PlaceSearchSaveBu
   }
 
   return (
-    <Button className="h-12 w-full" loading={save.isPending} onClick={handleSave} type="button">
+    <Button fullWidth loading={save.isPending} onClick={handleSave} size="large" type="button">
       장소 {selections.length}개 저장
     </Button>
   );

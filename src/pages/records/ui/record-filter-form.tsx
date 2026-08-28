@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 
-import { ArrowCounterClockwiseIcon, CalendarDotsIcon, CaretDownIcon } from "@phosphor-icons/react";
+import { ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -13,10 +13,9 @@ import {
   type RecordSort,
 } from "@/entities/record/model/record-filters";
 import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
 import { SearchField } from "@/shared/ui/search-field";
+
+import { RecordPeriodFilter } from "./record-period-filter";
 
 const SORT_OPTIONS: { label: string; value: RecordSort }[] = [
   { label: "최신순", value: "recent" },
@@ -29,18 +28,11 @@ type RecordFilterFormProps = {
 
 export function RecordFilterForm({ filters }: RecordFilterFormProps) {
   const router = useRouter();
-  const hasPeriod = Boolean(filters.from || filters.to);
   const [query, setQuery] = useState(filters.query);
-  const [from, setFrom] = useState(filters.from);
-  const [to, setTo] = useState(filters.to);
-  const [periodOpen, setPeriodOpen] = useState(hasPeriod);
 
   useEffect(() => {
     setQuery(filters.query);
-    setFrom(filters.from);
-    setTo(filters.to);
-    setPeriodOpen(Boolean(filters.from || filters.to));
-  }, [filters.query, filters.from, filters.to]);
+  }, [filters.query]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,6 +43,10 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
     }
 
     router.push(`/records?${params.toString()}`);
+  }
+
+  function handlePeriodApply(period: Pick<RecordFilters, "from" | "to">) {
+    router.push(buildRecordsHref({ ...filters, query, ...period }));
   }
 
   return (
@@ -66,53 +62,10 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         value={query}
       />
 
-      <details
-        className="group rounded-xl border bg-card px-4 py-3"
-        onToggle={(event) => setPeriodOpen(event.currentTarget.open)}
-        open={periodOpen}
-      >
-        <summary className="flex min-w-0 cursor-pointer list-none items-center gap-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
-          <CalendarDotsIcon strokeWidth={2} className="size-4.5 text-foreground" aria-hidden="true" />
-          기간
-          {hasPeriod ? (
-            <Badge className="min-w-0 shrink truncate" tone="primary">
-              {filters.from || "처음"} ~ {filters.to || "오늘"}
-            </Badge>
-          ) : (
-            <span className="text-muted-foreground text-xs">전체</span>
-          )}
-          <CaretDownIcon
-            strokeWidth={2}
-            className="ml-auto size-4 text-muted-foreground transition-transform group-open:rotate-180"
-            aria-hidden="true"
-          />
-        </summary>
+      <input name="from" type="hidden" value={filters.from} />
+      <input name="to" type="hidden" value={filters.to} />
 
-        <div className="mt-3 flex items-center gap-2">
-          <Input
-            aria-label="시작일"
-            className="h-10 flex-1"
-            name="from"
-            onChange={(event) => setFrom(event.target.value)}
-            type="date"
-            value={from}
-          />
-          <span className="text-muted-foreground text-sm" aria-hidden="true">
-            ~
-          </span>
-          <Input
-            aria-label="종료일"
-            className="h-10 flex-1"
-            name="to"
-            onChange={(event) => setTo(event.target.value)}
-            type="date"
-            value={to}
-          />
-        </div>
-        <Button className="mt-3 w-full" type="submit" variant="outline">
-          기간 적용
-        </Button>
-      </details>
+      <RecordPeriodFilter from={filters.from} onApply={handlePeriodApply} to={filters.to} />
 
       <div className="flex items-center gap-1.5">
         <div className="flex gap-1.5" role="group" aria-label="정렬">

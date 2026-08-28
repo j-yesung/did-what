@@ -212,6 +212,18 @@ export type Database = {
         };
         Returns: string;
       };
+      delete_owned_record: {
+        Args: {
+          p_record_id: string;
+        };
+        Returns: boolean;
+      };
+      remove_saved_place: {
+        Args: {
+          p_place_id: string;
+        };
+        Returns: boolean;
+      };
       save_owned_places: {
         Args: {
           p_places: Json;
