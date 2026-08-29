@@ -33,15 +33,14 @@ export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) 
         ref={indicatorRef}
         style={{ transform: "translate3d(0, 24px, 0) scale(0.82)" }}
       >
-        <div className="relative flex size-12 items-center justify-center rounded-full bg-popover text-foreground shadow-lg transition-colors duration-150 group-data-[ready=true]/overscroll-back:bg-foreground group-data-[ready=true]/overscroll-back:text-background">
+        <div className="relative flex size-12 items-center justify-center rounded-full bg-popover text-foreground shadow-lg transition-colors duration-150 group-data-[ready=true]/overscroll-back:bg-primary group-data-[ready=true]/overscroll-back:text-primary-foreground">
           <svg
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 size-full -rotate-90"
             viewBox="0 0 48 48"
           >
-            <circle className="fill-none stroke-border" cx="24" cy="24" pathLength="1" r="22" strokeWidth="2" />
             <circle
-              className="fill-none stroke-foreground transition-[stroke-dashoffset] duration-200 ease-out group-data-[dragging=true]/overscroll-back:duration-0"
+              className="fill-none stroke-primary transition-[stroke-dashoffset] duration-200 ease-out group-data-[dragging=true]/overscroll-back:duration-0"
               cx="24"
               cy="24"
               pathLength="1"
