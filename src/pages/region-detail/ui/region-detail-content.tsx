@@ -98,11 +98,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
                 ))}
               </RecordTimeline>
             ) : (
-              <EmptyRecords
-                actionLabel="기록 남기기"
-                description={`${region.name}에서 함께한 장면을 기록하면 여기에 모아 보여드려요.`}
-                title={`${region.name}에 남긴 기록이 없어요`}
-              />
+              <EmptyRecords title={`${region.name}에 남긴 기록이 없어요`} />
             )}
           </>
         )}
