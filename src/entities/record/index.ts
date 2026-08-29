@@ -1,4 +1,4 @@
-export { getRecord } from "./api/queries";
+export { getRecord, getRecords } from "./api/queries";
 export {
   buildRecordsHref,
   filterRecords,
