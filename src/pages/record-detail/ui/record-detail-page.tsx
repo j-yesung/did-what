@@ -10,9 +10,9 @@ import { requireUser } from "@/shared/api/supabase/require-user";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { IconButton } from "@/shared/ui/icon-button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { TextButton } from "@/shared/ui/text-button";
 
 type RecordDetailPageProps = {
   params: Promise<{ recordId: string }>;
@@ -41,9 +41,14 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
         <PageHeader
           action={
             record ? (
-              <TextButton nativeButton={false} render={<Link href={`/records/${record.id}/edit`} />}>
-                수정
-              </TextButton>
+              <IconButton
+                aria-label="기록 수정"
+                icon={NotePencilIcon}
+                iconSize={28}
+                // iconWeight="bold"
+                nativeButton={false}
+                render={<Link href={`/records/${record.id}/edit`} />}
+              />
             ) : undefined
           }
           back="/records"
