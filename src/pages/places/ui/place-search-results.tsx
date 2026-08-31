@@ -2,12 +2,13 @@
 
 import { type KeyboardEvent, useState } from "react";
 
-import { ArrowCounterClockwiseIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/manage-place";
+import { ResetButton } from "@/features/reset-button";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
@@ -15,7 +16,6 @@ import { Badge } from "@/shared/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-import { IconButton } from "@/shared/ui/icon-button";
 import {
   Pagination,
   PaginationContent,
@@ -95,17 +95,13 @@ export function PlaceSearchResults({
         <h2 className="min-w-0 font-bold text-lg" id="place-search-results-title">
           ‘{query}’ 검색 결과 {pageableCount}곳 · {currentPage}페이지
         </h2>
-        <IconButton
+        <ResetButton
           aria-label="장소 검색 초기화"
           className="mt-0.5"
-          icon={ArrowCounterClockwiseIcon}
-          iconStrokeWidth={3}
-          onClick={() => {
+          onReset={() => {
             setSelectedPlaces(new Map());
             router.replace("/places");
           }}
-          size="sm"
-          type="button"
         />
       </div>
 

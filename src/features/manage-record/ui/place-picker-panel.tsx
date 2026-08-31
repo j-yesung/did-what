@@ -121,7 +121,7 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
                       onClick={() => addSavedPlace(place)}
                       size="small"
                       type="button"
-                      variant={added ? "secondary" : "outline"}
+                      variant={added ? "weak" : "outline"}
                     >
                       {place.name}
                     </Button>

@@ -1,6 +1,5 @@
-import { CheckIcon } from "@phosphor-icons/react/dist/ssr";
-
 import { cn } from "@/shared/lib/utils";
+import { Checkbox } from "@/shared/ui/checkbox";
 import { TextButton } from "@/shared/ui/text-button";
 
 import { setTheme } from "../model/actions";
@@ -30,7 +29,14 @@ export function ThemeSelect({ value }: ThemeSelectProps) {
                 value={option.value}
               >
                 {option.label}
-                {selected ? <CheckIcon strokeWidth={2} aria-hidden="true" /> : null}
+                <Checkbox
+                  aria-hidden="true"
+                  checked={selected}
+                  className="pointer-events-none"
+                  readOnly
+                  tabIndex={-1}
+                  variant="check"
+                />
               </TextButton>
             );
           })}

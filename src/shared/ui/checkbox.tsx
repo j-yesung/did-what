@@ -5,9 +5,11 @@ import { CheckIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
 
-type CheckboxVariant = "circle" | "square";
+type CheckboxVariant = "check" | "circle" | "square";
 
 const CHECKBOX_VARIANT: Record<CheckboxVariant, string> = {
+  check:
+    "border-0! bg-transparent! text-foreground! data-checked:border-transparent! data-checked:bg-transparent! data-checked:text-foreground! dark:bg-transparent! dark:data-checked:bg-transparent!",
   circle: "rounded-full",
   square: "rounded-[4px]",
 };
@@ -29,9 +31,11 @@ function Checkbox({ className, variant = "square", ...props }: CheckboxProps) {
     >
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"
-        className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
+        className="grid place-content-center text-current transition-[opacity,transform] duration-200 ease-out data-ending-style:scale-75 data-ending-style:opacity-0 motion-reduce:transition-none motion-reduce:data-ending-style:scale-100 motion-reduce:data-ending-style:opacity-100 [&>span>svg]:size-3.5 [&>span]:inline-flex"
       >
-        <CheckIcon strokeWidth={2} />
+        <span className="motion-safe:fade-in-0 motion-safe:zoom-in-50 motion-safe:slide-in-from-bottom-1 inline-flex motion-safe:animate-in motion-safe:fill-mode-both motion-safe:duration-200 motion-safe:ease-out">
+          <CheckIcon weight="bold" />
+        </span>
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );

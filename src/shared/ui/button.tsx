@@ -14,14 +14,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground after:bg-black",
+        fill: "after:bg-black",
+        weak: "after:bg-current",
         neutral: "bg-muted text-muted-foreground after:bg-current",
         outline:
           "border-border bg-background after:bg-current aria-expanded:bg-muted dark:border-input dark:bg-input/30",
-        secondary: "bg-secondary text-secondary-foreground after:bg-primary aria-expanded:bg-secondary",
         ghost: "after:bg-current aria-expanded:bg-muted aria-expanded:text-foreground",
-        destructive: "bg-danger-fill text-danger-fill-foreground after:bg-black focus-visible:ring-danger-fill/30",
-        link: "text-primary underline underline-offset-4 after:bg-current",
+      },
+      color: {
+        primary: "",
+        danger: "",
+        light: "",
+        dark: "",
       },
       size: {
         small:
@@ -38,15 +42,58 @@ const buttonVariants = cva(
         true: "w-full",
       },
     },
+    compoundVariants: [
+      {
+        color: "primary",
+        variant: "fill",
+        class: "bg-primary text-primary-foreground",
+      },
+      {
+        color: "danger",
+        variant: "fill",
+        class: "bg-danger-fill text-danger-fill-foreground focus-visible:ring-danger-fill/30",
+      },
+      {
+        color: "light",
+        variant: "fill",
+        class: "bg-light text-light-foreground",
+      },
+      {
+        color: "dark",
+        variant: "fill",
+        class: "bg-dark text-dark-foreground",
+      },
+      {
+        color: "primary",
+        variant: "weak",
+        class: "bg-primary/10 text-primary aria-expanded:bg-primary/15",
+      },
+      {
+        color: "danger",
+        variant: "weak",
+        class: "bg-destructive/10 text-destructive aria-expanded:bg-destructive/15",
+      },
+      {
+        color: "light",
+        variant: "weak",
+        class: "bg-light/10 text-light aria-expanded:bg-light/15",
+      },
+      {
+        color: "dark",
+        variant: "weak",
+        class: "bg-dark/10 text-dark aria-expanded:bg-dark/15",
+      },
+    ],
     defaultVariants: {
-      variant: "default",
+      color: "primary",
+      variant: "fill",
       size: "small",
       fullWidth: false,
     },
   },
 );
 
-type ButtonProps = Omit<ButtonPrimitive.Props, "size"> &
+type ButtonProps = Omit<ButtonPrimitive.Props, "color" | "size"> &
   VariantProps<typeof buttonVariants> & {
     loading?: boolean;
   };
@@ -56,15 +103,16 @@ function Button({
   className,
   disabled,
   loading,
+  color = "primary",
   fullWidth = false,
-  variant = "default",
+  variant = "fill",
   size = "small",
   ...props
 }: ButtonProps) {
   return (
     <ButtonPrimitive
       aria-busy={loading || undefined}
-      className={cn(buttonVariants({ fullWidth, size, variant }), className)}
+      className={cn(buttonVariants({ color, fullWidth, size, variant }), className)}
       data-slot="button"
       disabled={disabled || loading}
       {...props}

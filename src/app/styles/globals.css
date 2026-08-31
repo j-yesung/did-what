@@ -67,6 +67,8 @@
   --fill-brand: var(--blue-600);
   --fill-brand-weak: var(--blue-50);
   --fill-danger: var(--red-600);
+  --fill-light: var(--grey-0);
+  --fill-dark: var(--grey-900);
 
   --text-primary: var(--grey-900);
   --text-secondary: var(--grey-600);
@@ -76,6 +78,8 @@
   --text-info: var(--blue-600);
   --text-on-brand: var(--grey-0);
   --text-on-danger: var(--grey-0);
+  --text-on-light: var(--grey-900);
+  --text-on-dark: var(--grey-0);
 
   --border-default: var(--grey-200);
 
@@ -138,6 +142,10 @@
   --color-border: var(--border);
   --color-danger-fill-foreground: var(--text-on-danger);
   --color-danger-fill: var(--fill-danger);
+  --color-light-foreground: var(--text-on-light);
+  --color-light: var(--fill-light);
+  --color-dark-foreground: var(--text-on-dark);
+  --color-dark: var(--fill-dark);
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-info: var(--info);

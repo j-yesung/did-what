@@ -6,20 +6,14 @@ import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 
 import { IconButton } from "../icon-button";
 
-type BackButtonProps = {
+type Props = {
   fallbackHref?: string;
 };
 
-/** 작성 중인 폼의 이탈 확인은 여기서 하지 않는다. 폼이 세운 LeaveGuard가 뒤로가기를 가로채 묻는다. */
-export function BackButton({ fallbackHref = "/" }: BackButtonProps) {
+export function BackButton({ fallbackHref = "/" }: Props) {
   const goBackTo = useGoBack();
 
   return (
-    <IconButton
-      aria-label="이전 화면으로"
-      icon={CaretLeftIcon}
-      iconStrokeWidth={2}
-      onClick={() => goBackTo(fallbackHref)}
-    />
+    <IconButton aria-label="이전 화면으로" icon={CaretLeftIcon} iconSize={28} onClick={() => goBackTo(fallbackHref)} />
   );
 }
