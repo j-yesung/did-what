@@ -48,7 +48,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
         <PageHeader back="/regions" title={region.name} />
 
         {recordsQuery.isPending ? (
-          <div className="grid min-h-52 place-items-center">
+          <div className="fixed inset-0 grid place-items-center">
             <Spinner aria-label={`${region.name} 발자취를 불러오는 중`} className="text-muted-foreground" />
           </div>
         ) : recordsQuery.isError || !regionMap ? (

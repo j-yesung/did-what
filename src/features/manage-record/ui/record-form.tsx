@@ -6,7 +6,6 @@ import type { DateRange } from "react-day-picker";
 import { ko } from "react-day-picker/locale";
 
 import { MapPinCheckIcon, PencilIcon } from "@animateicons/react/lucide";
-import { CalendarDotsIcon, ChatTextIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 
@@ -151,10 +150,10 @@ export function RecordForm({
 
   if (placesQuery.isPending) {
     return (
-      <div className="grid min-h-48 place-items-center">
+      <div className="fixed inset-0 grid place-items-center">
         <Spinner
           aria-label="선택지를 불러오는 중"
-          className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
+          className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
         />
       </div>
     );
@@ -176,11 +175,10 @@ export function RecordForm({
       onSubmit={handleSubmit}
     >
       <LeaveGuard fallbackHref={returnTo} isDirty={() => formRef.current?.dataset.dirty === "true"} ref={guardRef} />
-      <div className="rounded-xl border border-border bg-surface px-4.5 py-5">
+      <div className="px-1 py-1">
         <FieldGroup>
           <FieldSet>
             <FieldLegend className="flex items-center gap-2" variant="label">
-              <CalendarDotsIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
               언제 <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLegend>
             <Field data-invalid={Boolean(fieldErrors?.recordedAt || fieldErrors?.recordedUntil)}>
@@ -300,7 +298,6 @@ export function RecordForm({
 
           <Field data-invalid={Boolean(fieldErrors?.activity)}>
             <FieldLabel htmlFor="activity">
-              <NotePencilIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
               무엇을 했나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
             </FieldLabel>
             <FieldDescription>가장 기억하고 싶은 일을 짧게 적어 주세요.</FieldDescription>
@@ -323,7 +320,6 @@ export function RecordForm({
 
           <Field data-invalid={Boolean(fieldErrors?.memo)}>
             <FieldLabel htmlFor="memo">
-              <ChatTextIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
               메모 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
             </FieldLabel>
             <Textarea

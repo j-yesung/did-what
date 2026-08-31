@@ -23,10 +23,10 @@ export function RecordList({ filters }: RecordListProps) {
 
   if (recordsQuery.isPending) {
     return (
-      <div className="grid min-h-40 place-items-center">
+      <div className="fixed inset-0 grid place-items-center">
         <Spinner
           aria-label="기록을 불러오는 중"
-          className="motion-safe:fade-in size-6 text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
+          className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
         />
       </div>
     );

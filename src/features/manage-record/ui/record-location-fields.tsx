@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { MapPinAreaIcon, MapPinIcon, TrashIcon } from "@phosphor-icons/react";
+import { TrashIcon } from "@phosphor-icons/react";
 
 import type { PlaceOption } from "@/entities/place";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -12,8 +12,6 @@ import { IconButton } from "@/shared/ui/icon-button";
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import { PlacePickerDialog } from "./place-picker-dialog";
 import { RegionPickerDialog } from "./region-picker-dialog";
-
-const FIELD_ICON = "size-4.5 text-foreground [stroke-width:2]";
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
@@ -70,7 +68,6 @@ export function RecordLocationFields({
 
       <Field data-invalid={Boolean(regionError)}>
         <FieldLabel>
-          <MapPinAreaIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
           어느 지역에 갔나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
         </FieldLabel>
         <RegionPickerDialog
@@ -84,7 +81,6 @@ export function RecordLocationFields({
 
       <Field data-invalid={Boolean(placeError)}>
         <FieldLabel>
-          <MapPinIcon strokeWidth={2} className={FIELD_ICON} aria-hidden="true" />
           방문 장소 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
         </FieldLabel>
         <FieldDescription>최대 10곳까지 추가할 수 있어요.</FieldDescription>

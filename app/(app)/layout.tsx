@@ -1,25 +1,13 @@
-import { type ReactNode, Suspense } from "react";
+import type { ReactNode } from "react";
 
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { PageShell } from "@/shared/ui/layouts";
-import { Spinner } from "@/shared/ui/spinner";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 import { MainDataPrefetch } from "@/widgets/main-data-prefetch";
 
 export const dynamic = "force-dynamic";
 
 export default function Layout({ children }: { children: ReactNode }) {
-  return (
-    <Suspense
-      fallback={
-        <PageShell className="items-center justify-center" withBottomNavigation>
-          <Spinner aria-label="화면을 불러오는 중" className="text-muted-foreground" />
-        </PageShell>
-      }
-    >
-      <AuthenticatedApp>{children}</AuthenticatedApp>
-    </Suspense>
-  );
+  return <AuthenticatedApp>{children}</AuthenticatedApp>;
 }
 
 async function AuthenticatedApp({ children }: { children: ReactNode }) {

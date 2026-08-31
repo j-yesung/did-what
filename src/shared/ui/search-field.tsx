@@ -55,10 +55,7 @@ function SearchField({
         value={value}
       />
       {loading ? (
-        <Spinner
-          aria-hidden="true"
-          className="absolute top-1/2 right-3 size-4.5 -translate-y-1/2 text-muted-foreground"
-        />
+        <Spinner aria-hidden="true" className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground" />
       ) : clearable ? (
         <IconButton
           aria-label="검색어 지우기"

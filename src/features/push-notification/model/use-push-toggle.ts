@@ -55,7 +55,7 @@ export function usePushToggle() {
 
     if (result.status === "dismissed") {
       showNotice({
-        description: "권한 창이 뜨지 않으면 브라우저의 알림 설정에서 직접 허용해 주세요.",
+        description: "권한 창이 뜨지 않으면\n브라우저의 알림 설정에서 직접 허용해 주세요.",
         title: "알림 권한을 받지 못했어요",
         variant: "warning",
       });
@@ -122,7 +122,7 @@ export function usePushToggle() {
   function handleCheckedChange(nextChecked: boolean) {
     showNotice({
       icon: nextChecked ? BellRingIcon : BellOffIcon,
-      title: nextChecked ? "이 기기로 알림을 받아요" : "알림을 껐어요",
+      title: nextChecked ? `이 기기로 알림을 받아요` : "알림을 껐어요",
       variant: "success",
     });
 
