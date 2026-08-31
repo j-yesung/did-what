@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { Trash2Icon } from "@animateicons/react/lucide";
+
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
@@ -22,6 +24,7 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
 
   const remove = useActionMutation(() => deleteRecord(recordId), {
     error: "기록을 삭제하지 못했어요",
+    icon: Trash2Icon,
     invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
     success: "기록을 삭제했어요",
     onSuccess: () => goBackTo("/records"),

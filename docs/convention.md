@@ -54,7 +54,7 @@
 ## Imports
 
 - `@/` alias를 쓴다: `@/shared/ui/button`.
-- 단, 테스트(`*.test.mjs`)가 붙은 모듈이 `shared`를 가져올 때는 `#shared/lib/is-uuid.ts`처럼 `#shared/` + 확장자를 쓴다. 테스트를 plain node로 실행하는데 node가 `@/`를 해석하지 못한다. `pnpm test`로 확인한다.
+- Node 테스트도 `pnpm test`의 alias loader를 통해 같은 `@/` alias를 사용한다.
 
 ## 주석
 

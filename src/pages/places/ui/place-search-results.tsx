@@ -129,7 +129,7 @@ export function PlaceSearchResults({
                 <Card
                   className={cn(
                     "transition-[background-color,box-shadow] duration-200",
-                    selected && "bg-secondary ring-2 ring-primary/40",
+                    selected && "bg-secondary ring-2 ring-primary/40 dark:bg-pressed dark:ring-foreground/15",
                   )}
                   data-selected={selected}
                   size="sm"

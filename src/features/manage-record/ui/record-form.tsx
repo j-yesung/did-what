@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { ko } from "react-day-picker/locale";
 
+import { MapPinCheckIcon, PencilIcon } from "@animateicons/react/lucide";
 import { CalendarDotsIcon, ChatTextIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
@@ -102,6 +103,7 @@ export function RecordForm({
   /** 어느 칸이 잘못됐는지는 입력란 아래에 남기고, 저장 자체가 실패한 것만 토스트로 알린다. */
   const save = useActionMutation(action, {
     error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요`,
+    icon: mode === "edit" ? PencilIcon : MapPinCheckIcon,
     invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
     success: mode === "edit" ? "기록을 수정했어요" : "기록을 남겼어요",
     onSuccess: () => guardRef.current?.finish(savedTo),

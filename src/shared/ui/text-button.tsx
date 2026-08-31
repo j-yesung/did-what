@@ -2,8 +2,8 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { FOCUS_RING, PRESS_FEEDBACK } from "#shared/lib/interaction.ts";
-import { cn } from "#shared/lib/utils.ts";
+import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
 
 const textButtonVariants = cva(
   cn(
