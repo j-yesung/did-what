@@ -1,10 +1,9 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 
+import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Spinner } from "@/shared/ui/spinner";
-
-import { FOCUS_RING } from "#shared/lib/interaction.ts";
 
 const buttonVariants = cva(
   cn(

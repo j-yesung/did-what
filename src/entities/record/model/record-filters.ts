@@ -1,4 +1,4 @@
-import { isIsoDate } from "#shared/lib/validation/is-iso-date.ts";
+import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 
 export type RecordSort = "recent" | "oldest";
 

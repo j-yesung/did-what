@@ -2,13 +2,9 @@
   "name": "did-what",
   "version": "0.1.0",
   "private": true,
-  "imports": {
-    "#entities/*": "./src/entities/*",
-    "#shared/*": "./src/shared/*"
-  },
   "scripts": {
     "dev": "next dev",
-    "test": "node --test",
+    "test": "node --import ./scripts/register-alias-loader.mjs --test",
     "build": "next build",
     "start": "next start",
     "lint": "biome check",

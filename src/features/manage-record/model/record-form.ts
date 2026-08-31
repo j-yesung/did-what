@@ -1,7 +1,7 @@
-import { isRecordWeather, type RecordWeather } from "#entities/record/model/weather.ts";
-import type { KakaoSearchScope } from "#shared/api/kakao-local.ts";
-import { isIsoDate } from "#shared/lib/validation/is-iso-date.ts";
-import { isUuid } from "#shared/lib/validation/is-uuid.ts";
+import { isRecordWeather, type RecordWeather } from "@/entities/record/model/weather";
+import type { KakaoSearchScope } from "@/shared/api/kakao-local";
+import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 export type RecordPlaceReference =
   | { kind: "existing"; placeId: string; save: boolean }

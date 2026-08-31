@@ -5,7 +5,14 @@
     "source.fixAll.biome": "explicit",
     "source.organizeImports.biome": "explicit"
   },
-  "js/ts.preferences.autoImportSpecifierExcludeRegexes": ["^#shared/"],
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "js/ts.suggest.enabled": true,
+  "js/ts.suggest.autoImports": true,
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
   "[typescript]": { "editor.defaultFormatter": "biomejs.biome" },
   "[typescriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
   "[javascript]": { "editor.defaultFormatter": "biomejs.biome" },
