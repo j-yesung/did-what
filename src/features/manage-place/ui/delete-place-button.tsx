@@ -47,7 +47,7 @@ export function DeletePlaceButton({ name, placeId, recordCount }: DeletePlaceBut
           </Button>
         }
         confirmButton={
-          <Button loading={remove.isPending} onClick={() => remove.mutate()} variant="destructive">
+          <Button color="danger" loading={remove.isPending} onClick={() => remove.mutate()} variant="fill">
             장소 삭제
           </Button>
         }

@@ -8,7 +8,6 @@ import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { TextButton } from "@/shared/ui/text-button";
 
 import { deleteRecord } from "../model/actions";
 
@@ -30,9 +29,9 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
 
   return (
     <>
-      <TextButton onClick={() => setOpen(true)} tone="danger">
+      <Button color="danger" fullWidth onClick={() => setOpen(true)} size="large" variant="weak">
         기록 삭제
-      </TextButton>
+      </Button>
       <ConfirmDialog
         cancelButton={
           <Button disabled={remove.isPending} onClick={() => setOpen(false)} variant="neutral">
@@ -40,7 +39,7 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
           </Button>
         }
         confirmButton={
-          <Button loading={remove.isPending} onClick={() => remove.mutate()} variant="destructive">
+          <Button color="danger" loading={remove.isPending} onClick={() => remove.mutate()} variant="fill">
             기록 삭제
           </Button>
         }

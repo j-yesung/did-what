@@ -127,7 +127,7 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
         </Button>
       }
       confirmButton={
-        <Button onClick={leave} variant="destructive">
+        <Button color="danger" onClick={leave} variant="fill">
           나가기
         </Button>
       }
