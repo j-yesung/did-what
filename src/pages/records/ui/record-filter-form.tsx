@@ -2,7 +2,6 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 
-import { ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +11,7 @@ import {
   type RecordFilters,
   type RecordSort,
 } from "@/entities/record/model/record-filters";
+import { ResetButton } from "@/features/reset-button";
 import { cn } from "@/shared/lib/utils";
 import { SearchField } from "@/shared/ui/search-field";
 
@@ -89,13 +89,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         </div>
 
         {hasRecordFilters(filters) ? (
-          <Link
-            className="ml-auto flex h-8 items-center gap-1 rounded-md px-2.5 font-[650] text-muted-foreground text-xs"
-            href="/records"
-          >
-            <ArrowCounterClockwiseIcon strokeWidth={2} className="size-3.5" aria-hidden="true" />
-            초기화
-          </Link>
+          <ResetButton aria-label="기록 필터 초기화" className="ml-auto" onReset={() => router.push("/records")} />
         ) : null}
       </div>
     </form>
