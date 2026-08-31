@@ -2,9 +2,10 @@
 
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 
+import { BellOffIcon, BellRingIcon } from "@animateicons/react/lucide";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
+import { showNotice } from "@/shared/lib/notice";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 
 import { removeSubscription, saveSubscription } from "./actions";
@@ -39,22 +40,24 @@ export function usePushToggle() {
     if (result.status === "unsupported") {
       setUnsupported(true);
       queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
-      toast.error("이 브라우저에서는 알림을 지원하지 않아요", { duration: 4000 });
+      showNotice({ title: "이 브라우저에서는 알림을 지원하지 않아요", variant: "warning" });
       return;
     }
 
     if (result.status === "denied") {
-      toast.error("알림이 차단돼 있어요", {
+      showNotice({
         description: "브라우저나 기기 설정에서 이 사이트의 알림을 허용해 주세요.",
-        duration: 6000,
+        title: "알림이 차단돼 있어요",
+        variant: "warning",
       });
       return;
     }
 
     if (result.status === "dismissed") {
-      toast.error("알림 권한을 받지 못했어요", {
+      showNotice({
         description: "권한 창이 뜨지 않으면 브라우저의 알림 설정에서 직접 허용해 주세요.",
-        duration: 6000,
+        title: "알림 권한을 받지 못했어요",
+        variant: "warning",
       });
       return;
     }
@@ -63,7 +66,11 @@ export function usePushToggle() {
     if (saved?.status === "error") {
       await disablePush();
       queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
-      toast.error("알림을 켜지 못했어요", { description: saved.message, duration: 4000 });
+      showNotice({
+        description: saved.message,
+        title: "알림을 켜지 못했어요",
+        variant: "warning",
+      });
       return;
     }
 
@@ -77,7 +84,11 @@ export function usePushToggle() {
 
     const removed = await runServerAction(() => removeSubscription(endpoint));
     if (removed?.status === "error") {
-      toast.error("알림을 끄지 못했어요", { description: removed.message, duration: 4000 });
+      showNotice({
+        description: removed.message,
+        title: "알림을 끄지 못했어요",
+        variant: "warning",
+      });
     }
   }
 
@@ -89,7 +100,10 @@ export function usePushToggle() {
       try {
         await (nextChecked ? turnOn() : turnOff());
       } catch {
-        toast.error(nextChecked ? "알림을 켜지 못했어요" : "알림을 끄지 못했어요", { duration: 4000 });
+        showNotice({
+          title: nextChecked ? "알림을 켜지 못했어요" : "알림을 끄지 못했어요",
+          variant: "error",
+        });
       }
     }
   }
@@ -106,7 +120,11 @@ export function usePushToggle() {
   }
 
   function handleCheckedChange(nextChecked: boolean) {
-    toast.success(nextChecked ? "이 기기로 알림을 받아요" : "알림을 껐어요", { duration: 2000 });
+    showNotice({
+      icon: nextChecked ? BellRingIcon : BellOffIcon,
+      title: nextChecked ? "이 기기로 알림을 받아요" : "알림을 껐어요",
+      variant: "success",
+    });
 
     startTransition(async () => {
       setOptimisticChecked(nextChecked);

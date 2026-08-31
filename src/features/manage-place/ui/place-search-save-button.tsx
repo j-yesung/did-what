@@ -2,6 +2,8 @@
 
 import { useRef } from "react";
 
+import { BookmarkCheckIcon } from "@animateicons/react/lucide";
+
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
@@ -18,6 +20,7 @@ export function PlaceSearchSaveButton({ onSaved, selections }: PlaceSearchSaveBu
   const pendingPlaceIds = useRef<string[]>([]);
   const save = useActionMutation(createPlaces, {
     error: "저장하지 못했어요",
+    icon: BookmarkCheckIcon,
     invalidate: [placesQueryOptions.queryKey],
     onSuccess: () => onSaved?.(pendingPlaceIds.current),
     success: `${selections.length}곳을 내 장소에 저장했어요`,
