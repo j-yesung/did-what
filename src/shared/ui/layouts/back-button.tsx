@@ -14,12 +14,6 @@ export function BackButton({ fallbackHref = "/" }: Props) {
   const goBackTo = useGoBack();
 
   return (
-    <IconButton
-      aria-label="이전 화면으로"
-      icon={CaretLeftIcon}
-      iconSize={28}
-      iconWeight="bold"
-      onClick={() => goBackTo(fallbackHref)}
-    />
+    <IconButton aria-label="이전 화면으로" icon={CaretLeftIcon} iconSize={28} onClick={() => goBackTo(fallbackHref)} />
   );
 }
