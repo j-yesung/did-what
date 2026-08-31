@@ -75,7 +75,7 @@ export function NoticeProvider() {
       role={isError ? "alert" : "status"}
     >
       <section
-        className="data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 min-w-44 rounded-3xl border border-border/70 bg-surface px-7 py-6 text-center shadow-(--shadow-notice) data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:duration-180 data-[state=open]:duration-250 motion-reduce:data-[state=closed]:duration-100 motion-reduce:data-[state=open]:duration-100"
+        className="data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 min-w-44 rounded-3xl border border-border/70 bg-surface px-7 py-6 text-center shadow-(--shadow-notice) data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fill-mode-forwards data-[state=closed]:duration-180 data-[state=open]:duration-250 motion-reduce:data-[state=closed]:duration-100 motion-reduce:data-[state=open]:duration-100"
         data-state={open ? "open" : "closed"}
       >
         <div className={`mx-auto mb-3 grid size-16 place-items-center ${iconColor}`}>
