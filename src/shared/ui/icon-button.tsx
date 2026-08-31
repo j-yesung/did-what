@@ -47,6 +47,8 @@ function IconButton({
   variant = "clear",
   ...props
 }: IconButtonProps) {
+  const resolvedIconSize = iconSize ?? ICON_SIZE[size];
+
   return (
     <Button
       aria-label={ariaLabel}
@@ -56,7 +58,13 @@ function IconButton({
       variant="ghost"
       {...props}
     >
-      <Icon aria-hidden="true" size={iconSize ?? ICON_SIZE[size]} strokeWidth={iconStrokeWidth} weight={iconWeight} />
+      <Icon
+        aria-hidden="true"
+        size={resolvedIconSize}
+        strokeWidth={iconStrokeWidth}
+        style={{ height: resolvedIconSize, width: resolvedIconSize }}
+        weight={iconWeight}
+      />
     </Button>
   );
 }

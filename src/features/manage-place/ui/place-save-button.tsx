@@ -6,11 +6,11 @@ import { Button } from "@/shared/ui/button";
 
 import { setPlaceSaved } from "../model/actions";
 
-type PlaceSaveButtonProps = {
+type Props = {
   placeId: string;
 };
 
-export function PlaceSaveButton({ placeId }: PlaceSaveButtonProps) {
+export function PlaceSaveButton({ placeId }: Props) {
   const save = useActionMutation(() => setPlaceSaved(placeId, true), {
     error: "저장하지 못했어요",
     invalidate: [placesQueryOptions.queryKey],
