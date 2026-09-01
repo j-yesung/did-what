@@ -9,7 +9,7 @@ import { recordsQueryOptions } from "@/entities/record/api/records-query";
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 
 import { deleteRecord } from "../model/actions";
 
@@ -37,9 +37,9 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
       </Button>
       <ConfirmDialog
         cancelButton={
-          <Button disabled={remove.isPending} onClick={() => setOpen(false)} variant="neutral">
+          <ConfirmDialogCancelButton disabled={remove.isPending} onClick={() => setOpen(false)}>
             취소
-          </Button>
+          </ConfirmDialogCancelButton>
         }
         confirmButton={
           <Button color="danger" loading={remove.isPending} onClick={() => remove.mutate()} variant="fill">
