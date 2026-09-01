@@ -40,13 +40,13 @@ export function usePushToggle() {
     if (result.status === "unsupported") {
       setUnsupported(true);
       queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
-      showNotice({ title: "이 브라우저에서는 알림을 지원하지 않아요", variant: "warning" });
+      showNotice({ title: "이 브라우저에서는\n알림을 지원하지 않아요", variant: "warning" });
       return;
     }
 
     if (result.status === "denied") {
       showNotice({
-        description: "브라우저나 기기 설정에서 이 사이트의 알림을 허용해 주세요.",
+        description: "브라우저나 기기 설정에서\n이 사이트의 알림을 허용해 주세요.",
         title: "알림이 차단돼 있어요",
         variant: "warning",
       });

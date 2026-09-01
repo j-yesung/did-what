@@ -31,7 +31,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
         : undefined;
 
   return (
-    <PageShell withBottomNavigation>
+    <PageShell className="pb-[calc(var(--nav-clearance)+50px)]" withBottomNavigation>
       <PageHeader title="장소" />
 
       <section aria-labelledby="places-intro-title" className="px-1">

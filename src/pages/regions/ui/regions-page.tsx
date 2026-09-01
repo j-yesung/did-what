@@ -31,7 +31,7 @@ export function RegionsPage() {
   const regionMaps = useMemo(() => createRegionActivityMaps(recordLocations), [recordLocations]);
 
   return (
-    <PageShell withBottomNavigation>
+    <PageShell className="pb-[calc(var(--nav-clearance)+50px)]" withBottomNavigation>
       <PageHeader title="지역" />
 
       <div className="px-1">

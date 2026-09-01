@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { RecordCreateButton } from "@/features/manage-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 import { MainDataPrefetch } from "@/widgets/main-data-prefetch";
@@ -18,6 +19,7 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
     <>
       <MainDataPrefetch />
       {children}
+      <RecordCreateButton />
       <BottomNavigation />
     </>
   );

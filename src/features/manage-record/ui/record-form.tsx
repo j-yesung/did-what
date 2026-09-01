@@ -178,9 +178,7 @@ export function RecordForm({
       <div className="px-1 py-1">
         <FieldGroup>
           <FieldSet>
-            <FieldLegend className="flex items-center gap-2" variant="label">
-              언제 <span className="font-[650] text-[11px] text-foreground">필수</span>
-            </FieldLegend>
+            <FieldLegend variant="label">언제</FieldLegend>
             <Field data-invalid={Boolean(fieldErrors?.recordedAt || fieldErrors?.recordedUntil)}>
               <Drawer
                 onOpenChange={(open) => {
@@ -256,8 +254,8 @@ export function RecordForm({
 
           <FieldSet>
             <FieldLegend className="flex items-center gap-2" id="record-weather-label" variant="label">
-              <WeatherIcon weather={weather} className={FIELD_ICON} aria-hidden="true" />
               날씨
+              <WeatherIcon weather={weather} className={FIELD_ICON} aria-hidden="true" />
             </FieldLegend>
             <Field data-invalid={Boolean(fieldErrors?.weather)}>
               <SegmentedControl
@@ -297,9 +295,7 @@ export function RecordForm({
           <FieldSeparator />
 
           <Field data-invalid={Boolean(fieldErrors?.activity)}>
-            <FieldLabel htmlFor="activity">
-              무엇을 했나요? <span className="font-[650] text-[11px] text-foreground">필수</span>
-            </FieldLabel>
+            <FieldLabel htmlFor="activity">무엇을 했나요?</FieldLabel>
             <FieldDescription>가장 기억하고 싶은 일을 짧게 적어 주세요.</FieldDescription>
 
             <Input
@@ -320,7 +316,7 @@ export function RecordForm({
 
           <Field data-invalid={Boolean(fieldErrors?.memo)}>
             <FieldLabel htmlFor="memo">
-              메모 <span className="font-[650] text-[11px] text-muted-foreground">선택</span>
+              메모 <span className="font-[650] text-[11px] text-muted-foreground">(선택)</span>
             </FieldLabel>
             <Textarea
               className="min-h-24 resize-none"
