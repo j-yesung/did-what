@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { placesQueryOptions } from "@/entities/place/api/places-query";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { IconButton } from "@/shared/ui/icon-button";
 
 import { deletePlace } from "../model/actions";
@@ -44,9 +44,9 @@ export function DeletePlaceButton({ name, placeId, recordCount }: DeletePlaceBut
       />
       <ConfirmDialog
         cancelButton={
-          <Button disabled={remove.isPending} onClick={() => setOpen(false)} variant="neutral">
+          <ConfirmDialogCancelButton disabled={remove.isPending} onClick={() => setOpen(false)}>
             취소
-          </Button>
+          </ConfirmDialogCancelButton>
         }
         confirmButton={
           <Button color="danger" loading={remove.isPending} onClick={() => remove.mutate()} variant="fill">

@@ -67,12 +67,15 @@
   --fill-brand: var(--blue-600);
   --fill-brand-weak: var(--blue-50);
   --fill-danger: var(--red-600);
+  --fill-dark-weak: rgb(2 32 71 / 0.05);
+  --fill-dimmed: rgb(0 0 0 / 0.2);
   --fill-light: var(--grey-0);
   --fill-dark: var(--grey-900);
 
   --text-primary: var(--grey-900);
   --text-secondary: var(--grey-600);
   --text-brand: var(--grey-900);
+  --text-dark-weak: var(--grey-700);
   --text-danger: var(--red-500);
   --text-success: var(--green-700);
   --text-warning: var(--yellow-500);
@@ -145,10 +148,13 @@
   --color-border: var(--border);
   --color-danger-fill-foreground: var(--text-on-danger);
   --color-danger-fill: var(--fill-danger);
+  --color-dimmed: var(--fill-dimmed);
   --color-light-foreground: var(--text-on-light);
   --color-light: var(--fill-light);
   --color-dark-foreground: var(--text-on-dark);
   --color-dark: var(--fill-dark);
+  --color-dark-weak-foreground: var(--text-dark-weak);
+  --color-dark-weak: var(--fill-dark-weak);
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-warning: var(--warning);
@@ -189,11 +195,14 @@
   --fill-muted: var(--grey-900);
   --fill-pressed: var(--grey-800);
   --fill-danger: var(--red-500);
+  --fill-dark-weak: rgb(217 217 255 / 0.11);
+  --fill-dimmed: rgb(0 0 0 / 0.56);
 
   /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
   --text-primary: var(--grey-50);
   --text-secondary: var(--grey-400);
   --text-brand: var(--grey-50);
+  --text-dark-weak: #c3c3c6;
   --text-danger: var(--red-400);
   --text-success: var(--green-400);
   --text-info: var(--blue-400);
@@ -216,11 +225,14 @@
     --fill-muted: var(--grey-900);
     --fill-pressed: var(--grey-800);
     --fill-danger: var(--red-500);
+    --fill-dark-weak: rgb(217 217 255 / 0.11);
+    --fill-dimmed: rgb(0 0 0 / 0.56);
 
     /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
     --text-primary: var(--grey-50);
     --text-secondary: var(--grey-400);
     --text-brand: var(--grey-50);
+    --text-dark-weak: #c3c3c6;
     --text-danger: var(--red-400);
     --text-success: var(--green-400);
     --text-info: var(--blue-400);

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 
 import { Button } from "./button";
-import { ConfirmDialog } from "./confirm-dialog";
+import { ConfirmDialog, ConfirmDialogCancelButton } from "./confirm-dialog";
 
 const SENTINEL = "leaveGuard";
 
@@ -121,11 +121,7 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
 
   return (
     <ConfirmDialog
-      cancelButton={
-        <Button onClick={stay} variant="neutral">
-          계속 작성
-        </Button>
-      }
+      cancelButton={<ConfirmDialogCancelButton onClick={stay}>계속 작성</ConfirmDialogCancelButton>}
       confirmButton={
         <Button color="danger" onClick={leave} variant="fill">
           나가기

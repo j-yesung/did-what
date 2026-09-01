@@ -80,7 +80,7 @@ const buttonVariants = cva(
       {
         color: "dark",
         variant: "weak",
-        class: "bg-dark/10 text-dark aria-expanded:bg-dark/15",
+        class: "bg-dark-weak text-dark-weak-foreground aria-expanded:bg-dark-weak",
       },
     ],
     defaultVariants: {

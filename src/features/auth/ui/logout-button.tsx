@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 
 import { logout } from "../model/actions";
 
@@ -34,12 +34,12 @@ export function LogoutButton() {
       </Button>
       <ConfirmDialog
         cancelButton={
-          <Button variant="neutral" disabled={signOut.isPending} onClick={() => setOpen(false)}>
+          <ConfirmDialogCancelButton disabled={signOut.isPending} onClick={() => setOpen(false)}>
             취소
-          </Button>
+          </ConfirmDialogCancelButton>
         }
         confirmButton={
-          <Button color="danger" loading={signOut.isPending} onClick={() => signOut.mutate()} variant="fill">
+          <Button color="danger" variant="fill" loading={signOut.isPending} onClick={() => signOut.mutate()}>
             로그아웃
           </Button>
         }
