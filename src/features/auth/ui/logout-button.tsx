@@ -8,7 +8,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { TextButton } from "@/shared/ui/text-button";
 
 import { logout } from "../model/actions";
 
@@ -23,13 +22,19 @@ export function LogoutButton() {
 
   return (
     <>
-      <TextButton className="mt-auto w-full justify-center" tone="muted" size="lg" onClick={() => setOpen(true)}>
+      <Button
+        className="mt-auto w-full justify-center"
+        color="danger"
+        variant="weak"
+        size="large"
+        onClick={() => setOpen(true)}
+      >
         <SignOutIcon aria-hidden="true" data-icon="inline-start" strokeWidth={2} />
         로그아웃
-      </TextButton>
+      </Button>
       <ConfirmDialog
         cancelButton={
-          <Button disabled={signOut.isPending} onClick={() => setOpen(false)} variant="neutral">
+          <Button variant="neutral" disabled={signOut.isPending} onClick={() => setOpen(false)}>
             취소
           </Button>
         }
