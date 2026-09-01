@@ -12,7 +12,7 @@ export async function SettingsPage() {
       <PageHeader title="설정" />
 
       <Card className="flex-1">
-        <CardContent className="flex flex-col gap-6">
+        <CardContent className="flex flex-1 flex-col gap-6">
           <ThemeSelect value={theme} />
           <PushToggle />
           <LogoutButton />
