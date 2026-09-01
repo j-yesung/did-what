@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, FieldDescription, FieldLabel } from "@/shared/ui/field";
+import { Field, FieldDescription, FieldLabel, FieldLegend, FieldSet } from "@/shared/ui/field";
 import { Switch } from "@/shared/ui/switch";
 
 import { usePushToggle } from "../model/use-push-toggle";
@@ -9,13 +9,11 @@ export function PushToggle() {
   const { checked, isUnsupported, handleCheckedChange } = usePushToggle();
 
   return (
-    <fieldset>
-      <legend className="mb-1 font-medium text-lg">알림</legend>
+    <FieldSet className="gap-0">
+      <FieldLegend>알림</FieldLegend>
 
       {isUnsupported ? (
-        <FieldDescription>
-          이 브라우저에서는 알림을 받을 수 없어요. 홈 화면에 추가한 앱에서 열어 주세요.
-        </FieldDescription>
+        <FieldDescription>알림을 받으려면 홈 화면에 추가한 앱에서 열어 주세요.</FieldDescription>
       ) : (
         <Field orientation="horizontal">
           <FieldLabel className="min-h-11 items-center" htmlFor="push-switch">
@@ -24,6 +22,6 @@ export function PushToggle() {
           <Switch checked={checked} id="push-switch" onCheckedChange={handleCheckedChange} />
         </Field>
       )}
-    </fieldset>
+    </FieldSet>
   );
 }

@@ -107,7 +107,7 @@ export function NoticeProvider() {
             key={notice.title}
           />
         </div>
-        <p className="font-semibold text-base text-foreground leading-6">{notice.title}</p>
+        <p className="whitespace-pre-line font-semibold text-base text-foreground leading-6">{notice.title}</p>
         {notice.description ? (
           <p className="mt-1 whitespace-pre-line text-muted-foreground text-sm leading-5">{notice.description}</p>
         ) : null}

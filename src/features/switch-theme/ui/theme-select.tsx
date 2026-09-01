@@ -1,5 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { FieldLegend, FieldSet } from "@/shared/ui/field";
 import { TextButton } from "@/shared/ui/text-button";
 
 import { setTheme } from "../model/actions";
@@ -12,8 +13,8 @@ type ThemeSelectProps = {
 export function ThemeSelect({ value }: ThemeSelectProps) {
   return (
     <form action={setTheme}>
-      <fieldset>
-        <legend className="mb-1 font-medium text-lg">화면 모드</legend>
+      <FieldSet className="gap-0">
+        <FieldLegend>화면 모드</FieldLegend>
         <div className="flex flex-col">
           {THEME_OPTIONS.map((option) => {
             const selected = option.value === value;
@@ -41,7 +42,7 @@ export function ThemeSelect({ value }: ThemeSelectProps) {
             );
           })}
         </div>
-      </fieldset>
+      </FieldSet>
     </form>
   );
 }
