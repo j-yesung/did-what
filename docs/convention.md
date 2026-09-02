@@ -37,7 +37,7 @@
 ├── app/          # Next.js 라우팅 전용 (page, layout, route 등)
 ├── pages/        # Pages Router 충돌 방지용 placeholder (README.md만 유지)
 └── src/
-    ├── app/      # FSD App Layer: 전역 스타일, provider, api-routes 구현
+    ├── app/      # FSD App Layer: 전역 스타일, provider, route-handlers 구현
     ├── pages/    # 페이지 단위 화면 조합
     ├── widgets/  # 독립적인 화면 블록
     ├── features/ # 사용자의 재사용 가능한 행동
