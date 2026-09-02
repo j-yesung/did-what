@@ -1,3 +1,5 @@
+import "server-only";
+
 export { parseKakaoSearchResponse, searchKakaoPlaces } from "./places.ts";
 export {
   getRelatedRegionQueries,

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
-import { getTheme } from "@/features/switch-theme";
+import { getTheme } from "@/features/switch-theme/server";
 import { QueryProvider } from "@/shared/lib/react-query";
 import { cn } from "@/shared/lib/utils";
 import { NoticeProvider } from "@/shared/ui/notice-provider";

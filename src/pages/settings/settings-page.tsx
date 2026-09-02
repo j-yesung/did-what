@@ -1,6 +1,7 @@
 import { LogoutButton } from "@/features/auth";
 import { PushToggle } from "@/features/push-notification";
-import { getTheme, ThemeSelect } from "@/features/switch-theme";
+import { ThemeSelect } from "@/features/switch-theme";
+import { getTheme } from "@/features/switch-theme/server";
 import { Card, CardContent } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
