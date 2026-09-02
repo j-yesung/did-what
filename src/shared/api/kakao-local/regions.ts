@@ -1,5 +1,5 @@
-import type { KakaoPlace, KakaoRegion, KakaoRegionSearchResult } from "./model.ts";
 import { searchKakaoPlaces } from "./places.ts";
+import type { KakaoPlace, KakaoRegion, KakaoRegionSearchResult } from "./types.ts";
 import { validateKakaoQuery } from "./validation.ts";
 
 const KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json";

@@ -1,4 +1,4 @@
-import type { KakaoPlace, KakaoSearchScope } from "./model.ts";
+import type { KakaoPlace, KakaoSearchScope } from "./types.ts";
 import { normalizeKakaoPage, validateKakaoPlaceId, validateKakaoQuery } from "./validation.ts";
 
 /** 카카오 키워드 검색이 허용하는 최대 반경(미터). 더 넓힐 수 없다. */

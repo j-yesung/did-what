@@ -1,4 +1,4 @@
-import type { KakaoSearchScope } from "./model.ts";
+import type { KakaoSearchScope } from "./types.ts";
 
 export const KAKAO_SEARCH_MAX_PAGE = 45;
 
