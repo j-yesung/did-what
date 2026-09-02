@@ -1,1 +1,1 @@
-export { RegionDetailPage as default } from "@/pages/region-detail";
+export { RegionDetailPage as default } from "@/pages/region/detail";

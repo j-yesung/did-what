@@ -3,10 +3,11 @@
 import { CaretRightIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
-import { getRecordWeatherLabel, normalizeRecordWeather } from "@/entities/record/model/weather";
-import { WeatherIcon } from "@/entities/record/ui/weather-icon";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { Button } from "@/shared/ui/button";
+
+import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
+import { WeatherIcon } from "./weather-icon";
 
 type RecordCardProps = {
   activity: string;

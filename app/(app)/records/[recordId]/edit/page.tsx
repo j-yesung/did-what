@@ -1,1 +1,1 @@
-export { RecordEditPage as default } from "@/pages/record-edit";
+export { RecordEditPage as default } from "@/pages/record/edit";

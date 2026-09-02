@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { BackButton } from "./back-button";
+import { BackButton } from "../back-button";
 
 type PageHeaderProps = {
   action?: ReactNode;

@@ -3,7 +3,7 @@ import { Checkbox } from "@/shared/ui/checkbox";
 import { FieldLegend, FieldSet } from "@/shared/ui/field";
 import { TextButton } from "@/shared/ui/text-button";
 
-import { setTheme } from "../model/actions";
+import { setTheme } from "../api/update-theme";
 import { THEME_OPTIONS, type Theme } from "../model/theme";
 
 type ThemeSelectProps = {

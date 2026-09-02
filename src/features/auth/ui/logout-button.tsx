@@ -9,7 +9,7 @@ import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 
-import { logout } from "../model/actions";
+import { logout } from "../api/logout";
 
 export function LogoutButton() {
   const [open, setOpen] = useState(false);

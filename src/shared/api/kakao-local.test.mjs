@@ -6,7 +6,7 @@ import {
   parseKakaoSearchResponse,
   validateKakaoPlaceId,
   validateKakaoQuery,
-} from "./kakao-local.ts";
+} from "./kakao-local/server.ts";
 import assert from "node:assert/strict";
 
 assert.deepEqual(validateKakaoQuery("  성수 카페  "), { query: "성수 카페", valid: true });

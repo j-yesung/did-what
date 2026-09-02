@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { searchKakaoRegions, validateKakaoQuery } from "@/shared/api/kakao-local";
+import { searchKakaoRegions, validateKakaoQuery } from "@/shared/api/kakao-local/server";
 import { createClient } from "@/shared/api/supabase/server";
 
 /** 장소 검색과 같은 창구 규칙. 카카오 REST 키는 이 서버에서만 읽고, 로그인한 사용자에게만 응답한다. */

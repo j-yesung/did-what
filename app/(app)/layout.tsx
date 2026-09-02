@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
-import { RecordCreateButton } from "@/features/manage-record";
+import { MainDataPrefetch } from "@/app/providers/main-data-prefetch";
+import { RecordCreateButton } from "@/features/record/create-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
-import { MainDataPrefetch } from "@/widgets/main-data-prefetch";
 
 export const dynamic = "force-dynamic";
 

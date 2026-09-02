@@ -1,28 +1,23 @@
-import { createClient } from "@/shared/api/supabase/server";
+import { queryOptions } from "@tanstack/react-query";
 
-const COLUMNS = "id, name, address, created_at, saved_at, region_code, region_name, provider, provider_place_id";
+import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
-// 소유자의 장소 한 곳. 없으면 data가 null이다.
-export async function getPlace(placeId: string, ownerId: string) {
-  const supabase = await createClient();
+import { fetchPlaces } from "./fetch-places";
+import { type PlaceSearchParams, searchPlaces } from "./search-places";
 
-  return supabase.from("places").select(COLUMNS).eq("id", placeId).eq("owner_id", ownerId).maybeSingle();
-}
+export const PLACE_SEARCH_KEY = ["places", "search"] as const;
 
-// 특정 장소가 연결된 소유자의 기록. 최신순.
-export async function getPlaceRecords(placeId: string, ownerId: string) {
-  const supabase = await createClient();
+export const placesQueryOptions = queryOptions({
+  ...MAIN_QUERY_OPTIONS,
+  queryKey: ["places"],
+  queryFn: fetchPlaces,
+});
 
-  return supabase
-    .from("record_places")
-    .select("record:records!inner(id, activity, memo, weather, recorded_at, recorded_until, owner_id)")
-    .eq("place_id", placeId)
-    .eq("record.owner_id", ownerId);
-}
-
-// 소유자의 장소 하나. 존재 검증용.
-export async function findPlace(placeId: string, ownerId: string) {
-  const supabase = await createClient();
-
-  return supabase.from("places").select("id").eq("id", placeId).eq("owner_id", ownerId).maybeSingle();
+export function placeSearchQueryOptions(params: PlaceSearchParams) {
+  return queryOptions({
+    enabled: params.query.trim().length > 0,
+    queryFn: ({ signal }) => searchPlaces(params, signal),
+    queryKey: [...PLACE_SEARCH_KEY, params],
+    staleTime: 60_000,
+  });
 }

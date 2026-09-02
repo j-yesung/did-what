@@ -1,1 +1,1 @@
-export { RecordNewPage as default } from "@/pages/record-new";
+export { RecordNewPage as default } from "@/pages/record/new";

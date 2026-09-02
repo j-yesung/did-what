@@ -1,1 +1,1 @@
-export { PlaceDetailPage as default } from "@/pages/place-detail";
+export { PlaceDetailPage as default } from "@/pages/place/detail";

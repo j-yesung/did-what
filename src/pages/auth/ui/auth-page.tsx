@@ -33,7 +33,7 @@ const COPY = {
   },
 } as const;
 
-function AuthPage({ mode }: AuthPageProps) {
+export function AuthPage({ mode }: AuthPageProps) {
   const isSignup = mode === "signup";
   const copy = COPY[mode];
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -216,12 +216,4 @@ function AuthPage({ mode }: AuthPageProps) {
       </section>
     </main>
   );
-}
-
-export function LoginPage() {
-  return <AuthPage mode="login" />;
-}
-
-export function SignupPage() {
-  return <AuthPage mode="signup" />;
 }

@@ -1,1 +1,1 @@
-export { ensureProfile } from "./api/queries";
+export { ensureProfile } from "./api/ensure-profile";
