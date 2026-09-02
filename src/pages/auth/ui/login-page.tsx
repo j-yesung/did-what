@@ -1,5 +1,5 @@
-import { AuthPage } from "./auth-page";
+import { AuthForm } from "./auth-form";
 
 export function LoginPage() {
-  return <AuthPage mode="login" />;
+  return <AuthForm mode="login" />;
 }
