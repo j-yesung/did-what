@@ -1,7 +1,8 @@
 "use client";
 
 import { Gear, MapPin, MapPinArea, MapTrifold, PencilSimple } from "@phosphor-icons/react";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
 
@@ -15,7 +16,6 @@ const TABS = [
 
 export function BottomNavigation() {
   const pathname = usePathname();
-  const router = useRouter();
   const activeIndex = TABS.findIndex(({ href }) => href === pathname);
 
   if (activeIndex === -1) return null;
@@ -42,8 +42,8 @@ export function BottomNavigation() {
                 className="h-full flex-col gap-1 rounded-full px-0 py-0 text-[12px] transition-colors duration-200 ease-out after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-primary [&>span]:flex-col"
                 data-active={active}
                 fullWidth
-                onClick={() => router.push(href)}
-                type="button"
+                nativeButton={false}
+                render={<Link href={href} prefetch />}
                 variant="ghost"
               >
                 <Icon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
