@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 
 import { ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -28,7 +28,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
   const records = useQuery({ ...recordsQueryOptions, enabled: true });
   const recentRegions = toRecentRegions(records.data ?? []);
 
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
+  function handleSearch(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     event.stopPropagation();
     const nextQuery = keyword.trim();
