@@ -1,4 +1,4 @@
-export { REGION_SEARCH_KEY, useRegionSearch } from "./api/queries";
+export { REGION_SEARCH_KEY } from "./api/queries";
 export type { RegionSearchResult } from "./api/search-regions";
 export { searchRegions } from "./api/search-regions";
 export {
@@ -20,4 +20,5 @@ export {
   type RegionCode,
   type RegionRecordLocation,
 } from "./model/korea-map";
-export { KoreaActivityMap, RegionMiniMap } from "./ui/activity-map";
+export { useRegionSearch } from "./model/use-region-search";
+export { RegionMiniMap } from "./ui/region-mini-map";

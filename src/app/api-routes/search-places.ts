@@ -5,7 +5,7 @@ import {
   normalizeKakaoScope,
   searchKakaoPlaces,
   validateKakaoQuery,
-} from "@/shared/api/kakao-local";
+} from "@/shared/api/kakao-local/server";
 import { createClient } from "@/shared/api/supabase/server";
 
 /**

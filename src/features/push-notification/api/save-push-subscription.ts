@@ -1,0 +1,34 @@
+"use server";
+
+import { requireUser } from "@/shared/api/supabase/require-user";
+
+import type { PushActionState, PushSubscriptionInput } from "../model/push-subscription";
+
+const MAX_ENDPOINT_LENGTH = 1000;
+const MAX_KEY_LENGTH = 200;
+
+function isValid({ auth, endpoint, p256dh }: PushSubscriptionInput) {
+  if (!endpoint.startsWith("https://") || endpoint.length > MAX_ENDPOINT_LENGTH) return false;
+  if (!p256dh || p256dh.length > MAX_KEY_LENGTH) return false;
+  if (!auth || auth.length > MAX_KEY_LENGTH) return false;
+
+  return true;
+}
+
+export async function saveSubscription(input: PushSubscriptionInput): Promise<PushActionState> {
+  if (!isValid(input)) return { message: "알림 정보를 확인할 수 없습니다.", status: "error" };
+
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase.from("push_subscriptions").upsert(
+    {
+      auth_key: input.auth,
+      endpoint: input.endpoint,
+      owner_id: user.id,
+      p256dh: input.p256dh,
+    },
+    { onConflict: "endpoint" },
+  );
+
+  if (error) return { message: "알림을 켜지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
+  return { status: "success" };
+}

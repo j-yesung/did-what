@@ -1,4 +1,4 @@
-export { getRecord, getRecords } from "./api/queries";
+export { recordsQueryOptions } from "./api/queries";
 export {
   buildRecordsHref,
   filterRecords,
@@ -8,6 +8,14 @@ export {
   type RecordSearchParams,
   type RecordSort,
 } from "./model/record-filters";
+export {
+  type RecordFieldErrors,
+  type RecordInput,
+  type RecordInputValues,
+  type RecordPlaceReference,
+  readRecordInput,
+  validateRecordInput,
+} from "./model/record-form";
 export {
   DEFAULT_RECORD_WEATHER,
   getRecordWeatherLabel,

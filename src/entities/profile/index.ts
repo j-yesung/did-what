@@ -1,1 +1,3 @@
-export { ensureProfile } from "./api/queries";
+import "server-only";
+
+export { ensureProfile } from "./api/ensure-profile";

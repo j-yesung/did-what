@@ -1,1 +1,1 @@
-export { RecordsPage as default } from "@/pages/records";
+export { RecordsPage as default } from "@/pages/record/list";

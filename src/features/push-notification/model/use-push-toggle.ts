@@ -8,9 +8,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { showNotice } from "@/shared/lib/notice";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 
-import { removeSubscription, saveSubscription } from "./actions";
-import { pushEndpointQueryOptions } from "./push-query";
-import { disablePush, enablePush, isPushSupported } from "./subscribe";
+import { pushEndpointQueryOptions } from "../api/queries";
+import { removeSubscription } from "../api/remove-push-subscription";
+import { saveSubscription } from "../api/save-push-subscription";
+import { enablePush, isPushSupported } from "../api/subscribe-push";
+import { disablePush } from "../api/unsubscribe-push";
 
 export function usePushToggle() {
   const queryClient = useQueryClient();

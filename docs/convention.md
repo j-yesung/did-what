@@ -39,15 +39,21 @@
 └── src/
     ├── app/      # FSD App Layer: 전역 스타일, provider, api-routes 구현
     ├── pages/    # 페이지 단위 화면 조합
+    ├── widgets/  # 독립적인 화면 블록
     ├── features/ # 사용자의 재사용 가능한 행동
     ├── entities/ # record, person, place 같은 도메인
     └── shared/   # 도메인에 의존하지 않는 공용 코드 (ui, lib, api)
 ```
 
-- 의존 방향은 `app → pages → features → entities → shared` 한 방향이다. 하위 레이어가 상위 레이어를, 같은 레이어의 다른 slice를 import하지 않는다.
-- slice는 필요한 segment(`ui`, `model`, `api`, `lib`)만 두고, 외부에서는 `index.ts`의 공개 API로만 가져온다.
+- 의존 방향은 `app → pages → widgets → features → entities → shared` 한 방향이다. 하위 레이어가 상위 레이어를 import하지 않는다.
+- 같은 레이어의 다른 slice는 기본적으로 import하지 않는다. 다만 서버 워크플로를 조합해야 하는 feature는 상대 feature의 `server.ts`만 단방향으로 import할 수 있으며, 순환 의존은 허용하지 않는다.
+- slice는 필요한 segment(`ui`, `model`, `api`, `lib`)만 둔다. 외부에서는 공개 진입점으로만 가져온다.
+- 기본 공개 API는 `index.ts`다. slice 전체가 서버 전용이면 여기에 `import "server-only"`를 선언한다.
+- 클라이언트용과 서버 전용 API가 함께 있는 slice만 `server.ts`를 보조 공개 진입점으로 두고 `import "server-only"`를 선언한다. `"use server"` Server Action은 클라이언트가 호출할 수 있으므로 `index.ts`로 공개할 수 있다.
 - 서버 전용 모듈(`shared/api/supabase/server`)을 import하는 파일에는 클라이언트가 쓰는 타입을 두지 않는다. 데이터 접근은 `api/`, 타입은 `model/`에 두고 `index.ts`에서 `export type`으로 내보낸다. 섞으면 클라이언트 컴포넌트가 `next/headers`까지 끌어와 빌드가 깨진다.
-- 루트 `app/**/page.tsx`는 `export { XxxPage as default } from "@/pages/xxx";` 형태의 re-export만 둔다.
+- 관련 slice는 `pages/record/list`, `features/record/create-record`처럼 도메인 namespace 아래에 묶을 수 있다. namespace 자체에는 공개 API를 두지 않는다.
+- 페이지 UI가 단일 조합 컴포넌트라면 slice 루트에 둔다. UI 파일이 여러 개이거나 서버·클라이언트 컴포넌트를 분리할 때만 `ui/` segment를 둔다.
+- 루트 `app/**/page.tsx`는 `export { XxxPage as default } from "@/pages/xxx";` 형태로 해당 page slice의 공개 API만 re-export한다.
 - shadcn 컴포넌트는 `src/shared/ui`, 공용 유틸은 `src/shared/lib`에 둔다. `src/components`, `src/lib`는 쓰지 않는다.
 - `src/shared/ui`에는 컴포넌트만 둔다. 여러 컴포넌트가 함께 쓰는 클래스 상수 같은 값은 `src/shared/lib`에 둔다(`cn`, `PRESS_FEEDBACK`).
 

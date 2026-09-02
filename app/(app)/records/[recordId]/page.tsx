@@ -1,1 +1,1 @@
-export { RecordDetailPage as default } from "@/pages/record-detail";
+export { RecordDetailPage as default } from "@/pages/record/detail";

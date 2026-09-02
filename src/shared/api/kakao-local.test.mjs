@@ -1,12 +1,10 @@
+import { parseKakaoSearchResponse } from "./kakao-local/places.ts";
 import {
   getRelatedRegionQueries,
-  normalizeKakaoPage,
   parseKakaoCoordinateRegionResponse,
   parseKakaoRegionSearchResponse,
-  parseKakaoSearchResponse,
-  validateKakaoPlaceId,
-  validateKakaoQuery,
-} from "./kakao-local.ts";
+} from "./kakao-local/regions.ts";
+import { normalizeKakaoPage, validateKakaoPlaceId, validateKakaoQuery } from "./kakao-local/validation.ts";
 import assert from "node:assert/strict";
 
 assert.deepEqual(validateKakaoQuery("  성수 카페  "), { query: "성수 카페", valid: true });

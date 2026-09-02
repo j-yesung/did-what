@@ -1,1 +1,1 @@
-export { PlacesPage as default } from "@/pages/places";
+export { PlacesPage as default } from "@/pages/place/list";
