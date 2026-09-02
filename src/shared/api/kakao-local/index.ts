@@ -1,1 +1,1 @@
-export type { KakaoPlace, KakaoRegion, KakaoRegionSearchResult, KakaoSearchScope } from "./model.ts";
+export type { KakaoPlace, KakaoRegion, KakaoRegionSearchResult, KakaoSearchScope } from "./types.ts";

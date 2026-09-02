@@ -1,1 +1,1 @@
-export { searchRegions as GET } from "@/app/api-routes";
+export { searchRegions as GET } from "@/app/route-handlers/search-regions";

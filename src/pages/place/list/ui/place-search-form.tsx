@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type SubmitEvent, useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -19,7 +19,7 @@ export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
 
   useEffect(() => setKeyword(query), [query]);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     router.push(`/places?${new URLSearchParams({ q: keyword })}`);

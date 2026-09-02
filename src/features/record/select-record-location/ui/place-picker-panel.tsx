@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 
 import { BookmarkIcon, MapPinIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
@@ -75,7 +75,7 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
     });
   }
 
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
+  function handleSearch(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     event.stopPropagation();
     setSelectionError(undefined);

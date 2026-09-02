@@ -1,1 +1,1 @@
-export { searchPlaces as GET } from "@/app/api-routes";
+export { searchPlaces as GET } from "@/app/route-handlers/search-places";

@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type SubmitEvent, useEffect, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -29,7 +29,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
     setQuery(filters.query);
   }, [filters.query]);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const params = new URLSearchParams();
