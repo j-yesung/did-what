@@ -251,6 +251,12 @@
     @apply border-border outline-ring/50;
   }
 
+  /* 네이티브 앱처럼 쓰므로 링크를 길게 눌러도 iOS 미리보기·공유 시트가 뜨지 않게 한다. */
+  a {
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+  }
+
   html {
     background: var(--background);
     overflow-x: clip;
