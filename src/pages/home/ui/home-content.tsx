@@ -13,15 +13,14 @@ import { RegionActivityMap } from "@/widgets/region-activity-map";
 
 export function HomeContent({ initialRecords }: { initialRecords: RecordLocationRow[] }) {
   const recordsQuery = useQuery({ ...recordLocationsQueryOptions, initialData: initialRecords });
-  const recordLocations = recordsQuery.data ?? initialRecords;
   const records = useMemo(
     () =>
-      recordLocations.map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
+      recordsQuery.data.map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
         id,
         latitude,
         longitude,
       })),
-    [recordLocations],
+    [recordsQuery.data],
   );
 
   return (
