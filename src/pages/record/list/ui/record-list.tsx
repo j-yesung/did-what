@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
+import { PencilIcon, type PencilIconHandle } from "@animateicons/react/lucide";
 import { MagnifyingGlassMinusIcon, NotePencilIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 
@@ -12,28 +15,48 @@ import { TextButton } from "@/shared/ui/text-button";
 
 import { useRecordListQuery } from "../model/use-record-list-query";
 
+const LOADING_HOLD_MS = 500;
+
 type RecordListProps = {
   filters: RecordFilters;
 };
 
+function LoadingPencil() {
+  const iconRef = useRef<PencilIconHandle>(null);
+
+  useEffect(() => {
+    iconRef.current?.startAnimation();
+  }, []);
+
+  return (
+    <div className="grid flex-1 place-items-center" aria-label="기록을 불러오는 중" role="status">
+      <PencilIcon
+        className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in"
+        ref={iconRef}
+        size={40}
+      />
+    </div>
+  );
+}
+
 export function RecordList({ filters }: RecordListProps) {
   const recordsQuery = useRecordListQuery(filters);
+  const [isHolding, setIsHolding] = useState(recordsQuery.isPending);
 
-  if (recordsQuery.isPending) {
-    return (
-      <div className="fixed inset-0 grid place-items-center">
-        <Spinner
-          aria-label="기록을 불러오는 중"
-          className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
-        />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (recordsQuery.isPending) {
+      setIsHolding(true);
+      return;
+    }
+
+    const timer = setTimeout(() => setIsHolding(false), LOADING_HOLD_MS);
+    return () => clearTimeout(timer);
+  }, [recordsQuery.isPending]);
+
+  if (recordsQuery.isPending || isHolding) return <LoadingPencil />;
 
   if (recordsQuery.isError) {
-    return (
-      <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 불러오지 못했어요" />
-    );
+    return <LoadErrorAlert icon={<NotePencilIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />;
   }
 
   const records = recordsQuery.data.pages.flatMap((page) => page.records);
