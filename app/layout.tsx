@@ -20,6 +20,23 @@ const pretendard = localFont({
 
 const THEME_COLOR = { dark: "#191f28", light: "#f9fafb" };
 
+const IOS_SPLASH_SCREENS = [
+  { height: 568, scale: 2, width: 320 },
+  { height: 667, scale: 2, width: 375 },
+  { height: 736, scale: 3, width: 414 },
+  { height: 812, scale: 3, width: 375 },
+  { height: 896, scale: 2, width: 414 },
+  { height: 896, scale: 3, width: 414 },
+  { height: 780, scale: 3, width: 360 },
+  { height: 844, scale: 3, width: 390 },
+  { height: 926, scale: 3, width: 428 },
+  { height: 852, scale: 3, width: 393 },
+  { height: 932, scale: 3, width: 430 },
+  { height: 874, scale: 3, width: 402 },
+  { height: 912, scale: 3, width: 420 },
+  { height: 956, scale: 3, width: 440 },
+] as const;
+
 export const metadata: Metadata = {
   title: "뭐했지",
   description: "둘만의 순간과 방문한 지역을 지도 위에 기록하는 커플 라이프로그",
@@ -54,6 +71,18 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
   return (
     <html className={cn(pretendard.variable, theme !== "system" && theme)} lang="ko">
+      <head>
+        {IOS_SPLASH_SCREENS.flatMap(({ height, scale, width }) =>
+          (["light", "dark"] as const).map((colorScheme) => (
+            <link
+              href={`/splash/${width * scale}x${height * scale}-${colorScheme}.png`}
+              key={`${width}x${height}@${scale}-${colorScheme}`}
+              media={`(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${scale}) and (orientation: portrait) and (prefers-color-scheme: ${colorScheme})`}
+              rel="apple-touch-startup-image"
+            />
+          )),
+        )}
+      </head>
       <body>
         <QueryProvider>{children}</QueryProvider>
         <PressListener />
