@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 
 import { MainDataPrefetch } from "@/app/providers/main-data-prefetch";
+import { AppLoading } from "@/app/ui/app-loading";
 import { RecordCreateButton } from "@/features/record/create-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
@@ -8,7 +9,11 @@ import { BottomNavigation } from "@/widgets/bottom-navigation";
 export const dynamic = "force-dynamic";
 
 export default function Layout({ children }: { children: ReactNode }) {
-  return <AuthenticatedApp>{children}</AuthenticatedApp>;
+  return (
+    <Suspense fallback={<AppLoading />}>
+      <AuthenticatedApp>{children}</AuthenticatedApp>
+    </Suspense>
+  );
 }
 
 async function AuthenticatedApp({ children }: { children: ReactNode }) {
