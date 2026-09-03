@@ -260,6 +260,7 @@
   html {
     background: var(--background);
     overflow-x: clip;
+    scrollbar-gutter: stable;
     /**
      * 안쪽 스크롤 영역이 끝에 닿았을 때 문서까지 딸려 스크롤되는 것만 막는다.
      * none은 iOS 고무줄 반동까지 없애 스크롤이 벽에 부딪히듯 멈춰서, 반동은 남기는 contain을 쓴다.
