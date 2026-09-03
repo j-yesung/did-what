@@ -1,3 +1,4 @@
+export type { SavedPlaceRow } from "./api/fetch-places";
 export { PLACE_SEARCH_KEY, placesQueryOptions } from "./api/queries";
 export type { PlaceSearchParams, PlaceSearchResult } from "./api/search-places";
 export { getPlaceRegionLabel } from "./model/get-place-region-label";

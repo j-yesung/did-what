@@ -9,3 +9,5 @@ export async function fetchPlaces() {
   if (error) throw error;
   return data;
 }
+
+export type SavedPlaceRow = Awaited<ReturnType<typeof fetchPlaces>>[number];

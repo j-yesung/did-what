@@ -8,7 +8,9 @@ import { useQuery } from "@tanstack/react-query";
 import {
   EmptyRecords,
   RecordCard,
+  type RecordLocationRow,
   RecordTimeline,
+  type RegionRecordRow,
   recordLocationsQueryOptions,
   regionRecordsQueryOptions,
 } from "@/entities/record";
@@ -16,18 +18,19 @@ import { createRegionActivityMaps, type Region, RegionMiniMap } from "@/entities
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { Spinner } from "@/shared/ui/spinner";
 
 type RegionDetailContentProps = {
+  initialLocations: RecordLocationRow[];
+  initialRecords: RegionRecordRow[];
   region: Region;
 };
 
-export function RegionDetailContent({ region }: RegionDetailContentProps) {
-  const locationsQuery = useQuery(recordLocationsQueryOptions);
-  const recordsQuery = useQuery(regionRecordsQueryOptions(region));
+export function RegionDetailContent({ initialLocations, initialRecords, region }: RegionDetailContentProps) {
+  const locationsQuery = useQuery({ ...recordLocationsQueryOptions, initialData: initialLocations });
+  const recordsQuery = useQuery({ ...regionRecordsQueryOptions(region), initialData: initialRecords });
   const recordLocations = useMemo(
     () =>
-      (locationsQuery.data ?? []).map(
+      locationsQuery.data.map(
         ({ id, region_code: administrativeCode, region_latitude: latitude, region_longitude: longitude }) => ({
           administrativeCode,
           id,
@@ -48,11 +51,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
       <PageShell>
         <PageHeader back="/regions" title={region.name} />
 
-        {recordsQuery.isPending || locationsQuery.isPending ? (
-          <div className="fixed inset-0 grid place-items-center">
-            <Spinner aria-label={`${region.name} 발자취를 불러오는 중`} className="text-muted-foreground" />
-          </div>
-        ) : recordsQuery.isError || locationsQuery.isError || !regionMap ? (
+        {recordsQuery.isError || locationsQuery.isError || !regionMap ? (
           <LoadErrorAlert
             icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
             title="지역 발자취를 불러오지 못했어요"
