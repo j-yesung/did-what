@@ -1,9 +1,8 @@
 "use client";
 
-import { startTransition, useOptimistic } from "react";
-
 import { Gear, MapPin, MapPinArea, MapTrifold, PencilSimple } from "@phosphor-icons/react";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
 
@@ -17,19 +16,9 @@ const TABS = [
 
 export function BottomNavigation() {
   const pathname = usePathname();
-  const router = useRouter();
-  const [activeHref, setActiveHref] = useOptimistic(pathname);
+  const activeIndex = TABS.findIndex(({ href }) => href === pathname);
 
-  const activeIndex = TABS.findIndex(({ href }) => href === activeHref);
-
-  if (!TABS.some(({ href }) => href === pathname)) return null;
-
-  function navigate(href: string) {
-    startTransition(() => {
-      setActiveHref(href);
-      router.push(href);
-    });
-  }
+  if (activeIndex === -1) return null;
 
   return (
     <nav
@@ -44,17 +33,17 @@ export function BottomNavigation() {
           />
         </li>
         {TABS.map(({ href, icon: Icon, label }) => {
-          const active = activeHref === href;
+          const active = pathname === href;
 
           return (
             <li className="relative z-10 min-w-0" key={href}>
               <Button
                 aria-current={active ? "page" : undefined}
-                className="h-full flex-col gap-1 rounded-full px-0 py-0 text-[12px] transition-colors duration-200 ease-out after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-primary [&>span]:flex-col"
+                className="h-full select-none flex-col gap-1 rounded-full px-0 py-0 text-[12px] transition-colors duration-200 ease-out [-webkit-touch-callout:none] after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-primary [&>span]:flex-col"
                 data-active={active}
                 fullWidth
-                onClick={() => navigate(href)}
-                type="button"
+                nativeButton={false}
+                render={<Link href={href} prefetch />}
                 variant="ghost"
               >
                 <Icon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
