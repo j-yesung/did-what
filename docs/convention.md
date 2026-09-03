@@ -41,7 +41,7 @@
     ├── pages/    # 페이지 단위 화면 조합
     ├── widgets/  # 독립적인 화면 블록
     ├── features/ # 사용자의 재사용 가능한 행동
-    ├── entities/ # record, person, place 같은 도메인
+    ├── entities/ # record, place, region 같은 도메인
     └── shared/   # 도메인에 의존하지 않는 공용 코드 (ui, lib, api)
 ```
 
