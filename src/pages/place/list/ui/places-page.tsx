@@ -1,9 +1,11 @@
+import { getSavedPlaces } from "@/entities/place/server";
 import {
   KAKAO_SEARCH_MAX_PAGE,
   normalizeKakaoPage,
   searchKakaoPlaces,
   validateKakaoQuery,
 } from "@/shared/api/kakao-local/server";
+import { requireUser } from "@/shared/api/supabase/require-user";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 
 import { PlaceSearchForm } from "./place-search-form";
@@ -15,13 +17,16 @@ type PlacesPageProps = {
 };
 
 export async function PlacesPage({ searchParams }: PlacesPageProps) {
-  const params = await searchParams;
+  const [params, { user }] = await Promise.all([searchParams, requireUser()]);
   const hasSearch = Object.hasOwn(params, "q");
   const rawQuery = typeof params.q === "string" ? params.q : "";
   const currentPage = normalizeKakaoPage(typeof params.page === "string" ? params.page : undefined);
   const queryResult = hasSearch ? validateKakaoQuery(rawQuery) : null;
   const query = queryResult?.valid ? queryResult.query : rawQuery;
-  const searchResult = queryResult?.valid ? await searchKakaoPlaces(queryResult.query, currentPage) : null;
+  const [initialPlaces, searchResult] = await Promise.all([
+    getSavedPlaces(user.id),
+    queryResult?.valid ? searchKakaoPlaces(queryResult.query, currentPage) : Promise.resolve(null),
+  ]);
   const successfulSearchResult = searchResult && "isEnd" in searchResult ? searchResult : null;
   const searchError =
     queryResult && !queryResult.valid
@@ -35,7 +40,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
       <PageHeader title="장소" />
 
       <section aria-labelledby="places-intro-title" className="px-1">
-        <SavedPlaceCount />
+        <SavedPlaceCount initialPlaces={initialPlaces} />
         <h2 className="mt-2 font-bold text-2xl tracking-[-0.04em]" id="places-intro-title">
           기억하고 싶은 장소를 찾아보세요.
         </h2>
@@ -54,13 +59,14 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
               successfulSearchResult && !successfulSearchResult.isEnd && currentPage < KAKAO_SEARCH_MAX_PAGE,
             )}
             hasPreviousPage={currentPage > 1}
+            initialPlaces={initialPlaces}
             pageableCount={successfulSearchResult?.pageableCount ?? 0}
             places={successfulSearchResult?.places ?? []}
             query={queryResult.query}
           />
         ) : null
       ) : (
-        <SavedPlaceList />
+        <SavedPlaceList initialPlaces={initialPlaces} />
       )}
     </PageShell>
   );

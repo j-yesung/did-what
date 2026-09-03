@@ -6,7 +6,7 @@ import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { placesQueryOptions } from "@/entities/place";
+import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/place/save-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { FOCUS_RING } from "@/shared/lib/interaction";
@@ -24,7 +24,6 @@ import {
   PaginationPrevious,
 } from "@/shared/ui/pagination";
 import { ResetButton } from "@/shared/ui/reset-button";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { getSavedKakaoPlaces } from "../model/get-saved-kakao-places";
 
@@ -32,6 +31,7 @@ type PlaceSearchResultsProps = {
   currentPage: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
+  initialPlaces: SavedPlaceRow[];
   pageableCount: number;
   places: KakaoPlace[];
   query: string;
@@ -45,24 +45,14 @@ export function PlaceSearchResults({
   currentPage,
   hasNextPage,
   hasPreviousPage,
+  initialPlaces,
   pageableCount,
   places,
   query,
 }: PlaceSearchResultsProps) {
   const router = useRouter();
-  const savedPlacesQuery = useQuery(placesQueryOptions);
+  const savedPlacesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
   const [selectedPlaces, setSelectedPlaces] = useState<Map<string, CreatePlaceInput>>(() => new Map());
-
-  if (savedPlacesQuery.isPending) {
-    return (
-      <div className="fixed inset-0 grid place-items-center">
-        <Spinner
-          aria-label="저장한 장소를 확인하는 중"
-          className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
-        />
-      </div>
-    );
-  }
 
   const savedKakaoPlaces = getSavedKakaoPlaces(savedPlacesQuery.data ?? []);
   const hasSelectedPlaces = selectedPlaces.size > 0;
