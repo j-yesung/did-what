@@ -1,28 +1,23 @@
 "use client";
 
 import { MagnifyingGlassMinusIcon, NotePencilIcon } from "@phosphor-icons/react";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
-import {
-  EmptyRecords,
-  hasRecordFilters,
-  RecordCard,
-  type RecordFilters,
-  RecordTimeline,
-  recordListQueryOptions,
-} from "@/entities/record";
+import { EmptyRecords, hasRecordFilters, RecordCard, type RecordFilters, RecordTimeline } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
+import { TextButton } from "@/shared/ui/text-button";
+
+import { useRecordListQuery } from "../model/use-record-list-query";
 
 type RecordListProps = {
   filters: RecordFilters;
 };
 
 export function RecordList({ filters }: RecordListProps) {
-  const recordsQuery = useInfiniteQuery(recordListQueryOptions(filters));
+  const recordsQuery = useRecordListQuery(filters);
 
   if (recordsQuery.isPending) {
     return (
@@ -43,6 +38,7 @@ export function RecordList({ filters }: RecordListProps) {
 
   const records = recordsQuery.data.pages.flatMap((page) => page.records);
   const isFiltered = hasRecordFilters(filters);
+  const isLoadingMore = recordsQuery.isPlaceholderData || recordsQuery.isFetchingNextPage;
 
   if (records.length === 0) {
     return isFiltered ? (
@@ -68,32 +64,29 @@ export function RecordList({ filters }: RecordListProps) {
   return (
     <RecordTimeline aria-label={`불러온 기록 ${records.length}개`}>
       <p className="px-1 text-muted-foreground text-xs">{isFiltered ? "조건에 맞는 기록" : "최근 기록"}</p>
-      {records.map((record) => (
-        <RecordCard
-          activity={record.activity}
-          key={record.id}
-          memo={record.memo}
-          recordId={record.id}
-          recordedAt={record.recorded_at}
-          recordedUntil={record.recorded_until}
-          region={{ label: record.region_label, name: record.region_name }}
-          weather={record.weather}
-        />
+      {records.map((record, index) => (
+        <RecordCard isLast={index === records.length - 1} key={record.id} record={record} />
       ))}
       {recordsQuery.hasNextPage ? (
         <div className="flex flex-col items-center gap-2 pt-2" aria-live="polite">
           {recordsQuery.isFetchNextPageError ? (
             <p className="text-destructive text-xs">기록을 더 불러오지 못했어요.</p>
           ) : null}
-          <Button
-            loading={recordsQuery.isFetchingNextPage}
+          <TextButton
+            aria-busy={isLoadingMore || undefined}
+            disabled={isLoadingMore}
             onClick={() => recordsQuery.fetchNextPage()}
-            size="medium"
+            tone="brand"
             type="button"
-            variant="outline"
           >
-            {recordsQuery.isFetchNextPageError ? "다시 시도" : "더 보기"}
-          </Button>
+            {isLoadingMore ? (
+              <Spinner aria-hidden="true" />
+            ) : recordsQuery.isFetchNextPageError ? (
+              "다시 시도"
+            ) : (
+              "더 보기"
+            )}
+          </TextButton>
         </div>
       ) : null}
     </RecordTimeline>

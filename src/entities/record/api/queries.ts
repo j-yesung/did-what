@@ -1,4 +1,4 @@
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
@@ -23,6 +23,7 @@ export function recordListQueryOptions(filters: RecordFilters) {
     queryFn: ({ pageParam }) => fetchRecordPage(filters, pageParam),
     initialPageParam: null as RecordCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    placeholderData: keepPreviousData,
   });
 }
 
