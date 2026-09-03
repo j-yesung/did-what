@@ -3,12 +3,7 @@ import type { NextRequest } from "next/server";
 import { updateSession } from "@/shared/api/supabase/session";
 
 export async function proxy(request: NextRequest) {
-  const startedAt = performance.now();
-  const response = await updateSession(request);
-
-  response.headers.append("Server-Timing", `supabase-session;dur=${(performance.now() - startedAt).toFixed(1)}`);
-
-  return response;
+  return updateSession(request);
 }
 
 export const config = {
