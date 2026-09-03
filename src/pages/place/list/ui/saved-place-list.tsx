@@ -78,7 +78,6 @@ export function SavedPlaceList() {
                 </Badge>
               ) : null
             }
-            type="button"
           >
             <ListRowTexts description={`${getPlaceRegionLabel(place.region_name, place.address)}`} title={place.name} />
           </ListRow>

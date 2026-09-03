@@ -5,7 +5,7 @@ function Spinner({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="spinner"
       role="status"
-      aria-label="Loading"
+      aria-label="불러오는 중"
       className={cn("inline-flex items-center gap-1", className)}
       {...props}
     >

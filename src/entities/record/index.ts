@@ -1,4 +1,10 @@
-export { recordsQueryOptions } from "./api/queries";
+export type { RecordLocationRow } from "./api/fetch-record-locations";
+export {
+  RECORDS_QUERY_KEY,
+  recordListQueryOptions,
+  recordLocationsQueryOptions,
+  regionRecordsQueryOptions,
+} from "./api/queries";
 export {
   buildRecordsHref,
   filterRecords,
@@ -16,6 +22,7 @@ export {
   readRecordInput,
   validateRecordInput,
 } from "./model/record-form";
+export { RECORD_PAGE_SIZE, type RecordCursor } from "./model/record-page";
 export {
   DEFAULT_RECORD_WEATHER,
   getRecordWeatherLabel,

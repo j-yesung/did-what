@@ -2,7 +2,7 @@
 
 import { EnvelopeSimpleOpenIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { INITIAL_AUTH_STATE, login, signup } from "@/features/auth";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
@@ -33,6 +33,7 @@ const AUTH_MODE_CONFIG = {
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const isSignup = mode === "signup";
   const config = AUTH_MODE_CONFIG[mode];
+  const router = useRouter();
 
   const submit = useMutation({
     mutationFn: (formData: FormData) => runServerAction(() => (isSignup ? signup : login)(formData)),
@@ -81,7 +82,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           </CardContent>
 
           <CardFooter className="justify-center py-3">
-            <TextButton nativeButton={false} render={<Link href={config.linkHref} />} tone="muted">
+            <TextButton onClick={() => router.push(config.linkHref)} tone="muted" type="button">
               {config.linkLabel}
             </TextButton>
           </CardFooter>

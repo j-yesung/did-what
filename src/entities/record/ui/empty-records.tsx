@@ -1,5 +1,7 @@
+"use client";
+
 import { NotePencilIcon } from "@phosphor-icons/react/dist/ssr";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
@@ -10,6 +12,8 @@ type EmptyRecordsProps = {
 };
 
 export function EmptyRecords({ description, title }: EmptyRecordsProps) {
+  const router = useRouter();
+
   return (
     <Empty>
       <EmptyHeader>
@@ -20,7 +24,7 @@ export function EmptyRecords({ description, title }: EmptyRecordsProps) {
         {description && <EmptyDescription>{description}</EmptyDescription>}
       </EmptyHeader>
       <EmptyContent>
-        <Button nativeButton={false} render={<Link href="/records/new" />} size="medium">
+        <Button onClick={() => router.push("/records/new")} size="medium" type="button">
           기록 남기기
         </Button>
       </EmptyContent>

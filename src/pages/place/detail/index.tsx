@@ -81,16 +81,8 @@ export async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
                   <p className="text-muted-foreground text-xs">{records.length}개</p>
                 </div>
 
-                {records.map((record) => (
-                  <RecordCard
-                    activity={record.activity}
-                    key={record.id}
-                    memo={record.memo}
-                    recordId={record.id}
-                    recordedAt={record.recorded_at}
-                    recordedUntil={record.recorded_until}
-                    weather={record.weather}
-                  />
+                {records.map((record, index) => (
+                  <RecordCard isLast={index === records.length - 1} key={record.id} record={record} />
                 ))}
               </RecordTimeline>
             ) : (

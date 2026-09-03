@@ -5,7 +5,7 @@ import { type SubmitEvent, useState } from "react";
 import { ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
-import { recordsQueryOptions } from "@/entities/record";
+import { recordLocationsQueryOptions } from "@/entities/record";
 import { useRegionSearch } from "@/entities/region";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
@@ -25,7 +25,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
   const [query, setQuery] = useState("");
   const search = useRegionSearch(query);
 
-  const records = useQuery({ ...recordsQueryOptions, enabled: true });
+  const records = useQuery({ ...recordLocationsQueryOptions, enabled: true });
   const recentRegions = toRecentRegions(records.data ?? []);
 
   function handleSearch(event: SubmitEvent<HTMLFormElement>) {

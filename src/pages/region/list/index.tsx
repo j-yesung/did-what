@@ -6,7 +6,7 @@ import { MapTrifoldIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { recordsQueryOptions } from "@/entities/record";
+import { recordLocationsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
 import { Button } from "@/shared/ui/button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
@@ -15,7 +15,7 @@ import { Spinner } from "@/shared/ui/spinner";
 
 export function RegionsPage() {
   const router = useRouter();
-  const recordsQuery = useQuery(recordsQueryOptions);
+  const recordsQuery = useQuery(recordLocationsQueryOptions);
   const recordLocations = useMemo(
     () =>
       (recordsQuery.data ?? []).map(

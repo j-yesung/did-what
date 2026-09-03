@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Trash2Icon } from "@animateicons/react/lucide";
 
 import { placesQueryOptions } from "@/entities/place";
-import { recordsQueryOptions } from "@/entities/record";
+import { RECORDS_QUERY_KEY } from "@/entities/record";
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
@@ -25,7 +25,7 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
   const remove = useActionMutation(() => deleteRecord(recordId), {
     error: "기록을 삭제하지 못했어요",
     icon: Trash2Icon,
-    invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
+    invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
     success: "기록을 삭제했어요",
     onSuccess: () => goBackTo("/records"),
   });
