@@ -1,19 +1,18 @@
 "use client";
 
 import { MagnifyingGlassMinusIcon, NotePencilIcon } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
 import {
   EmptyRecords,
-  filterRecords,
   hasRecordFilters,
   RecordCard,
   type RecordFilters,
   RecordTimeline,
-  recordsQueryOptions,
+  recordListQueryOptions,
 } from "@/entities/record";
-import { Button } from "@/shared/ui/button";
+import { Button, buttonVariants } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
@@ -23,7 +22,7 @@ type RecordListProps = {
 };
 
 export function RecordList({ filters }: RecordListProps) {
-  const recordsQuery = useQuery(recordsQueryOptions);
+  const recordsQuery = useInfiniteQuery(recordListQueryOptions(filters));
 
   if (recordsQuery.isPending) {
     return (
@@ -42,7 +41,7 @@ export function RecordList({ filters }: RecordListProps) {
     );
   }
 
-  const records = filterRecords(recordsQuery.data, filters);
+  const records = recordsQuery.data.pages.flatMap((page) => page.records);
   const isFiltered = hasRecordFilters(filters);
 
   if (records.length === 0) {
@@ -56,9 +55,9 @@ export function RecordList({ filters }: RecordListProps) {
           <EmptyDescription>검색어를 바꾸거나 기간을 넓혀 보세요.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button nativeButton={false} render={<Link href="/records" />} variant="outline">
+          <Link className={buttonVariants({ variant: "outline" })} href="/records">
             전체 기록 보기
-          </Button>
+          </Link>
         </EmptyContent>
       </Empty>
     ) : (
@@ -67,10 +66,8 @@ export function RecordList({ filters }: RecordListProps) {
   }
 
   return (
-    <RecordTimeline aria-label={`기록 ${records.length}개`}>
-      <p className="px-1 text-muted-foreground text-xs">
-        {isFiltered ? "조건에 맞는 기록" : "최근 기록"} {records.length}개
-      </p>
+    <RecordTimeline aria-label={`불러온 기록 ${records.length}개`}>
+      <p className="px-1 text-muted-foreground text-xs">{isFiltered ? "조건에 맞는 기록" : "최근 기록"}</p>
       {records.map((record) => (
         <RecordCard
           activity={record.activity}
@@ -83,6 +80,22 @@ export function RecordList({ filters }: RecordListProps) {
           weather={record.weather}
         />
       ))}
+      {recordsQuery.hasNextPage ? (
+        <div className="flex flex-col items-center gap-2 pt-2" aria-live="polite">
+          {recordsQuery.isFetchNextPageError ? (
+            <p className="text-destructive text-xs">기록을 더 불러오지 못했어요.</p>
+          ) : null}
+          <Button
+            loading={recordsQuery.isFetchingNextPage}
+            onClick={() => recordsQuery.fetchNextPage()}
+            size="medium"
+            type="button"
+            variant="outline"
+          >
+            {recordsQuery.isFetchNextPageError ? "다시 시도" : "더 보기"}
+          </Button>
+        </div>
+      ) : null}
     </RecordTimeline>
   );
 }

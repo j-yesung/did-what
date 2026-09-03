@@ -10,7 +10,7 @@ import { requireUser } from "@/shared/api/supabase/require-user";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { IconButton } from "@/shared/ui/icon-button";
+import { iconButtonVariants } from "@/shared/ui/icon-button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -42,14 +42,9 @@ export async function RecordDetailPage({ params }: RecordDetailPageProps) {
         <PageHeader
           action={
             record ? (
-              <IconButton
-                aria-label="기록 수정"
-                icon={NotePencilIcon}
-                iconSize={28}
-                // iconWeight="bold"
-                nativeButton={false}
-                render={<Link href={`/records/${record.id}/edit`} />}
-              />
+              <Link aria-label="기록 수정" className={iconButtonVariants()} href={`/records/${record.id}/edit`}>
+                <NotePencilIcon aria-hidden="true" size={28} style={{ height: 28, width: 28 }} />
+              </Link>
             ) : undefined
           }
           back="/records"

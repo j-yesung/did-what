@@ -1,10 +1,11 @@
 "use client";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { Button } from "@/shared/ui/button";
+import { cn } from "@/shared/lib/utils";
+import { buttonVariants } from "@/shared/ui/button";
 
 import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
 import { WeatherIcon } from "./weather-icon";
@@ -20,7 +21,6 @@ type RecordCardProps = {
 };
 
 export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil, region, weather }: RecordCardProps) {
-  const router = useRouter();
   const normalizedWeather = normalizeRecordWeather(weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
 
@@ -30,12 +30,12 @@ export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil
         className="absolute top-1.5 left-0 size-3.75 rounded-full border-4 border-background bg-primary"
         aria-hidden="true"
       />
-      <Button
-        className="h-auto justify-start whitespace-normal rounded-lg px-1 py-1.5 text-left font-normal after:hidden [&>span]:block [&>span]:w-full"
-        fullWidth
-        onClick={() => router.push(`/records/${recordId}`)}
-        type="button"
-        variant="ghost"
+      <Link
+        className={cn(
+          buttonVariants({ fullWidth: true, variant: "ghost" }),
+          "block h-auto justify-start whitespace-normal rounded-lg px-1 py-1.5 text-left font-normal after:hidden",
+        )}
+        href={`/records/${recordId}`}
       >
         <header className="flex items-center gap-3 text-muted-foreground text-xs">
           <time dateTime={recordedAt}>{formatRecordPeriod(recordedAt, recordedUntil)}</time>
@@ -59,7 +59,7 @@ export function RecordCard({ activity, memo, recordId, recordedAt, recordedUntil
           </span>
         </p>
         {memo ? <p className="mt-1.5 line-clamp-2 text-[13px] text-muted-foreground leading-relaxed">{memo}</p> : null}
-      </Button>
+      </Link>
     </article>
   );
 }

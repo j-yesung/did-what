@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardFooter } from "@/shared/ui/card";
 import { FieldGroup } from "@/shared/ui/field";
-import { TextButton } from "@/shared/ui/text-button";
+import { textButtonVariants } from "@/shared/ui/text-button";
 
 import { EmailField } from "./fields/email-field";
 import { NicknameField } from "./fields/nickname-field";
@@ -81,9 +81,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           </CardContent>
 
           <CardFooter className="justify-center py-3">
-            <TextButton nativeButton={false} render={<Link href={config.linkHref} />} tone="muted">
+            <Link className={textButtonVariants({ tone: "muted" })} href={config.linkHref}>
               {config.linkLabel}
-            </TextButton>
+            </Link>
           </CardFooter>
         </Card>
       </section>

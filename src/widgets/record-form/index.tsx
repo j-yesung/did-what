@@ -7,7 +7,7 @@ import { MapPinCheckIcon, PencilIcon } from "@animateicons/react/lucide";
 import { useQuery } from "@tanstack/react-query";
 
 import { placesQueryOptions } from "@/entities/place";
-import { type RecordFieldErrors, type RecordWeather, recordsQueryOptions } from "@/entities/record";
+import { RECORDS_QUERY_KEY, type RecordFieldErrors, type RecordWeather } from "@/entities/record";
 import { getPushEndpoint } from "@/features/push-notification";
 import {
   RecordLocationFields,
@@ -66,7 +66,7 @@ export function RecordForm({
   const save = useActionMutation(action, {
     error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요`,
     icon: mode === "edit" ? PencilIcon : MapPinCheckIcon,
-    invalidate: [recordsQueryOptions.queryKey, placesQueryOptions.queryKey],
+    invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
     success: mode === "edit" ? "기록을 수정했어요" : "기록을 남겼어요",
     onSuccess: () => guardRef.current?.finish(savedTo),
     onFail: () => {

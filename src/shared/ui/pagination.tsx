@@ -4,13 +4,13 @@ import { CaretLeftIcon, CaretRightIcon, DotsThreeOutlineIcon } from "@phosphor-i
 import Link from "next/link";
 
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
+import { buttonVariants } from "@/shared/ui/button";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
       role="navigation"
-      aria-label="pagination"
+      aria-label="페이지 이동"
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
       {...props}
@@ -28,35 +28,32 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 
 type PaginationLinkProps = {
   isActive?: boolean;
-} & Pick<React.ComponentProps<typeof Button>, "size"> &
+} & Pick<NonNullable<Parameters<typeof buttonVariants>[0]>, "size"> &
   React.ComponentProps<typeof Link>;
 
 function PaginationLink({ className, isActive, size, ...props }: PaginationLinkProps) {
   return (
-    <Button
-      variant={isActive ? "outline" : "ghost"}
-      size={size ?? "small"}
-      className={cn(size ? undefined : "size-8 gap-0 p-0", className)}
-      nativeButton={false}
-      render={
-        <Link
-          aria-current={isActive ? "page" : undefined}
-          data-slot="pagination-link"
-          data-active={isActive}
-          {...props}
-        />
-      }
+    <Link
+      aria-current={isActive ? "page" : undefined}
+      className={cn(
+        buttonVariants({ size: size ?? "small", variant: isActive ? "outline" : "ghost" }),
+        size ? undefined : "size-8 gap-0 p-0",
+        className,
+      )}
+      data-slot="pagination-link"
+      data-active={isActive}
+      {...props}
     />
   );
 }
 
 function PaginationPrevious({
   className,
-  text = "Previous",
+  text = "이전",
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
   return (
-    <PaginationLink aria-label="Go to previous page" size="small" className={cn("pl-1.5!", className)} {...props}>
+    <PaginationLink aria-label="이전 페이지" size="small" className={cn("pl-1.5!", className)} {...props}>
       <CaretLeftIcon strokeWidth={2} data-icon="inline-start" />
       <span className="hidden sm:block">{text}</span>
     </PaginationLink>
@@ -65,11 +62,11 @@ function PaginationPrevious({
 
 function PaginationNext({
   className,
-  text = "Next",
+  text = "다음",
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
   return (
-    <PaginationLink aria-label="Go to next page" size="small" className={cn("pr-1.5!", className)} {...props}>
+    <PaginationLink aria-label="다음 페이지" size="small" className={cn("pr-1.5!", className)} {...props}>
       <span className="hidden sm:block">{text}</span>
       <CaretRightIcon strokeWidth={2} data-icon="inline-end" />
     </PaginationLink>
@@ -85,7 +82,7 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
       {...props}
     >
       <DotsThreeOutlineIcon strokeWidth={2} />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">더 많은 페이지</span>
     </span>
   );
 }

@@ -5,7 +5,8 @@ import { useMemo } from "react";
 import { MapPinAreaIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
-import { recordsQueryOptions } from "@/entities/record";
+import { recordLocationsQueryOptions } from "@/entities/record";
+import { getRegionCode } from "@/entities/region";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -13,7 +14,7 @@ import { Spinner } from "@/shared/ui/spinner";
 import { RegionActivityMap } from "@/widgets/region-activity-map";
 
 export function HomePage() {
-  const recordsQuery = useQuery(recordsQueryOptions);
+  const recordsQuery = useQuery(recordLocationsQueryOptions);
   const records = useMemo(
     () =>
       (recordsQuery.data ?? []).map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
@@ -21,6 +22,10 @@ export function HomePage() {
         latitude,
         longitude,
       })),
+    [recordsQuery.data],
+  );
+  const visitedRegionCount = useMemo(
+    () => new Set((recordsQuery.data ?? []).map(({ region_code }) => getRegionCode(region_code)).filter(Boolean)).size,
     [recordsQuery.data],
   );
 
@@ -37,6 +42,26 @@ export function HomePage() {
       <section className="grid min-h-0 flex-1 place-items-center px-1.5 py-1" aria-label="대한민국 활동 지도">
         <RegionActivityMap records={records} />
       </section>
+
+      {records.length > 0 ? (
+        <section className="flex items-center justify-between gap-4 px-1 text-xs" aria-label="지도 범례">
+          <p className="text-muted-foreground">
+            <strong className="font-bold text-foreground">방문 지역 {visitedRegionCount}곳</strong>
+            <span aria-hidden="true"> · </span>
+            기록 {records.length}개
+          </p>
+          <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground">
+            <span>적게</span>
+            <span className="flex gap-1" aria-hidden="true">
+              <span className="size-2.5 rounded-xs bg-map-level-1" />
+              <span className="size-2.5 rounded-xs bg-map-level-2" />
+              <span className="size-2.5 rounded-xs bg-map-level-3" />
+              <span className="size-2.5 rounded-xs bg-map-level-4" />
+            </span>
+            <span>많이</span>
+          </div>
+        </section>
+      ) : null}
 
       {recordsQuery.isError ? (
         <LoadErrorAlert

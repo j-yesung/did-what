@@ -4,7 +4,8 @@ import { Gear, MapPin, MapPinArea, MapTrifold, PencilSimple } from "@phosphor-ic
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Button } from "@/shared/ui/button";
+import { cn } from "@/shared/lib/utils";
+import { buttonVariants } from "@/shared/ui/button";
 
 const TABS = [
   { href: "/", icon: MapPinArea, label: "지도" },
@@ -37,18 +38,19 @@ export function BottomNavigation() {
 
           return (
             <li className="relative z-10 min-w-0" key={href}>
-              <Button
+              <Link
                 aria-current={active ? "page" : undefined}
-                className="h-full flex-col gap-1 rounded-full px-0 py-0 text-[12px] transition-colors duration-200 ease-out after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-primary [&>span]:flex-col"
+                className={cn(
+                  buttonVariants({ fullWidth: true, variant: "ghost" }),
+                  "h-full flex-col gap-1 rounded-full px-0 py-0 text-[12px] transition-colors duration-200 ease-out after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-primary",
+                )}
                 data-active={active}
-                fullWidth
-                nativeButton={false}
-                render={<Link href={href} prefetch />}
-                variant="ghost"
+                href={href}
+                prefetch
               >
                 <Icon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
                 {label}
-              </Button>
+              </Link>
             </li>
           );
         })}

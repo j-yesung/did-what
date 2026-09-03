@@ -3,7 +3,7 @@ import type { ComponentProps } from "react";
 import type { Icon, IconWeight } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
+import { Button, buttonVariants } from "@/shared/ui/button";
 
 type IconButtonVariant = "fill" | "clear" | "border";
 type IconButtonSize = "sm" | "default" | "lg";
@@ -25,6 +25,22 @@ const ICON_SIZE: Record<IconButtonSize, number> = {
   default: 24,
   lg: 24,
 };
+
+type IconButtonStyleProps = {
+  className?: string;
+  size?: IconButtonSize;
+  variant?: IconButtonVariant;
+};
+
+function iconButtonVariants({ className, size = "default", variant = "clear" }: IconButtonStyleProps = {}) {
+  return cn(
+    buttonVariants({ variant: "ghost" }),
+    "min-w-0 gap-0 rounded-lg p-0",
+    ICON_BUTTON_SIZE[size],
+    ICON_BUTTON_VARIANT[variant],
+    className,
+  );
+}
 
 type IconButtonProps = Omit<ComponentProps<typeof Button>, "aria-label" | "children" | "size" | "variant"> & {
   "aria-label": string;
@@ -69,4 +85,4 @@ function IconButton({
   );
 }
 
-export { IconButton, type IconButtonProps, type IconButtonSize, type IconButtonVariant };
+export { IconButton, type IconButtonProps, type IconButtonSize, type IconButtonVariant, iconButtonVariants };

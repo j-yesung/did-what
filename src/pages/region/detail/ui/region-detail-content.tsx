@@ -5,8 +5,14 @@ import { useMemo } from "react";
 import { MapTrifoldIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
-import { EmptyRecords, RecordCard, RecordTimeline, recordsQueryOptions } from "@/entities/record";
-import { createRegionActivityMaps, filterRecordsByRegion, type Region, RegionMiniMap } from "@/entities/region";
+import {
+  EmptyRecords,
+  RecordCard,
+  RecordTimeline,
+  recordLocationsQueryOptions,
+  regionRecordsQueryOptions,
+} from "@/entities/record";
+import { createRegionActivityMaps, type Region, RegionMiniMap } from "@/entities/region";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -17,10 +23,11 @@ type RegionDetailContentProps = {
 };
 
 export function RegionDetailContent({ region }: RegionDetailContentProps) {
-  const recordsQuery = useQuery(recordsQueryOptions);
+  const locationsQuery = useQuery(recordLocationsQueryOptions);
+  const recordsQuery = useQuery(regionRecordsQueryOptions(region));
   const recordLocations = useMemo(
     () =>
-      (recordsQuery.data ?? []).map(
+      (locationsQuery.data ?? []).map(
         ({ id, region_code: administrativeCode, region_latitude: latitude, region_longitude: longitude }) => ({
           administrativeCode,
           id,
@@ -28,27 +35,24 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
           longitude,
         }),
       ),
-    [recordsQuery.data],
+    [locationsQuery.data],
   );
   const regionMap = useMemo(
     () => createRegionActivityMaps(recordLocations).find(({ code }) => code === region.code),
     [recordLocations, region.code],
   );
-  const records = useMemo(
-    () => filterRecordsByRegion(recordsQuery.data ?? [], region.code),
-    [recordsQuery.data, region.code],
-  );
+  const records = recordsQuery.data ?? [];
 
   return (
     <OverscrollBack fallbackHref="/regions">
       <PageShell>
         <PageHeader back="/regions" title={region.name} />
 
-        {recordsQuery.isPending ? (
+        {recordsQuery.isPending || locationsQuery.isPending ? (
           <div className="fixed inset-0 grid place-items-center">
             <Spinner aria-label={`${region.name} 발자취를 불러오는 중`} className="text-muted-foreground" />
           </div>
-        ) : recordsQuery.isError || !regionMap ? (
+        ) : recordsQuery.isError || locationsQuery.isError || !regionMap ? (
           <LoadErrorAlert
             icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
             title="지역 발자취를 불러오지 못했어요"
