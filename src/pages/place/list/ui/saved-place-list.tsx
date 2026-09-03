@@ -2,11 +2,12 @@
 
 import { MapPinIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 import { getPlaceRegionLabel, placesQueryOptions } from "@/entities/place";
 import { Badge } from "@/shared/ui/badge";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-import { ListRowLink, ListRowTexts } from "@/shared/ui/list-row";
+import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -21,6 +22,7 @@ export function SavedPlaceCount() {
 }
 
 export function SavedPlaceList() {
+  const router = useRouter();
   const placesQuery = useQuery(placesQueryOptions);
 
   if (placesQuery.isPending) {
@@ -61,10 +63,10 @@ export function SavedPlaceList() {
       </div>
       <div className="flex flex-col gap-2.5 overflow-hidden">
         {places.map((place) => (
-          <ListRowLink
+          <ListRow
             key={place.id}
             aria-label={`${place.name} 상세 보기`}
-            href={`/places/${place.id}`}
+            onClick={() => router.push(`/places/${place.id}`)}
             right={
               (place.record_places[0]?.count ?? 0) > 0 ? (
                 <Badge
@@ -78,7 +80,7 @@ export function SavedPlaceList() {
             }
           >
             <ListRowTexts description={`${getPlaceRegionLabel(place.region_name, place.address)}`} title={place.name} />
-          </ListRowLink>
+          </ListRow>
         ))}
       </div>
     </section>

@@ -12,7 +12,7 @@ import {
   RecordTimeline,
   recordListQueryOptions,
 } from "@/entities/record";
-import { Button, buttonVariants } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
@@ -55,9 +55,9 @@ export function RecordList({ filters }: RecordListProps) {
           <EmptyDescription>검색어를 바꾸거나 기간을 넓혀 보세요.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Link className={buttonVariants({ variant: "outline" })} href="/records">
+          <Button nativeButton={false} render={<Link href="/records" />} variant="outline">
             전체 기록 보기
-          </Link>
+          </Button>
         </EmptyContent>
       </Empty>
     ) : (

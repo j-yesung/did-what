@@ -4,17 +4,17 @@ import { useMemo } from "react";
 
 import { MapTrifoldIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { recordLocationsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
-import { cn } from "@/shared/lib/utils";
-import { buttonVariants } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
 export function RegionsPage() {
+  const router = useRouter();
   const recordsQuery = useQuery(recordLocationsQueryOptions);
   const recordLocations = useMemo(
     () =>
@@ -51,13 +51,13 @@ export function RegionsPage() {
         <ul className="-mx-1 grid grid-cols-2 gap-x-2 gap-y-1" aria-label="시·도별 발자취">
           {regionMaps.map((map) => (
             <li key={map.code}>
-              <Link
+              <Button
                 aria-label={`${map.name}, ${map.totalCount}곳 중 ${map.visitedCount}곳 방문`}
-                className={cn(
-                  buttonVariants({ fullWidth: true, variant: "ghost" }),
-                  "h-auto min-h-22 justify-start gap-2 rounded-2xl px-2 py-2.5 text-left after:hidden",
-                )}
-                href={`/regions/${map.code}`}
+                className="h-auto min-h-22 justify-start gap-2 rounded-2xl px-2 py-2.5 text-left after:hidden [&>span]:w-full"
+                fullWidth
+                onClick={() => router.push(`/regions/${map.code}`)}
+                type="button"
+                variant="ghost"
               >
                 <span className="grid size-11 shrink-0 place-items-center p-0.5">
                   <RegionMiniMap map={map} />
@@ -70,7 +70,7 @@ export function RegionsPage() {
                     {getRegionProgressLabel(map)}
                   </span>
                 </span>
-              </Link>
+              </Button>
             </li>
           ))}
         </ul>

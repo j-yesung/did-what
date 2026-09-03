@@ -4,7 +4,7 @@ import { CaretLeftIcon, CaretRightIcon, DotsThreeOutlineIcon } from "@phosphor-i
 import Link from "next/link";
 
 import { cn } from "@/shared/lib/utils";
-import { buttonVariants } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -28,21 +28,24 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 
 type PaginationLinkProps = {
   isActive?: boolean;
-} & Pick<NonNullable<Parameters<typeof buttonVariants>[0]>, "size"> &
+} & Pick<React.ComponentProps<typeof Button>, "size"> &
   React.ComponentProps<typeof Link>;
 
 function PaginationLink({ className, isActive, size, ...props }: PaginationLinkProps) {
   return (
-    <Link
-      aria-current={isActive ? "page" : undefined}
-      className={cn(
-        buttonVariants({ size: size ?? "small", variant: isActive ? "outline" : "ghost" }),
-        size ? undefined : "size-8 gap-0 p-0",
-        className,
-      )}
-      data-slot="pagination-link"
-      data-active={isActive}
-      {...props}
+    <Button
+      variant={isActive ? "outline" : "ghost"}
+      size={size ?? "small"}
+      className={cn(size ? undefined : "size-8 gap-0 p-0", className)}
+      nativeButton={false}
+      render={
+        <Link
+          aria-current={isActive ? "page" : undefined}
+          data-slot="pagination-link"
+          data-active={isActive}
+          {...props}
+        />
+      }
     />
   );
 }

@@ -2,7 +2,7 @@
 
 import { EnvelopeSimpleOpenIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { INITIAL_AUTH_STATE, login, signup } from "@/features/auth";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardFooter } from "@/shared/ui/card";
 import { FieldGroup } from "@/shared/ui/field";
-import { textButtonVariants } from "@/shared/ui/text-button";
+import { TextButton } from "@/shared/ui/text-button";
 
 import { EmailField } from "./fields/email-field";
 import { NicknameField } from "./fields/nickname-field";
@@ -33,6 +33,7 @@ const AUTH_MODE_CONFIG = {
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const isSignup = mode === "signup";
   const config = AUTH_MODE_CONFIG[mode];
+  const router = useRouter();
 
   const submit = useMutation({
     mutationFn: (formData: FormData) => runServerAction(() => (isSignup ? signup : login)(formData)),
@@ -81,9 +82,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           </CardContent>
 
           <CardFooter className="justify-center py-3">
-            <Link className={textButtonVariants({ tone: "muted" })} href={config.linkHref}>
+            <TextButton onClick={() => router.push(config.linkHref)} tone="muted" type="button">
               {config.linkLabel}
-            </Link>
+            </TextButton>
           </CardFooter>
         </Card>
       </section>

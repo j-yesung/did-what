@@ -1,11 +1,9 @@
 "use client";
 
 import { Gear, MapPin, MapPinArea, MapTrifold, PencilSimple } from "@phosphor-icons/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
-import { cn } from "@/shared/lib/utils";
-import { buttonVariants } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button";
 
 const TABS = [
   { href: "/", icon: MapPinArea, label: "지도" },
@@ -17,6 +15,7 @@ const TABS = [
 
 export function BottomNavigation() {
   const pathname = usePathname();
+  const router = useRouter();
   const activeIndex = TABS.findIndex(({ href }) => href === pathname);
 
   if (activeIndex === -1) return null;
@@ -38,19 +37,18 @@ export function BottomNavigation() {
 
           return (
             <li className="relative z-10 min-w-0" key={href}>
-              <Link
+              <Button
                 aria-current={active ? "page" : undefined}
-                className={cn(
-                  buttonVariants({ fullWidth: true, variant: "ghost" }),
-                  "h-full flex-col gap-1 rounded-full px-0 py-0 text-[12px] transition-colors duration-200 ease-out after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-primary",
-                )}
+                className="h-full flex-col gap-1 rounded-full px-0 py-0 text-[12px] transition-colors duration-200 ease-out after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-primary [&>span]:flex-col"
                 data-active={active}
-                href={href}
-                prefetch
+                fullWidth
+                onClick={() => router.push(href)}
+                type="button"
+                variant="ghost"
               >
                 <Icon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
                 {label}
-              </Link>
+              </Button>
             </li>
           );
         })}
