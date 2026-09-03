@@ -20,3 +20,5 @@ export async function fetchRegionRecords(region: RecordRegionFilter) {
   if (error) throw error;
   return data;
 }
+
+export type RegionRecordRow = Awaited<ReturnType<typeof fetchRegionRecords>>[number];

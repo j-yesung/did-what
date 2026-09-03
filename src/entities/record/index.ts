@@ -1,4 +1,5 @@
 export type { RecordLocationRow } from "./api/fetch-record-locations";
+export type { RegionRecordRow } from "./api/fetch-region-records";
 export {
   RECORDS_QUERY_KEY,
   recordListQueryOptions,
