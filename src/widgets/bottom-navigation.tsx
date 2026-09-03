@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { Gear, MapPin, MapPinArea, MapTrifold, PencilSimple } from "@phosphor-icons/react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -17,6 +19,12 @@ export function BottomNavigation() {
   const pathname = usePathname();
   const router = useRouter();
   const activeIndex = TABS.findIndex(({ href }) => href === pathname);
+
+  useEffect(() => {
+    for (const { href } of TABS) {
+      router.prefetch(href);
+    }
+  }, [router]);
 
   if (activeIndex === -1) return null;
 
