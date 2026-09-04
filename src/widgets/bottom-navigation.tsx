@@ -1,22 +1,32 @@
 "use client";
 
-import { Gear, MapPin, MapPinArea, MapTrifold, PencilSimple } from "@phosphor-icons/react";
+import { Gear, type Icon, MapPin, MapPinArea, PencilSimple, Plus } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
 
-const TABS = [
-  { href: "/", icon: MapPinArea, label: "지도" },
+type Tab = {
+  href: string;
+  icon: Icon;
+  label: string;
+  // 탭이 활성으로 보일 경로. 지역 목록은 지도 탭 안의 세그먼트다.
+  paths?: readonly string[];
+  // 화면 이동이 아니라 행동이라 활성 상태를 갖지 않는다.
+  action?: boolean;
+};
+
+const TABS: readonly Tab[] = [
+  { href: "/", icon: MapPinArea, label: "지도", paths: ["/", "/regions"] },
   { href: "/records", icon: PencilSimple, label: "기록" },
-  { href: "/regions", icon: MapTrifold, label: "지역" },
+  { href: "/records/new", icon: Plus, label: "기록 남기기", action: true },
   { href: "/places", icon: MapPin, label: "장소" },
   { href: "/settings", icon: Gear, label: "설정" },
-] as const;
+];
 
 export function BottomNavigation() {
-  const pathname = usePathname();
-  const activeIndex = TABS.findIndex(({ href }) => href === pathname);
+  const pathname = usePathname() ?? "";
+  const activeIndex = TABS.findIndex((tab) => !tab.action && (tab.paths ?? [tab.href]).includes(pathname));
 
   if (activeIndex === -1) return null;
 
@@ -32,8 +42,23 @@ export function BottomNavigation() {
             style={{ transform: `translateX(${activeIndex * 100}%)`, width: `${100 / TABS.length}%` }}
           />
         </li>
-        {TABS.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href;
+        {TABS.map(({ action, href, icon: TabIcon, label }, index) => {
+          if (action) {
+            return (
+              <li className="relative z-10 grid min-w-0 place-items-center" key={href}>
+                <Button
+                  aria-label={label}
+                  className="size-11 min-w-0 rounded-full p-0 shadow-(--shadow-notice)"
+                  nativeButton={false}
+                  render={<Link href={href} prefetch />}
+                >
+                  <TabIcon aria-hidden="true" className="size-6" weight="bold" />
+                </Button>
+              </li>
+            );
+          }
+
+          const active = index === activeIndex;
 
           return (
             <li className="relative z-10 min-w-0" key={href}>
@@ -46,7 +71,7 @@ export function BottomNavigation() {
                 render={<Link href={href} prefetch />}
                 variant="ghost"
               >
-                <Icon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
+                <TabIcon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
                 {label}
               </Button>
             </li>
