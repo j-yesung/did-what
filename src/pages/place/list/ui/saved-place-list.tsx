@@ -1,10 +1,10 @@
 "use client";
 
 import { MapPinIcon } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
-import { getPlaceRegionLabel, placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
+import { getPlaceRegionLabel, placeQueryKey, placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
 import { Badge } from "@/shared/ui/badge";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
@@ -17,6 +17,7 @@ export function SavedPlaceCount({ initialPlaces }: { initialPlaces: SavedPlaceRo
 }
 
 export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
+  const queryClient = useQueryClient();
   const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
 
   if (placesQuery.isError) {
@@ -50,7 +51,13 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
             key={place.id}
             aria-label={`${place.name} 상세 보기`}
             nativeButton={false}
-            render={<Link href={`/places/${place.id}`} prefetch />}
+            render={
+              <Link
+                href={`/places/${place.id}`}
+                onClick={() => queryClient.setQueryData(placeQueryKey(place.id), place)}
+                prefetch
+              />
+            }
             right={
               (place.record_places[0]?.count ?? 0) > 0 ? (
                 <Badge

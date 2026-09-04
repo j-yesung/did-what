@@ -4,11 +4,34 @@ import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
 import type { RecordFilters } from "../model/record-filters";
 import type { RecordCursor } from "../model/record-page";
+import { fetchRecord } from "./fetch-record";
 import { fetchRecordLocations } from "./fetch-record-locations";
 import { fetchRecordPage } from "./fetch-record-page";
+import { fetchRecordPlaces } from "./fetch-record-places";
 import { fetchRegionRecords, type RecordRegionFilter } from "./fetch-region-records";
 
 export const RECORDS_QUERY_KEY = ["records"] as const;
+export const RECORD_PLACES_QUERY_KEY = [...RECORDS_QUERY_KEY, "places"] as const;
+
+export function recordSummaryQueryKey(recordId: string) {
+  return [...RECORDS_QUERY_KEY, "summary", recordId] as const;
+}
+
+export function recordDetailQueryOptions(recordId: string) {
+  return queryOptions({
+    ...MAIN_QUERY_OPTIONS,
+    queryKey: [...RECORDS_QUERY_KEY, "detail", recordId],
+    queryFn: () => fetchRecord(recordId),
+  });
+}
+
+export function recordPlacesQueryOptions(recordId: string) {
+  return queryOptions({
+    ...MAIN_QUERY_OPTIONS,
+    queryKey: [...RECORD_PLACES_QUERY_KEY, recordId],
+    queryFn: () => fetchRecordPlaces(recordId),
+  });
+}
 
 export const recordLocationsQueryOptions = queryOptions({
   ...MAIN_QUERY_OPTIONS,

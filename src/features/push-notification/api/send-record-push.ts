@@ -13,6 +13,7 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
  */
 const configured = (() => {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    // biome-ignore lint/suspicious/noConsole: 운영 환경의 VAPID 설정 누락을 기록한다.
     console.warn("[push] VAPID 키가 없어 알림을 보내지 않습니다.", {
       hasPrivateKey: Boolean(VAPID_PRIVATE_KEY),
       hasPublicKey: Boolean(VAPID_PUBLIC_KEY),
@@ -28,6 +29,7 @@ const configured = (() => {
     );
     return true;
   } catch (error) {
+    // biome-ignore lint/suspicious/noConsole: 운영 환경의 잘못된 VAPID 설정을 기록한다.
     console.warn("[push] VAPID 설정이 잘못돼 알림을 보내지 않습니다.", error);
     return false;
   }
@@ -86,6 +88,7 @@ export async function sendRecordPush({ ownerId, recordId, senderEndpoint, supaba
         if (statusCode && GONE_STATUS_CODES.has(statusCode)) return target.endpoint;
 
         // 만료 말고 다른 이유로 실패하면 흔적이 없어 원인을 찾을 수 없다. 키 불일치(403)가 대표적이다.
+        // biome-ignore lint/suspicious/noConsole: 만료 이외의 푸시 발송 실패를 운영 로그로 남긴다.
         console.warn("[push] 발송 실패", { statusCode });
         return null;
       }

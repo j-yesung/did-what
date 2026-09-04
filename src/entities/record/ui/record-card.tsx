@@ -1,30 +1,25 @@
 "use client";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
+import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
+import type { RecordSummary } from "../model/types";
 import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
 import { WeatherIcon } from "./weather-icon";
 
 type RecordCardProps = {
   isLast: boolean;
-  record: {
-    activity: string;
-    id: string;
-    memo: string | null;
-    recorded_at: string;
-    recorded_until: string | null;
-    region_label?: string;
-    weather: string;
-  };
+  record: RecordSummary;
 };
 
 export function RecordCard({ isLast, record }: RecordCardProps) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
 
@@ -42,8 +37,17 @@ export function RecordCard({ isLast, record }: RecordCardProps) {
       <Button
         className="h-auto justify-start whitespace-normal rounded-lg px-1 py-1.5 text-left font-normal after:hidden [&>span]:block [&>span]:w-full"
         fullWidth
-        onClick={() => router.push(`/records/${record.id}`)}
-        type="button"
+        nativeButton={false}
+        render={
+          <Link
+            href={`/records/${record.id}`}
+            onClick={() => queryClient.setQueryData(recordSummaryQueryKey(record.id), record)}
+            onPointerDown={(event) => {
+              if (event.button === 0) void queryClient.prefetchQuery(recordPlacesQueryOptions(record.id));
+            }}
+            prefetch
+          />
+        }
         variant="ghost"
       >
         <header className="flex items-center gap-3 text-muted-foreground text-xs">

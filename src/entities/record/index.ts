@@ -1,9 +1,14 @@
+export type { RecordDetail } from "./api/fetch-record";
 export type { RecordLocationRow } from "./api/fetch-record-locations";
 export type { RegionRecordRow } from "./api/fetch-region-records";
 export {
+  RECORD_PLACES_QUERY_KEY,
   RECORDS_QUERY_KEY,
+  recordDetailQueryOptions,
   recordListQueryOptions,
   recordLocationsQueryOptions,
+  recordPlacesQueryOptions,
+  recordSummaryQueryKey,
   regionRecordsQueryOptions,
 } from "./api/queries";
 export {
@@ -24,6 +29,7 @@ export {
   validateRecordInput,
 } from "./model/record-form";
 export { RECORD_PAGE_SIZE, type RecordCursor } from "./model/record-page";
+export type { RecordSummary } from "./model/types";
 export {
   DEFAULT_RECORD_WEATHER,
   getRecordWeatherLabel,

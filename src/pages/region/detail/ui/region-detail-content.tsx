@@ -8,9 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   EmptyRecords,
   RecordCard,
-  type RecordLocationRow,
   RecordTimeline,
-  type RegionRecordRow,
   recordLocationsQueryOptions,
   regionRecordsQueryOptions,
 } from "@/entities/record";
@@ -20,17 +18,15 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
 
 type RegionDetailContentProps = {
-  initialLocations: RecordLocationRow[];
-  initialRecords: RegionRecordRow[];
   region: Region;
 };
 
-export function RegionDetailContent({ initialLocations, initialRecords, region }: RegionDetailContentProps) {
-  const locationsQuery = useQuery({ ...recordLocationsQueryOptions, initialData: initialLocations });
-  const recordsQuery = useQuery({ ...regionRecordsQueryOptions(region), initialData: initialRecords });
+export function RegionDetailContent({ region }: RegionDetailContentProps) {
+  const locationsQuery = useQuery(recordLocationsQueryOptions);
+  const recordsQuery = useQuery(regionRecordsQueryOptions(region));
   const recordLocations = useMemo(
     () =>
-      locationsQuery.data.map(
+      (locationsQuery.data ?? []).map(
         ({ id, region_code: administrativeCode, region_latitude: latitude, region_longitude: longitude }) => ({
           administrativeCode,
           id,
@@ -45,13 +41,19 @@ export function RegionDetailContent({ initialLocations, initialRecords, region }
     [recordLocations, region.code],
   );
   const records = recordsQuery.data ?? [];
+  const isFetching = locationsQuery.isFetching || recordsQuery.isFetching;
 
   return (
     <OverscrollBack fallbackHref="/regions">
       <PageShell>
         <PageHeader back="/regions" title={region.name} />
 
-        {recordsQuery.isError || locationsQuery.isError || !regionMap ? (
+        {isFetching ? null : recordsQuery.isError || locationsQuery.isError ? (
+          <LoadErrorAlert
+            icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
+            title="지역 발자취를 불러오지 못했어요"
+          />
+        ) : !regionMap ? (
           <LoadErrorAlert
             icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
             title="지역 발자취를 불러오지 못했어요"

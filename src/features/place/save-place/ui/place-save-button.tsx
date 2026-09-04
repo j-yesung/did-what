@@ -3,6 +3,7 @@
 import { BookmarkCheckIcon } from "@animateicons/react/lucide";
 
 import { placesQueryOptions } from "@/entities/place";
+import { RECORD_PLACES_QUERY_KEY } from "@/entities/record";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 
@@ -16,7 +17,7 @@ export function PlaceSaveButton({ placeId }: Props) {
   const save = useActionMutation(() => setPlaceSaved(placeId, true), {
     error: "저장하지 못했어요",
     icon: BookmarkCheckIcon,
-    invalidate: [placesQueryOptions.queryKey],
+    invalidate: [placesQueryOptions.queryKey, RECORD_PLACES_QUERY_KEY],
     success: "내 장소에 저장했어요",
   });
 
