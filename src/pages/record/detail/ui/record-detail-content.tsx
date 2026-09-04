@@ -44,7 +44,7 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
   });
   const record = recordQuery.data ?? cachedSummary;
   const recordPlaces = recordQuery.data?.record_places ?? recordPlacesQuery.data?.record_places;
-  const isFetching = hasCachedSummary ? recordPlacesQuery.isFetching : recordQuery.isFetching;
+  const isPending = hasCachedSummary ? false : recordQuery.isPending;
   const hasError = hasCachedSummary ? recordPlacesQuery.isError : recordQuery.isError;
   const recordMissing = hasCachedSummary
     ? recordPlacesQuery.isSuccess && !recordPlacesQuery.data
@@ -55,7 +55,7 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
       <PageShell>
         <PageHeader
           action={
-            !isFetching && record ? (
+            !recordMissing && record ? (
               <IconButton
                 aria-label="기록 수정"
                 icon={NotePencilIcon}
@@ -69,7 +69,7 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
           title="기록 상세"
         />
 
-        {isFetching ? null : recordMissing ? (
+        {isPending ? null : recordMissing ? (
           <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 찾을 수 없어요" />
         ) : hasError ? (
           <LoadErrorAlert
