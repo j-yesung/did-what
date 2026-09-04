@@ -14,7 +14,7 @@ export function MapSegment() {
   const pathname = usePathname() ?? "";
 
   return (
-    <SegmentedControl aria-label="지도 보기" role="navigation" value={pathname}>
+    <SegmentedControl aria-label="지도 보기" role="navigation" size="large" value={pathname}>
       {SEGMENTS.map(({ href, label }) => (
         <SegmentedControlItem key={href} render={<Link href={href} prefetch />} value={href}>
           {label}

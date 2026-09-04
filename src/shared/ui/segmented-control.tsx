@@ -87,7 +87,6 @@ type SegmentedControlItemProps = Omit<
 > & {
   children: React.ReactNode;
   className?: string;
-  /** 라디오 대신 그릴 요소. 링크 이동으로 세그먼트를 바꿀 때 `<Link />`를 넘긴다. */
   render?: React.ReactElement<Record<string, unknown>>;
   value: string;
 };
