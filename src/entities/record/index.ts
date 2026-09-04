@@ -41,5 +41,4 @@ export {
 export { EmptyRecords } from "./ui/empty-records";
 export { RecordCard } from "./ui/record-card";
 export { RecordTimeline } from "./ui/record-timeline";
-export { RecordTimelineSkeleton } from "./ui/record-timeline-skeleton";
 export { WeatherIcon } from "./ui/weather-icon";

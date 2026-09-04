@@ -22,9 +22,6 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { Skeleton } from "@/shared/ui/skeleton";
-
-const DETAIL_ROWS = ["date", "weather", "region", "place"] as const;
 
 type RecordDetailContentProps = {
   recordId: string;
@@ -36,17 +33,20 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
   const cachedSummary = queryClient.getQueryState(summaryQueryKey)?.isInvalidated
     ? undefined
     : queryClient.getQueryData<RecordSummary>(summaryQueryKey);
+  const hasCachedSummary = Boolean(cachedSummary);
   const recordQuery = useQuery({
     ...recordDetailQueryOptions(recordId),
-    enabled: !cachedSummary,
+    enabled: !hasCachedSummary,
   });
   const recordPlacesQuery = useQuery({
     ...recordPlacesQueryOptions(recordId),
-    enabled: Boolean(cachedSummary),
+    enabled: hasCachedSummary,
   });
   const record = recordQuery.data ?? cachedSummary;
   const recordPlaces = recordQuery.data?.record_places ?? recordPlacesQuery.data?.record_places;
-  const recordMissing = cachedSummary
+  const isFetching = hasCachedSummary ? recordPlacesQuery.isFetching : recordQuery.isFetching;
+  const hasError = hasCachedSummary ? recordPlacesQuery.isError : recordQuery.isError;
+  const recordMissing = hasCachedSummary
     ? recordPlacesQuery.isSuccess && !recordPlacesQuery.data
     : recordQuery.isSuccess && !recordQuery.data;
 
@@ -55,7 +55,7 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
       <PageShell>
         <PageHeader
           action={
-            record ? (
+            !isFetching && record ? (
               <IconButton
                 aria-label="기록 수정"
                 icon={NotePencilIcon}
@@ -69,28 +69,15 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
           title="기록 상세"
         />
 
-        {recordQuery.isPending && !record ? (
-          <RecordDetailSkeleton />
-        ) : recordMissing ? (
+        {isFetching ? null : recordMissing ? (
           <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 찾을 수 없어요" />
-        ) : recordQuery.isError && !record ? (
+        ) : hasError ? (
           <LoadErrorAlert
             icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />}
-            title="기록을 불러오지 못했어요"
+            title={hasCachedSummary ? "방문 장소 정보를 불러오지 못했어요" : "기록을 불러오지 못했어요"}
           />
         ) : record ? (
           <>
-            {recordQuery.isError || recordPlacesQuery.isError ? (
-              <LoadErrorAlert
-                icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />}
-                title={
-                  recordPlacesQuery.isError
-                    ? "방문 장소 정보를 불러오지 못했어요"
-                    : "기록의 최신 정보를 불러오지 못했어요"
-                }
-              />
-            ) : null}
-
             <section aria-labelledby="record-activity-title" className="px-1 py-4">
               <h2
                 className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
@@ -133,11 +120,7 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
                     </p>
                   </div>
                 </div>
-                {recordPlaces ? (
-                  <RecordPlaces recordPlaces={recordPlaces} />
-                ) : recordPlacesQuery.isPending ? (
-                  <RecordPlacesSkeleton />
-                ) : null}
+                {recordPlaces ? <RecordPlaces recordPlaces={recordPlaces} /> : null}
               </CardContent>
             </Card>
 
@@ -187,55 +170,6 @@ function RecordPlaces({ recordPlaces }: { recordPlaces: RecordDetail["record_pla
             </li>
           ))}
         </ul>
-      </div>
-    </div>
-  );
-}
-
-function RecordDetailSkeleton() {
-  return (
-    <div aria-label="기록을 불러오는 중" aria-live="polite" className="flex flex-col gap-5" role="status">
-      <section className="px-1 py-4">
-        <Skeleton className="h-10 w-4/5" />
-        <Skeleton className="mt-3 h-4 w-52" />
-      </section>
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-5 w-24" />
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5">
-          {DETAIL_ROWS.map((row) => (
-            <div className="grid grid-cols-[20px_1fr] gap-3" key={row}>
-              <Skeleton className="size-5 rounded-full" />
-              <div>
-                <Skeleton className="h-3 w-10" />
-                <Skeleton className="mt-2 h-4 w-36" />
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-5 w-24" />
-          <Skeleton className="mt-1 h-4 w-44" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-16 w-full" />
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function RecordPlacesSkeleton() {
-  return (
-    <div className="grid grid-cols-[20px_1fr] gap-3">
-      <Skeleton className="size-5 rounded-full" />
-      <div>
-        <Skeleton className="h-3 w-16" />
-        <Skeleton className="mt-2 h-4 w-32" />
-        <Skeleton className="mt-1.5 h-3 w-48" />
       </div>
     </div>
   );

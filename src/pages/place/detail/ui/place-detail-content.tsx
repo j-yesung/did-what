@@ -4,14 +4,13 @@ import { CalendarDotsIcon, MapPinAreaIcon, MapPinIcon, NotePencilIcon } from "@p
 import { useQuery } from "@tanstack/react-query";
 
 import { placeQueryOptions, placeRecordsQueryOptions, placesQueryOptions } from "@/entities/place";
-import { EmptyRecords, RecordCard, RecordTimeline, RecordTimelineSkeleton } from "@/entities/record";
+import { EmptyRecords, RecordCard, RecordTimeline } from "@/entities/record";
 import { DeletePlaceButton } from "@/features/place/delete-place";
 import { formatDate } from "@/shared/lib/date/format-date";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { Skeleton } from "@/shared/ui/skeleton";
 
 type PlaceDetailContentProps = {
   placeId: string;
@@ -29,6 +28,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
   const records = (recordsQuery.data ?? [])
     .map(({ record }) => record)
     .toSorted((a, b) => b.recorded_at.localeCompare(a.recorded_at));
+  const isFetching = placesQuery.isFetching || placeQuery.isFetching || recordsQuery.isFetching;
   const cachedRecordCount = cachedPlace?.record_places[0]?.count ?? 0;
   const recordCount = recordsQuery.data ? records.length : cachedRecordCount;
 
@@ -37,9 +37,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
       <PageShell>
         <PageHeader back="/places" title="기억의 장소" />
 
-        {!place && (placesQuery.isPending || placeQuery.isPending) ? (
-          <PlaceDetailSkeleton />
-        ) : placeQuery.isError || recordsQuery.isError || !place ? (
+        {isFetching ? null : placeQuery.isError || recordsQuery.isError || !place ? (
           <LoadErrorAlert
             icon={<MapPinIcon strokeWidth={2} aria-hidden="true" />}
             title="장소의 기록을 불러오지 못했어요"
@@ -66,9 +64,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
               </CardContent>
             </Card>
 
-            {recordsQuery.isPending ? (
-              <RecordTimelineSkeleton label={`${place.name} 기록을 불러오는 중`} />
-            ) : records.length ? (
+            {records.length ? (
               <RecordTimeline aria-labelledby="place-records-title">
                 <div className="flex items-center justify-between gap-3 px-1">
                   <h2 className="flex items-center gap-2 font-bold" id="place-records-title">
@@ -89,23 +85,5 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
         )}
       </PageShell>
     </OverscrollBack>
-  );
-}
-
-function PlaceDetailSkeleton() {
-  return (
-    <div aria-label="장소를 불러오는 중" aria-live="polite" className="flex flex-col gap-5" role="status">
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="mt-1 h-6 w-40" />
-          <Skeleton className="mt-1 h-4 w-52" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-4 w-44" />
-        </CardContent>
-      </Card>
-      <RecordTimelineSkeleton label="장소의 기록을 불러오는 중" />
-    </div>
   );
 }

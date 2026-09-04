@@ -9,7 +9,6 @@ import {
   EmptyRecords,
   RecordCard,
   RecordTimeline,
-  RecordTimelineSkeleton,
   recordLocationsQueryOptions,
   regionRecordsQueryOptions,
 } from "@/entities/record";
@@ -17,7 +16,6 @@ import { createRegionActivityMaps, type Region, RegionMiniMap } from "@/entities
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { Skeleton } from "@/shared/ui/skeleton";
 
 type RegionDetailContentProps = {
   region: Region;
@@ -43,19 +41,18 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
     [recordLocations, region.code],
   );
   const records = recordsQuery.data ?? [];
+  const isFetching = locationsQuery.isFetching || recordsQuery.isFetching;
 
   return (
     <OverscrollBack fallbackHref="/regions">
       <PageShell>
         <PageHeader back="/regions" title={region.name} />
 
-        {recordsQuery.isError || locationsQuery.isError ? (
+        {isFetching ? null : recordsQuery.isError || locationsQuery.isError ? (
           <LoadErrorAlert
             icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
             title="지역 발자취를 불러오지 못했어요"
           />
-        ) : locationsQuery.isPending ? (
-          <RegionDetailSkeleton />
         ) : !regionMap ? (
           <LoadErrorAlert
             icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
@@ -80,9 +77,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
               </div>
             </section>
 
-            {recordsQuery.isPending ? (
-              <RecordTimelineSkeleton label={`${region.name} 기록을 불러오는 중`} />
-            ) : records.length > 0 ? (
+            {records.length > 0 ? (
               <RecordTimeline aria-labelledby="region-records-title">
                 <div className="flex items-center justify-between gap-3 px-1">
                   <h2 className="flex items-center gap-2 font-bold" id="region-records-title">
@@ -103,21 +98,5 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
         )}
       </PageShell>
     </OverscrollBack>
-  );
-}
-
-function RegionDetailSkeleton() {
-  return (
-    <div aria-label="지역 발자취를 불러오는 중" aria-live="polite" className="flex flex-col gap-5" role="status">
-      <section className="grid grid-cols-[112px_1fr] items-center gap-5 px-2 py-3">
-        <Skeleton className="h-30 w-28 rounded-xl" />
-        <div>
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="mt-2 h-9 w-28" />
-          <Skeleton className="mt-2 h-4 w-44" />
-        </div>
-      </section>
-      <RecordTimelineSkeleton />
-    </div>
   );
 }
