@@ -2,16 +2,39 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
+import { fetchPlace } from "./fetch-place";
+import { fetchPlaceRecords } from "./fetch-place-records";
 import { fetchPlaces } from "./fetch-places";
 import { type PlaceSearchParams, searchPlaces } from "./search-places";
 
+export const PLACES_QUERY_KEY = ["places"] as const;
 export const PLACE_SEARCH_KEY = ["places", "search"] as const;
 
 export const placesQueryOptions = queryOptions({
   ...MAIN_QUERY_OPTIONS,
-  queryKey: ["places"],
+  queryKey: PLACES_QUERY_KEY,
   queryFn: fetchPlaces,
 });
+
+export function placeQueryKey(placeId: string) {
+  return [...PLACES_QUERY_KEY, "detail", placeId] as const;
+}
+
+export function placeQueryOptions(placeId: string) {
+  return queryOptions({
+    ...MAIN_QUERY_OPTIONS,
+    queryKey: placeQueryKey(placeId),
+    queryFn: () => fetchPlace(placeId),
+  });
+}
+
+export function placeRecordsQueryOptions(placeId: string) {
+  return queryOptions({
+    ...MAIN_QUERY_OPTIONS,
+    queryKey: [...PLACES_QUERY_KEY, "records", placeId],
+    queryFn: () => fetchPlaceRecords(placeId),
+  });
+}
 
 export function placeSearchQueryOptions(params: PlaceSearchParams) {
   return queryOptions({

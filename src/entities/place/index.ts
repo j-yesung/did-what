@@ -1,5 +1,12 @@
 export type { SavedPlaceRow } from "./api/fetch-places";
-export { PLACE_SEARCH_KEY, placesQueryOptions } from "./api/queries";
+export {
+  PLACE_SEARCH_KEY,
+  PLACES_QUERY_KEY,
+  placeQueryKey,
+  placeQueryOptions,
+  placeRecordsQueryOptions,
+  placesQueryOptions,
+} from "./api/queries";
 export type { PlaceSearchParams, PlaceSearchResult } from "./api/search-places";
 export { getPlaceRegionLabel } from "./model/get-place-region-label";
 export type { PlaceOption } from "./model/types";
