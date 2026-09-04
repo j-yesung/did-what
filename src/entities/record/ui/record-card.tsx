@@ -1,7 +1,7 @@
 "use client";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
@@ -24,7 +24,6 @@ type RecordCardProps = {
 };
 
 export function RecordCard({ isLast, record }: RecordCardProps) {
-  const router = useRouter();
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
 
@@ -42,8 +41,8 @@ export function RecordCard({ isLast, record }: RecordCardProps) {
       <Button
         className="h-auto justify-start whitespace-normal rounded-lg px-1 py-1.5 text-left font-normal after:hidden [&>span]:block [&>span]:w-full"
         fullWidth
-        onClick={() => router.push(`/records/${record.id}`)}
-        type="button"
+        nativeButton={false}
+        render={<Link href={`/records/${record.id}`} prefetch />}
         variant="ghost"
       >
         <header className="flex items-center gap-3 text-muted-foreground text-xs">
