@@ -5,7 +5,7 @@ import { MapSegment } from "@/widgets/map-segment";
 
 export default function MapLayout({ children }: { children: ReactNode }) {
   return (
-    <PageShell withBottomNavigation>
+    <PageShell className="motion-safe:animate-none" withBottomNavigation>
       <MapSegment />
       {children}
     </PageShell>
