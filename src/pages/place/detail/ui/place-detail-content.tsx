@@ -28,7 +28,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
   const records = (recordsQuery.data ?? [])
     .map(({ record }) => record)
     .toSorted((a, b) => b.recorded_at.localeCompare(a.recorded_at));
-  const isFetching = placesQuery.isFetching || placeQuery.isFetching || recordsQuery.isFetching;
+  const isPlacePending = !place && !placeQuery.isError && (placesQuery.isPending || placeQuery.isPending);
   const cachedRecordCount = cachedPlace?.record_places[0]?.count ?? 0;
   const recordCount = recordsQuery.data ? records.length : cachedRecordCount;
 
@@ -37,7 +37,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
       <PageShell>
         <PageHeader back="/places" title="기억의 장소" />
 
-        {isFetching ? null : placeQuery.isError || recordsQuery.isError || !place ? (
+        {isPlacePending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
           <LoadErrorAlert
             icon={<MapPinIcon strokeWidth={2} aria-hidden="true" />}
             title="장소의 기록을 불러오지 못했어요"
@@ -64,7 +64,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
               </CardContent>
             </Card>
 
-            {records.length ? (
+            {recordsQuery.isPending ? null : records.length ? (
               <RecordTimeline aria-labelledby="place-records-title">
                 <div className="flex items-center justify-between gap-3 px-1">
                   <h2 className="flex items-center gap-2 font-bold" id="place-records-title">

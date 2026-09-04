@@ -41,43 +41,42 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
     [recordLocations, region.code],
   );
   const records = recordsQuery.data ?? [];
-  const isFetching = locationsQuery.isFetching || recordsQuery.isFetching;
 
   return (
     <OverscrollBack fallbackHref="/regions">
       <PageShell>
         <PageHeader back="/regions" title={region.name} />
 
-        {isFetching ? null : recordsQuery.isError || locationsQuery.isError ? (
-          <LoadErrorAlert
-            icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
-            title="지역 발자취를 불러오지 못했어요"
-          />
-        ) : !regionMap ? (
+        {recordsQuery.isError || locationsQuery.isError ? (
           <LoadErrorAlert
             icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
             title="지역 발자취를 불러오지 못했어요"
           />
         ) : (
           <>
-            <section className="grid grid-cols-[112px_1fr] items-center gap-5 px-2 py-3" aria-label="지역 발자취 현황">
-              <div className="h-30 w-28">
-                <RegionMiniMap
-                  label={`${region.name}, ${regionMap.totalCount}곳 중 ${regionMap.visitedCount}곳 방문`}
-                  map={regionMap}
-                />
-              </div>
-              <div className="min-w-0">
-                <p className="font-bold text-muted-foreground text-xs">방문한 하위 지역</p>
-                <p className="mt-1 font-bold text-3xl tracking-[-0.045em]">
-                  {regionMap.visitedCount}
-                  <span className="ml-1 font-medium text-base text-muted-foreground">/ {regionMap.totalCount}</span>
-                </p>
-                <p className="mt-2 text-muted-foreground text-sm">기록이 남은 셀을 색으로 표시해요.</p>
-              </div>
-            </section>
+            {regionMap ? (
+              <section
+                className="grid grid-cols-[112px_1fr] items-center gap-5 px-2 py-3"
+                aria-label="지역 발자취 현황"
+              >
+                <div className="h-30 w-28">
+                  <RegionMiniMap
+                    label={`${region.name}, ${regionMap.totalCount}곳 중 ${regionMap.visitedCount}곳 방문`}
+                    map={regionMap}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-muted-foreground text-xs">방문한 하위 지역</p>
+                  <p className="mt-1 font-bold text-3xl tracking-[-0.045em]">
+                    {regionMap.visitedCount}
+                    <span className="ml-1 font-medium text-base text-muted-foreground">/ {regionMap.totalCount}</span>
+                  </p>
+                  <p className="mt-2 text-muted-foreground text-sm">기록이 남은 셀을 색으로 표시해요.</p>
+                </div>
+              </section>
+            ) : null}
 
-            {records.length > 0 ? (
+            {recordsQuery.isPending ? null : records.length > 0 ? (
               <RecordTimeline aria-labelledby="region-records-title">
                 <div className="flex items-center justify-between gap-3 px-1">
                   <h2 className="flex items-center gap-2 font-bold" id="region-records-title">

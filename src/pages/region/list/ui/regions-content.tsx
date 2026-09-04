@@ -3,15 +3,16 @@
 import { useMemo } from "react";
 
 import { MapTrifoldIcon } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
-import { type RecordLocationRow, recordLocationsQueryOptions } from "@/entities/record";
+import { type RecordLocationRow, recordLocationsQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 export function RegionsContent({ initialRecords }: { initialRecords: RecordLocationRow[] }) {
+  const queryClient = useQueryClient();
   const recordsQuery = useQuery({ ...recordLocationsQueryOptions, initialData: initialRecords });
   const recordLocations = useMemo(
     () =>
@@ -47,7 +48,15 @@ export function RegionsContent({ initialRecords }: { initialRecords: RecordLocat
                 className="h-auto min-h-22 justify-start gap-2 rounded-2xl px-2 py-2.5 text-left after:hidden [&>span]:w-full"
                 fullWidth
                 nativeButton={false}
-                render={<Link href={`/regions/${map.code}`} prefetch />}
+                render={
+                  <Link
+                    href={`/regions/${map.code}`}
+                    onPointerDown={(event) => {
+                      if (event.button === 0) void queryClient.prefetchQuery(regionRecordsQueryOptions(map));
+                    }}
+                    prefetch
+                  />
+                }
                 variant="ghost"
               >
                 <span className="grid size-11 shrink-0 place-items-center p-0.5">

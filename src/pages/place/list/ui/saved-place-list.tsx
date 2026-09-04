@@ -4,7 +4,13 @@ import { MapPinIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
-import { getPlaceRegionLabel, placeQueryKey, placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
+import {
+  getPlaceRegionLabel,
+  placeQueryKey,
+  placeRecordsQueryOptions,
+  placesQueryOptions,
+  type SavedPlaceRow,
+} from "@/entities/place";
 import { Badge } from "@/shared/ui/badge";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
@@ -55,6 +61,9 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
               <Link
                 href={`/places/${place.id}`}
                 onClick={() => queryClient.setQueryData(placeQueryKey(place.id), place)}
+                onPointerDown={(event) => {
+                  if (event.button === 0) void queryClient.prefetchQuery(placeRecordsQueryOptions(place.id));
+                }}
                 prefetch
               />
             }
