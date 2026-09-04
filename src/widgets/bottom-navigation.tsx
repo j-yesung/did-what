@@ -1,6 +1,6 @@
 "use client";
 
-import { Gear, MapPin, MapPinArea, MapTrifold, PencilSimple } from "@phosphor-icons/react";
+import { Gear, MapPin, MapPinArea, PencilSimple, Plus } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,14 +9,18 @@ import { Button } from "@/shared/ui/button";
 const TABS = [
   { href: "/", icon: MapPinArea, label: "지도" },
   { href: "/records", icon: PencilSimple, label: "기록" },
-  { href: "/regions", icon: MapTrifold, label: "지역" },
+  { href: "/records/new", icon: Plus, label: "기록 남기기", action: true },
   { href: "/places", icon: MapPin, label: "장소" },
   { href: "/settings", icon: Gear, label: "설정" },
 ] as const;
 
+// 지역 목록은 지도 탭 안의 세그먼트라 지도 탭이 활성으로 보여야 한다.
+const TAB_PATH_ALIASES: Record<string, string> = { "/regions": "/" };
+
 export function BottomNavigation() {
-  const pathname = usePathname();
-  const activeIndex = TABS.findIndex(({ href }) => href === pathname);
+  const pathname = usePathname() ?? "";
+  const tabPath = TAB_PATH_ALIASES[pathname] ?? pathname;
+  const activeIndex = TABS.findIndex((tab) => !("action" in tab) && tab.href === tabPath);
 
   if (activeIndex === -1) return null;
 
@@ -32,8 +36,25 @@ export function BottomNavigation() {
             style={{ transform: `translateX(${activeIndex * 100}%)`, width: `${100 / TABS.length}%` }}
           />
         </li>
-        {TABS.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href;
+        {TABS.map((tab) => {
+          const { href, icon: Icon, label } = tab;
+
+          if ("action" in tab) {
+            return (
+              <li className="relative z-10 grid min-w-0 place-items-center" key={href}>
+                <Button
+                  aria-label={label}
+                  className="size-11 min-w-0 rounded-full p-0 shadow-(--shadow-notice)"
+                  nativeButton={false}
+                  render={<Link href={href} prefetch />}
+                >
+                  <Icon aria-hidden="true" className="size-6" weight="bold" />
+                </Button>
+              </li>
+            );
+          }
+
+          const active = tabPath === href;
 
           return (
             <li className="relative z-10 min-w-0" key={href}>

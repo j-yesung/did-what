@@ -2,7 +2,6 @@ import { type ReactNode, Suspense } from "react";
 
 import { MainDataPrefetch } from "@/app/providers/main-data-prefetch";
 import { AppLoading } from "@/app/ui/app-loading";
-import { RecordCreateButton } from "@/features/record/create-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 
@@ -24,7 +23,6 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
     <>
       <MainDataPrefetch />
       {children}
-      <RecordCreateButton />
       <BottomNavigation />
     </>
   );

@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 
 import { type RecordLocationRow, recordLocationsQueryOptions } from "@/entities/record";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-import { PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { RegionActivityMap } from "@/widgets/region-activity-map";
 
@@ -24,7 +23,7 @@ export function HomeContent({ initialRecords }: { initialRecords: RecordLocation
   );
 
   return (
-    <PageShell className="pb-[calc(var(--nav-clearance)+50px)]" withBottomNavigation>
+    <>
       <section className="grid min-h-0 flex-1 place-items-center px-1.5 py-1" aria-label="대한민국 활동 지도">
         <RegionActivityMap records={records} />
       </section>
@@ -45,6 +44,6 @@ export function HomeContent({ initialRecords }: { initialRecords: RecordLocation
           </EmptyHeader>
         </Empty>
       )}
-    </PageShell>
+    </>
   );
 }

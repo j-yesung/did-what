@@ -9,7 +9,6 @@ import Link from "next/link";
 import { type RecordLocationRow, recordLocationsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
 import { Button } from "@/shared/ui/button";
-import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 export function RegionsContent({ initialRecords }: { initialRecords: RecordLocationRow[] }) {
@@ -29,9 +28,7 @@ export function RegionsContent({ initialRecords }: { initialRecords: RecordLocat
   const regionMaps = useMemo(() => createRegionActivityMaps(recordLocations), [recordLocations]);
 
   return (
-    <PageShell className="pb-[calc(var(--nav-clearance)+50px)]" withBottomNavigation>
-      <PageHeader title="지역" />
-
+    <>
       <div className="px-1">
         <h2 className="font-bold text-lg tracking-tight">함께한 지역을 한눈에 돌아보세요.</h2>
       </div>
@@ -69,6 +66,6 @@ export function RegionsContent({ initialRecords }: { initialRecords: RecordLocat
           ))}
         </ul>
       )}
-    </PageShell>
+    </>
   );
 }
