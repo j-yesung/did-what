@@ -132,6 +132,8 @@
   --map-level-2: var(--blue-300);
   --map-level-3: var(--blue-500);
   --map-level-4: var(--blue-700);
+  --map-segment-track: var(--grey-100);
+  --map-segment-selected: var(--grey-0);
 }
 
 @theme inline {
@@ -212,6 +214,8 @@
 
   /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
   --map-empty: var(--grey-800);
+  --map-segment-track: var(--grey-850);
+  --map-segment-selected: var(--grey-800);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -242,6 +246,8 @@
 
     /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
     --map-empty: var(--grey-800);
+    --map-segment-track: var(--grey-850);
+    --map-segment-selected: var(--grey-800);
   }
 }
 
@@ -279,9 +285,22 @@
     background: var(--background);
     color: var(--foreground);
     text-rendering: optimizeLegibility;
+    -webkit-user-select: none;
+    user-select: none;
     /** 한글은 어절 단위로만 줄을 넘긴다. 한 어절이 줄보다 길 때만 강제로 자른다. */
     word-break: keep-all;
     overflow-wrap: break-word;
+  }
+
+  img {
+    -webkit-user-drag: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable]:not([contenteditable="false"]) {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   /**
@@ -370,5 +389,19 @@
   from {
     opacity: 0;
     transform: translateX(24px);
+  }
+}
+
+@keyframes funnel-step-forward {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@keyframes funnel-step-backward {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
   }
 }

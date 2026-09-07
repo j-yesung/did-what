@@ -16,7 +16,7 @@ const FIELD_ICON = "size-4.5 text-foreground [stroke-width:2]";
 
 type RecordWeatherFieldProps = {
   initialWeather?: RecordWeather;
-  onChange?: () => void;
+  onChange?: (weather: RecordWeather) => void;
   weatherError?: string;
 };
 
@@ -30,7 +30,7 @@ export function RecordWeatherField({
   function handleWeatherChange(nextWeather: string) {
     if (!isRecordWeather(nextWeather)) return;
     setWeather(nextWeather);
-    onChange?.();
+    onChange?.(nextWeather);
   }
 
   return (

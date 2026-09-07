@@ -26,6 +26,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.101.4
         version: 5.101.4(react@19.2.8)
+      '@use-funnel/browser':
+        specifier: ^0.0.17
+        version: 0.0.17(react@19.2.8)
       axios:
         specifier: ^1.19.0
         version: 1.19.0(debug@4.4.3)
@@ -798,6 +801,16 @@ packages:
 
   '@types/web-push@3.6.4':
     resolution: {integrity: sha512-GnJmSr40H3RAnj0s34FNTcJi1hmWFV5KXugE0mYWnYhgTAHLJ/dJKAwDmvPJYMke0RplY2XE9LnM4hqSqKIjhQ==}
+
+  '@use-funnel/browser@0.0.17':
+    resolution: {integrity: sha512-saexLJSpTwm02If0I6oY6s1Z7cPwkEGqHvBg+IVokDywcrkhZA9MpxDHT27GSrNlhJHRxis/3g/xIQ48UYfp2Q==}
+    peerDependencies:
+      react: '>=16.8'
+
+  '@use-funnel/core@0.1.0':
+    resolution: {integrity: sha512-KEjBKTbOh5wd6CQZ1jYWhI6KuGrI9Pjn9CkmUgAYzonsyZE0lsiZ2/1RwsaWcxVO5RJBgfwCM8dRpibwm7An9w==}
+    peerDependencies:
+      react: '>=16.8'
 
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
@@ -2808,6 +2821,15 @@ snapshots:
   '@types/web-push@3.6.4':
     dependencies:
       '@types/node': 20.19.43
+
+  '@use-funnel/browser@0.0.17(react@19.2.8)':
+    dependencies:
+      '@use-funnel/core': 0.1.0(react@19.2.8)
+      react: 19.2.8
+
+  '@use-funnel/core@0.1.0(react@19.2.8)':
+    dependencies:
+      react: 19.2.8
 
   accepts@2.0.0:
     dependencies:

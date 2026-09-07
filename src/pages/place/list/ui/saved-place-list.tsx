@@ -11,6 +11,7 @@ import {
   placesQueryOptions,
   type SavedPlaceRow,
 } from "@/entities/place";
+import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { Badge } from "@/shared/ui/badge";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
@@ -24,6 +25,7 @@ export function SavedPlaceCount({ initialPlaces }: { initialPlaces: SavedPlaceRo
 
 export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
   const queryClient = useQueryClient();
+  const delayedNavigate = useDelayedNavigate();
   const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
 
   if (placesQuery.isError) {
@@ -52,36 +54,46 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
         <h2 className="mt-1 font-bold text-lg">저장한 장소</h2>
       </div>
       <div className="flex flex-col gap-2.5 overflow-hidden">
-        {places.map((place) => (
-          <ListRow
-            key={place.id}
-            aria-label={`${place.name} 상세 보기`}
-            nativeButton={false}
-            render={
-              <Link
-                href={`/places/${place.id}`}
-                onClick={() => queryClient.setQueryData(placeQueryKey(place.id), place)}
-                onPointerDown={(event) => {
-                  if (event.button === 0) void queryClient.prefetchQuery(placeRecordsQueryOptions(place.id));
-                }}
-                prefetch
+        {places.map((place) => {
+          const href = `/places/${place.id}`;
+
+          return (
+            <ListRow
+              key={place.id}
+              aria-label={`${place.name} 상세 보기`}
+              nativeButton={false}
+              render={
+                <Link
+                  href={href}
+                  onClick={(event) => {
+                    queryClient.setQueryData(placeQueryKey(place.id), place);
+                    delayedNavigate(event, href);
+                  }}
+                  onPointerDown={(event) => {
+                    if (event.button === 0) void queryClient.prefetchQuery(placeRecordsQueryOptions(place.id));
+                  }}
+                  prefetch
+                />
+              }
+              right={
+                (place.record_places[0]?.count ?? 0) > 0 ? (
+                  <Badge
+                    aria-label={`기록 ${place.record_places[0]?.count}개`}
+                    className="min-h-6 min-w-6 justify-center rounded-full bg-primary px-1.5 py-1 text-primary-foreground text-xs"
+                    tone="primary"
+                  >
+                    {place.record_places[0]?.count}
+                  </Badge>
+                ) : null
+              }
+            >
+              <ListRowTexts
+                description={`${getPlaceRegionLabel(place.region_name, place.address)}`}
+                title={place.name}
               />
-            }
-            right={
-              (place.record_places[0]?.count ?? 0) > 0 ? (
-                <Badge
-                  aria-label={`기록 ${place.record_places[0]?.count}개`}
-                  className="min-h-6 min-w-6 justify-center rounded-full bg-primary px-1.5 py-1 text-primary-foreground text-xs"
-                  tone="primary"
-                >
-                  {place.record_places[0]?.count}
-                </Badge>
-              ) : null
-            }
-          >
-            <ListRowTexts description={`${getPlaceRegionLabel(place.region_name, place.address)}`} title={place.name} />
-          </ListRow>
-        ))}
+            </ListRow>
+          );
+        })}
       </div>
     </section>
   );

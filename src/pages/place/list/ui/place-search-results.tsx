@@ -26,6 +26,7 @@ import {
 import { ResetButton } from "@/shared/ui/reset-button";
 
 import { getSavedKakaoPlaces } from "../model/get-saved-kakao-places";
+import { navigatePlaceSearch } from "../model/place-search-navigation";
 
 type PlaceSearchResultsProps = {
   currentPage: number;
@@ -90,7 +91,7 @@ export function PlaceSearchResults({
           className="mt-0.5"
           onReset={() => {
             setSelectedPlaces(new Map());
-            router.replace("/places");
+            navigatePlaceSearch(window, router, "");
           }}
         />
       </div>
@@ -169,12 +170,18 @@ export function PlaceSearchResults({
                 <PaginationPrevious
                   aria-label="이전 검색 결과"
                   href={getSearchPageHref(query, currentPage - 1)}
+                  replace
                   text="이전"
                 />
               </PaginationItem>
             ) : null}
             <PaginationItem>
-              <PaginationLink aria-label={`${currentPage}페이지`} href={getSearchPageHref(query, currentPage)} isActive>
+              <PaginationLink
+                aria-label={`${currentPage}페이지`}
+                href={getSearchPageHref(query, currentPage)}
+                isActive
+                replace
+              >
                 {currentPage}
               </PaginationLink>
             </PaginationItem>
@@ -183,6 +190,7 @@ export function PlaceSearchResults({
                 <PaginationNext
                   aria-label="다음 검색 결과"
                   href={getSearchPageHref(query, currentPage + 1)}
+                  replace
                   text="다음"
                 />
               </PaginationItem>

@@ -1,12 +1,26 @@
 "use client";
 
-import { type TouchEvent, useRef } from "react";
+import { type TouchEvent, useLayoutEffect, useRef } from "react";
 
+import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 
 import { getOverscrollBackProgress, isAtScrollEnd } from "./overscroll-back";
 
 type SwipeStart = { scrollDistanceToEnd: number; scrollY: number; x: number; y: number };
+
+/**
+ * 화면별 마지막 스크롤 위치.
+ *
+ * 이 화면들은 문서가 아니라 안쪽 컨테이너가 스크롤한다. 그 컨테이너는 다른 화면으로 갈 때 통째로 사라졌다가
+ * 뒤로 올 때 새로 만들어지므로, 문서 스크롤만 되살리는 브라우저의 복원이 닿지 않아 항상 맨 위에서 시작한다.
+ * 그래서 위치를 직접 들고 있다가 뒤로/앞으로 이동일 때만 되돌린다.
+ */
+const scrollPositions = new Map<string, number>();
+
+function getScrollKey(browser: Window) {
+  return browser.location.pathname + browser.location.search;
+}
 
 function getSwipeProgress(start: SwipeStart, touch: { clientX: number; clientY: number }, container: HTMLDivElement) {
   const scrollY = Math.max(0, container.scrollTop);
@@ -27,6 +41,21 @@ export function useOverscrollBack(fallbackHref: string) {
   const swipeProgressRef = useRef(0);
   const navigatingRef = useRef(false);
   const reduceMotionRef = useRef(false);
+
+  // 뒤로 온 화면의 스크롤을 되돌린다. 첫 paint 전에 끝내야 맨 위가 한 프레임 비치지 않는다.
+  // 되돌리는 건 마운트 시점 한 번이라, 목록이 아직 안 그려진 상태로 들어오면 그만큼만 내려간다.
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const key = getScrollKey(window);
+    if (getPageNavigation(window).traversal) container.scrollTop = scrollPositions.get(key) ?? 0;
+
+    const save = () => scrollPositions.set(key, container.scrollTop);
+    container.addEventListener("scroll", save, { passive: true });
+
+    return () => container.removeEventListener("scroll", save);
+  }, []);
 
   const resetSwipe = () => {
     const indicator = indicatorRef.current;

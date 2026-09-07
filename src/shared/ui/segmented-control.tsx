@@ -70,6 +70,7 @@ function SegmentedControl({
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-1 left-1 rounded-lg bg-surface shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] will-change-transform motion-reduce:transition-none"
+          data-slot="segmented-control-indicator"
           style={{
             transform: `translateX(${selectedIndex * 100}%)`,
             width: `calc((100% - ${SEGMENTED_CONTROL_PADDING_PX * 2}px) / ${Math.max(items.length, 1)})`,

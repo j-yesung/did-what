@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { SearchField } from "@/shared/ui/search-field";
 
+import { navigatePlaceSearch } from "../model/place-search-navigation";
+
 type PlaceSearchFormProps = {
   query: string;
   searchError?: string;
@@ -22,7 +24,7 @@ export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    router.push(`/places?${new URLSearchParams({ q: keyword })}`);
+    navigatePlaceSearch(window, router, keyword);
   }
 
   return (
@@ -39,9 +41,9 @@ export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
             id="place-query"
             maxLength={100}
             name="q"
+            onClear={() => navigatePlaceSearch(window, router, "")}
             onValueChange={setKeyword}
             placeholder="예: 성수 카페"
-            required
             value={keyword}
           />
           <FieldError id="place-query-error">{fieldError}</FieldError>

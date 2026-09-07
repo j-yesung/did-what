@@ -8,11 +8,13 @@ import Link from "next/link";
 
 import { type RecordLocationRow, recordLocationsQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
+import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 export function RegionsContent({ initialRecords }: { initialRecords: RecordLocationRow[] }) {
   const queryClient = useQueryClient();
+  const delayedNavigate = useDelayedNavigate();
   const recordsQuery = useQuery({ ...recordLocationsQueryOptions, initialData: initialRecords });
   const recordLocations = useMemo(
     () =>
@@ -41,38 +43,43 @@ export function RegionsContent({ initialRecords }: { initialRecords: RecordLocat
         />
       ) : (
         <ul className="-mx-1 grid grid-cols-2 gap-x-2 gap-y-1" aria-label="시·도별 발자취">
-          {regionMaps.map((map) => (
-            <li key={map.code}>
-              <Button
-                aria-label={`${map.name}, ${map.totalCount}곳 중 ${map.visitedCount}곳 방문`}
-                className="h-auto min-h-22 justify-start gap-2 rounded-2xl px-2 py-2.5 text-left after:hidden [&>span]:w-full"
-                fullWidth
-                nativeButton={false}
-                render={
-                  <Link
-                    href={`/regions/${map.code}`}
-                    onPointerDown={(event) => {
-                      if (event.button === 0) void queryClient.prefetchQuery(regionRecordsQueryOptions(map));
-                    }}
-                    prefetch
-                  />
-                }
-                variant="ghost"
-              >
-                <span className="grid size-11 shrink-0 place-items-center p-0.5">
-                  <RegionMiniMap map={map} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block break-keep font-bold text-[13px] leading-[1.35] tracking-[-0.02em]">
-                    {map.name}
+          {regionMaps.map((map) => {
+            const href = `/regions/${map.code}`;
+
+            return (
+              <li key={map.code}>
+                <Button
+                  aria-label={`${map.name}, ${map.totalCount}곳 중 ${map.visitedCount}곳 방문`}
+                  className="h-auto min-h-22 justify-start gap-2 rounded-2xl px-2 py-2.5 text-left after:hidden [&>span]:w-full"
+                  fullWidth
+                  nativeButton={false}
+                  render={
+                    <Link
+                      href={href}
+                      onClick={(event) => delayedNavigate(event, href)}
+                      onPointerDown={(event) => {
+                        if (event.button === 0) void queryClient.prefetchQuery(regionRecordsQueryOptions(map));
+                      }}
+                      prefetch
+                    />
+                  }
+                  variant="ghost"
+                >
+                  <span className="grid size-11 shrink-0 place-items-center p-0.5">
+                    <RegionMiniMap map={map} />
                   </span>
-                  <span className="mt-1.5 block text-[11px] text-muted-foreground leading-[1.35]">
-                    {getRegionProgressLabel(map)}
+                  <span className="min-w-0 flex-1">
+                    <span className="block break-keep font-bold text-[13px] leading-[1.35] tracking-[-0.02em]">
+                      {map.name}
+                    </span>
+                    <span className="mt-1.5 block text-[11px] text-muted-foreground leading-[1.35]">
+                      {getRegionProgressLabel(map)}
+                    </span>
                   </span>
-                </span>
-              </Button>
-            </li>
-          ))}
+                </Button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </>
