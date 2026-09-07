@@ -13,9 +13,6 @@ type PageShellProps = {
   withBottomNavigation?: boolean;
 };
 
-/**
- * 상태 표시줄·노치와 홈 인디케이터를 피하고, 최상위 탭에서는 하단 내비게이션 높이까지 확보한다.
- */
 export function PageShell({ children, className, withBottomNavigation = false }: PageShellProps) {
   const pathname = usePathname();
   const mainRef = useRef<HTMLElement>(null);
@@ -29,7 +26,7 @@ export function PageShell({ children, className, withBottomNavigation = false }:
     main.style.animation = navigation.traversal ? "none" : "";
     // 지도 template처럼 안쪽에서 실행하는 등장 효과에도 같은 이동 기준을 전달한다.
     main.style.setProperty("--tab-enter-name", navigation.traversal ? "none" : "tab-content-enter");
-    // 상세 화면은 항상 위에서 시작하고, 목록의 스크롤 복원은 브라우저에 맡긴다.
+    // 상세 화면은 항상 위에서 시작하고 목록의 스크롤 복원은 브라우저에 맡긴다.
     if (!withBottomNavigation) window.scrollTo(0, 0);
   }, [pathname, withBottomNavigation]);
 
