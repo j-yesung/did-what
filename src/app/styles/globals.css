@@ -285,9 +285,22 @@
     background: var(--background);
     color: var(--foreground);
     text-rendering: optimizeLegibility;
+    -webkit-user-select: none;
+    user-select: none;
     /** 한글은 어절 단위로만 줄을 넘긴다. 한 어절이 줄보다 길 때만 강제로 자른다. */
     word-break: keep-all;
     overflow-wrap: break-word;
+  }
+
+  img {
+    -webkit-user-drag: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable]:not([contenteditable="false"]) {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   /**
