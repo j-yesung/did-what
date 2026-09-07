@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
@@ -20,8 +21,10 @@ type RecordCardProps = {
 
 export function RecordCard({ isLast, record }: RecordCardProps) {
   const queryClient = useQueryClient();
+  const delayedNavigate = useDelayedNavigate();
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
+  const href = `/records/${record.id}`;
 
   return (
     <article
@@ -40,8 +43,11 @@ export function RecordCard({ isLast, record }: RecordCardProps) {
         nativeButton={false}
         render={
           <Link
-            href={`/records/${record.id}`}
-            onClick={() => queryClient.setQueryData(recordSummaryQueryKey(record.id), record)}
+            href={href}
+            onClick={(event) => {
+              queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
+              delayedNavigate(event, href);
+            }}
             onPointerDown={(event) => {
               if (event.button === 0) void queryClient.prefetchQuery(recordPlacesQueryOptions(record.id));
             }}
