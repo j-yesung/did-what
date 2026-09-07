@@ -32,7 +32,7 @@ function SearchField({
   return (
     <div
       className={cn(
-        "relative rounded-xl bg-muted transition-shadow focus-within:ring-3 focus-within:ring-ring/50 has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20",
+        "relative rounded-xl bg-muted transition-shadow focus-within:ring-3 focus-within:ring-ring/50 has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20 dark:bg-input/30",
         className,
       )}
       data-slot="search-field"

@@ -12,7 +12,7 @@ import { getRecordCreateStepIndex, RECORD_CREATE_STEPS, type RecordCreateStep } 
 const STEP_COPY: Record<RecordCreateStep, { description: string; title: string }> = {
   when: { description: "날짜와 그날의 날씨를 알려주세요.", title: "언제였나요?" },
   where: { description: "지역은 꼭 선택하고, 방문 장소는 필요하면 추가하세요.", title: "어디에 다녀왔나요?" },
-  what: { description: "가장 기억하고 싶은 일을 남겨보세요.", title: "무엇을 했나요?" },
+  what: { description: "가장 기억하고 싶은 일을 남겨보세요.", title: "어떤 하루였나요?" },
 };
 
 type RecordFunnelLayoutProps = {
@@ -81,7 +81,7 @@ export function RecordFunnelLayout({
           {RECORD_CREATE_STEPS.map((item, index) => (
             <span
               aria-hidden="true"
-              className={cn("h-1 flex-1 rounded-full", index <= stepIndex ? "bg-primary" : "bg-muted")}
+              className={cn("h-1 flex-1 rounded-full", index <= stepIndex ? "bg-primary" : "bg-border")}
               key={item}
             />
           ))}

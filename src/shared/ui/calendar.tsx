@@ -27,7 +27,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "group/calendar bg-background in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent p-2 [--cell-radius:var(--radius-md)] [--cell-size:--spacing(7)]",
+        "group/calendar bg-background in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent p-2 [--cell-radius:var(--radius-md)] [--cell-size:--spacing(7)] [&_.rdp-range_start.rdp-range_end]:after:hidden",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className,
@@ -80,23 +80,23 @@ function Calendar({
         week_number_header: cn("w-(--cell-size) select-none", defaultClassNames.week_number_header),
         week_number: cn("select-none text-[0.8rem] text-muted-foreground", defaultClassNames.week_number),
         day: cn(
-          "group/day relative aspect-square h-full w-full flex-1 select-none rounded-(--cell-radius) p-0 text-center [&:last-child[data-selected=true]_button]:rounded-r-(--cell-radius)",
-          props.showWeekNumber
-            ? "[&:nth-child(2)[data-selected=true]_button]:rounded-l-(--cell-radius)"
-            : "[&:first-child[data-selected=true]_button]:rounded-l-(--cell-radius)",
+          "group/day relative aspect-square h-full w-full flex-1 select-none rounded-(--cell-radius) p-0 text-center",
           defaultClassNames.day,
         ),
         range_start: cn(
-          "relative isolate z-20 rounded-l-(--cell-radius) bg-pressed after:absolute after:inset-y-0 after:right-0 after:w-4 after:bg-pressed",
+          "relative isolate after:absolute after:top-1/2 after:right-0 after:left-1/2 after:-z-10 after:h-9 after:-translate-y-1/2 after:bg-pressed",
           defaultClassNames.range_start,
         ),
-        range_middle: cn("rounded-none", defaultClassNames.range_middle),
+        range_middle: cn(
+          "relative isolate rounded-none after:absolute after:inset-x-0 after:top-1/2 after:-z-10 after:h-9 after:-translate-y-1/2 after:bg-pressed",
+          defaultClassNames.range_middle,
+        ),
         range_end: cn(
-          "relative isolate z-20 rounded-r-(--cell-radius) bg-pressed after:absolute after:inset-y-0 after:left-0 after:w-4 after:bg-pressed",
+          "relative isolate after:absolute after:top-1/2 after:right-1/2 after:left-0 after:-z-10 after:h-9 after:-translate-y-1/2 after:bg-pressed",
           defaultClassNames.range_end,
         ),
         today: cn(
-          "rounded-(--cell-radius) bg-muted text-foreground data-[selected=true]:rounded-none",
+          "text-foreground [&:not([data-selected])_button>span]:bg-muted dark:[&:not([data-selected])_button>span]:bg-input/30 [&_button>span]:size-9 [&_button>span]:justify-center [&_button>span]:rounded-full",
           defaultClassNames.today,
         ),
         outside: cn("text-muted-foreground aria-selected:text-muted-foreground", defaultClassNames.outside),
@@ -144,26 +144,24 @@ function CalendarDayButton({
 }: React.ComponentProps<typeof DayButton> & { locale?: Partial<Locale> }) {
   void _color;
 
-  const defaultClassNames = getDefaultClassNames();
-
   const ref = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
     if (modifiers.focused) ref.current?.focus();
   }, [modifiers.focused]);
 
+  const active = modifiers.range_start || modifiers.range_end || (modifiers.selected && !modifiers.range_middle);
+
   return (
     <Button
+      ref={ref}
       variant="ghost"
+      data-active={active}
       data-day={day.date.toLocaleDateString(locale?.code)}
-      data-selected-single={
-        modifiers.selected && !modifiers.range_start && !modifiers.range_end && !modifiers.range_middle
-      }
       data-range-start={modifiers.range_start}
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "relative isolate z-10 flex aspect-square size-auto w-full min-w-0 flex-col gap-1 border-0 p-0 font-normal leading-none data-[range-end=true]:rounded-(--cell-radius) data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-(--cell-radius) data-[range-end=true]:rounded-r-(--cell-radius) data-[range-end=true]:bg-primary data-[range-middle=true]:bg-pressed data-[range-start=true]:bg-primary data-[selected-single=true]:bg-primary data-[range-end=true]:text-primary-foreground data-[range-middle=true]:text-foreground data-[range-start=true]:text-primary-foreground data-[selected-single=true]:text-primary-foreground group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:ring-ring/50 dark:hover:text-foreground [&>span]:text-xs [&>span]:opacity-70",
-        defaultClassNames.day,
+        "isolate z-10 aspect-square size-auto w-full min-w-0 flex-col border-transparent! p-0 font-normal leading-none focus-visible:ring-0 data-[range-middle=true]:rounded-none data-[active=true]:text-primary-foreground data-[range-middle=true]:text-foreground [&>span]:relative [&>span]:z-20 [&>span]:text-xs [&>span]:opacity-70 focus-visible:[&>span]:size-9 focus-visible:[&>span]:justify-center focus-visible:[&>span]:rounded-full focus-visible:[&>span]:ring-[3px] focus-visible:[&>span]:ring-ring/50 data-[active=true]:[&>span]:size-9 data-[active=true]:[&>span]:justify-center data-[active=true]:[&>span]:rounded-full data-[active=true]:[&>span]:bg-primary data-[active=true]:[&>span]:opacity-100",
         className,
       )}
       {...props}

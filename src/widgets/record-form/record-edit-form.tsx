@@ -3,12 +3,11 @@
 import type { SubmitEvent } from "react";
 import { useEffect, useRef } from "react";
 
-import { MapPinCheckIcon, PencilIcon } from "@animateicons/react/lucide";
+import { PencilIcon } from "@animateicons/react/lucide";
 import { useQuery } from "@tanstack/react-query";
 
 import { placesQueryOptions } from "@/entities/place";
-import { RECORDS_QUERY_KEY, type RecordFieldErrors, type RecordWeather } from "@/entities/record";
-import { getPushEndpoint } from "@/features/push-notification";
+import { RECORDS_QUERY_KEY, type RecordFormState, type RecordWeather } from "@/entities/record";
 import {
   RecordLocationFields,
   type RecordLocationPlace,
@@ -22,22 +21,13 @@ import { LeaveGuard } from "@/shared/ui/leave-guard";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
-import { RecordDateField } from "./date-field";
-import { RecordTextFields } from "./text-fields";
-import { RecordWeatherField } from "./weather-field";
+import { RecordDateField } from "./field/date-field";
+import { RecordTextFields } from "./field/text-fields";
+import { RecordWeatherField } from "./field/weather-field";
 
-export { RecordCreateFunnel } from "./create-record-funnel";
-
-type RecordFormState = {
-  fieldErrors?: RecordFieldErrors;
-  message?: string;
-  status: "error" | "success";
-};
-
-type RecordFormProps = {
+type RecordEditFormProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
-  defaultRecordedAt: string;
-  initialValues?: {
+  initialValues: {
     activity: string;
     memo: string;
     places: RecordLocationPlace[];
@@ -46,33 +36,25 @@ type RecordFormProps = {
     region: RecordLocationRegion;
     weather: RecordWeather;
   };
-  mode?: "create" | "edit";
-  /** 헤더 뒤로가기의 fallback과 같은 값. 저장을 취소하고 나갈 때 돌아갈 곳이다. */
   returnTo: string;
-  /** 저장에 성공했을 때 갈 곳. 작성은 목록, 수정은 그 기록의 상세다. */
   savedTo: string;
 };
 
-export function RecordForm({
-  action,
-  defaultRecordedAt,
-  initialValues,
-  mode = "create",
-  returnTo,
-  savedTo,
-}: RecordFormProps) {
+export function RecordEditForm({ action, initialValues, returnTo, savedTo }: RecordEditFormProps) {
   const guardRef = useRef<LeaveGuardHandle>(null);
   const placesQuery = useQuery(placesQueryOptions);
   const formRef = useRef<HTMLFormElement>(null);
 
   const save = useActionMutation(action, {
-    error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요`,
-    icon: mode === "edit" ? PencilIcon : MapPinCheckIcon,
+    error: "기록을 수정하지 못했어요",
+    icon: PencilIcon,
     invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
-    success: mode === "edit" ? "기록을 수정했어요" : "기록을 남겼어요",
-    onSuccess: () => guardRef.current?.finish(savedTo),
+    success: "기록을 수정했어요",
+    onSuccess: () => {
+      if (formRef.current) formRef.current.dataset.dirty = "false";
+      guardRef.current?.finish(savedTo);
+    },
     onFail: () => {
-      if (formRef.current) formRef.current.dataset.dirty = "true";
       formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
     },
   });
@@ -95,23 +77,9 @@ export function RecordForm({
     if (formRef.current) formRef.current.dataset.dirty = "true";
   }
 
-  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = event.currentTarget;
-
-    form.dataset.dirty = "false";
-    const formData = new FormData(form);
-
-    /**
-     * 계정을 함께 쓰므로 서버는 어느 기기가 보냈는지 알 수 없다.
-     * 작성한 기기에는 알림이 가지 않도록 이 기기의 구독 endpoint를 실어 보낸다.
-     */
-    if (mode === "create") {
-      const endpoint = await getPushEndpoint();
-      if (endpoint) formData.set("senderEndpoint", endpoint);
-    }
-
-    save.mutate(formData);
+    save.mutate(new FormData(event.currentTarget));
   }
 
   if (placesQuery.isPending) {
@@ -144,9 +112,9 @@ export function RecordForm({
       <div className="px-1 py-1">
         <FieldGroup>
           <RecordDateField
-            defaultRecordedAt={defaultRecordedAt}
-            initialRecordedAt={initialValues?.recordedAt}
-            initialRecordedUntil={initialValues?.recordedUntil}
+            defaultRecordedAt={initialValues.recordedAt}
+            initialRecordedUntil={initialValues.recordedUntil}
+            onValueChange={markDirty}
             recordedAtError={fieldErrors?.recordedAt}
             recordedUntilError={fieldErrors?.recordedUntil}
           />
@@ -154,7 +122,7 @@ export function RecordForm({
           <FieldSeparator />
 
           <RecordWeatherField
-            initialWeather={initialValues?.weather}
+            initialWeather={initialValues.weather}
             onChange={markDirty}
             weatherError={fieldErrors?.weather}
           />
@@ -162,9 +130,9 @@ export function RecordForm({
           <FieldSeparator />
 
           <RecordLocationFields
-            initialPlaces={initialValues?.places}
-            initialRegion={initialValues?.region}
-            onChange={markDirty}
+            initialPlaces={initialValues.places}
+            initialRegion={initialValues.region}
+            onValueChange={markDirty}
             placeError={fieldErrors?.places}
             regionError={fieldErrors?.regionCode}
             savedPlaces={savedPlaces}
@@ -174,14 +142,14 @@ export function RecordForm({
 
           <RecordTextFields
             activityError={fieldErrors?.activity}
-            initialActivity={initialValues?.activity}
-            initialMemo={initialValues?.memo}
+            initialActivity={initialValues.activity}
+            initialMemo={initialValues.memo}
             memoError={fieldErrors?.memo}
           />
         </FieldGroup>
 
         <Button className="mt-5" fullWidth loading={save.isPending} size="xlarge" type="submit">
-          {mode === "edit" ? "수정 완료" : "기록 남기기"}
+          수정 완료
         </Button>
       </div>
     </form>

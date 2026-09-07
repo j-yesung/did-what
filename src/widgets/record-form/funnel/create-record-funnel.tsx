@@ -11,6 +11,7 @@ import {
   DEFAULT_RECORD_WEATHER,
   RECORDS_QUERY_KEY,
   type RecordFieldErrors,
+  type RecordFormState,
   type RecordWeather,
 } from "@/entities/record";
 import { getPushEndpoint } from "@/features/push-notification";
@@ -25,27 +26,23 @@ import { FieldGroup, FieldSeparator } from "@/shared/ui/field";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
+import { RecordDateField } from "../field/date-field";
+import { RecordTextFields } from "../field/text-fields";
+import { RecordWeatherField } from "../field/weather-field";
 import {
   getRecordCreateErrorStep,
+  getRecordCreateStepIndex,
+  RECORD_CREATE_STEPS,
   type RecordCreateContext,
   type RecordCreateStep,
   type RecordCreateStepMap,
   toRecordCreateFormData,
   validateRecordCreateStep,
 } from "./create-record-funnel.model";
-import { RecordDateField } from "./date-field";
 import { RecordFunnelLayout } from "./funnel-layout";
-import { RecordTextFields } from "./text-fields";
 import { useRecordCreateNavigation } from "./use-record-create-navigation";
-import { RecordWeatherField } from "./weather-field";
 
 const FUNNEL_ID = "record-create";
-
-type RecordFormState = {
-  fieldErrors?: RecordFieldErrors;
-  message?: string;
-  status: "error" | "success";
-};
 
 type RecordCreateFunnelProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
@@ -116,7 +113,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
     error: "기록을 저장하지 못했어요",
     icon: MapPinCheckIcon,
     invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
-    success: "기록을 남겼어요",
+    success: "함께한 순간을 기록했어요",
     onSuccess: () => navigation.finish(savedTo),
     onFail: (result) => {
       const nextErrors = result.fieldErrors ?? {};
@@ -130,12 +127,10 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
   busyRef.current = busy;
 
   function updateContext(patch: Partial<RecordCreateContext>) {
+    const next = { ...draft, ...patch, dirty: true };
     setFieldErrors({});
-    setDraft((current) => {
-      const next = { ...current, ...patch, dirty: true };
-      void funnel.history.replace(funnel.step, next);
-      return next;
-    });
+    setDraft(next);
+    void funnel.history.replace(funnel.step, next);
   }
 
   function focusErrors(errors: RecordFieldErrors) {
@@ -150,12 +145,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
       return;
     }
 
-    const nextStep: Record<RecordCreateStep, RecordCreateStep | null> = {
-      when: "where",
-      where: "what",
-      what: null,
-    };
-    const next = nextStep[funnel.step];
+    const next = RECORD_CREATE_STEPS[getRecordCreateStepIndex(funnel.step) + 1];
     if (next) void funnel.history.push(next, draft);
   }
 

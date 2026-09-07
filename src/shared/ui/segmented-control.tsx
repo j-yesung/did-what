@@ -60,7 +60,7 @@ function SegmentedControl({
   return (
     <SegmentedControlContext.Provider value={{ name, onValueChange, size, value }}>
       <div
-        className={cn("relative flex w-full rounded-xl bg-muted p-1", SEGMENTED_CONTROL_SIZE[size], className)}
+        className={cn("relative flex w-full rounded-xl bg-border p-1", SEGMENTED_CONTROL_SIZE[size], className)}
         data-size={size}
         data-slot="segmented-control"
         role="radiogroup"

@@ -9,15 +9,7 @@ import { format, parseISO } from "date-fns";
 
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/shared/ui/drawer";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
 
 type RecordPeriod = {
   from: string;
@@ -97,7 +89,6 @@ export function RecordPeriodFilter({ from, onApply, to }: RecordPeriodFilterProp
         <DrawerContent>
           <DrawerHeader>
             <DrawerTitle>어떤 기간을 볼까요?</DrawerTitle>
-            <DrawerDescription>하루만 보려면 같은 날짜를, 여러 날이면 시작일과 끝날을 고르세요.</DrawerDescription>
           </DrawerHeader>
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">

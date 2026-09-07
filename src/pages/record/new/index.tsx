@@ -1,6 +1,6 @@
 import { createRecord } from "@/features/record/create-record";
 import { PageShell } from "@/shared/ui/layouts";
-import { RecordCreateFunnel } from "@/widgets/record-form";
+import { RecordCreateFunnel } from "@/widgets/record-form/funnel/create-record-funnel";
 
 export function RecordNewPage() {
   const defaultRecordedAt = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());

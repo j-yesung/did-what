@@ -8,7 +8,7 @@ import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { RecordForm } from "@/widgets/record-form";
+import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
 
 type RecordEditPageProps = {
   params: Promise<{ recordId: string }>;
@@ -52,9 +52,8 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
         {hasLoadError || !record ? (
           <LoadErrorAlert title="수정할 기록을 불러오지 못했어요" />
         ) : (
-          <RecordForm
+          <RecordEditForm
             action={updateRecord.bind(null, recordId)}
-            defaultRecordedAt={record.recorded_at}
             initialValues={{
               activity: record.activity,
               memo: record.memo ?? "",
@@ -77,7 +76,6 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
                 name: record.region_name.split(" ").pop() ?? record.region_name,
               },
             }}
-            mode="edit"
             returnTo={`/records/${recordId}`}
             savedTo={`/records/${recordId}`}
           />
