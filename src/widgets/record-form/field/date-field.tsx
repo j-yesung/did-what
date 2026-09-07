@@ -8,15 +8,7 @@ import { format, parseISO } from "date-fns";
 
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/shared/ui/drawer";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
 import { Field, FieldError, FieldLegend, FieldSet } from "@/shared/ui/field";
 
 type RecordDateFieldProps = {
@@ -82,7 +74,6 @@ export function RecordDateField({
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>언제 갔나요?</DrawerTitle>
-              <DrawerDescription>하루만 갔다면 그날을, 여러 날이면 시작일과 끝날을 고르세요.</DrawerDescription>
             </DrawerHeader>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
