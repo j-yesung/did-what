@@ -77,9 +77,6 @@ export function RecordCard({ isLast, record }: RecordCardProps) {
             {weatherLabel}
           </span>
         </p>
-        {record.memo ? (
-          <p className="mt-1.5 line-clamp-2 text-[13px] text-muted-foreground leading-relaxed">{record.memo}</p>
-        ) : null}
       </Button>
     </article>
   );
