@@ -14,7 +14,7 @@ export type RecordCreateContext = {
   recordedAt: string;
   recordedUntil: string;
   region: RecordLocationRegion | null;
-  weather: RecordWeather | null;
+  weather: RecordWeather;
 };
 
 export type RecordCreateStepMap = Record<RecordCreateStep, RecordCreateContext>;
@@ -31,7 +31,6 @@ export function validateRecordCreateStep(step: RecordCreateStep, context: Record
     if (context.recordedUntil && (!isIsoDate(context.recordedUntil) || context.recordedUntil < context.recordedAt)) {
       fieldErrors.recordedUntil = "종료일은 시작일과 같거나 이후여야 해요.";
     }
-    if (!context.weather) fieldErrors.weather = "날씨를 선택해 주세요.";
   }
 
   if (step === "where") {
@@ -68,7 +67,7 @@ export function toRecordCreateFormData(context: RecordCreateContext) {
   formData.set("regionCode", context.region?.code ?? "");
   formData.set("regionLabel", context.region?.label ?? "");
   formData.set("regionName", context.region?.fullName ?? "");
-  formData.set("weather", context.weather ?? "");
+  formData.set("weather", context.weather);
 
   return formData;
 }

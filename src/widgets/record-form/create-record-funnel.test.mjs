@@ -10,11 +10,11 @@ const context = {
   recordedAt: "2026-09-07",
   recordedUntil: "2026-09-07",
   region: null,
-  weather: null,
+  weather: "sunny",
 };
 
 test("각 단계는 자기 입력만 검증한다", () => {
-  assert.deepEqual(validateRecordCreateStep("when", context), { weather: "날씨를 선택해 주세요." });
+  assert.deepEqual(validateRecordCreateStep("when", context), {});
   assert.deepEqual(validateRecordCreateStep("where", context), {
     regionCode: "목록에서 지역을 선택해 주세요.",
   });

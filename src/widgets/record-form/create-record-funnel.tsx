@@ -7,7 +7,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useFunnel } from "@use-funnel/browser";
 
 import { placesQueryOptions } from "@/entities/place";
-import { RECORDS_QUERY_KEY, type RecordFieldErrors, type RecordWeather } from "@/entities/record";
+import {
+  DEFAULT_RECORD_WEATHER,
+  RECORDS_QUERY_KEY,
+  type RecordFieldErrors,
+  type RecordWeather,
+} from "@/entities/record";
 import { getPushEndpoint } from "@/features/push-notification";
 import {
   RecordLocationFields,
@@ -87,7 +92,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
         recordedAt: defaultRecordedAt,
         recordedUntil: defaultRecordedAt,
         region: null,
-        weather: null,
+        weather: DEFAULT_RECORD_WEATHER,
       } satisfies RecordCreateContext,
       step: "when" as const,
     }),
