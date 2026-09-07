@@ -69,7 +69,7 @@ export function RecordForm({
     error: `기록을 ${mode === "edit" ? "수정" : "저장"}하지 못했어요`,
     icon: mode === "edit" ? PencilIcon : MapPinCheckIcon,
     invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
-    success: mode === "edit" ? "기록을 수정했어요" : "기록을 남겼어요",
+    success: mode === "edit" ? "기록을 수정했어요" : "함께한 순간을 기록했어요",
     onSuccess: () => guardRef.current?.finish(savedTo),
     onFail: () => {
       if (formRef.current) formRef.current.dataset.dirty = "true";

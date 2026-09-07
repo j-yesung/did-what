@@ -116,7 +116,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
     error: "기록을 저장하지 못했어요",
     icon: MapPinCheckIcon,
     invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
-    success: "기록을 남겼어요",
+    success: "함께한 순간을 기록했어요",
     onSuccess: () => navigation.finish(savedTo),
     onFail: (result) => {
       const nextErrors = result.fieldErrors ?? {};
