@@ -16,7 +16,6 @@ import { RegionPickerDialog } from "./region-picker-dialog";
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
   initialRegion?: RecordLocationRegion;
-  onChange?: () => void;
   onValueChange?: (region: RecordLocationRegion | null, places: RecordLocationPlace[]) => void;
   placeError?: string;
   regionError?: string;
@@ -26,7 +25,6 @@ type RecordLocationFieldsProps = {
 export function RecordLocationFields({
   initialPlaces = [],
   initialRegion,
-  onChange,
   onValueChange,
   placeError,
   regionError,
@@ -39,7 +37,6 @@ export function RecordLocationFields({
     if (nextRegion.code === region?.code) return;
 
     setRegion(nextRegion);
-    onChange?.();
     onValueChange?.(nextRegion, places);
   }
 
@@ -50,7 +47,6 @@ export function RecordLocationFields({
     const nextPlaces = [...places, place];
     if (!region) setRegion(nextRegion);
     setPlaces(nextPlaces);
-    onChange?.();
     onValueChange?.(nextRegion, nextPlaces);
   }
 
@@ -59,14 +55,12 @@ export function RecordLocationFields({
       place.key === key ? { ...place, reference: { ...place.reference, save: checked || place.saved } } : place,
     );
     setPlaces(nextPlaces);
-    onChange?.();
     onValueChange?.(region, nextPlaces);
   }
 
   function removePlace(key: string) {
     const nextPlaces = places.filter((item) => item.key !== key);
     setPlaces(nextPlaces);
-    onChange?.();
     onValueChange?.(region, nextPlaces);
   }
 

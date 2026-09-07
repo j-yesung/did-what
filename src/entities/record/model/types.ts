@@ -1,3 +1,5 @@
+import type { RecordFieldErrors } from "./record-form";
+
 export type RecordSummary = {
   activity: string;
   id: string;
@@ -7,4 +9,10 @@ export type RecordSummary = {
   region_label?: string;
   region_name?: string;
   weather: string;
+};
+
+export type RecordFormState = {
+  fieldErrors?: RecordFieldErrors;
+  message?: string;
+  status: "error" | "success";
 };

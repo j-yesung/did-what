@@ -29,7 +29,7 @@ export {
   validateRecordInput,
 } from "./model/record-form";
 export { RECORD_PAGE_SIZE, type RecordCursor } from "./model/record-page";
-export type { RecordSummary } from "./model/types";
+export type { RecordFormState, RecordSummary } from "./model/types";
 export {
   DEFAULT_RECORD_WEATHER,
   getRecordWeatherLabel,
