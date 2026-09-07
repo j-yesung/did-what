@@ -132,6 +132,8 @@
   --map-level-2: var(--blue-300);
   --map-level-3: var(--blue-500);
   --map-level-4: var(--blue-700);
+  --map-segment-track: var(--grey-100);
+  --map-segment-selected: var(--grey-0);
 }
 
 @theme inline {
@@ -212,6 +214,8 @@
 
   /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
   --map-empty: var(--grey-800);
+  --map-segment-track: var(--grey-850);
+  --map-segment-selected: var(--grey-800);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -242,6 +246,8 @@
 
     /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
     --map-empty: var(--grey-800);
+    --map-segment-track: var(--grey-850);
+    --map-segment-selected: var(--grey-800);
   }
 }
 
