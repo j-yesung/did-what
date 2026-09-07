@@ -15,7 +15,7 @@ const buttonVariants = cva(
       variant: {
         fill: "after:bg-black",
         weak: "after:bg-current",
-        neutral: "bg-muted text-muted-foreground after:bg-current",
+        neutral: "bg-muted text-muted-foreground after:bg-current dark:bg-input/30",
         outline:
           "border-border bg-background after:bg-current aria-expanded:bg-muted dark:border-input dark:bg-input/30",
         ghost: "after:bg-current aria-expanded:bg-muted aria-expanded:text-foreground",

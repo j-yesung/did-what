@@ -24,16 +24,14 @@ export function RecordTextFields({
   return (
     <>
       <Field data-invalid={Boolean(activityError)}>
-        <FieldLabel htmlFor="activity">무엇을 했나요?</FieldLabel>
-        <FieldDescription>가장 기억하고 싶은 일을 짧게 적어 주세요.</FieldDescription>
-
+        <FieldLabel htmlFor="activity">기록 제목</FieldLabel>
         <Input
           className="h-12"
           defaultValue={initialActivity}
           id="activity"
           maxLength={120}
           name="activity"
-          placeholder="예: 영화 보고 저녁 먹음"
+          placeholder="예: 오디세이한테 압도 당함"
           required
           aria-invalid={Boolean(activityError)}
           aria-describedby={activityError ? "activity-error" : undefined}
@@ -45,7 +43,7 @@ export function RecordTextFields({
 
       <Field data-invalid={Boolean(memoError)}>
         <FieldLabel htmlFor="memo">
-          메모 <span className="font-[650] text-[11px] text-muted-foreground">(선택)</span>
+          무엇을 했나요? <span className="font-[650] text-[11px] text-muted-foreground">(선택)</span>
         </FieldLabel>
         <Textarea
           className="min-h-24 resize-none"
