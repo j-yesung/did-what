@@ -15,8 +15,8 @@ import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-co
 const FIELD_ICON = "size-4.5 text-foreground [stroke-width:2]";
 
 type RecordWeatherFieldProps = {
-  initialWeather?: RecordWeather;
-  onChange?: () => void;
+  initialWeather?: RecordWeather | null;
+  onChange?: (weather: RecordWeather) => void;
   weatherError?: string;
 };
 
@@ -25,19 +25,19 @@ export function RecordWeatherField({
   onChange,
   weatherError,
 }: RecordWeatherFieldProps) {
-  const [weather, setWeather] = useState<RecordWeather>(initialWeather);
+  const [weather, setWeather] = useState<RecordWeather | null>(initialWeather);
 
   function handleWeatherChange(nextWeather: string) {
     if (!isRecordWeather(nextWeather)) return;
     setWeather(nextWeather);
-    onChange?.();
+    onChange?.(nextWeather);
   }
 
   return (
     <FieldSet>
       <FieldLegend className="flex items-center gap-2" id="record-weather-label" variant="label">
         날씨
-        <WeatherIcon weather={weather} className={FIELD_ICON} aria-hidden="true" />
+        {weather ? <WeatherIcon weather={weather} className={FIELD_ICON} aria-hidden="true" /> : null}
       </FieldLegend>
       <Field data-invalid={Boolean(weatherError)}>
         <SegmentedControl
@@ -47,7 +47,7 @@ export function RecordWeatherField({
           name="weather"
           onValueChange={handleWeatherChange}
           size="large"
-          value={weather}
+          value={weather ?? ""}
         >
           {RECORD_WEATHER_OPTIONS.map((option) => (
             <SegmentedControlItem key={option.value} value={option.value}>

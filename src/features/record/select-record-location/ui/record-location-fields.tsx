@@ -17,6 +17,7 @@ type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
   initialRegion?: RecordLocationRegion;
   onChange?: () => void;
+  onValueChange?: (region: RecordLocationRegion | null, places: RecordLocationPlace[]) => void;
   placeError?: string;
   regionError?: string;
   savedPlaces: PlaceOption[];
@@ -26,6 +27,7 @@ export function RecordLocationFields({
   initialPlaces = [],
   initialRegion,
   onChange,
+  onValueChange,
   placeError,
   regionError,
   savedPlaces,
@@ -38,23 +40,34 @@ export function RecordLocationFields({
 
     setRegion(nextRegion);
     onChange?.();
+    onValueChange?.(nextRegion, places);
   }
 
   function addPlace(place: RecordLocationPlace, placeRegion: RecordLocationRegion) {
     if (places.some((item) => item.key === place.key)) return;
 
-    if (!region) setRegion(placeRegion);
-    setPlaces((current) => [...current, place]);
+    const nextRegion = region ?? placeRegion;
+    const nextPlaces = [...places, place];
+    if (!region) setRegion(nextRegion);
+    setPlaces(nextPlaces);
     onChange?.();
+    onValueChange?.(nextRegion, nextPlaces);
   }
 
   function toggleSave(key: string, checked: boolean) {
-    setPlaces((current) =>
-      current.map((place) =>
-        place.key === key ? { ...place, reference: { ...place.reference, save: checked || place.saved } } : place,
-      ),
+    const nextPlaces = places.map((place) =>
+      place.key === key ? { ...place, reference: { ...place.reference, save: checked || place.saved } } : place,
     );
+    setPlaces(nextPlaces);
     onChange?.();
+    onValueChange?.(region, nextPlaces);
+  }
+
+  function removePlace(key: string) {
+    const nextPlaces = places.filter((item) => item.key !== key);
+    setPlaces(nextPlaces);
+    onChange?.();
+    onValueChange?.(region, nextPlaces);
   }
 
   const selectedKeys = new Set(places.map((place) => place.key));
@@ -96,10 +109,7 @@ export function RecordLocationFields({
                       aria-label={`${place.name} 방문 장소에서 제거`}
                       icon={TrashIcon}
                       iconStrokeWidth={2}
-                      onClick={() => {
-                        setPlaces((current) => current.filter((item) => item.key !== place.key));
-                        onChange?.();
-                      }}
+                      onClick={() => removePlace(place.key)}
                       size="sm"
                       type="button"
                     />

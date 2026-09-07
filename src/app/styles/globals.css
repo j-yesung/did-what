@@ -391,3 +391,17 @@
     transform: translateX(24px);
   }
 }
+
+@keyframes funnel-step-forward {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@keyframes funnel-step-backward {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}

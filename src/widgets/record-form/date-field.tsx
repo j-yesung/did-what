@@ -23,6 +23,7 @@ type RecordDateFieldProps = {
   defaultRecordedAt: string;
   initialRecordedAt?: string;
   initialRecordedUntil?: string | null;
+  onValueChange?: (recordedAt: string, recordedUntil: string) => void;
   recordedAtError?: string;
   recordedUntilError?: string;
 };
@@ -31,6 +32,7 @@ export function RecordDateField({
   defaultRecordedAt,
   initialRecordedAt,
   initialRecordedUntil,
+  onValueChange,
   recordedAtError,
   recordedUntilError,
 }: RecordDateFieldProps) {
@@ -102,7 +104,9 @@ export function RecordDateField({
                 fullWidth
                 onClick={() => {
                   if (!draftDateRange?.from) return;
-                  setDateRange({ from: draftDateRange.from, to: draftDateRange.to ?? draftDateRange.from });
+                  const nextRange = { from: draftDateRange.from, to: draftDateRange.to ?? draftDateRange.from };
+                  setDateRange(nextRange);
+                  onValueChange?.(format(nextRange.from, "yyyy-MM-dd"), format(nextRange.to, "yyyy-MM-dd"));
                   setDatePickerOpen(false);
                 }}
                 size="large"

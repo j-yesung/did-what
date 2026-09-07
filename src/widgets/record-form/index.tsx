@@ -26,6 +26,8 @@ import { RecordDateField } from "./date-field";
 import { RecordTextFields } from "./text-fields";
 import { RecordWeatherField } from "./weather-field";
 
+export { RecordCreateFunnel } from "./create-record-funnel";
+
 type RecordFormState = {
   fieldErrors?: RecordFieldErrors;
   message?: string;
