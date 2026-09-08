@@ -1,5 +1,7 @@
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
+export { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
+
 const SERVICE_WORKER_PATH = "/sw.js";
 
 export type PushKeys = {
@@ -49,10 +51,6 @@ export async function getCurrentPushKeys(): Promise<PushKeys | null> {
   if (!auth || !p256dh) return null;
 
   return { auth, endpoint: subscription.endpoint, p256dh };
-}
-
-export async function getPushEndpoint() {
-  return (await getCurrentPushKeys())?.endpoint ?? null;
 }
 
 /** 권한 요청은 사용자 제스처 안에서만 뜨므로 버튼 클릭에서 곧장 부른다. */
