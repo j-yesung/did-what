@@ -7,8 +7,7 @@ import { EmptyRecords, hasRecordFilters, RecordCard, type RecordFilters, RecordT
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { Spinner } from "@/shared/ui/spinner";
-import { TextButton } from "@/shared/ui/text-button";
+import { LoadMoreButton } from "@/shared/ui/load-more-button";
 
 import { useRecordListQuery } from "../model/use-record-list-query";
 
@@ -57,26 +56,11 @@ export function RecordList({ filters }: RecordListProps) {
         <RecordCard isLast={index === records.length - 1} key={record.id} record={record} />
       ))}
       {recordsQuery.hasNextPage ? (
-        <div className="flex flex-col items-center gap-2 pt-2" aria-live="polite">
-          {recordsQuery.isFetchNextPageError ? (
-            <p className="text-destructive text-xs">기록을 더 불러오지 못했어요.</p>
-          ) : null}
-          <TextButton
-            aria-busy={isLoadingMore || undefined}
-            disabled={isLoadingMore}
-            onClick={() => recordsQuery.fetchNextPage()}
-            tone="brand"
-            type="button"
-          >
-            {isLoadingMore ? (
-              <Spinner aria-hidden="true" />
-            ) : recordsQuery.isFetchNextPageError ? (
-              "다시 시도"
-            ) : (
-              "더 보기"
-            )}
-          </TextButton>
-        </div>
+        <LoadMoreButton
+          error={recordsQuery.isFetchNextPageError ? "기록을 더 불러오지 못했어요." : undefined}
+          loading={isLoadingMore}
+          onClick={() => recordsQuery.fetchNextPage()}
+        />
       ) : null}
     </RecordTimeline>
   );

@@ -3,78 +3,85 @@
 import { type KeyboardEvent, useState } from "react";
 
 import { MagnifyingGlassIcon } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/place/save-place";
-import type { KakaoPlace } from "@/shared/api/kakao-local";
+import { KAKAO_SEARCH_MAX_PAGE, type KakaoPlace } from "@/shared/api/kakao-local";
 import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/ui/pagination";
+import { LoadMoreButton } from "@/shared/ui/load-more-button";
 import { ResetButton } from "@/shared/ui/reset-button";
 
 import { getSavedKakaoPlaces } from "../model/get-saved-kakao-places";
 import { navigatePlaceSearch } from "../model/place-search-navigation";
 
-type PlaceSearchResultsProps = {
-  currentPage: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-  initialPlaces: SavedPlaceRow[];
+type PlaceSearchPage = {
+  isEnd: boolean;
+  page: number;
   pageableCount: number;
   places: KakaoPlace[];
+};
+
+type PlaceSearchResultsProps = {
+  initialPage: PlaceSearchPage;
+  initialPlaces: SavedPlaceRow[];
   query: string;
 };
 
-function getSearchPageHref(query: string, page: number) {
-  return `/places?${new URLSearchParams({ page: String(page), q: query })}`;
-}
-
-export function PlaceSearchResults({
-  currentPage,
-  hasNextPage,
-  hasPreviousPage,
-  initialPlaces,
-  pageableCount,
-  places,
-  query,
-}: PlaceSearchResultsProps) {
+export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceSearchResultsProps) {
   const router = useRouter();
+
   const savedPlacesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
+  const resultsQuery = useInfiniteQuery({
+    queryKey: ["place-search", query],
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({ page: String(pageParam), query });
+      const response = await fetch(`/api/places/search?${params}`);
+
+      if (!response.ok) throw new Error("검색 결과를 더 불러오지 못했어요.");
+
+      return response.json() as Promise<PlaceSearchPage>;
+    },
+    initialPageParam: 1,
+    initialData: { pageParams: [1], pages: [initialPage] },
+    getNextPageParam: (lastPage) =>
+      lastPage.isEnd || lastPage.page >= KAKAO_SEARCH_MAX_PAGE ? undefined : lastPage.page + 1,
+  });
+
   const [selectedPlaces, setSelectedPlaces] = useState<Map<string, CreatePlaceInput>>(() => new Map());
 
   const savedKakaoPlaces = getSavedKakaoPlaces(savedPlacesQuery.data ?? []);
+  const results = resultsQuery.data.pages.flatMap(({ page, places }) => places.map((place) => ({ page, place })));
   const hasSelectedPlaces = selectedPlaces.size > 0;
 
-  function selectPlace(place: KakaoPlace, savedPlaceId?: string) {
+  function selectPlace(place: KakaoPlace, page: number, savedPlaceId?: string) {
     if (savedPlaceId) return;
     setSelectedPlaces((current) => {
       const next = new Map(current);
       if (next.has(place.id)) {
         next.delete(place.id);
       } else {
-        next.set(place.id, { page: currentPage, placeId: place.id, query });
+        next.set(place.id, { page, placeId: place.id, query });
       }
       return next;
     });
   }
 
-  function handlePlaceKeyDown(event: KeyboardEvent<HTMLLIElement>, place: KakaoPlace, savedPlaceId?: string) {
+  function handlePlaceKeyDown(
+    event: KeyboardEvent<HTMLLIElement>,
+    place: KakaoPlace,
+    page: number,
+    savedPlaceId?: string,
+  ) {
     if (savedPlaceId || (event.key !== "Enter" && event.key !== " ")) return;
     event.preventDefault();
-    selectPlace(place, savedPlaceId);
+    selectPlace(place, page, savedPlaceId);
   }
 
   return (
@@ -84,7 +91,7 @@ export function PlaceSearchResults({
     >
       <div className="flex items-start justify-between gap-3 px-1">
         <h2 className="min-w-0 font-bold text-lg" id="place-search-results-title">
-          ‘{query}’ 검색 결과 {pageableCount}곳 · {currentPage}페이지
+          ‘{query}’ 검색 결과 {initialPage.pageableCount}곳
         </h2>
         <ResetButton
           aria-label="장소 검색 초기화"
@@ -96,9 +103,9 @@ export function PlaceSearchResults({
         />
       </div>
 
-      {places.length > 0 ? (
+      {results.length > 0 ? (
         <ul aria-label="저장할 장소 선택" className="flex flex-col gap-2" role="group">
-          {places.map((place) => {
+          {results.map(({ page, place }) => {
             const savedPlaceId = savedKakaoPlaces.get(place.id);
             const selected = selectedPlaces.has(place.id);
 
@@ -111,9 +118,9 @@ export function PlaceSearchResults({
                   FOCUS_RING,
                   savedPlaceId ? "cursor-default" : "cursor-pointer",
                 )}
-                key={place.id}
-                onClick={() => selectPlace(place, savedPlaceId)}
-                onKeyDown={(event) => handlePlaceKeyDown(event, place, savedPlaceId)}
+                key={`${page}:${place.id}`}
+                onClick={() => selectPlace(place, page, savedPlaceId)}
+                onKeyDown={(event) => handlePlaceKeyDown(event, place, page, savedPlaceId)}
                 role="checkbox"
                 tabIndex={savedPlaceId ? -1 : 0}
               >
@@ -162,41 +169,12 @@ export function PlaceSearchResults({
         </Empty>
       )}
 
-      {hasPreviousPage || hasNextPage ? (
-        <Pagination aria-label="장소 검색 결과 페이지">
-          <PaginationContent>
-            {hasPreviousPage ? (
-              <PaginationItem>
-                <PaginationPrevious
-                  aria-label="이전 검색 결과"
-                  href={getSearchPageHref(query, currentPage - 1)}
-                  replace
-                  text="이전"
-                />
-              </PaginationItem>
-            ) : null}
-            <PaginationItem>
-              <PaginationLink
-                aria-label={`${currentPage}페이지`}
-                href={getSearchPageHref(query, currentPage)}
-                isActive
-                replace
-              >
-                {currentPage}
-              </PaginationLink>
-            </PaginationItem>
-            {hasNextPage ? (
-              <PaginationItem>
-                <PaginationNext
-                  aria-label="다음 검색 결과"
-                  href={getSearchPageHref(query, currentPage + 1)}
-                  replace
-                  text="다음"
-                />
-              </PaginationItem>
-            ) : null}
-          </PaginationContent>
-        </Pagination>
+      {resultsQuery.hasNextPage ? (
+        <LoadMoreButton
+          error={resultsQuery.isFetchNextPageError ? "검색 결과를 더 불러오지 못했어요." : undefined}
+          loading={resultsQuery.isFetchingNextPage}
+          onClick={() => resultsQuery.fetchNextPage()}
+        />
       ) : null}
 
       {hasSelectedPlaces ? (
