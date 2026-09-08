@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getAccountMembers, getCurrentMemberId } from "@/entities/member/server";
 import { MemberSelect } from "@/features/member/select-member";
 import { requireUser } from "@/shared/api/supabase/require-user";
-import { Card, CardContent } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { ListHeader } from "@/shared/ui/list-header";
 
@@ -34,15 +33,11 @@ export async function MemberSelectPage({ searchParams }: MemberSelectPageProps) 
           title="누가 사용 중인가요?"
         />
       )}
-      <Card>
-        <CardContent>
-          <MemberSelect
-            currentMemberId={currentMemberId}
-            destination={destination}
-            members={members.filter((member) => member.is_active)}
-          />
-        </CardContent>
-      </Card>
+      <MemberSelect
+        currentMemberId={currentMemberId}
+        destination={destination}
+        members={members.filter((member) => member.is_active)}
+      />
     </PageShell>
   );
 }
