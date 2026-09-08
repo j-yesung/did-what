@@ -29,33 +29,26 @@
 
 ## Feature-Sliced Design
 
-라우팅은 루트 `/app`, 화면과 비즈니스 코드는 `/src`의 FSD 레이어에 둔다.
-배경은 [FSD 공식 Next.js 가이드](https://fsd.how/kr/docs/guides/tech/with-nextjs/) 참고.
+라우팅은 루트 `app/`, 화면과 비즈니스 코드는 `src/`의 FSD 레이어에 둔다. 배경은 [FSD 공식 Next.js 가이드](https://fsd.how/kr/docs/guides/tech/with-nextjs/) 참고.
 
 ```text
-/
-├── app/          # Next.js 라우팅 전용 (page, layout, route 등)
-├── pages/        # Pages Router 충돌 방지용 placeholder (README.md만 유지)
-└── src/
-    ├── app/      # FSD App Layer: 전역 스타일, provider, route-handlers 구현
-    ├── pages/    # 페이지 단위 화면 조합
-    ├── widgets/  # 독립적인 화면 블록
-    ├── features/ # 사용자의 재사용 가능한 행동
-    ├── entities/ # record, place, region 같은 도메인
-    └── shared/   # 도메인에 의존하지 않는 공용 코드 (ui, lib, api)
+app/            # Next.js 라우팅 전용 (page, layout, route)
+pages/          # Pages Router 충돌 방지용 placeholder (README.md만 유지)
+src/app/        # 전역 스타일, provider, route-handler 구현
+src/pages/      # 페이지 단위 화면 조합
+src/widgets/    # 독립적인 화면 블록
+src/features/   # 사용자의 재사용 가능한 행동
+src/entities/   # record, place, region 같은 도메인
+src/shared/     # 도메인에 의존하지 않는 공용 코드 (ui, lib, api)
 ```
 
-- 의존 방향은 `app → pages → widgets → features → entities → shared` 한 방향이다. 하위 레이어가 상위 레이어를 import하지 않는다.
-- 같은 레이어의 다른 slice는 기본적으로 import하지 않는다. 다만 서버 워크플로를 조합해야 하는 feature는 상대 feature의 `server.ts`만 단방향으로 import할 수 있으며, 순환 의존은 허용하지 않는다.
-- slice는 필요한 segment(`ui`, `model`, `api`, `lib`)만 둔다. 외부에서는 공개 진입점으로만 가져온다.
-- 기본 공개 API는 `index.ts`다. slice 전체가 서버 전용이면 여기에 `import "server-only"`를 선언한다.
-- 클라이언트용과 서버 전용 API가 함께 있는 slice만 `server.ts`를 보조 공개 진입점으로 두고 `import "server-only"`를 선언한다. `"use server"` Server Action은 클라이언트가 호출할 수 있으므로 `index.ts`로 공개할 수 있다.
-- 서버 전용 모듈(`shared/api/supabase/server`)을 import하는 파일에는 클라이언트가 쓰는 타입을 두지 않는다. 데이터 접근은 `api/`, 타입은 `model/`에 두고 `index.ts`에서 `export type`으로 내보낸다. 섞으면 클라이언트 컴포넌트가 `next/headers`까지 끌어와 빌드가 깨진다.
-- 관련 slice는 `pages/record/list`, `features/record/create-record`처럼 도메인 namespace 아래에 묶을 수 있다. namespace 자체에는 공개 API를 두지 않는다.
-- 페이지 UI가 단일 조합 컴포넌트라면 slice 루트에 둔다. UI 파일이 여러 개이거나 서버·클라이언트 컴포넌트를 분리할 때만 `ui/` segment를 둔다.
-- 루트 `app/**/page.tsx`는 `export { XxxPage as default } from "@/pages/xxx";` 형태로 해당 page slice의 공개 API만 re-export한다.
-- shadcn 컴포넌트는 `src/shared/ui`, 공용 유틸은 `src/shared/lib`에 둔다. `src/components`, `src/lib`는 쓰지 않는다.
-- `src/shared/ui`에는 컴포넌트만 둔다. 여러 컴포넌트가 함께 쓰는 클래스 상수 같은 값은 `src/shared/lib`에 둔다(`cn`, `PRESS_FEEDBACK`).
+- 의존 방향은 `app → pages → widgets → features → entities → shared` 한 방향이다. 같은 레이어의 다른 slice는 import하지 않되, 서버 워크플로를 조합하는 feature만 상대 feature의 `server.ts`를 단방향으로 가져온다.
+- 관련 slice는 `pages/record/list`처럼 도메인 namespace 아래 묶는다. namespace 자체에는 공개 API를 두지 않는다.
+- 파일 하나로 끝나면 slice 루트에 파일 하나만 둔다. 한 관심사의 파일이 둘 이상으로 늘어나면 그때 폴더로 묶고 `ui`, `model`, `api`, `lib` segment로 나눈다. `notification-bell.tsx`, `notification-bell.model.ts`가 `widgets/` 바닥에 나란히 쌓여 있으면 `widgets/notification-bell/`로 옮길 때다.
+- re-export는 최소로 쓴다. `index.ts`는 외부에서 실제로 여러 파일을 가져다 쓰는 slice에만 두고, 그 외에는 파일 경로로 직접 import한다. 배럴 위에 배럴을 얹지 않는다. 루트 `app/**/page.tsx`의 `export { XxxPage as default } from "@/pages/xxx";`가 Next.js 때문에 남는 예외다.
+- 서버 전용 slice는 `index.ts`에, 클라이언트용과 서버 전용 API가 섞인 slice는 `server.ts`에 `import "server-only"`를 선언한다. `"use server"` Server Action은 클라이언트가 호출하므로 `index.ts`로 공개해도 된다.
+- 서버 전용 모듈(`shared/api/supabase/server`)을 import하는 파일에는 클라이언트가 쓰는 타입을 두지 않는다. 데이터 접근은 `api/`, 타입은 `model/`. 섞으면 클라이언트 컴포넌트가 `next/headers`까지 끌어와 빌드가 깨진다.
+- shadcn 컴포넌트는 `shared/ui`, 공용 유틸과 여러 컴포넌트가 함께 쓰는 클래스 상수(`cn`, `PRESS_FEEDBACK`)는 `shared/lib`에 둔다. `src/components`, `src/lib`는 쓰지 않는다.
 
 ## Imports
 

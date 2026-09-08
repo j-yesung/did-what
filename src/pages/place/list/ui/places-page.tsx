@@ -1,6 +1,6 @@
+import { requireMember } from "@/entities/member/server";
 import { getSavedPlaces } from "@/entities/place/server";
 import { searchKakaoPlaces, validateKakaoQuery } from "@/shared/api/kakao-local/server";
-import { requireUser } from "@/shared/api/supabase/require-user";
 import { PageShell } from "@/shared/ui/layouts";
 import { ListHeader } from "@/shared/ui/list-header";
 
@@ -11,7 +11,7 @@ import { SavedPlaceList } from "./saved-place-list";
 type PlacesPageProps = { searchParams: Promise<{ q?: string | string[] }> };
 
 export async function PlacesPage({ searchParams }: PlacesPageProps) {
-  const [params, { user }] = await Promise.all([searchParams, requireUser()]);
+  const [params, { user }] = await Promise.all([searchParams, requireMember()]);
   const hasSearch = Object.hasOwn(params, "q");
   const rawQuery = typeof params.q === "string" ? params.q : "";
   const queryResult = hasSearch ? validateKakaoQuery(rawQuery) : null;

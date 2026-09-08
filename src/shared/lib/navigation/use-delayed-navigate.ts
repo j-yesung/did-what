@@ -11,7 +11,7 @@ const RELEASE_DELAY = 180;
 export function useDelayedNavigate() {
   const router = useRouter();
 
-  return (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+  return (event: MouseEvent<HTMLElement>, href: string) => {
     // 새 탭·새 창으로 여는 클릭은 브라우저에 맡긴다.
     if (event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
 

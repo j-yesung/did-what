@@ -3,14 +3,14 @@
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/shared/ui/field";
+import { FieldDescription, FieldLegend, FieldSet } from "@/shared/ui/field";
 
 export function CurrentMemberSetting({ name }: { name: string }) {
   const router = useRouter();
 
   return (
-    <Field>
-      <FieldLabel>현재 사용자</FieldLabel>
+    <FieldSet className="gap-2">
+      <FieldLegend>현재 사용자</FieldLegend>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-medium text-base">{name}</p>
@@ -25,6 +25,6 @@ export function CurrentMemberSetting({ name }: { name: string }) {
           전환
         </Button>
       </div>
-    </Field>
+    </FieldSet>
   );
 }
