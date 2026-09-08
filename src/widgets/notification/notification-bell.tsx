@@ -16,6 +16,7 @@ type NotificationBellProps = {
 };
 
 const NOTIFICATION_ENTRY_PATHS = new Set(["/", "/regions", "/records", "/places", "/settings"]);
+const NOTIFICATION_BADGE_LIMIT = 9;
 
 export function NotificationBell({ className, memberId }: NotificationBellProps) {
   const delayedNavigate = useDelayedNavigate();
@@ -23,7 +24,8 @@ export function NotificationBell({ className, memberId }: NotificationBellProps)
   const visible = NOTIFICATION_ENTRY_PATHS.has(pathname);
   const unreadQuery = useQuery({ ...unreadNotificationCountQueryOptions(memberId), enabled: visible });
   const count = unreadQuery.data ?? 0;
-  const badgeLabel = count > 9 ? "9+" : count > 0 ? String(count) : null;
+  const badgeLabel =
+    count > NOTIFICATION_BADGE_LIMIT ? `${NOTIFICATION_BADGE_LIMIT}+` : count > 0 ? String(count) : null;
   const accessibilityLabel = unreadQuery.isSuccess
     ? count > 0
       ? `알림함, 읽지 않은 알림 ${count}개`
@@ -39,7 +41,6 @@ export function NotificationBell({ className, memberId }: NotificationBellProps)
         className={className}
         icon={BellIcon}
         iconSize={24}
-        iconWeight={badgeLabel ? "fill" : "regular"}
         nativeButton={false}
         render={<Link href="/notifications" onClick={(event) => delayedNavigate(event, "/notifications")} prefetch />}
         size="lg"
@@ -48,8 +49,8 @@ export function NotificationBell({ className, memberId }: NotificationBellProps)
       {badgeLabel ? (
         <Badge
           aria-hidden="true"
-          className="absolute -top-1 -right-1 min-w-4 justify-center rounded-full px-1 py-0 text-[10px]"
-          tone="primary"
+          className="absolute top-1 right-1 z-10 min-w-4 justify-center rounded-full px-1 py-0 text-[10px]"
+          tone="danger"
         >
           {badgeLabel}
         </Badge>
