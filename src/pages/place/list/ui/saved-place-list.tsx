@@ -17,12 +17,6 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
-export function SavedPlaceCount({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
-  const places = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
-
-  return <p className="font-bold text-foreground text-xs">{`${places.data.length}곳에 추억 저장 중`}</p>;
-}
-
 export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
   const queryClient = useQueryClient();
   const delayedNavigate = useDelayedNavigate();

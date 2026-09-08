@@ -1,5 +1,6 @@
 import { parseRecordFilters, type RecordSearchParams } from "@/entities/record";
-import { PageHeader, PageShell } from "@/shared/ui/layouts";
+import { PageShell } from "@/shared/ui/layouts";
+import { ListHeader } from "@/shared/ui/list-header";
 
 import { RecordFilterForm } from "./record-filter-form";
 import { RecordList } from "./record-list";
@@ -13,7 +14,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
 
   return (
     <PageShell withBottomNavigation>
-      <PageHeader title="기록" />
+      <ListHeader title="우리의 기록" />
 
       <RecordFilterForm filters={filters} />
 
