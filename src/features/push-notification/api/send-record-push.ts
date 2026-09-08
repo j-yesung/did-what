@@ -1,8 +1,8 @@
 import webpush from "web-push";
 
-import type { requireUser } from "@/shared/api/supabase/require-user";
+import type { requireMember } from "@/entities/member/server";
 
-type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
+type SupabaseClient = Awaited<ReturnType<typeof requireMember>>["supabase"];
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
@@ -41,29 +41,26 @@ const GONE_STATUS_CODES = new Set([404, 410]);
 type SendRecordPushInput = {
   ownerId: string;
   recordId: string;
-  /** 기록을 작성한 기기의 구독 endpoint. 계정을 공유하므로 기기를 가르는 값은 이것뿐이다. */
-  senderEndpoint: string;
+  senderMemberId: string;
   supabase: SupabaseClient;
 };
 
 /**
  * 같은 계정에 묶인 다른 기기로 새 기록 알림을 보낸다.
  *
- * 계정 하나를 둘이 함께 쓰는 것을 전제로 한다. 작성자 본인의 기기는 endpoint로 걸러낸다.
- * 계정이 하나라 서버가 기기를 가를 수 있는 값이 그것뿐이다.
+ * 작성 구성원의 모든 기기와 비활성 구성원의 기기는 발송 대상에서 제외한다.
  */
-export async function sendRecordPush({ ownerId, recordId, senderEndpoint, supabase }: SendRecordPushInput) {
+export async function sendRecordPush({ ownerId, recordId, senderMemberId, supabase }: SendRecordPushInput) {
   if (!configured) return;
 
   const { data: subscriptions } = await supabase
     .from("push_subscriptions")
-    .select("endpoint, p256dh, auth_key")
-    .eq("owner_id", ownerId);
+    .select("endpoint, p256dh, auth_key, account_members!inner(is_active)")
+    .eq("owner_id", ownerId)
+    .eq("account_members.is_active", true)
+    .neq("member_id", senderMemberId);
 
   if (!subscriptions?.length) return;
-
-  const targets = subscriptions.filter((subscription) => subscription.endpoint !== senderEndpoint);
-  if (!targets.length) return;
 
   /**
    * 활동 내용은 담지 않는다. iOS가 앱 이름을 따로 붙이므로 제목 한 줄이면 알림으로 충분하고,
@@ -76,7 +73,7 @@ export async function sendRecordPush({ ownerId, recordId, senderEndpoint, supaba
   });
 
   const results = await Promise.all(
-    targets.map(async (target) => {
+    subscriptions.map(async (target) => {
       try {
         await webpush.sendNotification(
           { endpoint: target.endpoint, keys: { auth: target.auth_key, p256dh: target.p256dh } },

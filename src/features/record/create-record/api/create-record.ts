@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireMember } from "@/entities/member/server";
 import { type RecordFieldErrors, readRecordInput, validateRecordInput } from "@/entities/record";
 import { sendRecordPush } from "@/features/push-notification/server";
 import { validateRecordSelections } from "@/features/record/select-record-location/server";
-import { requireUser } from "@/shared/api/supabase/require-user";
 
 type CreateRecordState = {
   fieldErrors?: RecordFieldErrors;
@@ -14,7 +14,7 @@ type CreateRecordState = {
 };
 
 export async function createRecord(formData: FormData): Promise<CreateRecordState> {
-  const { supabase, user } = await requireUser();
+  const { member, supabase, user } = await requireMember();
   const result = validateRecordInput(readRecordInput(formData));
   if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };
 
@@ -25,6 +25,7 @@ export async function createRecord(formData: FormData): Promise<CreateRecordStat
 
   const { data: recordId, error } = await supabase.rpc("create_owned_record", {
     p_activity: result.data.activity,
+    p_author_member_id: member.id,
     p_memo: result.data.memo ?? "",
     p_place_ids: selections.placeIds,
     p_recorded_at: result.data.recordedAt,
@@ -44,7 +45,7 @@ export async function createRecord(formData: FormData): Promise<CreateRecordStat
     await sendRecordPush({
       ownerId: user.id,
       recordId,
-      senderEndpoint: String(formData.get("senderEndpoint") ?? ""),
+      senderMemberId: member.id,
       supabase,
     });
   } catch {
