@@ -69,10 +69,10 @@ export function RegionsContent() {
                     <RegionMiniMap map={map} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block break-keep font-bold text-[13px] leading-[1.35] tracking-[-0.02em]">
+                    <span className="block break-keep font-bold text-sm leading-[1.35] tracking-[-0.02em]">
                       {map.name}
                     </span>
-                    <span className="mt-1.5 block text-[11px] text-muted-foreground leading-[1.35]">
+                    <span className="mt-1.5 block text-muted-foreground text-xs leading-[1.45]">
                       {getRegionProgressLabel(map)}
                     </span>
                   </span>
