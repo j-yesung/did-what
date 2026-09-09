@@ -23,15 +23,9 @@ export async function MemberSelectPage({ searchParams }: MemberSelectPageProps) 
       {destination === "/settings" ? (
         <div className="flex flex-col gap-5">
           <PageHeader back="/settings" title="누가 사용 중인가요?" />
-          <p className="px-1 text-muted-foreground text-sm leading-relaxed">
-            이 기기에서 기록을 남기고 알림을 확인할 사람을 선택해 주세요.
-          </p>
         </div>
       ) : (
-        <ListHeader
-          description="이 기기에서 기록을 남기고 알림을 확인할 사람을 선택해 주세요."
-          title="누가 사용 중인가요?"
-        />
+        <ListHeader title="누가 사용 중인가요?" />
       )}
       <MemberSelect
         currentMemberId={currentMemberId}
