@@ -7,7 +7,7 @@ import { TrashIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
 import { placesQueryOptions } from "@/entities/place";
-import { RECORD_PLACES_QUERY_KEY } from "@/entities/record";
+import { RECORD_DETAILS_QUERY_KEY } from "@/entities/record";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
@@ -28,7 +28,7 @@ export function DeletePlaceButton({ name, placeId, recordCount }: DeletePlaceBut
   const remove = useActionMutation(() => deletePlace(placeId), {
     error: "장소를 삭제하지 못했어요",
     icon: BookmarkXIcon,
-    invalidate: [placesQueryOptions.queryKey, RECORD_PLACES_QUERY_KEY],
+    invalidate: [placesQueryOptions.queryKey, RECORD_DETAILS_QUERY_KEY],
     onSuccess: () => router.replace("/places"),
     success: "장소를 삭제했어요",
   });

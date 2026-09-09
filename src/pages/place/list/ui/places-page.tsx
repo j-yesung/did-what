@@ -37,7 +37,7 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
       {hasSearch ? (
         queryResult?.valid && successfulSearchResult ? (
           <PlaceSearchResults
-            initialPage={successfulSearchResult}
+            initialPage={{ ...successfulSearchResult, query: queryResult.query, scope: null }}
             initialPlaces={initialPlaces}
             query={queryResult.query}
           />

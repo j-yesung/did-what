@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 import { normalizeRecordWeather } from "@/entities/record";
 import { getRecord } from "@/entities/record/server";
-import { updateRecord } from "@/features/record/edit-record";
+import { updateRecord } from "@/features/record/edit-record/api/update-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";

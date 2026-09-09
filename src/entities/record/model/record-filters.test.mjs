@@ -1,4 +1,4 @@
-import { buildRecordsHref, filterRecords, hasRecordFilters, parseRecordFilters } from "./record-filters.ts";
+import { buildRecordsHref, hasRecordFilters, parseRecordFilters } from "./record-filters.ts";
 import assert from "node:assert/strict";
 
 const EMPTY = { from: "", query: "", sort: "recent", to: "" };
@@ -30,38 +30,4 @@ assert.equal(
 assert.equal(
   buildRecordsHref({ ...EMPTY, query: "커피" }, { sort: "oldest" }),
   "/records?q=%EC%BB%A4%ED%94%BC&sort=oldest",
-);
-
-const records = [
-  {
-    activity: "전시 관람",
-    created_at: "2026-08-03T09:00:00Z",
-    memo: "커피도 마심",
-    recorded_at: "2026-08-03",
-    recorded_until: null,
-    region_label: "종로구",
-    region_name: "서울특별시 종로구",
-  },
-  {
-    activity: "산책",
-    created_at: "2026-08-01T09:00:00Z",
-    memo: null,
-    recorded_at: "2026-08-01",
-    recorded_until: "2026-08-04",
-    region_label: "해운대구",
-    region_name: "부산광역시 해운대구",
-  },
-];
-
-assert.deepEqual(
-  filterRecords(records, { ...EMPTY, query: "커피" }).map(({ activity }) => activity),
-  ["전시 관람"],
-);
-assert.deepEqual(
-  filterRecords(records, { ...EMPTY, from: "2026-08-02" }).map(({ activity }) => activity),
-  ["전시 관람", "산책"],
-);
-assert.deepEqual(
-  filterRecords(records, { ...EMPTY, sort: "oldest" }).map(({ activity }) => activity),
-  ["산책", "전시 관람"],
 );

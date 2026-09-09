@@ -5,20 +5,20 @@ import { useMemo } from "react";
 import { MapPinAreaIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
-import { type RecordLocationRow, recordLocationsQueryOptions } from "@/entities/record";
+import { recordLocationsQueryOptions } from "@/entities/record";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { RegionActivityMap } from "@/widgets/region-activity-map";
 
-export function HomeContent({ initialRecords }: { initialRecords: RecordLocationRow[] }) {
-  const recordsQuery = useQuery({ ...recordLocationsQueryOptions, initialData: initialRecords });
+export function HomeContent() {
+  const recordsQuery = useQuery(recordLocationsQueryOptions);
   const records = useMemo(
     () =>
-      recordsQuery.data.map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
+      recordsQuery.data?.map(({ id, region_latitude: latitude, region_longitude: longitude }) => ({
         id,
         latitude,
         longitude,
-      })),
+      })) ?? [],
     [recordsQuery.data],
   );
 

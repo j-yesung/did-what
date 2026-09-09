@@ -7,6 +7,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
+import { type PlaceSearchResult, searchPlaces } from "@/entities/place/api/search-places";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/place/save-place";
 import { KAKAO_SEARCH_MAX_PAGE, type KakaoPlace } from "@/shared/api/kakao-local";
 import { FOCUS_RING } from "@/shared/lib/interaction";
@@ -21,15 +22,8 @@ import { ResetButton } from "@/shared/ui/reset-button";
 import { getSavedKakaoPlaces } from "../model/get-saved-kakao-places";
 import { navigatePlaceSearch } from "../model/place-search-navigation";
 
-type PlaceSearchPage = {
-  isEnd: boolean;
-  page: number;
-  pageableCount: number;
-  places: KakaoPlace[];
-};
-
 type PlaceSearchResultsProps = {
-  initialPage: PlaceSearchPage;
+  initialPage: PlaceSearchResult;
   initialPlaces: SavedPlaceRow[];
   query: string;
 };
@@ -40,14 +34,7 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
   const savedPlacesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
   const resultsQuery = useInfiniteQuery({
     queryKey: ["place-search", query],
-    queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({ page: String(pageParam), query });
-      const response = await fetch(`/api/places/search?${params}`);
-
-      if (!response.ok) throw new Error("검색 결과를 더 불러오지 못했어요.");
-
-      return response.json() as Promise<PlaceSearchPage>;
-    },
+    queryFn: ({ pageParam, signal }) => searchPlaces({ page: pageParam, query }, signal),
     initialPageParam: 1,
     initialData: { pageParams: [1], pages: [initialPage] },
     getNextPageParam: (lastPage) =>

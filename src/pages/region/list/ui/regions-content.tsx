@@ -6,26 +6,26 @@ import { MapTrifoldIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
-import { type RecordLocationRow, recordLocationsQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
+import { recordLocationsQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
 import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
-export function RegionsContent({ initialRecords }: { initialRecords: RecordLocationRow[] }) {
+export function RegionsContent() {
   const queryClient = useQueryClient();
   const delayedNavigate = useDelayedNavigate();
-  const recordsQuery = useQuery({ ...recordLocationsQueryOptions, initialData: initialRecords });
+  const recordsQuery = useQuery(recordLocationsQueryOptions);
   const recordLocations = useMemo(
     () =>
-      recordsQuery.data.map(
+      recordsQuery.data?.map(
         ({ id, region_code: administrativeCode, region_latitude: latitude, region_longitude: longitude }) => ({
           administrativeCode,
           id,
           latitude,
           longitude,
         }),
-      ),
+      ) ?? [],
     [recordsQuery.data],
   );
   const regionMaps = useMemo(() => createRegionActivityMaps(recordLocations), [recordLocations]);

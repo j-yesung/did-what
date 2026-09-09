@@ -120,16 +120,6 @@ export async function createPlaces(inputs: CreatePlaceInput[]): Promise<PlaceAct
   return { status: "success" };
 }
 
-export async function createPlace(formData: FormData): Promise<PlaceActionState> {
-  return createPlaces([
-    {
-      page: normalizeKakaoPage(formData.get("page")),
-      placeId: String(formData.get("placeId") ?? ""),
-      query: String(formData.get("query") ?? ""),
-    },
-  ]);
-}
-
 export async function setPlaceSaved(placeId: string, saved: boolean): Promise<PlaceActionState> {
   if (!isUuid(placeId)) return { message: "장소를 확인할 수 없어요.", status: "error" };
 

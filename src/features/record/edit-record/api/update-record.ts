@@ -20,18 +20,15 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
   const result = validateRecordInput(readRecordInput(formData));
   if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };
 
-  const [selections, recordResult] = await Promise.all([
-    validateRecordSelections(result.data, user.id, supabase),
-    supabase.from("records").select("id").eq("id", recordId).eq("owner_id", user.id).maybeSingle(),
-  ]);
-  if (!selections || recordResult.error || !recordResult.data) {
+  const selections = await validateRecordSelections(result.data, user.id, supabase);
+  if (!selections) {
     return { message: "수정할 기록이나 선택 항목을 확인할 수 없습니다.", status: "error" };
   }
 
-  const { data: updated, error } = await supabase.rpc("update_owned_record", {
+  const { data: updated, error } = await supabase.rpc("update_owned_record_with_places", {
     p_activity: result.data.activity,
     p_memo: result.data.memo ?? "",
-    p_place_ids: selections.placeIds,
+    p_places: selections.places,
     p_record_id: recordId,
     p_recorded_at: result.data.recordedAt,
     p_recorded_until: result.data.recordedUntil ?? null,
