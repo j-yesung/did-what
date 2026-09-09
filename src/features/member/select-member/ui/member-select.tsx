@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 
+import { UserRoundIcon } from "@animateicons/react/lucide";
 import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { type AccountMember, MEMBERS_QUERY_KEY } from "@/entities/member";
+import { showNotice } from "@/shared/lib/notice";
 import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { cn } from "@/shared/lib/utils";
@@ -33,11 +35,17 @@ export function MemberSelect({ currentMemberId, destination, members }: MemberSe
       return runServerAction(() => selectMember({ destination, endpoint, memberId }));
     },
     onError: () => setSelectedMember(undefined),
-    onSuccess: async (result) => {
+    onSuccess: async (result, memberId) => {
       if (result?.status === "error") {
         setSelectedMember(undefined);
         return;
       }
+
+      const member = members.find(({ id }) => id === memberId);
+      if (member) {
+        showNotice({ icon: UserRoundIcon, title: `${member.name}님으로 전환했어요`, variant: "success" });
+      }
+
       await queryClient.invalidateQueries({ queryKey: MEMBERS_QUERY_KEY });
     },
   });
