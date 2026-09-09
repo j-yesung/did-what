@@ -68,60 +68,59 @@ export function RecordPeriodFilter({ from, onApply, to }: RecordPeriodFilterProp
   }
 
   return (
-    <div className="rounded-xl border bg-card px-4 py-3">
-      <div className="mb-1.5 flex items-center gap-2 font-medium text-sm">
-        <CalendarDotsIcon strokeWidth={2} className="size-4.5 text-foreground" aria-hidden="true" />
-        기간
-      </div>
+    <Drawer onOpenChange={handleOpenChange} open={open} showSwipeHandle>
+      <DrawerTrigger
+        render={
+          <Button
+            aria-label={`기간 설정, 현재 ${getPeriodLabel(period)}`}
+            className="h-10 min-w-0 flex-1 justify-start [&>span]:w-full"
+            size="small"
+            type="button"
+            variant="outline"
+          />
+        }
+      >
+        <span className="flex w-full items-center gap-1.5">
+          <CalendarDotsIcon strokeWidth={2} className="size-4 shrink-0 text-foreground" aria-hidden="true" />
+          <span className="min-w-0 flex-1 truncate text-left">{getPeriodLabel(period)}</span>
+        </span>
+      </DrawerTrigger>
 
-      <Drawer onOpenChange={handleOpenChange} open={open} showSwipeHandle>
-        <DrawerTrigger
-          render={
-            <Button className="justify-start [&>span]:w-full" fullWidth size="field" type="button" variant="outline" />
-          }
-        >
-          <span className="flex w-full items-center justify-between gap-3">
-            <span>{getPeriodLabel(period)}</span>
-            <span className="shrink-0 text-muted-foreground text-xs">기간 설정</span>
-          </span>
-        </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>어떤 기간을 볼까요?</DrawerTitle>
+        </DrawerHeader>
 
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>어떤 기간을 볼까요?</DrawerTitle>
-          </DrawerHeader>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
+          <Calendar
+            className="w-full rounded-xl"
+            classNames={{ root: "w-full" }}
+            defaultMonth={draftRange?.from ?? draftRange?.to ?? new Date()}
+            fixedWeeks
+            locale={ko}
+            mode="range"
+            onSelect={setDraftRange}
+            selected={draftRange}
+          />
+        </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
-            <Calendar
-              className="w-full rounded-xl"
-              classNames={{ root: "w-full" }}
-              defaultMonth={draftRange?.from ?? draftRange?.to ?? new Date()}
-              fixedWeeks
-              locale={ko}
-              mode="range"
-              onSelect={setDraftRange}
-              selected={draftRange}
-            />
-          </div>
-
-          <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
-            {hasPeriod ? (
-              <Button onClick={handleClear} size="large" type="button" variant="neutral">
-                기간 초기화
-              </Button>
-            ) : null}
-            <Button
-              disabled={!draftRange?.from && !draftRange?.to}
-              fullWidth
-              onClick={handleApply}
-              size="large"
-              type="button"
-            >
-              기간 적용
+        <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+          {hasPeriod ? (
+            <Button onClick={handleClear} size="large" type="button" variant="neutral">
+              기간 초기화
             </Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-    </div>
+          ) : null}
+          <Button
+            disabled={!draftRange?.from && !draftRange?.to}
+            fullWidth
+            onClick={handleApply}
+            size="large"
+            type="button"
+          >
+            기간 적용
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
