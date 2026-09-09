@@ -4,7 +4,7 @@
 - 범위: 프로젝트 구조, 데이터 조회·저장 흐름, 캐시, 파일 책임, re-export 및 미사용 코드
 - 방법: 코드와 호출 경로 정적 검토
 - 한계: 실제 네트워크 요청 횟수와 실행 시간은 측정하지 않았으며, 아래 동작 문제는 런타임 재현 전의 코드 기반 분석이다.
-- 상태: 1~4번 구현 완료. DB 변경은 [원자적 기록·장소 저장 마이그레이션](../supabase/migrations/20260909015328_make_record_place_writes_atomic.sql) 적용 후 운영 환경에 반영된다.
+- 상태: 1~4번과 8~9번 구현 완료. DB 변경은 [원자적 기록·장소 저장 마이그레이션](../supabase/migrations/20260909015328_make_record_place_writes_atomic.sql) 적용 후 운영 환경에 반영된다.
 
 현재 `app → pages → widgets → features → entities → shared` 구분은 명확하다. 개선은 폴더 재배치보다 저장 원자성과 캐시 일관성을 먼저 확보하고, 이후 중복 조회와 책임 분리, re-export 정리 순서로 진행한다.
 
@@ -19,8 +19,8 @@
 | 5 | 기록 저장 시 장소별 검색·DB 요청 반복 | 중간 |
 | 6 | 푸시 발송 완료를 기다리는 기록 저장 응답 | 중간 |
 | 7 | 지역 정의와 지도 계산 등 파일 책임 혼합 | 중간 |
-| 8 | 불필요한 re-export와 공개 API | 낮음 |
-| 9 | 동일 API 호출 구현 중복 및 미사용 로직 | 낮음~중간 |
+| 8 | ~~불필요한 re-export와 공개 API~~ (완료) | 낮음 |
+| 9 | ~~동일 API 호출 구현 중복 및 미사용 로직~~ (완료) | 낮음~중간 |
 
 ## ~~1. 검증 함수가 기록 저장 전에 DB를 변경한다~~ (완료)
 
@@ -187,35 +187,53 @@
 
 자동 생성된 DB 타입이나 긴 UI 마크업은 줄 수만으로 분리하지 않는다. 변경 이유가 다른 책임이 한 파일에 모였는지를 기준으로 판단한다.
 
-## 8. 불필요한 re-export와 공개 API를 줄인다
+## ~~8. 불필요한 re-export와 공개 API를 줄인다~~ (완료)
+
+### 완료 내용
+
+기록 생성·수정 액션과 장소 삭제 버튼은 실제 사용처에서 구현 파일을 직접 가져오도록 바꾸고, 단일 export만 전달하던 `index.ts` 세 개를 삭제했다. `QueryProvider`도 루트 레이아웃에서 직접 가져오도록 바꾸고 `react-query/index.ts`를 삭제했다.
+
+푸시 endpoint 조회는 `queries.ts`가 shared 구현을 직접 사용한다. `subscribe-push.ts`와 feature 공개 API에 있던 중간 재수출은 제거했다. 여러 기능을 실제로 공개하는 나머지 feature·entity 공개 API는 유지했다.
+
+### 기존 근거
 
 [프로젝트 컨벤션](./convention.md)은 외부에서 실제로 여러 파일을 가져다 쓰는 slice에만 `index.ts`를 두도록 한다.
 
 | 대상 | 확인 내용 | 개선 방향 |
 | --- | --- | --- |
-| [create-record/index.ts](../src/features/record/create-record/index.ts) | 단일 액션 전달 | 구현 파일 직접 import |
-| [edit-record/index.ts](../src/features/record/edit-record/index.ts) | 단일 액션 전달 | 구현 파일 직접 import |
-| [delete-place/index.ts](../src/features/place/delete-place/index.ts) | 단일 UI 전달 | 구현 파일 직접 import |
+| `features/record/create-record/index.ts` | 단일 액션 전달 | 구현 파일 직접 import |
+| `features/record/edit-record/index.ts` | 단일 액션 전달 | 구현 파일 직접 import |
+| `features/place/delete-place/index.ts` | 단일 UI 전달 | 구현 파일 직접 import |
 | [push-notification/index.ts](../src/features/push-notification/index.ts) | `getPushEndpoint`를 shared → subscribe-push → index로 재수출 | shared 구현에서 직접 import하고 불필요한 재수출 제거 |
-| [react-query/index.ts](../src/shared/lib/react-query/index.ts) | 외부에서는 `QueryProvider`만 사용 | 미사용 `createQueryClient` 재수출 제거 및 index 필요성 검토 |
+| `shared/lib/react-query/index.ts` | 외부에서는 `QueryProvider`만 사용 | 미사용 `createQueryClient` 재수출 제거 및 index 필요성 검토 |
 
 여러 구현 파일을 실제로 공개하는 `entities/record/index.ts`까지 일괄 삭제하지 않는다. 서버·클라이언트 경계를 구분하는 공개 API도 단순 전달 파일과 구별한다.
 
-## 9. 동일 API 호출 중복과 미사용 로직을 정리한다
+## ~~9. 동일 API 호출 중복과 미사용 로직을 정리한다~~ (완료)
 
-### 동일 API 호출 중복
+### 완료 내용
+
+장소 검색의 다음 페이지 조회는 페이지 컴포넌트 안의 직접 `fetch`와 중복 응답 타입을 삭제하고, 기존 `searchPlaces()`를 사용하도록 통일했다. 이에 따라 동일한 Axios timeout과 AbortSignal 취소 처리를 사용한다.
+
+운영 코드에서 호출되지 않던 단일 장소용 `createPlace()`와 클라이언트 기록 필터용 `filterRecords()`를 제거했다. `filterRecords()`만 확인하던 테스트 데이터와 assertion도 함께 삭제하고, 실제로 사용하는 필터 파싱·URL 생성 테스트는 유지했다.
+
+### 기존 동일 API 호출 중복
 
 - [place-search-results.tsx](../src/pages/place/list/ui/place-search-results.tsx): 페이지 안에서 직접 `fetch`와 응답 타입을 정의한다.
 - [search-places.ts](../src/entities/place/api/search-places.ts): 같은 엔드포인트의 호출 함수가 이미 있으며 취소 signal을 전달한다.
 
 페이지와 entity의 호출 경로가 나뉘어 취소·타임아웃·오류 처리 방식이 다르다. 페이지의 infinite query는 유지하되 요청 함수와 응답 타입은 기존 API 구현을 재사용한다.
 
-### 미사용 로직
+### 기존 미사용 로직
 
 - [save-place.ts](../src/features/place/save-place/api/save-place.ts)의 `createPlace()`: 검토한 소스에서 호출처가 없다.
 - [record-filters.ts](../src/entities/record/model/record-filters.ts)의 `filterRecords()`: 테스트에서만 사용한다. 실제 목록 필터는 서버 쿼리로 구현되어 있다.
 
 실제 사용 흐름을 최종 확인한 뒤 미사용 함수와 그 함수만 검증하는 테스트를 함께 정리한다. 테스트가 존재한다는 이유만으로 운영 코드에서 사용하지 않는 구현을 유지하지 않는다.
+
+### 검증 결과
+
+전체 테스트 33개, lint, TypeScript 검사와 webpack 프로덕션 빌드를 통과했다.
 
 ## 후속 작업 원칙
 
