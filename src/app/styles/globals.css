@@ -69,6 +69,8 @@
   --fill-danger: var(--red-600);
   --fill-dark-weak: rgb(2 32 71 / 0.05);
   --fill-dimmed: rgb(0 0 0 / 0.2);
+  --fill-nav-glass: rgb(255 255 255 / 0.25);
+  --fill-nav-active: rgb(0 0 0 / 0.25);
   --fill-light: var(--grey-0);
   --fill-dark: var(--grey-900);
 
@@ -87,6 +89,8 @@
 
   --border-default: var(--grey-200);
   --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.08);
+  --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.18), 0 0 20px rgb(0 0 0 / 0.1);
+  --nav-glass-highlight: rgb(255 255 255 / 0.75);
 
   /**
    * shadcn 컴포넌트가 참조하는 이름. 값을 직접 갖지 않고 시맨틱 토큰을 가리킨다.
@@ -120,7 +124,7 @@
   --app-width: 430px;
 
   /* 플로팅 내비게이션과 콘텐츠 사이의 안전 여백. iOS 홈 인디케이터 영역도 포함한다. */
-  --nav-height: 64px;
+  --nav-height: clamp(52px, calc((100vw - 32px) / 6), 64px);
   --nav-bottom-gap: 6px;
   --nav-bottom-offset: max(var(--nav-bottom-gap), calc(var(--nav-bottom-gap) + env(safe-area-inset-bottom) - 16px));
   --nav-content-gap: 16px;
@@ -132,8 +136,6 @@
   --map-level-2: var(--blue-300);
   --map-level-3: var(--blue-500);
   --map-level-4: var(--blue-700);
-  --map-segment-track: var(--grey-100);
-  --map-segment-selected: var(--grey-0);
 }
 
 @theme inline {
@@ -199,6 +201,8 @@
   --fill-danger: var(--red-500);
   --fill-dark-weak: rgb(217 217 255 / 0.11);
   --fill-dimmed: rgb(0 0 0 / 0.56);
+  --fill-nav-glass: rgb(255 255 255 / 0.09);
+  --fill-nav-active: rgb(255 255 255 / 0.14);
 
   /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
   --text-primary: var(--grey-50);
@@ -210,12 +214,12 @@
   --text-info: var(--blue-400);
   --border-default: var(--grey-800);
   --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.28);
+  --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
+  --nav-glass-highlight: rgb(255 255 255 / 0.24);
   --input: var(--grey-700);
 
   /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
   --map-empty: var(--grey-800);
-  --map-segment-track: var(--grey-850);
-  --map-segment-selected: var(--grey-800);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -231,6 +235,8 @@
     --fill-danger: var(--red-500);
     --fill-dark-weak: rgb(217 217 255 / 0.11);
     --fill-dimmed: rgb(0 0 0 / 0.56);
+    --fill-nav-glass: rgb(255 255 255 / 0.09);
+    --fill-nav-active: rgb(255 255 255 / 0.14);
 
     /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
     --text-primary: var(--grey-50);
@@ -242,12 +248,12 @@
     --text-info: var(--blue-400);
     --border-default: var(--grey-800);
     --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.28);
+    --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
+    --nav-glass-highlight: rgb(255 255 255 / 0.24);
     --input: var(--grey-700);
 
     /* 농도 4단계는 라이트와 같은 값을 쓴다. 빈 칸만 표면을 따라간다. */
     --map-empty: var(--grey-800);
-    --map-segment-track: var(--grey-850);
-    --map-segment-selected: var(--grey-800);
   }
 }
 

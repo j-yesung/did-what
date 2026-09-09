@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { unreadNotificationCountQueryOptions } from "@/entities/notification/api/queries";
+import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { IconButton } from "@/shared/ui/icon-button";
 
@@ -36,7 +37,7 @@ export function NotificationBell({ className, memberId }: NotificationBellProps)
     <span className="relative inline-flex">
       <IconButton
         aria-label={accessibilityLabel}
-        className={className}
+        className={cn("liquid-glass rounded-full", className)}
         icon={BellIcon}
         iconSize={24}
         nativeButton={false}

@@ -10,6 +10,7 @@ import { NoticeProvider } from "@/shared/ui/notice-provider";
 import { PressListener } from "@/shared/ui/press-listener";
 
 import "@/app/styles/globals.css";
+import "@/app/styles/liquid-glass.css";
 
 const pretendard = localFont({
   src: "./fonts/PretendardVariable.woff2",
