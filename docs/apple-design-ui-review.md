@@ -4,6 +4,8 @@
 
 apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기록·장소·알림·설정과 공통 컴포넌트를 정적으로 검토했다. 실제 브라우저와 iPhone에서 재현한 결과는 아니므로, 키보드·스크롤·시각적 밀도에 관한 판단은 별도로 표시했다.
 
+제목 앞의 ✅는 반영이 끝난 항목이다.
+
 ## 변경이 꼭 필요한 것 — 영향도순
 
 ### 1. 화면 끝 스크롤이 뒤로가기로 이어지는 동작
@@ -46,7 +48,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **관련 파일:** `src/features/push-notification/model/use-push-toggle.ts`, `src/shared/lib/server-action/use-action-mutation.ts`, `src/pages/notification/ui/notification-list.tsx`
 
-### 5. 화면 이동 전 180ms 강제 대기 제거
+### ✅ 5. 화면 이동 전 180ms 강제 대기 제거
 
 **현재 문제:** 기록·지역·장소·알림 진입에 `useDelayedNavigate`가 사용된다. 눌림 복귀를 보여주기 위해 클릭 이후 항상 180ms 기다린다. 연속 클릭으로 만들어진 타이머를 취소하는 처리도 없다.
 
@@ -135,7 +137,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **관련 파일:** `src/shared/ui/confirm-dialog.tsx`, `src/shared/ui/drawer.tsx`
 
-### 13. 기록 목록에서 필터보다 추억이 먼저 보이게 조정
+### ✅ 13. 기록 목록에서 필터보다 추억이 먼저 보이게 조정
 
 **현재 문제:** 기록 목록 상단에 검색란, 별도 기간 카드, 카드 안의 기간 버튼, 정렬 버튼이 연속된다. 지역 목록은 2열에서 이름 13px·설명 11px를 사용하고, 장소 행은 이름과 설명 모두 한 줄로 자른다.
 
@@ -145,7 +147,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **관련 파일:** `src/pages/record/list/ui/record-period-filter.tsx`, `src/pages/region/list/ui/regions-content.tsx`, `src/shared/ui/list-row.tsx`, `src/shared/ui/layouts/page-header.tsx`
 
-### 14. 메모 복사 기능 제공
+### ✅ 14. 메모 복사 기능 제공
 
 **현재 문제:** 전역 `user-select: none`으로 메모를 길게 눌러 복사할 수 없다.
 
