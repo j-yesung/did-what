@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
+import { CheckIcon, type CheckIconHandle, CopyIcon } from "@animateicons/react/lucide";
 import { BookOpenIcon, CalendarDotsIcon, MapPinIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -17,17 +20,24 @@ import {
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { DeleteRecordButton } from "@/features/record/delete-record";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
+
+import { useCopyToClipboard } from "../model/use-copy-to-clipboard";
 
 type RecordDetailContentProps = {
   recordId: string;
 };
 
 export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
+  const copiedIconRef = useRef<CheckIconHandle>(null);
+
+  const { copied: memoCopied, copy } = useCopyToClipboard();
+
   const queryClient = useQueryClient();
   const summaryQueryKey = recordSummaryQueryKey(recordId);
   const cachedSummary = queryClient.getQueryState(summaryQueryKey)?.isInvalidated
@@ -49,6 +59,13 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
   const recordMissing = hasCachedSummary
     ? recordPlacesQuery.isSuccess && !recordPlacesQuery.data
     : recordQuery.isSuccess && !recordQuery.data;
+
+  useEffect(() => {
+    if (!memoCopied || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const frame = requestAnimationFrame(() => copiedIconRef.current?.startAnimation());
+    return () => cancelAnimationFrame(frame);
+  }, [memoCopied]);
 
   return (
     <OverscrollBack fallbackHref="/records">
@@ -129,9 +146,29 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BookOpenIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
-                    남겨둔 메모
+                    우리 뭐했지?
                   </CardTitle>
-                  <CardDescription>그날 기억하고 싶었던 이야기</CardDescription>
+                  <CardAction className="flex items-center gap-1">
+                    <Button
+                      aria-label={memoCopied ? "메모 복사됨" : "메모 복사"}
+                      className="size-7 min-w-0 gap-0 rounded-lg p-0"
+                      onClick={() => void copy(record.memo ?? "")}
+                      type="button"
+                      variant="ghost"
+                    >
+                      {memoCopied ? (
+                        <CheckIcon
+                          className="text-success"
+                          duration={0.8}
+                          isAnimated={false}
+                          ref={copiedIconRef}
+                          size={20}
+                        />
+                      ) : (
+                        <CopyIcon isAnimated={false} size={18} />
+                      )}
+                    </Button>
+                  </CardAction>
                 </CardHeader>
                 <CardContent>
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{record.memo}</p>
