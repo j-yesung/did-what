@@ -2,7 +2,7 @@
 
 import { Fragment, type MouseEvent } from "react";
 
-import { BellSimpleIcon, CaretRightIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { BellSimpleIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -17,73 +17,20 @@ import { readNotification } from "@/features/notification/read-notification";
 import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { showNotice } from "@/shared/lib/notice";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
-import { cn } from "@/shared/lib/utils";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader } from "@/shared/ui/layouts/page-header";
 import { PageShell } from "@/shared/ui/layouts/page-shell";
-import { ListRow } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 import { Separator } from "@/shared/ui/separator";
 import { Spinner } from "@/shared/ui/spinner";
 import { TextButton } from "@/shared/ui/text-button";
 
-const NOTIFICATION_TIME = new Intl.DateTimeFormat("ko-KR", {
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  month: "short",
-  timeZone: "Asia/Seoul",
-});
+import { NotificationRow } from "./notification-row";
 
 type NotificationListProps = {
   memberId: string;
 };
-
-type NotificationRowProps = {
-  notification: NotificationItem;
-  onOpen: (notification: NotificationItem, event: MouseEvent<HTMLButtonElement>) => void;
-  pending: boolean;
-};
-
-function NotificationRow({ notification, onOpen, pending }: NotificationRowProps) {
-  const unread = notification.read_at === null;
-  const deleted = notification.record_id === null;
-
-  return (
-    <ListRow
-      aria-label={`${unread ? "읽지 않은 알림, " : ""}${notification.record_title}, ${
-        deleted ? "삭제된 기록" : "기록 보기"
-      }`}
-      className={cn(
-        "items-start py-4",
-        unread &&
-          "bg-primary/5 before:absolute before:top-4 before:bottom-4 before:left-0 before:w-0.5 before:rounded-full before:bg-primary",
-      )}
-      disabled={deleted || pending}
-      onClick={(event) => onOpen(notification, event)}
-      type="button"
-    >
-      <span className="flex min-w-0 items-start gap-3">
-        <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className={cn("text-foreground text-sm leading-5", unread && "font-semibold")}>
-            <strong>{notification.sender_name}</strong>님이 새 기록을 남겼어요
-          </span>
-          <span className={cn("truncate text-base text-foreground", unread ? "font-bold" : "font-medium")}>
-            {notification.record_title}
-          </span>
-          <span className="flex items-center gap-2 text-muted-foreground text-xs">
-            <time dateTime={notification.created_at}>
-              {NOTIFICATION_TIME.format(new Date(notification.created_at))}
-            </time>
-            {deleted ? <span>삭제된 기록이에요</span> : null}
-          </span>
-        </span>
-        {deleted ? null : <CaretRightIcon aria-hidden="true" className="mt-1 shrink-0 text-muted-foreground" />}
-      </span>
-    </ListRow>
-  );
-}
 
 export function NotificationList({ memberId }: NotificationListProps) {
   const router = useRouter();
