@@ -1,31 +1,24 @@
+import { requireMember } from "@/entities/member/server";
 import { getSavedPlaces } from "@/entities/place/server";
-import {
-  KAKAO_SEARCH_MAX_PAGE,
-  normalizeKakaoPage,
-  searchKakaoPlaces,
-  validateKakaoQuery,
-} from "@/shared/api/kakao-local/server";
-import { requireUser } from "@/shared/api/supabase/require-user";
-import { PageHeader, PageShell } from "@/shared/ui/layouts";
+import { searchKakaoPlaces, validateKakaoQuery } from "@/shared/api/kakao-local/server";
+import { PageShell } from "@/shared/ui/layouts";
+import { ListHeader } from "@/shared/ui/list-header";
 
 import { PlaceSearchForm } from "./place-search-form";
 import { PlaceSearchResults } from "./place-search-results";
-import { SavedPlaceCount, SavedPlaceList } from "./saved-place-list";
+import { SavedPlaceList } from "./saved-place-list";
 
-type PlacesPageProps = {
-  searchParams: Promise<{ page?: string | string[]; q?: string | string[] }>;
-};
+type PlacesPageProps = { searchParams: Promise<{ q?: string | string[] }> };
 
 export async function PlacesPage({ searchParams }: PlacesPageProps) {
-  const [params, { user }] = await Promise.all([searchParams, requireUser()]);
+  const [params, { user }] = await Promise.all([searchParams, requireMember()]);
   const hasSearch = Object.hasOwn(params, "q");
   const rawQuery = typeof params.q === "string" ? params.q : "";
-  const currentPage = normalizeKakaoPage(typeof params.page === "string" ? params.page : undefined);
   const queryResult = hasSearch ? validateKakaoQuery(rawQuery) : null;
   const query = queryResult?.valid ? queryResult.query : rawQuery;
   const [initialPlaces, searchResult] = await Promise.all([
     getSavedPlaces(user.id),
-    queryResult?.valid ? searchKakaoPlaces(queryResult.query, currentPage) : Promise.resolve(null),
+    queryResult?.valid ? searchKakaoPlaces(queryResult.query) : Promise.resolve(null),
   ]);
   const successfulSearchResult = searchResult && "isEnd" in searchResult ? searchResult : null;
   const searchError =
@@ -37,31 +30,15 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
 
   return (
     <PageShell withBottomNavigation>
-      <PageHeader title="장소" />
-
-      <section aria-labelledby="places-intro-title" className="px-1">
-        <SavedPlaceCount initialPlaces={initialPlaces} />
-        <h2 className="mt-2 font-bold text-2xl tracking-[-0.04em]" id="places-intro-title">
-          기억하고 싶은 장소를 찾아보세요.
-        </h2>
-        <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-          직접 간직하기로 선택한 장소만 이곳에 모여요.
-        </p>
-      </section>
+      <ListHeader title="기억하고 싶은 장소" />
 
       <PlaceSearchForm query={query} searchError={searchError} />
 
       {hasSearch ? (
-        queryResult?.valid && !searchError ? (
+        queryResult?.valid && successfulSearchResult ? (
           <PlaceSearchResults
-            currentPage={currentPage}
-            hasNextPage={Boolean(
-              successfulSearchResult && !successfulSearchResult.isEnd && currentPage < KAKAO_SEARCH_MAX_PAGE,
-            )}
-            hasPreviousPage={currentPage > 1}
+            initialPage={successfulSearchResult}
             initialPlaces={initialPlaces}
-            pageableCount={successfulSearchResult?.pageableCount ?? 0}
-            places={successfulSearchResult?.places ?? []}
             query={queryResult.query}
           />
         ) : null

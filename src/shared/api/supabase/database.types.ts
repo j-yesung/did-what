@@ -4,10 +4,95 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15";
+    PostgrestVersion: "14.5";
   };
   public: {
     Tables: {
+      account_members: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          owner_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          owner_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          owner_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          created_at: string;
+          id: number;
+          owner_id: string;
+          read_at: string | null;
+          recipient_member_id: string;
+          record_id: string | null;
+          record_title: string;
+          sender_member_id: string;
+          sender_name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          owner_id: string;
+          read_at?: string | null;
+          recipient_member_id: string;
+          record_id?: string | null;
+          record_title: string;
+          sender_member_id: string;
+          sender_name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          owner_id?: string;
+          read_at?: string | null;
+          recipient_member_id?: string;
+          record_id?: string | null;
+          record_title?: string;
+          sender_member_id?: string;
+          sender_name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_owner_recipient_member_fkey";
+            columns: ["owner_id", "recipient_member_id"];
+            isOneToOne: false;
+            referencedRelation: "account_members";
+            referencedColumns: ["owner_id", "id"];
+          },
+          {
+            foreignKeyName: "notifications_owner_sender_member_fkey";
+            columns: ["owner_id", "sender_member_id"];
+            isOneToOne: false;
+            referencedRelation: "account_members";
+            referencedColumns: ["owner_id", "id"];
+          },
+          {
+            foreignKeyName: "notifications_record_id_fkey";
+            columns: ["record_id"];
+            isOneToOne: false;
+            referencedRelation: "records";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       places: {
         Row: {
           address: string | null;
@@ -83,6 +168,7 @@ export type Database = {
           created_at: string;
           endpoint: string;
           id: string;
+          member_id: string | null;
           owner_id: string;
           p256dh: string;
           updated_at: string;
@@ -92,6 +178,7 @@ export type Database = {
           created_at?: string;
           endpoint: string;
           id?: string;
+          member_id?: string | null;
           owner_id: string;
           p256dh: string;
           updated_at?: string;
@@ -101,11 +188,20 @@ export type Database = {
           created_at?: string;
           endpoint?: string;
           id?: string;
+          member_id?: string | null;
           owner_id?: string;
           p256dh?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_owner_member_fkey";
+            columns: ["owner_id", "member_id"];
+            isOneToOne: false;
+            referencedRelation: "account_members";
+            referencedColumns: ["owner_id", "id"];
+          },
+        ];
       };
       record_places: {
         Row: {
@@ -143,6 +239,7 @@ export type Database = {
       records: {
         Row: {
           activity: string;
+          author_member_id: string | null;
           created_at: string;
           id: string;
           memo: string | null;
@@ -159,6 +256,7 @@ export type Database = {
         };
         Insert: {
           activity: string;
+          author_member_id?: string | null;
           created_at?: string;
           id?: string;
           memo?: string | null;
@@ -175,6 +273,7 @@ export type Database = {
         };
         Update: {
           activity?: string;
+          author_member_id?: string | null;
           created_at?: string;
           id?: string;
           memo?: string | null;
@@ -189,47 +288,67 @@ export type Database = {
           updated_at?: string;
           weather?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "records_owner_author_member_fkey";
+            columns: ["owner_id", "author_member_id"];
+            isOneToOne: false;
+            referencedRelation: "account_members";
+            referencedColumns: ["owner_id", "id"];
+          },
+        ];
       };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      create_owned_record: {
-        Args: {
-          p_activity: string;
-          p_memo: string;
-          p_place_ids: string[];
-          p_recorded_at: string;
-          p_recorded_until: string | null;
-          p_region_code: string;
-          p_region_label: string;
-          p_region_latitude: number;
-          p_region_longitude: number;
-          p_region_name: string;
-          p_weather: string;
-        };
-        Returns: string;
+      create_owned_record:
+        | {
+            Args: {
+              p_activity: string;
+              p_memo: string;
+              p_place_ids: string[];
+              p_recorded_at: string;
+              p_recorded_until: string | null;
+              p_region_code: string;
+              p_region_label: string;
+              p_region_latitude: number;
+              p_region_longitude: number;
+              p_region_name: string;
+              p_weather: string;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              p_activity: string;
+              p_author_member_id: string;
+              p_memo: string;
+              p_place_ids: string[];
+              p_recorded_at: string;
+              p_recorded_until: string | null;
+              p_region_code: string;
+              p_region_label: string;
+              p_region_latitude: number;
+              p_region_longitude: number;
+              p_region_name: string;
+              p_weather: string;
+            };
+            Returns: string;
+          };
+      delete_owned_record: { Args: { p_record_id: string }; Returns: boolean };
+      mark_all_notifications_read: {
+        Args: { p_recipient_member_id: string };
+        Returns: number;
       };
-      delete_owned_record: {
-        Args: {
-          p_record_id: string;
-        };
+      mark_notification_read: {
+        Args: { p_notification_id: number; p_recipient_member_id: string };
         Returns: boolean;
       };
-      remove_saved_place: {
-        Args: {
-          p_place_id: string;
-        };
-        Returns: boolean;
-      };
-      save_owned_places: {
-        Args: {
-          p_places: Json;
-        };
-        Returns: boolean;
-      };
+      remove_saved_place: { Args: { p_place_id: string }; Returns: boolean };
+      save_owned_places: { Args: { p_places: Json }; Returns: boolean };
+      setup_account_members: { Args: { p_names: string[] }; Returns: boolean };
       update_owned_record: {
         Args: {
           p_activity: string;

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireUser } from "@/shared/api/supabase/require-user";
+import { requireMember } from "@/entities/member/server";
 
 import type { PushActionState, PushSubscriptionInput } from "../model/push-subscription";
 
@@ -18,11 +18,12 @@ function isValid({ auth, endpoint, p256dh }: PushSubscriptionInput) {
 export async function saveSubscription(input: PushSubscriptionInput): Promise<PushActionState> {
   if (!isValid(input)) return { message: "알림 정보를 확인할 수 없습니다.", status: "error" };
 
-  const { supabase, user } = await requireUser();
+  const { member, supabase, user } = await requireMember();
   const { error } = await supabase.from("push_subscriptions").upsert(
     {
       auth_key: input.auth,
       endpoint: input.endpoint,
+      member_id: member.id,
       owner_id: user.id,
       p256dh: input.p256dh,
     },

@@ -6,6 +6,7 @@ import { MapPinCheckIcon } from "@animateicons/react/lucide";
 import { useQuery } from "@tanstack/react-query";
 import { useFunnel } from "@use-funnel/browser";
 
+import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification/api/queries";
 import { placesQueryOptions } from "@/entities/place";
 import {
   DEFAULT_RECORD_WEATHER,
@@ -14,7 +15,6 @@ import {
   type RecordFormState,
   type RecordWeather,
 } from "@/entities/record";
-import { getPushEndpoint } from "@/features/push-notification";
 import {
   RecordLocationFields,
   type RecordLocationPlace,
@@ -101,7 +101,6 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
   const busyRef = useRef(false);
   const [fieldErrors, setFieldErrors] = useState<RecordFieldErrors>({});
   const [focusInvalidKey, setFocusInvalidKey] = useState(0);
-  const [preparing, setPreparing] = useState(false);
   const navigation = useRecordCreateNavigation({
     busyRef,
     dirty: draft.dirty,
@@ -112,7 +111,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
   const save = useActionMutation(action, {
     error: "기록을 저장하지 못했어요",
     icon: MapPinCheckIcon,
-    invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
+    invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey, NOTIFICATIONS_QUERY_KEY],
     success: "함께한 순간을 기록했어요",
     onSuccess: () => navigation.finish(savedTo),
     onFail: (result) => {
@@ -123,7 +122,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
       if (errorStep && errorStep !== funnel.step) void funnel.history.replace(errorStep, draft);
     },
   });
-  const busy = preparing || save.isPending;
+  const busy = save.isPending;
   busyRef.current = busy;
 
   function updateContext(patch: Partial<RecordCreateContext>) {
@@ -157,11 +156,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
       return;
     }
 
-    setPreparing(true);
     const formData = toRecordCreateFormData(draft);
-    const endpoint = await getPushEndpoint();
-    if (endpoint) formData.set("senderEndpoint", endpoint);
-    setPreparing(false);
     save.mutate(formData);
   }
 
