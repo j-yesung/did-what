@@ -8,13 +8,11 @@ import Link from "next/link";
 
 import { recordLocationsQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
-import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 export function RegionsContent() {
   const queryClient = useQueryClient();
-  const delayedNavigate = useDelayedNavigate();
   const recordsQuery = useQuery(recordLocationsQueryOptions);
   const recordLocations = useMemo(
     () =>
@@ -56,7 +54,6 @@ export function RegionsContent() {
                   render={
                     <Link
                       href={href}
-                      onClick={(event) => delayedNavigate(event, href)}
                       onPointerDown={(event) => {
                         if (event.button === 0) void queryClient.prefetchQuery(regionRecordsQueryOptions(map));
                       }}

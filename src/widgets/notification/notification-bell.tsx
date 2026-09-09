@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { unreadNotificationCountQueryOptions } from "@/entities/notification/api/queries";
-import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { Badge } from "@/shared/ui/badge";
 import { IconButton } from "@/shared/ui/icon-button";
 
@@ -19,7 +18,6 @@ const NOTIFICATION_ENTRY_PATHS = new Set(["/", "/regions", "/records", "/places"
 const NOTIFICATION_BADGE_LIMIT = 9;
 
 export function NotificationBell({ className, memberId }: NotificationBellProps) {
-  const delayedNavigate = useDelayedNavigate();
   const pathname = usePathname() ?? "";
   const visible = NOTIFICATION_ENTRY_PATHS.has(pathname);
   const unreadQuery = useQuery({ ...unreadNotificationCountQueryOptions(memberId), enabled: visible });
@@ -42,7 +40,7 @@ export function NotificationBell({ className, memberId }: NotificationBellProps)
         icon={BellIcon}
         iconSize={24}
         nativeButton={false}
-        render={<Link href="/notifications" onClick={(event) => delayedNavigate(event, "/notifications")} prefetch />}
+        render={<Link href="/notifications" prefetch />}
         size="lg"
         variant="clear"
       />

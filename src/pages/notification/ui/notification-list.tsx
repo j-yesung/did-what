@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, type MouseEvent } from "react";
+import { Fragment } from "react";
 
 import { BellSimpleIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,7 +14,6 @@ import {
 } from "@/entities/notification/api/queries";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
 import { readNotification } from "@/features/notification/read-notification";
-import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { showNotice } from "@/shared/lib/notice";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
@@ -35,7 +34,6 @@ type NotificationListProps = {
 export function NotificationList({ memberId }: NotificationListProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const delayedNavigate = useDelayedNavigate();
   const listQuery = useInfiniteQuery(notificationListQueryOptions(memberId));
   const unreadQuery = useQuery(unreadNotificationCountQueryOptions(memberId));
 
@@ -64,12 +62,12 @@ export function NotificationList({ memberId }: NotificationListProps) {
     onError: () => showNotice({ title: "모두 읽지 못했어요", variant: "error" }),
   });
 
-  function openNotification(notification: NotificationItem, event: MouseEvent<HTMLButtonElement>) {
+  function openNotification(notification: NotificationItem) {
     const href = notification.record_id ? `/records/${notification.record_id}` : null;
     if (!href || readOne.isPending) return;
 
     if (notification.read_at) {
-      delayedNavigate(event, href);
+      router.push(href);
       return;
     }
 

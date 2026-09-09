@@ -1,5 +1,3 @@
-import type { MouseEvent } from "react";
-
 import { CaretRightIcon } from "@phosphor-icons/react";
 
 import type { NotificationItem } from "@/entities/notification/api/queries";
@@ -16,7 +14,7 @@ const NOTIFICATION_TIME = new Intl.DateTimeFormat("ko-KR", {
 
 type NotificationRowProps = {
   notification: NotificationItem;
-  onOpen: (notification: NotificationItem, event: MouseEvent<HTMLButtonElement>) => void;
+  onOpen: (notification: NotificationItem) => void;
   pending: boolean;
 };
 
@@ -35,7 +33,7 @@ export function NotificationRow({ notification, onOpen, pending }: NotificationR
           "bg-primary/5 before:absolute before:top-4 before:bottom-4 before:left-0 before:w-0.5 before:rounded-full before:bg-primary",
       )}
       disabled={deleted || pending}
-      onClick={(event) => onOpen(notification, event)}
+      onClick={() => onOpen(notification)}
       type="button"
     >
       <span className="flex min-w-0 items-start gap-3">
