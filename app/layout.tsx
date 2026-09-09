@@ -4,7 +4,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
 import { getTheme } from "@/features/switch-theme/server";
-import { QueryProvider } from "@/shared/lib/react-query";
+import { QueryProvider } from "@/shared/lib/react-query/query-provider";
 import { cn } from "@/shared/lib/utils";
 import { NoticeProvider } from "@/shared/ui/notice-provider";
 import { PressListener } from "@/shared/ui/press-listener";

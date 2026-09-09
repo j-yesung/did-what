@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { placeQueryOptions, placeRecordsQueryOptions, placesQueryOptions } from "@/entities/place";
 import { EmptyRecords, RecordCard, RecordTimeline } from "@/entities/record";
-import { DeletePlaceButton } from "@/features/place/delete-place";
+import { DeletePlaceButton } from "@/features/place/delete-place/ui/delete-place-button";
 import { formatDate } from "@/shared/lib/date/format-date";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";

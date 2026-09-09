@@ -1,7 +1,5 @@
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
-export { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
-
 const SERVICE_WORKER_PATH = "/sw.js";
 
 export type PushKeys = {

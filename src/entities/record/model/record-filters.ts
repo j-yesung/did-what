@@ -11,16 +11,6 @@ export type RecordFilters = {
 
 export type RecordSearchParams = Record<string, string | string[] | undefined>;
 
-type FilterableRecord = {
-  activity: string;
-  created_at: string;
-  memo: string | null;
-  recorded_at: string;
-  recorded_until: string | null;
-  region_label: string;
-  region_name: string;
-};
-
 const MAX_QUERY_LENGTH = 100;
 
 /**
@@ -55,25 +45,6 @@ export function parseRecordFilters(params: RecordSearchParams): RecordFilters {
 // 기본값(검색어 없음·기간 없음·최신순)이 아니면 목록이 걸러진 상태다.
 export function hasRecordFilters(filters: RecordFilters) {
   return Boolean(filters.query || filters.from || filters.to) || filters.sort !== "recent";
-}
-
-export function filterRecords<T extends FilterableRecord>(records: readonly T[], filters: RecordFilters) {
-  const query = filters.query.toLocaleLowerCase("ko-KR");
-  const direction = filters.sort === "oldest" ? 1 : -1;
-
-  return records
-    .filter((record) => {
-      if (filters.from && (record.recorded_until ?? record.recorded_at) < filters.from) return false;
-      if (filters.to && record.recorded_at > filters.to) return false;
-      if (!query) return true;
-
-      return [record.activity, record.memo, record.region_label, record.region_name].some((value) =>
-        value?.toLocaleLowerCase("ko-KR").includes(query),
-      );
-    })
-    .toSorted(
-      (a, b) => direction * (a.recorded_at.localeCompare(b.recorded_at) || a.created_at.localeCompare(b.created_at)),
-    );
 }
 
 // 지금 필터를 유지한 채 일부만 바꾼 목록 주소를 만든다.

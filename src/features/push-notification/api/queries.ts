@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getPushEndpoint } from "./subscribe-push";
+import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
 
 export const pushEndpointQueryOptions = queryOptions({
   queryKey: ["push-endpoint"],

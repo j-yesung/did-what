@@ -13,7 +13,6 @@ export {
 } from "./api/queries";
 export {
   buildRecordsHref,
-  filterRecords,
   hasRecordFilters,
   parseRecordFilters,
   type RecordFilters,

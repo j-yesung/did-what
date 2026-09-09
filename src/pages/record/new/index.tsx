@@ -1,4 +1,4 @@
-import { createRecord } from "@/features/record/create-record";
+import { createRecord } from "@/features/record/create-record/api/create-record";
 import { PageShell } from "@/shared/ui/layouts";
 import { RecordCreateFunnel } from "@/widgets/record-form/funnel/create-record-funnel";
 
