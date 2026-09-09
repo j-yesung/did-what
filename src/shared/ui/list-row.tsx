@@ -42,8 +42,10 @@ type ListRowTextsProps = React.ComponentProps<"span"> & {
 function ListRowTexts({ className, description, title, ...props }: ListRowTextsProps) {
   return (
     <span className={cn("flex min-w-0 flex-col gap-0.5", className)} {...props}>
-      <span className="truncate font-medium text-foreground text-sm">{title}</span>
-      {description ? <span className="truncate text-muted-foreground text-xs">{description}</span> : null}
+      <span className="line-clamp-2 break-keep font-medium text-foreground text-sm leading-[1.4]">{title}</span>
+      {description ? (
+        <span className="line-clamp-2 break-keep text-muted-foreground text-xs leading-[1.45]">{description}</span>
+      ) : null}
     </span>
   );
 }

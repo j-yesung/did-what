@@ -1,0 +1,35 @@
+@layer utilities {
+  .liquid-glass {
+    border-color: color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
+    background: var(--fill-nav-glass);
+    box-shadow:
+      inset 1px 1px 0 var(--nav-glass-highlight),
+      inset 0 0 5px var(--nav-glass-highlight),
+      var(--shadow-nav-glass);
+    -webkit-backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
+    backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
+  }
+
+  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
+  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-item"] {
+    border-radius: 9999px;
+  }
+
+  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
+  .liquid-glass-navigation-active {
+    background: var(--fill-nav-active);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-glass {
+    background-color: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
+  .liquid-glass-navigation-active {
+    background: var(--background);
+  }
+}

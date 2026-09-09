@@ -11,7 +11,6 @@ import {
   placesQueryOptions,
   type SavedPlaceRow,
 } from "@/entities/place";
-import { useDelayedNavigate } from "@/shared/lib/navigation/use-delayed-navigate";
 import { Badge } from "@/shared/ui/badge";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
@@ -19,7 +18,6 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
   const queryClient = useQueryClient();
-  const delayedNavigate = useDelayedNavigate();
   const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
 
   if (placesQuery.isError) {
@@ -59,10 +57,7 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
               render={
                 <Link
                   href={href}
-                  onClick={(event) => {
-                    queryClient.setQueryData(placeQueryKey(place.id), place);
-                    delayedNavigate(event, href);
-                  }}
+                  onClick={() => queryClient.setQueryData(placeQueryKey(place.id), place)}
                   onPointerDown={(event) => {
                     if (event.button === 0) void queryClient.prefetchQuery(placeRecordsQueryOptions(place.id));
                   }}

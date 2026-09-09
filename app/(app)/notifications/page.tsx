@@ -1,3 +1,1 @@
-import { NotificationPage } from "@/pages/notification/notification-page";
-
-export default NotificationPage;
+export { NotificationPage as default } from "@/pages/notification";
