@@ -1,8 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
 
 export const MAIN_QUERY_OPTIONS = {
-  gcTime: Number.POSITIVE_INFINITY,
-  staleTime: Number.POSITIVE_INFINITY,
+  refetchOnWindowFocus: true,
+  staleTime: 60_000,
 } as const;
 
 export function createQueryClient() {

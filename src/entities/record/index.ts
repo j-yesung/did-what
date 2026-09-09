@@ -2,7 +2,7 @@ export type { RecordDetail } from "./api/fetch-record";
 export type { RecordLocationRow } from "./api/fetch-record-locations";
 export type { RegionRecordRow } from "./api/fetch-region-records";
 export {
-  RECORD_PLACES_QUERY_KEY,
+  RECORD_DETAILS_QUERY_KEY,
   RECORDS_QUERY_KEY,
   recordDetailQueryOptions,
   recordListQueryOptions,

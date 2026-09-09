@@ -60,7 +60,7 @@ async function verifyKakaoPlace(reference: Extract<RecordPlaceReference, { kind:
   return region ? { place, reference, region } : null;
 }
 
-async function prepareRecordPlaces(references: RecordPlaceReference[], ownerId: string, supabase: SupabaseClient) {
+async function verifyRecordPlaces(references: RecordPlaceReference[], ownerId: string, supabase: SupabaseClient) {
   const existingReferences = references.filter(
     (reference): reference is Extract<RecordPlaceReference, { kind: "existing" }> => reference.kind === "existing",
   );
@@ -90,76 +90,35 @@ async function prepareRecordPlaces(references: RecordPlaceReference[], ownerId: 
     return null;
   }
 
-  const placeIds = new Set(existingResult.data.map((place) => place.id));
-  const saveExistingIds = existingReferences
-    .filter((reference) => reference.save)
-    .map((reference) => reference.placeId);
-  if (saveExistingIds.length) {
-    const { error } = await supabase
-      .from("places")
-      .update({ saved_at: new Date().toISOString() })
-      .eq("owner_id", ownerId)
-      .in("id", saveExistingIds);
-    if (error) return null;
-  }
+  const kakaoPlaces = verifiedKakaoPlaces.filter((place): place is NonNullable<typeof place> => place !== null);
 
-  for (const verified of verifiedKakaoPlaces) {
-    if (!verified) return null;
-
-    const { data: existing, error: findError } = await supabase
-      .from("places")
-      .select("id, saved_at")
-      .eq("owner_id", ownerId)
-      .eq("provider", "kakao")
-      .eq("provider_place_id", verified.place.id)
-      .maybeSingle();
-    if (findError) return null;
-
-    if (existing) {
-      placeIds.add(existing.id);
-      const { error } = await supabase
-        .from("places")
-        .update({
-          region_code: verified.region.code,
-          region_name: verified.region.fullName,
-          saved_at: verified.reference.save ? (existing.saved_at ?? new Date().toISOString()) : existing.saved_at,
-        })
-        .eq("id", existing.id)
-        .eq("owner_id", ownerId);
-      if (error) return null;
-      continue;
-    }
-
-    const { data: inserted, error } = await supabase
-      .from("places")
-      .insert({
-        address: verified.place.address,
-        latitude: verified.place.latitude,
-        longitude: verified.place.longitude,
-        name: verified.place.name,
-        owner_id: ownerId,
-        provider: "kakao",
-        provider_place_id: verified.place.id,
-        region_code: verified.region.code,
-        region_name: verified.region.fullName,
-        saved_at: verified.reference.save ? new Date().toISOString() : null,
-      })
-      .select("id")
-      .single();
-    if (error || !inserted) return null;
-    placeIds.add(inserted.id);
-  }
-
-  return [...placeIds];
+  return [
+    ...existingReferences.map((reference) => ({
+      kind: "existing" as const,
+      place_id: reference.placeId,
+      save: reference.save,
+    })),
+    ...kakaoPlaces.map((verified) => ({
+      address: verified.place.address,
+      kind: "kakao" as const,
+      latitude: verified.place.latitude,
+      longitude: verified.place.longitude,
+      name: verified.place.name,
+      provider_place_id: verified.place.id,
+      region_code: verified.region.code,
+      region_name: verified.region.fullName,
+      save: verified.reference.save,
+    })),
+  ];
 }
 
 export async function validateRecordSelections(data: RecordInput, ownerId: string, supabase: SupabaseClient) {
   const region = await verifyRegion(data.regionCode, data.regionName);
   if (!region) return null;
 
-  const placeIds = await prepareRecordPlaces(data.places, ownerId, supabase);
-  if (!placeIds) return null;
-  return { placeIds, region };
+  const places = await verifyRecordPlaces(data.places, ownerId, supabase);
+  if (!places) return null;
+  return { places, region };
 }
 
 export async function resolveRecordPlace(input: {

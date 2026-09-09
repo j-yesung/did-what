@@ -11,7 +11,7 @@ import { fetchRecordPlaces } from "./fetch-record-places";
 import { fetchRegionRecords, type RecordRegionFilter } from "./fetch-region-records";
 
 export const RECORDS_QUERY_KEY = ["records"] as const;
-export const RECORD_PLACES_QUERY_KEY = [...RECORDS_QUERY_KEY, "places"] as const;
+export const RECORD_DETAILS_QUERY_KEY = [...RECORDS_QUERY_KEY, "detail"] as const;
 
 export function recordSummaryQueryKey(recordId: string) {
   return [...RECORDS_QUERY_KEY, "summary", recordId] as const;
@@ -20,7 +20,7 @@ export function recordSummaryQueryKey(recordId: string) {
 export function recordDetailQueryOptions(recordId: string) {
   return queryOptions({
     ...MAIN_QUERY_OPTIONS,
-    queryKey: [...RECORDS_QUERY_KEY, "detail", recordId],
+    queryKey: [...RECORD_DETAILS_QUERY_KEY, recordId],
     queryFn: () => fetchRecord(recordId),
   });
 }
@@ -28,7 +28,7 @@ export function recordDetailQueryOptions(recordId: string) {
 export function recordPlacesQueryOptions(recordId: string) {
   return queryOptions({
     ...MAIN_QUERY_OPTIONS,
-    queryKey: [...RECORD_PLACES_QUERY_KEY, recordId],
+    queryKey: [...RECORD_DETAILS_QUERY_KEY, recordId, "places"],
     queryFn: () => fetchRecordPlaces(recordId),
   });
 }

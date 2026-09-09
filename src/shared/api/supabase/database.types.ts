@@ -303,6 +303,23 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_owned_record_with_places: {
+        Args: {
+          p_activity: string;
+          p_author_member_id: string;
+          p_memo: string;
+          p_places: Json;
+          p_recorded_at: string;
+          p_recorded_until: string | null;
+          p_region_code: string;
+          p_region_label: string;
+          p_region_latitude: number;
+          p_region_longitude: number;
+          p_region_name: string;
+          p_weather: string;
+        };
+        Returns: string;
+      };
       create_owned_record:
         | {
             Args: {
@@ -354,6 +371,23 @@ export type Database = {
           p_activity: string;
           p_memo: string;
           p_place_ids: string[];
+          p_record_id: string;
+          p_recorded_at: string;
+          p_recorded_until: string | null;
+          p_region_code: string;
+          p_region_label: string;
+          p_region_latitude: number;
+          p_region_longitude: number;
+          p_region_name: string;
+          p_weather: string;
+        };
+        Returns: boolean;
+      };
+      update_owned_record_with_places: {
+        Args: {
+          p_activity: string;
+          p_memo: string;
+          p_places: Json;
           p_record_id: string;
           p_recorded_at: string;
           p_recorded_until: string | null;

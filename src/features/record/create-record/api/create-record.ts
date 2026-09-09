@@ -23,11 +23,11 @@ export async function createRecord(formData: FormData): Promise<CreateRecordStat
     return { message: "선택한 지역·장소를 확인할 수 없습니다.", status: "error" };
   }
 
-  const { data: recordId, error } = await supabase.rpc("create_owned_record", {
+  const { data: recordId, error } = await supabase.rpc("create_owned_record_with_places", {
     p_activity: result.data.activity,
     p_author_member_id: member.id,
     p_memo: result.data.memo ?? "",
-    p_place_ids: selections.placeIds,
+    p_places: selections.places,
     p_recorded_at: result.data.recordedAt,
     p_recorded_until: result.data.recordedUntil ?? null,
     p_region_code: selections.region.code,
