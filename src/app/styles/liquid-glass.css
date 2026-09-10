@@ -20,6 +20,11 @@
     background: color-mix(in oklab, var(--fill-nav-active) 55%, transparent);
   }
 
+  .liquid-glass[data-slot="segmented-control"],
+  .liquid-glass[data-slot="icon-button"] {
+    box-shadow: none;
+  }
+
   .liquid-glass[data-slot="icon-button"] {
     border-color: color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
     background: var(--fill-nav-glass);
