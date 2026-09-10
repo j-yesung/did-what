@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 
+import { CircleChevronLeftIcon } from "@animateicons/react/lucide";
 import { CaretDownIcon } from "@phosphor-icons/react";
 
 import { useOverscrollBack } from "@/shared/lib/navigation/overscroll-back/use-overscroll-back";
@@ -12,12 +13,13 @@ type OverscrollBackProps = {
 };
 
 export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) {
-  const { containerRef, iconRef, indicatorRef, progressRingRef, touchHandlers } = useOverscrollBack(fallbackHref);
+  const { containerRef, completeIconRef, iconRef, indicatorRef, progressRingRef, touchHandlers } =
+    useOverscrollBack(fallbackHref);
 
   return (
     <>
       <div
-        className="h-svh touch-pan-y overflow-y-auto overscroll-contain transition-transform duration-200 ease-in data-[dragging=true]:duration-0 motion-reduce:transition-none [&>main]:min-h-[calc(100svh+1px)]"
+        className="h-svh touch-pan-y overflow-y-auto overscroll-contain transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] data-[dragging=true]:duration-0 motion-reduce:transition-none [&>main]:min-h-[calc(100svh+1px)]"
         data-dragging="false"
         ref={containerRef}
         {...touchHandlers}
@@ -33,14 +35,14 @@ export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) 
         ref={indicatorRef}
         style={{ transform: "translate3d(0, 24px, 0) scale(0.82)" }}
       >
-        <div className="relative flex size-12 items-center justify-center rounded-full bg-popover text-foreground shadow-lg transition-colors duration-150 group-data-[ready=true]/overscroll-back:bg-primary group-data-[ready=true]/overscroll-back:text-primary-foreground">
+        <div className="relative flex size-12 items-center justify-center rounded-full bg-popover text-foreground shadow-lg transition-colors duration-150 group-data-[ready=true]/overscroll-back:bg-foreground group-data-[ready=true]/overscroll-back:text-background">
           <svg
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 size-full -rotate-90"
+            className="pointer-events-none absolute inset-0 size-full -rotate-90 group-data-[ready=true]/overscroll-back:invisible"
             viewBox="0 0 48 48"
           >
             <circle
-              className="fill-none stroke-primary transition-[stroke-dashoffset] duration-200 ease-out group-data-[dragging=true]/overscroll-back:duration-0"
+              className="fill-none stroke-foreground transition-[stroke-dashoffset] duration-200 ease-out group-data-[dragging=true]/overscroll-back:duration-0"
               cx="24"
               cy="24"
               pathLength="1"
@@ -53,11 +55,18 @@ export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) 
             />
           </svg>
           <div
-            className="relative transition-transform duration-150 group-data-[dragging=true]/overscroll-back:duration-0"
+            className="relative transition-transform duration-150 group-data-[ready=true]/overscroll-back:invisible group-data-[dragging=true]/overscroll-back:duration-0 motion-reduce:transition-none"
             ref={iconRef}
           >
             <CaretDownIcon className="size-5" weight="bold" />
           </div>
+          <CircleChevronLeftIcon
+            className="invisible absolute group-data-[ready=true]/overscroll-back:visible"
+            isAnimated={false}
+            ref={completeIconRef}
+            size={28}
+            duration={0.75}
+          />
         </div>
       </div>
     </>
