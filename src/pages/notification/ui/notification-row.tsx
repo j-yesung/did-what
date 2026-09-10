@@ -36,6 +36,7 @@ export function NotificationRow({ notification, onOpen, pending }: NotificationR
           "bg-primary/5 before:absolute before:top-4 before:bottom-4 before:left-0 before:w-0.5 before:rounded-full before:bg-primary",
       )}
       disabled={deleted || pending}
+      nativeButton={!link}
       onClick={link ? undefined : () => onOpen(notification)}
       render={link}
       type={link ? undefined : "button"}

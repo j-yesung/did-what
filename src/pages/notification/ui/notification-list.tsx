@@ -22,7 +22,6 @@ import { PageShell } from "@/shared/ui/layouts/page-shell";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 import { Separator } from "@/shared/ui/separator";
-import { Spinner } from "@/shared/ui/spinner";
 import { TextButton } from "@/shared/ui/text-button";
 
 import { NotificationRow } from "./notification-row";
@@ -93,11 +92,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
         title="알림"
       />
 
-      {listQuery.isPending ? (
-        <div className="grid min-h-60 place-items-center">
-          <Spinner aria-label="알림을 불러오는 중" className="text-muted-foreground" />
-        </div>
-      ) : listQuery.isError && !listQuery.data ? (
+      {listQuery.isPending ? null : listQuery.isError && !listQuery.data ? (
         <LoadErrorAlert icon={<WarningCircleIcon aria-hidden="true" />} title="알림을 불러오지 못했어요" />
       ) : notifications.length === 0 ? (
         <Empty className="border bg-card py-16">
