@@ -18,42 +18,26 @@ const STEP_COPY: Record<RecordCreateStep, { description: string; title: string }
 type RecordFunnelLayoutProps = {
   backDisabled?: boolean;
   children: ReactNode;
-  focusInvalidKey?: number;
   footer?: ReactNode;
   onBack: () => void;
   step: RecordCreateStep;
 };
 
-export function RecordFunnelLayout({
-  backDisabled,
-  children,
-  focusInvalidKey = 0,
-  footer,
-  onBack,
-  step,
-}: RecordFunnelLayoutProps) {
+export function RecordFunnelLayout({ backDisabled, children, footer, onBack, step }: RecordFunnelLayoutProps) {
   const contentRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
   const previousStepIndexRef = useRef(getRecordCreateStepIndex(step));
+
   const stepIndex = getRecordCreateStepIndex(step);
+
   const previousStepIndex = previousStepIndexRef.current;
   const direction = stepIndex === previousStepIndex ? "none" : stepIndex > previousStepIndex ? "forward" : "backward";
   const copy = STEP_COPY[step];
 
   useEffect(() => {
-    void focusInvalidKey;
+    if (previousStepIndexRef.current === stepIndex) return;
     previousStepIndexRef.current = stepIndex;
     contentRef.current?.scrollTo({ top: 0 });
-
-    const frame = requestAnimationFrame(() => {
-      const invalid = contentRef.current?.querySelector<HTMLElement>(
-        'input[aria-invalid="true"], textarea[aria-invalid="true"], button[aria-invalid="true"], [aria-invalid="true"] input',
-      );
-      (invalid ?? titleRef.current)?.focus({ preventScroll: true });
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, [focusInvalidKey, stepIndex]);
+  }, [stepIndex]);
 
   return (
     <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] bg-background">
@@ -98,8 +82,6 @@ export function RecordFunnelLayout({
           <h2
             className="font-[780] text-[clamp(26px,8vw,32px)] leading-tight tracking-[-0.045em] outline-none"
             id={`record-create-${step}-title`}
-            ref={titleRef}
-            tabIndex={-1}
           >
             {copy.title}
           </h2>

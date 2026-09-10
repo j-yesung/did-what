@@ -8,6 +8,7 @@ import { QueryProvider } from "@/shared/lib/react-query/query-provider";
 import { cn } from "@/shared/lib/utils";
 import { NoticeProvider } from "@/shared/ui/notice-provider";
 import { PressListener } from "@/shared/ui/press-listener";
+import { PreventForwardSwipe } from "@/shared/ui/prevent-forward-swipe";
 
 import "@/app/styles/globals.css";
 import "@/app/styles/liquid-glass.css";
@@ -69,16 +70,21 @@ export async function generateViewport(): Promise<Viewport> {
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const theme = await getTheme();
+  const splashColorSchemes: readonly (keyof typeof THEME_COLOR)[] = theme === "system" ? ["light", "dark"] : [theme];
 
   return (
     <html className={cn(pretendard.variable, theme !== "system" && theme)} lang="ko">
       <head>
         {IOS_SPLASH_SCREENS.flatMap(({ height, scale, width }) =>
-          (["light", "dark"] as const).map((colorScheme) => (
+          splashColorSchemes.map((colorScheme) => (
             <link
               href={`/splash/${width * scale}x${height * scale}-${colorScheme}.png`}
               key={`${width}x${height}@${scale}-${colorScheme}`}
-              media={`(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${scale}) and (orientation: portrait) and (prefers-color-scheme: ${colorScheme})`}
+              media={
+                theme === "system"
+                  ? `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${scale}) and (orientation: portrait) and (prefers-color-scheme: ${colorScheme})`
+                  : `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${scale}) and (orientation: portrait)`
+              }
               rel="apple-touch-startup-image"
             />
           )),
@@ -87,6 +93,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
       <body>
         <QueryProvider>{children}</QueryProvider>
         <PressListener />
+        <PreventForwardSwipe />
         <NoticeProvider />
       </body>
     </html>

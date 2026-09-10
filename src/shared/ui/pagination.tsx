@@ -1,10 +1,11 @@
 import type * as React from "react";
 
 import { CaretLeftIcon, CaretRightIcon, DotsThreeOutlineIcon } from "@phosphor-icons/react/dist/ssr";
-import Link from "next/link";
+import type Link from "next/link";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { PressLink } from "@/shared/ui/press-link";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -39,7 +40,7 @@ function PaginationLink({ className, isActive, size, ...props }: PaginationLinkP
       className={cn(size ? undefined : "size-8 gap-0 p-0", className)}
       nativeButton={false}
       render={
-        <Link
+        <PressLink
           aria-current={isActive ? "page" : undefined}
           data-slot="pagination-link"
           data-active={isActive}

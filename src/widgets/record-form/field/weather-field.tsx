@@ -9,7 +9,7 @@ import {
   type RecordWeather,
   WeatherIcon,
 } from "@/entities/record";
-import { Field, FieldError, FieldLegend, FieldSet } from "@/shared/ui/field";
+import { Field, FieldError, FieldTitle } from "@/shared/ui/field";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 
 const FIELD_ICON = "size-4.5 text-foreground [stroke-width:2]";
@@ -34,11 +34,11 @@ export function RecordWeatherField({
   }
 
   return (
-    <FieldSet>
-      <FieldLegend className="flex items-center gap-2" id="record-weather-label" variant="label">
+    <div aria-labelledby="record-weather-label" role="group">
+      <FieldTitle className="mb-1.5" id="record-weather-label">
         날씨
         <WeatherIcon weather={weather} className={FIELD_ICON} aria-hidden="true" />
-      </FieldLegend>
+      </FieldTitle>
       <Field data-invalid={Boolean(weatherError)}>
         <SegmentedControl
           aria-describedby={weatherError ? "record-weather-error" : undefined}
@@ -57,6 +57,6 @@ export function RecordWeatherField({
         </SegmentedControl>
         <FieldError id="record-weather-error">{weatherError}</FieldError>
       </Field>
-    </FieldSet>
+    </div>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { WarningCircleIcon } from "@phosphor-icons/react";
-import Link from "next/link";
 
 import { Button, buttonVariants } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageShell } from "@/shared/ui/layouts";
+import { PressLink } from "@/shared/ui/press-link";
 
 export function AppError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
@@ -22,9 +22,9 @@ export function AppError({ reset }: { error: Error & { digest?: string }; reset:
           <Button onClick={reset} size="medium" type="button" variant="outline">
             다시 시도
           </Button>
-          <Link className={buttonVariants({ size: "medium" })} href="/">
+          <PressLink className={buttonVariants({ size: "medium" })} href="/">
             지도로 가기
-          </Link>
+          </PressLink>
         </EmptyContent>
       </Empty>
     </PageShell>

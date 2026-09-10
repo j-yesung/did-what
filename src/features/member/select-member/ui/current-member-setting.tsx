@@ -1,13 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 import { Button } from "@/shared/ui/button";
 import { FieldLegend, FieldSet } from "@/shared/ui/field";
+import { PressLink } from "@/shared/ui/press-link";
 
 export function CurrentMemberSetting({ name }: { name: string }) {
-  const router = useRouter();
-
   return (
     <FieldSet className="gap-2">
       <FieldLegend>현재 사용자</FieldLegend>
@@ -16,9 +13,9 @@ export function CurrentMemberSetting({ name }: { name: string }) {
           <p className="truncate font-medium text-base">{name}</p>
         </div>
         <Button
-          onClick={() => router.push("/members/select?returnTo=/settings")}
+          nativeButton={false}
+          render={<PressLink href="/members/select?returnTo=/settings" />}
           size="medium"
-          type="button"
           variant="outline"
         >
           전환

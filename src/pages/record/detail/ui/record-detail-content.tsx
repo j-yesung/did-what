@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 import { CheckIcon, type CheckIconHandle, CopyIcon } from "@animateicons/react/lucide";
 import { BookOpenIcon, CalendarDotsIcon, MapPinIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 
 import {
   getRecordWeatherLabel,
@@ -26,6 +25,7 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
+import { PressLink } from "@/shared/ui/press-link";
 
 import { useCopyToClipboard } from "../model/use-copy-to-clipboard";
 
@@ -78,7 +78,7 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
                 icon={NotePencilIcon}
                 iconSize={28}
                 nativeButton={false}
-                render={<Link href={`/records/${record.id}/edit`} />}
+                render={<PressLink href={`/records/${record.id}/edit`} />}
               />
             ) : undefined
           }

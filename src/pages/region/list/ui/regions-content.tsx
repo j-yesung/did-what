@@ -4,12 +4,12 @@ import { useMemo } from "react";
 
 import { MapTrifoldIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 
 import { recordLocationsQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { PressLink } from "@/shared/ui/press-link";
 
 export function RegionsContent() {
   const queryClient = useQueryClient();
@@ -52,7 +52,7 @@ export function RegionsContent() {
                   fullWidth
                   nativeButton={false}
                   render={
-                    <Link
+                    <PressLink
                       href={href}
                       onPointerDown={(event) => {
                         if (event.button === 0) void queryClient.prefetchQuery(regionRecordsQueryOptions(map));

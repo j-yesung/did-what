@@ -3,6 +3,7 @@ import { CaretRightIcon } from "@phosphor-icons/react";
 import type { NotificationItem } from "@/entities/notification/api/queries";
 import { cn } from "@/shared/lib/utils";
 import { ListRow } from "@/shared/ui/list-row";
+import { PressLink } from "@/shared/ui/press-link";
 
 const NOTIFICATION_TIME = new Intl.DateTimeFormat("ko-KR", {
   day: "numeric",
@@ -21,6 +22,8 @@ type NotificationRowProps = {
 export function NotificationRow({ notification, onOpen, pending }: NotificationRowProps) {
   const unread = notification.read_at === null;
   const deleted = notification.record_id === null;
+  const href = notification.record_id ? `/records/${notification.record_id}` : undefined;
+  const link = !unread && href ? <PressLink href={href} /> : undefined;
 
   return (
     <ListRow
@@ -33,8 +36,9 @@ export function NotificationRow({ notification, onOpen, pending }: NotificationR
           "bg-primary/5 before:absolute before:top-4 before:bottom-4 before:left-0 before:w-0.5 before:rounded-full before:bg-primary",
       )}
       disabled={deleted || pending}
-      onClick={() => onOpen(notification)}
-      type="button"
+      onClick={link ? undefined : () => onOpen(notification)}
+      render={link}
+      type={link ? undefined : "button"}
     >
       <span className="flex min-w-0 items-start gap-3">
         <span className="flex min-w-0 flex-1 flex-col gap-1">

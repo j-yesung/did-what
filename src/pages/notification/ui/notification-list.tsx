@@ -64,12 +64,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
 
   function openNotification(notification: NotificationItem) {
     const href = notification.record_id ? `/records/${notification.record_id}` : null;
-    if (!href || readOne.isPending) return;
-
-    if (notification.read_at) {
-      router.push(href);
-      return;
-    }
+    if (!href || readOne.isPending || notification.read_at) return;
 
     readOne.mutate(notification);
   }

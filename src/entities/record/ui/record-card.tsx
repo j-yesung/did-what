@@ -2,11 +2,11 @@
 
 import { CaretRightIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { PressLink } from "@/shared/ui/press-link";
 
 import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
 import type { RecordSummary } from "../model/types";
@@ -40,9 +40,11 @@ export function RecordCard({ isLast, record }: RecordCardProps) {
         fullWidth
         nativeButton={false}
         render={
-          <Link
+          <PressLink
             href={href}
-            onClick={() => queryClient.setQueryData(recordSummaryQueryKey(record.id), record)}
+            onClick={() => {
+              queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
+            }}
             onPointerDown={(event) => {
               if (event.button === 0) void queryClient.prefetchQuery(recordPlacesQueryOptions(record.id));
             }}

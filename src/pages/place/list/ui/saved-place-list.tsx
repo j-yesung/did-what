@@ -2,7 +2,6 @@
 
 import { MapPinIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 
 import {
   getPlaceRegionLabel,
@@ -15,6 +14,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { PressLink } from "@/shared/ui/press-link";
 
 export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
   const queryClient = useQueryClient();
@@ -55,9 +55,11 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
               aria-label={`${place.name} 상세 보기`}
               nativeButton={false}
               render={
-                <Link
+                <PressLink
                   href={href}
-                  onClick={() => queryClient.setQueryData(placeQueryKey(place.id), place)}
+                  onClick={() => {
+                    queryClient.setQueryData(placeQueryKey(place.id), place);
+                  }}
                   onPointerDown={(event) => {
                     if (event.button === 0) void queryClient.prefetchQuery(placeRecordsQueryOptions(place.id));
                   }}
