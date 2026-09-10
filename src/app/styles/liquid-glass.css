@@ -17,7 +17,12 @@
 
   .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
   .liquid-glass-navigation-active {
-    background: var(--fill-nav-active);
+    background: color-mix(in oklab, var(--fill-nav-active) 55%, transparent);
+  }
+
+  .liquid-glass[data-slot="icon-button"] {
+    border-color: color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
+    background: var(--fill-nav-glass);
   }
 }
 
@@ -26,6 +31,10 @@
     background-color: var(--surface);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+
+  .liquid-glass[data-slot="icon-button"] {
+    background: var(--surface);
   }
 
   .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],

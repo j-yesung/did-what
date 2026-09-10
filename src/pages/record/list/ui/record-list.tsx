@@ -1,13 +1,13 @@
 "use client";
 
 import { MagnifyingGlassMinusIcon, NotePencilIcon } from "@phosphor-icons/react";
-import Link from "next/link";
 
 import { EmptyRecords, hasRecordFilters, RecordCard, type RecordFilters, RecordTimeline } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
+import { PressLink } from "@/shared/ui/press-link";
 
 import { useRecordListQuery } from "../model/use-record-list-query";
 
@@ -39,7 +39,7 @@ export function RecordList({ filters }: RecordListProps) {
           <EmptyDescription>검색어를 바꾸거나 기간을 넓혀 보세요.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button nativeButton={false} render={<Link href="/records" />} variant="outline">
+          <Button nativeButton={false} render={<PressLink href="/records" />} variant="outline">
             전체 기록 보기
           </Button>
         </EmptyContent>

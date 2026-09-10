@@ -1,9 +1,9 @@
 import { MapPinIcon } from "@phosphor-icons/react/dist/ssr";
-import Link from "next/link";
 
 import { buttonVariants } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { PageShell } from "@/shared/ui/layouts";
+import { PressLink } from "@/shared/ui/press-link";
 
 export function AppNotFound() {
   return (
@@ -17,9 +17,9 @@ export function AppNotFound() {
           <EmptyDescription>주소가 바뀌었거나 기록이 삭제되었을 수 있어요.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Link className={buttonVariants({ size: "medium" })} href="/">
+          <PressLink className={buttonVariants({ size: "medium" })} href="/">
             지도로 가기
-          </Link>
+          </PressLink>
         </EmptyContent>
       </Empty>
     </PageShell>

@@ -22,7 +22,7 @@ import {
 } from "@/features/record/select-record-location";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
-import { FieldGroup, FieldSeparator } from "@/shared/ui/field";
+import { FieldGroup } from "@/shared/ui/field";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -100,7 +100,6 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
   const placesQuery = useQuery(placesQueryOptions);
   const busyRef = useRef(false);
   const [fieldErrors, setFieldErrors] = useState<RecordFieldErrors>({});
-  const [focusInvalidKey, setFocusInvalidKey] = useState(0);
   const navigation = useRecordCreateNavigation({
     busyRef,
     dirty: draft.dirty,
@@ -118,7 +117,6 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
       const nextErrors = result.fieldErrors ?? {};
       const errorStep = getRecordCreateErrorStep(nextErrors);
       setFieldErrors(nextErrors);
-      setFocusInvalidKey((current) => current + 1);
       if (errorStep && errorStep !== funnel.step) void funnel.history.replace(errorStep, draft);
     },
   });
@@ -132,15 +130,10 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
     void funnel.history.replace(funnel.step, next);
   }
 
-  function focusErrors(errors: RecordFieldErrors) {
-    setFieldErrors(errors);
-    setFocusInvalidKey((current) => current + 1);
-  }
-
   function goNext() {
     const errors = validateRecordCreateStep(funnel.step, draft);
     if (Object.keys(errors).length) {
-      focusErrors(errors);
+      setFieldErrors(errors);
       return;
     }
 
@@ -152,7 +145,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
     event.preventDefault();
     const errors = validateRecordCreateStep("what", draft);
     if (Object.keys(errors).length) {
-      focusErrors(errors);
+      setFieldErrors(errors);
       return;
     }
 
@@ -163,7 +156,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
   function renderStep(step: RecordCreateStep) {
     if (step === "when") {
       return (
-        <FieldGroup className="gap-7">
+        <FieldGroup className="gap-0">
           <RecordDateField
             defaultRecordedAt={defaultRecordedAt}
             initialRecordedAt={draft.recordedAt}
@@ -172,12 +165,13 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
             recordedAtError={fieldErrors.recordedAt}
             recordedUntilError={fieldErrors.recordedUntil}
           />
-          <FieldSeparator />
-          <RecordWeatherField
-            initialWeather={draft.weather}
-            onChange={(weather: RecordWeather) => updateContext({ weather })}
-            weatherError={fieldErrors.weather}
-          />
+          <div style={{ paddingTop: "2.5rem" }}>
+            <RecordWeatherField
+              initialWeather={draft.weather}
+              onChange={(weather: RecordWeather) => updateContext({ weather })}
+              weatherError={fieldErrors.weather}
+            />
+          </div>
         </FieldGroup>
       );
     }
@@ -194,30 +188,26 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
       if (placesQuery.isError) return <LoadErrorAlert title="선택지를 불러오지 못했어요" />;
 
       return (
-        <FieldGroup className="gap-7">
-          <RecordLocationFields
-            initialPlaces={draft.places}
-            initialRegion={draft.region ?? undefined}
-            onValueChange={(region: RecordLocationRegion | null, places: RecordLocationPlace[]) =>
-              updateContext({ places, region })
-            }
-            placeError={fieldErrors.places}
-            regionError={fieldErrors.regionCode}
-            savedPlaces={placesQuery.data}
-          />
-        </FieldGroup>
+        <RecordLocationFields
+          initialPlaces={draft.places}
+          initialRegion={draft.region ?? undefined}
+          onValueChange={(region: RecordLocationRegion | null, places: RecordLocationPlace[]) =>
+            updateContext({ places, region })
+          }
+          placeError={fieldErrors.places}
+          regionError={fieldErrors.regionCode}
+          savedPlaces={placesQuery.data}
+        />
       );
     }
 
     return (
-      <FieldGroup className="gap-7">
-        <RecordTextFields
-          activityError={fieldErrors.activity}
-          initialActivity={draft.activity}
-          initialMemo={draft.memo}
-          memoError={fieldErrors.memo}
-        />
-      </FieldGroup>
+      <RecordTextFields
+        activityError={fieldErrors.activity}
+        initialActivity={draft.activity}
+        initialMemo={draft.memo}
+        memoError={fieldErrors.memo}
+      />
     );
   }
 
@@ -238,7 +228,6 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
       {navigation.confirmDialog}
       <RecordFunnelLayout
         backDisabled={busy}
-        focusInvalidKey={focusInvalidKey}
         footer={
           <Button
             disabled={nextDisabled}

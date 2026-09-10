@@ -2,13 +2,13 @@
 
 import { BellIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { unreadNotificationCountQueryOptions } from "@/entities/notification/api/queries";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { IconButton } from "@/shared/ui/icon-button";
+import { PressLink } from "@/shared/ui/press-link";
 
 type NotificationBellProps = {
   className?: string;
@@ -41,7 +41,7 @@ export function NotificationBell({ className, memberId }: NotificationBellProps)
         icon={BellIcon}
         iconSize={24}
         nativeButton={false}
-        render={<Link href="/notifications" prefetch />}
+        render={<PressLink href="/notifications" prefetch />}
         size="lg"
         variant="clear"
       />

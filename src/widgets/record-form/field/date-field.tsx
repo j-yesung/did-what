@@ -9,7 +9,7 @@ import { format, parseISO } from "date-fns";
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
-import { Field, FieldError, FieldLegend, FieldSet } from "@/shared/ui/field";
+import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 
 type RecordDateFieldProps = {
   defaultRecordedAt: string;
@@ -42,8 +42,10 @@ export function RecordDateField({
   const hasError = Boolean(recordedAtError || recordedUntilError);
 
   return (
-    <FieldSet>
-      <FieldLegend variant="label">언제</FieldLegend>
+    <div aria-labelledby="record-date-label" role="group">
+      <FieldLabel className="mb-1.5 leading-normal" htmlFor="record-date-trigger" id="record-date-label">
+        언제
+      </FieldLabel>
       <Field data-invalid={hasError}>
         <Drawer
           onOpenChange={(open) => {
@@ -56,6 +58,7 @@ export function RecordDateField({
           <DrawerTrigger
             render={
               <Button
+                id="record-date-trigger"
                 className="justify-start [&>span]:w-full"
                 fullWidth
                 size="field"
@@ -63,6 +66,7 @@ export function RecordDateField({
                 variant="outline"
                 aria-invalid={hasError}
                 aria-describedby={hasError ? "record-date-error" : undefined}
+                aria-labelledby="record-date-label"
               />
             }
           >
@@ -112,6 +116,6 @@ export function RecordDateField({
         <input name="recordedUntil" type="hidden" value={recordedUntil} />
         <FieldError id="record-date-error">{recordedAtError ?? recordedUntilError}</FieldError>
       </Field>
-    </FieldSet>
+    </div>
   );
 }

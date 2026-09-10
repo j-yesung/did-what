@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { PressLink } from "@/shared/ui/press-link";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 
 const SEGMENTS = [
@@ -14,20 +14,24 @@ export function MapSegment() {
   const pathname = usePathname() ?? "";
 
   return (
-    <div className="sticky top-[calc(24px+env(safe-area-inset-top))] z-20">
-      <SegmentedControl
-        aria-label="지도 보기"
-        className="liquid-glass w-1/2 rounded-full"
-        role="navigation"
-        size="large"
-        value={pathname}
-      >
-        {SEGMENTS.map(({ href, label }) => (
-          <SegmentedControlItem key={href} render={<Link href={href} prefetch />} value={href}>
-            {label}
-          </SegmentedControlItem>
-        ))}
-      </SegmentedControl>
+    <div className="h-13">
+      <div className="pointer-events-none fixed inset-x-0 top-[calc(24px+env(safe-area-inset-top))] z-20">
+        <div className="mx-auto w-full max-w-(--app-width) px-5">
+          <SegmentedControl
+            aria-label="지도 보기"
+            className="liquid-glass pointer-events-auto w-32 rounded-full"
+            role="navigation"
+            size="large"
+            value={pathname}
+          >
+            {SEGMENTS.map(({ href, label }) => (
+              <SegmentedControlItem key={href} render={<PressLink href={href} prefetch />} value={href}>
+                {label}
+              </SegmentedControlItem>
+            ))}
+          </SegmentedControl>
+        </div>
+      </div>
     </div>
   );
 }
