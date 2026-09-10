@@ -130,7 +130,7 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
               </Card>
             ) : null}
 
-            <footer className="flex justify-center py-2">
+            <footer className="mt-auto flex justify-center py-2">
               <DeleteRecordButton activity={record.activity} recordId={record.id} />
             </footer>
           </>
