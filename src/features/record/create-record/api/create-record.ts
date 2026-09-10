@@ -46,6 +46,7 @@ export async function createRecord(formData: FormData): Promise<CreateRecordStat
       ownerId: user.id,
       recordId,
       senderMemberId: member.id,
+      senderName: member.name,
       supabase,
     });
   } catch {
