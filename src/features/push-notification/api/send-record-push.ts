@@ -42,6 +42,7 @@ type SendRecordPushInput = {
   ownerId: string;
   recordId: string;
   senderMemberId: string;
+  senderName: string;
   supabase: SupabaseClient;
 };
 
@@ -50,7 +51,7 @@ type SendRecordPushInput = {
  *
  * 작성 구성원의 모든 기기와 비활성 구성원의 기기는 발송 대상에서 제외한다.
  */
-export async function sendRecordPush({ ownerId, recordId, senderMemberId, supabase }: SendRecordPushInput) {
+export async function sendRecordPush({ ownerId, recordId, senderMemberId, senderName, supabase }: SendRecordPushInput) {
   if (!configured) return;
 
   const { data: subscriptions } = await supabase
@@ -68,7 +69,7 @@ export async function sendRecordPush({ ownerId, recordId, senderMemberId, supaba
    */
   const payload = JSON.stringify({
     tag: `record-${recordId}`,
-    title: "새 기록이 추가됐어요",
+    title: `${senderName}이가 기록을 추가했어요`,
     url: `/records/${recordId}`,
   });
 
