@@ -32,7 +32,7 @@ export type RecordInput = {
   memo?: string;
 };
 
-export type RecordInputValues = {
+type RecordInputValues = {
   recordedAt: string;
   recordedUntil: string;
   regionCode: string;

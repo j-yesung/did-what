@@ -1,6 +1,6 @@
 import { createClient } from "@/shared/api/supabase/client";
 
-import { RECORD_DETAIL_COLUMNS } from "./record-detail-columns";
+import { RECORD_DETAIL_COLUMNS } from "./record-columns";
 
 export async function fetchRecord(recordId: string) {
   const { data, error } = await createClient()
@@ -12,5 +12,3 @@ export async function fetchRecord(recordId: string) {
   if (error) throw error;
   return data;
 }
-
-export type RecordDetail = NonNullable<Awaited<ReturnType<typeof fetchRecord>>>;

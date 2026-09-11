@@ -1,6 +1,6 @@
 import { createClient } from "@/shared/api/supabase/server";
 
-import { RECORD_DETAIL_COLUMNS } from "./record-detail-columns";
+import { RECORD_DETAIL_COLUMNS } from "./record-columns";
 
 export async function getRecord(recordId: string, ownerId: string) {
   const supabase = await createClient();
