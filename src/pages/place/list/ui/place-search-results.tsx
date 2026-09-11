@@ -46,7 +46,7 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
   const results = resultsQuery.data.pages.flatMap(({ page, places }) => places.map((place) => ({ page, place })));
   const hasSelectedPlaces = selectedPlaces.size > 0;
 
-  function selectPlace(place: KakaoPlace, page: number, savedPlaceId?: string) {
+  const selectPlace = (place: KakaoPlace, page: number, savedPlaceId?: string) => {
     if (savedPlaceId) return;
     setSelectedPlaces((current) => {
       const next = new Map(current);
@@ -57,18 +57,18 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
       }
       return next;
     });
-  }
+  };
 
-  function handlePlaceKeyDown(
+  const handlePlaceKeyDown = (
     event: KeyboardEvent<HTMLLIElement>,
     place: KakaoPlace,
     page: number,
     savedPlaceId?: string,
-  ) {
+  ) => {
     if (savedPlaceId || (event.key !== "Enter" && event.key !== " ")) return;
     event.preventDefault();
     selectPlace(place, page, savedPlaceId);
-  }
+  };
 
   return (
     <section

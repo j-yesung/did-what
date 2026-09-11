@@ -23,7 +23,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
     setQuery(filters.query);
   }, [filters.query]);
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const params = new URLSearchParams();
@@ -32,11 +32,11 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
     }
 
     router.push(`/records?${params.toString()}`);
-  }
+  };
 
-  function handlePeriodApply(period: Pick<RecordFilters, "from" | "to">) {
+  const handlePeriodApply = (period: Pick<RecordFilters, "from" | "to">) => {
     router.push(buildRecordsHref({ ...filters, query, ...period }));
-  }
+  };
 
   return (
     <form action="/records" className="flex flex-col gap-2.5" method="get" onSubmit={handleSubmit} role="search">

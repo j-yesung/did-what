@@ -9,11 +9,11 @@ export type RegionSearchResult = {
   regions: KakaoRegion[];
 };
 
-export async function searchRegions(query: string, signal?: AbortSignal) {
+export const searchRegions = async (query: string, signal?: AbortSignal) => {
   const { data } = await apiClient.get<RegionSearchResult>("/regions/search", {
     params: { query },
     signal,
   });
 
   return data;
-}
+};

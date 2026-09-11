@@ -4,10 +4,10 @@ type SavedPlace = {
   provider_place_id: string | null;
 };
 
-export function getSavedKakaoPlaces(places: SavedPlace[]) {
+export const getSavedKakaoPlaces = (places: SavedPlace[]) => {
   return new Map(
     places.flatMap((place) =>
       place.provider === "kakao" && place.provider_place_id ? [[place.provider_place_id, place.id] as const] : [],
     ),
   );
-}
+};

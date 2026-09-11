@@ -1,6 +1,6 @@
 import { isPushSupported } from "./subscribe-push";
 
-export async function disablePush() {
+export const disablePush = async () => {
   if (!isPushSupported()) return null;
 
   const registration = await navigator.serviceWorker.getRegistration();
@@ -11,4 +11,4 @@ export async function disablePush() {
   await subscription.unsubscribe();
 
   return endpoint;
-}
+};

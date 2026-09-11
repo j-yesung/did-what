@@ -6,7 +6,7 @@ type SearchRouter = {
   back: () => void;
 };
 
-export function navigatePlaceSearch(browser: Window, router: SearchRouter, keyword: string) {
+export const navigatePlaceSearch = (browser: Window, router: SearchRouter, keyword: string) => {
   const url = new URL(browser.location.href);
   const searching = url.searchParams.has("q");
   const query = keyword.trim();
@@ -22,4 +22,4 @@ export function navigatePlaceSearch(browser: Window, router: SearchRouter, keywo
   const href = `/places?${new URLSearchParams({ q: query })}`;
   if (searching) router.replace(href);
   else router.push(href);
-}
+};

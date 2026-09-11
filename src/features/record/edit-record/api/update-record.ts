@@ -13,7 +13,7 @@ type UpdateRecordState = {
   status: "error" | "success";
 };
 
-export async function updateRecord(recordId: string, formData: FormData): Promise<UpdateRecordState> {
+export const updateRecord = async (recordId: string, formData: FormData): Promise<UpdateRecordState> => {
   if (!isUuid(recordId)) return { message: "수정할 기록을 확인할 수 없습니다.", status: "error" };
 
   const { supabase, user } = await requireUser();
@@ -48,4 +48,4 @@ export async function updateRecord(recordId: string, formData: FormData): Promis
   revalidatePath("/places");
   revalidatePath(`/records/${recordId}`);
   return { status: "success" };
-}
+};

@@ -29,7 +29,7 @@ const RECENT_REGION_LIMIT = 6;
  * records 쿼리가 이미 recorded_at 내림차순으로 정렬해 주므로 여기서 다시 정렬하지 않는다.
  * 짧은 이름(name)은 전체 이름의 마지막 마디에서 얻는다. "서울 마포구 망원동" → "망원동".
  */
-export function toRecentRegions(records: RecordRegionRow[], limit = RECENT_REGION_LIMIT): RecordLocationRegion[] {
+export const toRecentRegions = (records: RecordRegionRow[], limit = RECENT_REGION_LIMIT): RecordLocationRegion[] => {
   const seen = new Set<string>();
   const regions: RecordLocationRegion[] = [];
 
@@ -50,6 +50,6 @@ export function toRecentRegions(records: RecordRegionRow[], limit = RECENT_REGIO
   }
 
   return regions;
-}
+};
 
 export type ResolveRecordPlaceResult = { error: string } | { place: RecordLocationPlace; region: RecordLocationRegion };

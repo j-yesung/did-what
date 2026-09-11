@@ -14,7 +14,7 @@ const EXIT_CAN_GO_BACK = "recordCreateCanGoBack";
 type ExitIntent = { href: string; type: "save" } | { type: "cancel" };
 
 /** 퍼널 단계 히스토리와 작성 화면 이탈용 보초 항목을 함께 정리한다. */
-export function useRecordCreateNavigation({
+export const useRecordCreateNavigation = ({
   busyRef,
   dirty,
   fallbackHref,
@@ -24,7 +24,7 @@ export function useRecordCreateNavigation({
   dirty: boolean;
   fallbackHref: string;
   funnelIndex: number;
-}) {
+}) => {
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const couldGoBackRef = useRef(false);
@@ -54,7 +54,7 @@ export function useRecordCreateNavigation({
       );
     }
 
-    function pushDestination(intent: ExitIntent) {
+    const pushDestination = (intent: ExitIntent) => {
       if (couldGoBackRef.current) {
         const href = intent.type === "save" ? intent.href : window.location.pathname + window.location.search;
         router.push(href);
@@ -64,15 +64,15 @@ export function useRecordCreateNavigation({
       const href = intent.type === "save" ? intent.href : fallbackHref;
       router.replace(href);
       requestAnimationFrame(() => router.push(href));
-    }
+    };
 
-    function finishLeaving() {
+    const finishLeaving = () => {
       const intent = intentRef.current;
       intentRef.current = null;
       if (intent) pushDestination(intent);
-    }
+    };
 
-    function leaveFromBase() {
+    const leaveFromBase = () => {
       leavingRef.current = true;
       intentRef.current = { type: "cancel" };
       if (couldGoBackRef.current) {
@@ -80,9 +80,9 @@ export function useRecordCreateNavigation({
       } else {
         finishLeaving();
       }
-    }
+    };
 
-    function onPopState(event: PopStateEvent) {
+    const onPopState = (event: PopStateEvent) => {
       if (leavingRef.current) {
         finishLeaving();
         return;
@@ -109,13 +109,13 @@ export function useRecordCreateNavigation({
       }
 
       leaveFromBase();
-    }
+    };
 
-    function warnBeforeUnload(event: BeforeUnloadEvent) {
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!dirtyRef.current || leavingRef.current) return;
       event.preventDefault();
       event.returnValue = "";
-    }
+    };
 
     window.addEventListener("beforeunload", warnBeforeUnload);
     window.addEventListener("popstate", onPopState);
@@ -159,4 +159,4 @@ export function useRecordCreateNavigation({
       window.history.go(-(funnelIndexRef.current + (couldGoBackRef.current ? 2 : 1)));
     },
   };
-}
+};

@@ -6,16 +6,16 @@ import { cookies } from "next/headers";
 import type { Database } from "./database.types";
 import { getSupabaseEnv } from "./env";
 
-export async function createClient() {
+export const createClient = async () => {
   const cookieStore = await cookies();
   const { publishableKey, url } = getSupabaseEnv();
 
   return createServerClient<Database>(url, publishableKey, {
     cookies: {
-      getAll() {
+      getAll: () => {
         return cookieStore.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll: (cookiesToSet) => {
         try {
           for (const { name, options, value } of cookiesToSet) {
             cookieStore.set(name, value, options);
@@ -26,4 +26,4 @@ export async function createClient() {
       },
     },
   });
-}
+};

@@ -7,7 +7,7 @@ import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 type DeleteRecordState = { message?: string; status: "error" | "success" };
 
-export async function deleteRecord(recordId: string): Promise<DeleteRecordState> {
+export const deleteRecord = async (recordId: string): Promise<DeleteRecordState> => {
   if (!isUuid(recordId)) return { message: "삭제할 기록을 확인할 수 없습니다.", status: "error" };
 
   const { supabase } = await requireUser();
@@ -20,4 +20,4 @@ export async function deleteRecord(recordId: string): Promise<DeleteRecordState>
   revalidatePath("/");
   revalidatePath("/records");
   return { status: "success" };
-}
+};

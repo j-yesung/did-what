@@ -12,10 +12,10 @@ import { ConfirmDialog, ConfirmDialogCancelButton } from "./confirm-dialog";
 
 const SENTINEL = "leaveGuard";
 
-function raiseSentinel() {
+const raiseSentinel = () => {
   if (window.history.state?.[SENTINEL]) return;
   window.history.pushState({ [SENTINEL]: true }, "");
-}
+};
 
 export type LeaveGuardHandle = {
   finish: (destination: string) => void;
@@ -50,7 +50,7 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
   const leaving = useRef(false);
   const destination = useRef<string | null>(null);
 
-  function leave() {
+  const leave = () => {
     leaving.current = true;
     setConfirmOpen(false);
     // 보초는 이미 걷혔고 지금은 폼 항목 위다. 한 칸만 더 내려가면 왔던 화면이다.
@@ -60,13 +60,13 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
     }
 
     router.replace(fallbackHref);
-  }
+  };
 
   const leaveRef = useRef(leave);
   leaveRef.current = leave;
 
   useImperativeHandle(ref, () => ({
-    finish(to: string) {
+    finish: (to: string) => {
       leaving.current = true;
       destination.current = to;
       // 보초와 폼을 한 번에 걷어낸다. 어디에 내려앉는지는 popstate에서 보고 정한다.
@@ -74,12 +74,12 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
     },
   }));
 
-  function stay() {
+  const stay = () => {
     // 나가기를 누른 뒤에도 다이얼로그가 닫히며 한 번 더 들어온다. 그때 보초를 세우면 뒤로가기가 제자리로 돌아온다.
     if (leaving.current) return;
     raiseSentinel();
     setConfirmOpen(false);
-  }
+  };
 
   useEffect(() => {
     if (!window.history.state?.[SENTINEL]) {
@@ -87,7 +87,7 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
       raiseSentinel();
     }
 
-    function onPopState() {
+    const onPopState = () => {
       // 이미 떠나는 중이다. 폼이 쓰던 항목을 다 걷어낸 자리라 여기서 이탈로 다시 판정하면 한 칸을 더 지나친다.
       if (leaving.current) {
         const to = destination.current;
@@ -113,7 +113,7 @@ export function LeaveGuard({ fallbackHref, isDirty, ref }: LeaveGuardProps) {
       }
 
       leaveRef.current();
-    }
+    };
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);

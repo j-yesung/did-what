@@ -2,7 +2,7 @@ import { createClient } from "@/shared/api/supabase/server";
 
 import { RECORD_DETAIL_COLUMNS } from "./record-columns";
 
-export async function getRecord(recordId: string, ownerId: string) {
+export const getRecord = async (recordId: string, ownerId: string) => {
   const supabase = await createClient();
 
   return supabase
@@ -11,4 +11,4 @@ export async function getRecord(recordId: string, ownerId: string) {
     .eq("id", recordId)
     .eq("owner_id", ownerId)
     .maybeSingle();
-}
+};

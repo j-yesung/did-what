@@ -9,7 +9,7 @@ import { getLoginErrorMessage } from "../model/auth-error-message";
 import type { AuthActionState } from "../model/auth-form";
 import { validateLoginInput } from "../model/auth-form";
 
-export async function login(formData: FormData): Promise<AuthActionState> {
+export const login = async (formData: FormData): Promise<AuthActionState> => {
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
@@ -29,4 +29,4 @@ export async function login(formData: FormData): Promise<AuthActionState> {
   }
 
   redirect("/");
-}
+};

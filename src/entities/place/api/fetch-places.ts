@@ -2,7 +2,7 @@ import { createClient } from "@/shared/api/supabase/client";
 
 import { SAVED_PLACE_COLUMNS } from "./place-columns";
 
-export async function fetchPlaces() {
+export const fetchPlaces = async () => {
   const { data, error } = await createClient()
     .from("places")
     .select(SAVED_PLACE_COLUMNS)
@@ -11,6 +11,6 @@ export async function fetchPlaces() {
 
   if (error) throw error;
   return data;
-}
+};
 
 export type SavedPlaceRow = Awaited<ReturnType<typeof fetchPlaces>>[number];

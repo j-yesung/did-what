@@ -5,7 +5,7 @@ export const MAIN_QUERY_OPTIONS = {
   staleTime: 60_000,
 } as const;
 
-export function createQueryClient() {
+export const createQueryClient = () => {
   return new QueryClient({
     defaultOptions: {
       queries: {
@@ -18,4 +18,4 @@ export function createQueryClient() {
       },
     },
   });
-}
+};

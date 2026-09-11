@@ -6,7 +6,7 @@ import { type RecordFilters, recordListQueryOptions } from "@/entities/record";
 
 import { reverseRecordPages } from "./record-list-cache";
 
-export function useRecordListQuery(filters: RecordFilters) {
+export const useRecordListQuery = (filters: RecordFilters) => {
   const queryClient = useQueryClient();
   const alternateSort = filters.sort === "recent" ? "oldest" : "recent";
   const alternateQueryOptions = recordListQueryOptions({ ...filters, sort: alternateSort });
@@ -21,4 +21,4 @@ export function useRecordListQuery(filters: RecordFilters) {
     ...recordListQueryOptions(filters),
     ...(completeAlternateData ? { initialData: completeAlternateData } : {}),
   });
-}
+};

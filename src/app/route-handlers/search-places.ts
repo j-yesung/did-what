@@ -12,7 +12,7 @@ import { createClient } from "@/shared/api/supabase/server";
  * 브라우저가 카카오를 직접 부르지 않도록 앞에 세우는 창구.
  * REST 키는 이 함수가 도는 서버에서만 읽히고, 로그인한 사용자에게만 응답한다.
  */
-export async function searchPlaces(request: NextRequest) {
+export const searchPlaces = async (request: NextRequest) => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
 
@@ -44,4 +44,4 @@ export async function searchPlaces(request: NextRequest) {
     query: queryResult.query,
     scope,
   });
-}
+};

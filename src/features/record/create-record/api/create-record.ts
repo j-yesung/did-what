@@ -13,7 +13,7 @@ type CreateRecordState = {
   status: "error" | "success";
 };
 
-export async function createRecord(formData: FormData): Promise<CreateRecordState> {
+export const createRecord = async (formData: FormData): Promise<CreateRecordState> => {
   const { member, supabase, user } = await requireMember();
   const result = validateRecordInput(readRecordInput(formData));
   if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };
@@ -57,4 +57,4 @@ export async function createRecord(formData: FormData): Promise<CreateRecordStat
   revalidatePath("/records");
   revalidatePath("/places");
   return { status: "success" };
-}
+};

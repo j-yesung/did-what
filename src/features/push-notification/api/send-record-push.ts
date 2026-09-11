@@ -51,7 +51,13 @@ type SendRecordPushInput = {
  *
  * 작성 구성원의 모든 기기와 비활성 구성원의 기기는 발송 대상에서 제외한다.
  */
-export async function sendRecordPush({ ownerId, recordId, senderMemberId, senderName, supabase }: SendRecordPushInput) {
+export const sendRecordPush = async ({
+  ownerId,
+  recordId,
+  senderMemberId,
+  senderName,
+  supabase,
+}: SendRecordPushInput) => {
   if (!configured) return;
 
   const { data: subscriptions } = await supabase
@@ -97,4 +103,4 @@ export async function sendRecordPush({ ownerId, recordId, senderMemberId, sender
   if (goneEndpoints.length) {
     await supabase.from("push_subscriptions").delete().in("endpoint", goneEndpoints);
   }
-}
+};

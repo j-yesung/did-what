@@ -25,11 +25,11 @@ type PlaceSearchGroup = {
   query: string;
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
-}
+};
 
-function normalizeCreatePlaceInput(value: unknown): CreatePlaceInput | null {
+const normalizeCreatePlaceInput = (value: unknown): CreatePlaceInput | null => {
   if (!isRecord(value) || typeof value.placeId !== "string" || typeof value.query !== "string") return null;
 
   const placeIdResult = validateKakaoPlaceId(value.placeId);
@@ -41,9 +41,9 @@ function normalizeCreatePlaceInput(value: unknown): CreatePlaceInput | null {
     placeId: placeIdResult.id,
     query: queryResult.query,
   };
-}
+};
 
-async function verifyPlaceSearchGroup(group: PlaceSearchGroup): Promise<VerifiedPlace[] | null> {
+const verifyPlaceSearchGroup = async (group: PlaceSearchGroup): Promise<VerifiedPlace[] | null> => {
   const searchResult = await searchKakaoPlaces(group.query, group.page);
   if (!searchResult.places) return null;
 
@@ -61,9 +61,9 @@ async function verifyPlaceSearchGroup(group: PlaceSearchGroup): Promise<Verified
   return verifiedPlaces.some((place) => place === null)
     ? null
     : verifiedPlaces.filter((place): place is VerifiedPlace => place !== null);
-}
+};
 
-async function verifyPlaces(inputs: CreatePlaceInput[]): Promise<VerifiedPlace[] | null> {
+const verifyPlaces = async (inputs: CreatePlaceInput[]): Promise<VerifiedPlace[] | null> => {
   const groups = new Map<string, PlaceSearchGroup>();
 
   for (const input of inputs) {
@@ -84,9 +84,9 @@ async function verifyPlaces(inputs: CreatePlaceInput[]): Promise<VerifiedPlace[]
   }
 
   return verifiedPlaces;
-}
+};
 
-export async function createPlaces(inputs: CreatePlaceInput[]): Promise<PlaceActionState> {
+export const createPlaces = async (inputs: CreatePlaceInput[]): Promise<PlaceActionState> => {
   const normalizedInputs = Array.isArray(inputs) ? inputs.map(normalizeCreatePlaceInput) : [];
   if (!normalizedInputs.length || normalizedInputs.some((input) => !input)) {
     return { message: "저장할 장소를 다시 선택해 주세요.", status: "error" };
@@ -118,9 +118,9 @@ export async function createPlaces(inputs: CreatePlaceInput[]): Promise<PlaceAct
   revalidatePath("/places");
   revalidatePath("/records/new");
   return { status: "success" };
-}
+};
 
-export async function setPlaceSaved(placeId: string, saved: boolean): Promise<PlaceActionState> {
+export const setPlaceSaved = async (placeId: string, saved: boolean): Promise<PlaceActionState> => {
   if (!isUuid(placeId)) return { message: "장소를 확인할 수 없어요.", status: "error" };
 
   const { supabase, user } = await requireUser();
@@ -137,4 +137,4 @@ export async function setPlaceSaved(placeId: string, saved: boolean): Promise<Pl
   revalidatePath(`/places/${placeId}`);
   revalidatePath("/records");
   return { status: "success" };
-}
+};

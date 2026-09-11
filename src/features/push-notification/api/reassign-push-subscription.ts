@@ -11,12 +11,12 @@ type ReassignPushSubscriptionInput = {
   supabase: SupabaseClient<Database>;
 };
 
-export async function reassignPushSubscription({
+export const reassignPushSubscription = async ({
   endpoint,
   memberId,
   ownerId,
   supabase,
-}: ReassignPushSubscriptionInput) {
+}: ReassignPushSubscriptionInput) => {
   if (!endpoint) return null;
   if (!endpoint.startsWith("https://") || endpoint.length > 1000) return new Error("Invalid push endpoint");
 
@@ -27,4 +27,4 @@ export async function reassignPushSubscription({
     .eq("endpoint", endpoint);
 
   return error;
-}
+};

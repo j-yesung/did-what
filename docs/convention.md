@@ -14,7 +14,12 @@
 
 ## 컴포넌트
 
+- 컴포넌트는 `export function ComponentName() {}`으로 선언한다.
 - 역할 단위로 나눈다. 한 컴포넌트가 여러 역할을 맡거나 prop이 계속 늘어나면 파일을 분리한다.
+
+## 함수
+
+- 유틸, API, Query/Mutation과 콜백은 화살표 함수로 선언한다: `export const getRecord = () => {}`.
 
 ## 스타일
 
@@ -62,7 +67,7 @@ src/shared/     # 도메인에 의존하지 않는 공용 코드 (ui, lib, api)
 
 ## Exports
 
-- Next.js 예약 파일만 `default export`, 나머지는 이름 변경이 쉬운 `named export`를 쓴다.
+- `React.lazy`와 Next.js 예약 파일이 요구하는 진입점만 `default export`, 나머지는 이름 변경이 쉬운 `named export`를 쓴다.
 
 ## 미리 만들지 않기
 

@@ -33,14 +33,14 @@ export function RecordLocationFields({
   const [region, setRegion] = useState<RecordLocationRegion | null>(initialRegion ?? null);
   const [places, setPlaces] = useState(initialPlaces);
 
-  function selectRegion(nextRegion: RecordLocationRegion) {
+  const selectRegion = (nextRegion: RecordLocationRegion) => {
     if (nextRegion.code === region?.code) return;
 
     setRegion(nextRegion);
     onValueChange?.(nextRegion, places);
-  }
+  };
 
-  function addPlace(place: RecordLocationPlace, placeRegion: RecordLocationRegion) {
+  const addPlace = (place: RecordLocationPlace, placeRegion: RecordLocationRegion) => {
     if (places.some((item) => item.key === place.key)) return;
 
     const nextRegion = region ?? placeRegion;
@@ -48,21 +48,21 @@ export function RecordLocationFields({
     if (!region) setRegion(nextRegion);
     setPlaces(nextPlaces);
     onValueChange?.(nextRegion, nextPlaces);
-  }
+  };
 
-  function toggleSave(key: string, checked: boolean) {
+  const toggleSave = (key: string, checked: boolean) => {
     const nextPlaces = places.map((place) =>
       place.key === key ? { ...place, reference: { ...place.reference, save: checked || place.saved } } : place,
     );
     setPlaces(nextPlaces);
     onValueChange?.(region, nextPlaces);
-  }
+  };
 
-  function removePlace(key: string) {
+  const removePlace = (key: string) => {
     const nextPlaces = places.filter((item) => item.key !== key);
     setPlaces(nextPlaces);
     onValueChange?.(region, nextPlaces);
-  }
+  };
 
   const selectedKeys = new Set(places.map((place) => place.key));
 

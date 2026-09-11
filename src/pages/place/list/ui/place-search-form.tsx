@@ -21,11 +21,11 @@ export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
 
   useEffect(() => setKeyword(query), [query]);
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     navigatePlaceSearch(window, router, keyword);
-  }
+  };
 
   return (
     <form id="place-search-form" method="get" onSubmit={handleSubmit} role="search">

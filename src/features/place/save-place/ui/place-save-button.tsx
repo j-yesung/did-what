@@ -28,7 +28,7 @@ export function PlaceSaveButton({ placeId, placeName, saved }: PlaceSaveButtonPr
     invalidate: [placesQueryOptions.queryKey, RECORD_DETAILS_QUERY_KEY],
   });
 
-  function handleToggle() {
+  const handleToggle = () => {
     if (toggle.isPending) return;
 
     const nextSaved = !optimisticSaved;
@@ -38,7 +38,7 @@ export function PlaceSaveButton({ placeId, placeName, saved }: PlaceSaveButtonPr
       if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) bookmarkRef.current?.startAnimation();
       await toggle.mutateAsync(nextSaved).catch(() => undefined);
     });
-  }
+  };
 
   return (
     <Button

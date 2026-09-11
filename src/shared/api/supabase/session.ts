@@ -5,15 +5,15 @@ import type { Database } from "./database.types";
 import { getSupabaseEnv } from "./env";
 import { SUPABASE_JWKS } from "./jwks";
 
-export async function updateSession(request: NextRequest) {
+export const updateSession = async (request: NextRequest) => {
   let response = NextResponse.next({ request });
   const { publishableKey, url } = getSupabaseEnv();
   const supabase = createServerClient<Database>(url, publishableKey, {
     cookies: {
-      getAll() {
+      getAll: () => {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet, headers) {
+      setAll: (cookiesToSet, headers) => {
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value);
         }
@@ -34,4 +34,4 @@ export async function updateSession(request: NextRequest) {
   await supabase.auth.getClaims(undefined, { jwks: SUPABASE_JWKS });
 
   return response;
-}
+};

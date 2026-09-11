@@ -14,11 +14,11 @@ type CursorRecord = {
   recorded_at: string;
 };
 
-export function getRecordCursor(record: CursorRecord): RecordCursor {
+export const getRecordCursor = (record: CursorRecord): RecordCursor => {
   return { createdAt: record.created_at, id: record.id, recordedAt: record.recorded_at };
-}
+};
 
-export function getRecordCursorFilter(cursor: RecordCursor, sort: RecordSort) {
+export const getRecordCursorFilter = (cursor: RecordCursor, sort: RecordSort) => {
   const operator = sort === "oldest" ? "gt" : "lt";
   const { createdAt, id, recordedAt } = cursor;
 
@@ -27,11 +27,11 @@ export function getRecordCursorFilter(cursor: RecordCursor, sort: RecordSort) {
     `and(recorded_at.eq.${recordedAt},created_at.${operator}.${createdAt})`,
     `and(recorded_at.eq.${recordedAt},created_at.eq.${createdAt},id.${operator}.${id})`,
   ].join(",");
-}
+};
 
-export function getRecordPeriodFilter({ from, to }: Pick<RecordFilters, "from" | "to">) {
+export const getRecordPeriodFilter = ({ from, to }: Pick<RecordFilters, "from" | "to">) => {
   return {
     from: from ? `recorded_until.gte.${from},and(recorded_until.is.null,recorded_at.gte.${from})` : null,
     to: to || null,
   };
-}
+};

@@ -3,7 +3,7 @@ type RecordPage<T> = {
   records: T[];
 };
 
-export function reverseRecordPages<T>(pages: readonly RecordPage<T>[]) {
+export const reverseRecordPages = <T>(pages: readonly RecordPage<T>[]) => {
   return {
     pageParams: [null],
     pages: [
@@ -13,4 +13,4 @@ export function reverseRecordPages<T>(pages: readonly RecordPage<T>[]) {
       },
     ],
   };
-}
+};

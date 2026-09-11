@@ -23,10 +23,10 @@ type ActionMutationOptions<TResult> = {
  * 서버 액션은 두 가지로 실패한다. 사용자가 고칠 수 있는 입력 오류는 error 상태로 돌아오고,
  * 요청 자체가 실패하면 예외로 터진다. 앞의 것은 액션의 message를, 뒤의 것은 넘겨받은 제목만 보여준다.
  */
-export function useActionMutation<TResult extends ActionResult, TArgs = void>(
+export const useActionMutation = <TResult extends ActionResult, TArgs = void>(
   action: (args: TArgs) => Promise<TResult>,
   { error, icon, invalidate = [], success, onFail, onSuccess }: ActionMutationOptions<TResult>,
-) {
+) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -45,4 +45,4 @@ export function useActionMutation<TResult extends ActionResult, TArgs = void>(
     },
     onError: () => showNotice({ title: error, variant: "error" }),
   });
-}
+};

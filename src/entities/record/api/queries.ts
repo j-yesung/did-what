@@ -13,25 +13,25 @@ import { fetchRegionRecords, type RecordRegionFilter } from "./fetch-region-reco
 export const RECORDS_QUERY_KEY = ["records"] as const;
 export const RECORD_DETAILS_QUERY_KEY = [...RECORDS_QUERY_KEY, "detail"] as const;
 
-export function recordSummaryQueryKey(recordId: string) {
+export const recordSummaryQueryKey = (recordId: string) => {
   return [...RECORDS_QUERY_KEY, "summary", recordId] as const;
-}
+};
 
-export function recordDetailQueryOptions(recordId: string) {
+export const recordDetailQueryOptions = (recordId: string) => {
   return queryOptions({
     ...MAIN_QUERY_OPTIONS,
     queryKey: [...RECORD_DETAILS_QUERY_KEY, recordId],
     queryFn: () => fetchRecord(recordId),
   });
-}
+};
 
-export function recordPlacesQueryOptions(recordId: string) {
+export const recordPlacesQueryOptions = (recordId: string) => {
   return queryOptions({
     ...MAIN_QUERY_OPTIONS,
     queryKey: [...RECORD_DETAILS_QUERY_KEY, recordId, "places"],
     queryFn: () => fetchRecordPlaces(recordId),
   });
-}
+};
 
 export const recordLocationsQueryOptions = queryOptions({
   ...MAIN_QUERY_OPTIONS,
@@ -39,7 +39,7 @@ export const recordLocationsQueryOptions = queryOptions({
   queryFn: fetchRecordLocations,
 });
 
-export function recordListQueryOptions(filters: RecordFilters) {
+export const recordListQueryOptions = (filters: RecordFilters) => {
   return infiniteQueryOptions({
     ...MAIN_QUERY_OPTIONS,
     queryKey: [...RECORDS_QUERY_KEY, "list", filters],
@@ -48,12 +48,12 @@ export function recordListQueryOptions(filters: RecordFilters) {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     placeholderData: keepPreviousData,
   });
-}
+};
 
-export function regionRecordsQueryOptions(region: RecordRegionFilter) {
+export const regionRecordsQueryOptions = (region: RecordRegionFilter) => {
   return queryOptions({
     ...MAIN_QUERY_OPTIONS,
     queryKey: [...RECORDS_QUERY_KEY, "region", region.code],
     queryFn: () => fetchRegionRecords(region),
   });
-}
+};

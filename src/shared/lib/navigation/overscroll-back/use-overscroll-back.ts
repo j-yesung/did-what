@@ -16,16 +16,20 @@ import {
 
 type SwipeStart = { scrollDistanceToEnd: number; scrollY: number; x: number; y: number };
 
-function getSwipeProgress(start: SwipeStart, touch: { clientX: number; clientY: number }, container: HTMLDivElement) {
+const getSwipeProgress = (
+  start: SwipeStart,
+  touch: { clientX: number; clientY: number },
+  container: HTMLDivElement,
+) => {
   const scrollY = Math.max(0, container.scrollTop);
   const atScrollEnd = isAtScrollEnd(container.scrollHeight, container.clientHeight, scrollY);
   const consumedScrollDistance = Math.min(Math.max(0, scrollY - start.scrollY), start.scrollDistanceToEnd);
   return atScrollEnd
     ? getOverscrollBackProgress(start, { x: touch.clientX, y: touch.clientY }, consumedScrollDistance)
     : 0;
-}
+};
 
-export function useOverscrollBack(fallbackHref: string) {
+export const useOverscrollBack = (fallbackHref: string) => {
   const goBackTo = useGoBack();
   const containerRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
@@ -165,4 +169,4 @@ export function useOverscrollBack(fallbackHref: string) {
       onTouchStart: startSwipe,
     },
   };
-}
+};

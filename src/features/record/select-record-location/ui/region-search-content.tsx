@@ -28,7 +28,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
   const records = useQuery({ ...recordLocationsQueryOptions, enabled: true });
   const recentRegions = toRecentRegions(records.data ?? []);
 
-  function handleSearch(event: SubmitEvent<HTMLFormElement>) {
+  const handleSearch = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
     const nextQuery = keyword.trim();
@@ -40,7 +40,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
     }
 
     setQuery(nextQuery);
-  }
+  };
 
   return (
     <DrawerContent className="[--drawer-height:var(--drawer-content-max-height)]">

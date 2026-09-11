@@ -12,7 +12,7 @@ import {
 const COLUMNS =
   "id, activity, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name";
 
-export async function fetchRecordPage(filters: RecordFilters, cursor: RecordCursor | null) {
+export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCursor | null) => {
   const ascending = filters.sort === "oldest";
   const period = getRecordPeriodFilter(filters);
   let query = createClient()
@@ -41,4 +41,4 @@ export async function fetchRecordPage(filters: RecordFilters, cursor: RecordCurs
     nextCursor: data.length > RECORD_PAGE_SIZE ? getRecordCursor(records.at(-1)!) : null,
     records,
   };
-}
+};

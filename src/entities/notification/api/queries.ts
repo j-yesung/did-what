@@ -12,7 +12,7 @@ export const NOTIFICATIONS_QUERY_KEY = ["notifications"] as const;
 
 const NOTIFICATION_COLUMNS = "id, sender_name, record_id, record_title, read_at, created_at";
 
-async function fetchNotificationPage(memberId: string, cursor: NotificationCursor | null) {
+const fetchNotificationPage = async (memberId: string, cursor: NotificationCursor | null) => {
   let query = createClient()
     .from("notifications")
     .select(NOTIFICATION_COLUMNS)
@@ -33,11 +33,11 @@ async function fetchNotificationPage(memberId: string, cursor: NotificationCurso
     nextCursor: data.length > NOTIFICATION_PAGE_SIZE && last ? { createdAt: last.created_at, id: last.id } : null,
     notifications,
   };
-}
+};
 
 export type NotificationItem = Awaited<ReturnType<typeof fetchNotificationPage>>["notifications"][number];
 
-export function notificationListQueryOptions(memberId: string) {
+export const notificationListQueryOptions = (memberId: string) => {
   return infiniteQueryOptions({
     queryKey: [...NOTIFICATIONS_QUERY_KEY, memberId, "list"],
     queryFn: ({ pageParam }) => fetchNotificationPage(memberId, pageParam),
@@ -46,9 +46,9 @@ export function notificationListQueryOptions(memberId: string) {
     refetchOnWindowFocus: true,
     staleTime: 30_000,
   });
-}
+};
 
-export function unreadNotificationCountQueryOptions(memberId: string) {
+export const unreadNotificationCountQueryOptions = (memberId: string) => {
   return queryOptions({
     queryKey: [...NOTIFICATIONS_QUERY_KEY, memberId, "unread-count"],
     queryFn: async () => {
@@ -64,4 +64,4 @@ export function unreadNotificationCountQueryOptions(memberId: string) {
     refetchOnWindowFocus: true,
     staleTime: 30_000,
   });
-}
+};

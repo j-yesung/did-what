@@ -4,7 +4,7 @@ import { searchKakaoRegions, validateKakaoQuery } from "@/shared/api/kakao-local
 import { createClient } from "@/shared/api/supabase/server";
 
 /** 장소 검색과 같은 창구 규칙. 카카오 REST 키는 이 서버에서만 읽고, 로그인한 사용자에게만 응답한다. */
-export async function searchRegions(request: NextRequest) {
+export const searchRegions = async (request: NextRequest) => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
 
@@ -25,4 +25,4 @@ export async function searchRegions(request: NextRequest) {
   }
 
   return NextResponse.json({ query: queryResult.query, regions: result.regions, related: result.related });
-}
+};

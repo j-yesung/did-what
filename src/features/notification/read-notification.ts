@@ -7,7 +7,7 @@ type ReadNotificationState = {
   status: "error" | "success";
 };
 
-export async function readNotification(notificationId: number): Promise<ReadNotificationState> {
+export const readNotification = async (notificationId: number): Promise<ReadNotificationState> => {
   if (!Number.isSafeInteger(notificationId) || notificationId < 1) {
     return { message: "알림을 확인할 수 없습니다.", status: "error" };
   }
@@ -21,4 +21,4 @@ export async function readNotification(notificationId: number): Promise<ReadNoti
   if (error || !read) return { message: "알림을 읽음 처리하지 못했습니다.", status: "error" };
 
   return { status: "success" };
-}
+};

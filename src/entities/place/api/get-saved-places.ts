@@ -2,7 +2,7 @@ import { createClient } from "@/shared/api/supabase/server";
 
 import { SAVED_PLACE_COLUMNS } from "./place-columns";
 
-export async function getSavedPlaces(ownerId: string) {
+export const getSavedPlaces = async (ownerId: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("places")
@@ -13,4 +13,4 @@ export async function getSavedPlaces(ownerId: string) {
 
   if (error) throw error;
   return data;
-}
+};

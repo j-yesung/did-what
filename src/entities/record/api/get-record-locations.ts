@@ -2,7 +2,7 @@ import { createClient } from "@/shared/api/supabase/server";
 
 import { RECORD_LOCATION_COLUMNS } from "./record-columns";
 
-export async function getRecordLocations(ownerId: string) {
+export const getRecordLocations = async (ownerId: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("records")
@@ -14,4 +14,4 @@ export async function getRecordLocations(ownerId: string) {
 
   if (error) throw error;
   return data;
-}
+};

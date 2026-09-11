@@ -123,14 +123,14 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
   const busy = save.isPending;
   busyRef.current = busy;
 
-  function updateContext(patch: Partial<RecordCreateContext>) {
+  const updateContext = (patch: Partial<RecordCreateContext>) => {
     const next = { ...draft, ...patch, dirty: true };
     setFieldErrors({});
     setDraft(next);
     void funnel.history.replace(funnel.step, next);
-  }
+  };
 
-  function goNext() {
+  const goNext = () => {
     const errors = validateRecordCreateStep(funnel.step, draft);
     if (Object.keys(errors).length) {
       setFieldErrors(errors);
@@ -139,9 +139,9 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
 
     const next = RECORD_CREATE_STEPS[getRecordCreateStepIndex(funnel.step) + 1];
     if (next) void funnel.history.push(next, draft);
-  }
+  };
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const errors = validateRecordCreateStep("what", draft);
     if (Object.keys(errors).length) {
@@ -151,9 +151,9 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
 
     const formData = toRecordCreateFormData(draft);
     save.mutate(formData);
-  }
+  };
 
-  function renderStep(step: RecordCreateStep) {
+  const renderStep = (step: RecordCreateStep) => {
     if (step === "when") {
       return (
         <FieldGroup className="gap-0">
@@ -209,7 +209,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
         memoError={fieldErrors.memo}
       />
     );
-  }
+  };
 
   const nextDisabled = busy || (funnel.step === "where" && !placesQuery.isSuccess);
 

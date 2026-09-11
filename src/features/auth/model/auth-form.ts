@@ -10,7 +10,7 @@ export const INITIAL_AUTH_STATE: AuthActionState = { status: "idle" };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function validateLoginInput(email: string, password: string): AuthFieldErrors {
+export const validateLoginInput = (email: string, password: string): AuthFieldErrors => {
   const errors: AuthFieldErrors = {};
 
   if (!EMAIL_PATTERN.test(email)) {
@@ -22,14 +22,14 @@ export function validateLoginInput(email: string, password: string): AuthFieldEr
   }
 
   return errors;
-}
+};
 
-export function validateSignupInput(
+export const validateSignupInput = (
   displayName: string,
   email: string,
   password: string,
   passwordConfirm: string,
-): AuthFieldErrors {
+): AuthFieldErrors => {
   const errors = validateLoginInput(email, password);
 
   if (displayName.length < 1 || displayName.length > 100) {
@@ -41,4 +41,4 @@ export function validateSignupInput(
   }
 
   return errors;
-}
+};

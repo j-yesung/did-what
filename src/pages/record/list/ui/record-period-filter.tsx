@@ -20,25 +20,25 @@ type RecordPeriodFilterProps = RecordPeriod & {
   onApply: (period: RecordPeriod) => void;
 };
 
-function toDateRange({ from, to }: RecordPeriod): DateRange | undefined {
+const toDateRange = ({ from, to }: RecordPeriod): DateRange | undefined => {
   if (!from && !to) return undefined;
 
   return {
     from: from ? parseISO(from) : undefined,
     to: to ? parseISO(to) : undefined,
   };
-}
+};
 
-function formatDate(value: string) {
+const formatDate = (value: string) => {
   return format(parseISO(value), "yyyy-MM-dd");
-}
+};
 
-function getPeriodLabel({ from, to }: RecordPeriod) {
+const getPeriodLabel = ({ from, to }: RecordPeriod) => {
   if (from && to) return from === to ? formatDate(from) : `${formatDate(from)} ~ ${formatDate(to)}`;
   if (from) return `${formatDate(from)}부터`;
   if (to) return `${formatDate(to)}까지`;
   return "전체 기간";
-}
+};
 
 export function RecordPeriodFilter({ from, onApply, to }: RecordPeriodFilterProps) {
   const [open, setOpen] = useState(false);
@@ -46,12 +46,12 @@ export function RecordPeriodFilter({ from, onApply, to }: RecordPeriodFilterProp
   const period = { from, to };
   const hasPeriod = Boolean(from || to);
 
-  function handleOpenChange(nextOpen: boolean) {
+  const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) setDraftRange(toDateRange(period));
-  }
+  };
 
-  function handleApply() {
+  const handleApply = () => {
     if (!draftRange?.from && !draftRange?.to) return;
 
     const start = draftRange.from ?? draftRange.to;
@@ -60,12 +60,12 @@ export function RecordPeriodFilter({ from, onApply, to }: RecordPeriodFilterProp
     const end = draftRange.to ?? start;
     onApply({ from: format(start, "yyyy-MM-dd"), to: format(end, "yyyy-MM-dd") });
     setOpen(false);
-  }
+  };
 
-  function handleClear() {
+  const handleClear = () => {
     onApply({ from: "", to: "" });
     setOpen(false);
-  }
+  };
 
   return (
     <Drawer onOpenChange={handleOpenChange} open={open} showSwipeHandle>

@@ -34,7 +34,7 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
 
   const sortedSavedPlaces = region ? [...savedPlaces].sort((a, b) => Number(inRegion(b)) - Number(inRegion(a))) : [];
 
-  function addSavedPlace(place: PlaceOption) {
+  const addSavedPlace = (place: PlaceOption) => {
     if (!region) return;
 
     onAdd(
@@ -47,7 +47,7 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
       },
       region,
     );
-  }
+  };
 
   const resolve = useMutation({
     mutationFn: resolveRecordPlace,
@@ -63,7 +63,7 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
     onError: () => setSelectionError("장소를 확인하지 못했어요.\n잠시 후 다시 시도해 주세요."),
   });
 
-  function selectPlace(place: KakaoPlace) {
+  const selectPlace = (place: KakaoPlace) => {
     const searched = search.data;
     if (!searched) return;
 
@@ -73,9 +73,9 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
       query: searched.query,
       scope: searched.scope,
     });
-  }
+  };
 
-  function handleSearch(event: SubmitEvent<HTMLFormElement>) {
+  const handleSearch = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
     setSelectionError(undefined);
@@ -88,7 +88,7 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
     }
 
     setQuery(nextQuery);
-  }
+  };
 
   return (
     <>

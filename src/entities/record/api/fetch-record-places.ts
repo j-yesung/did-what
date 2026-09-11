@@ -1,6 +1,6 @@
 import { createClient } from "@/shared/api/supabase/client";
 
-export async function fetchRecordPlaces(recordId: string) {
+export const fetchRecordPlaces = async (recordId: string) => {
   const { data, error } = await createClient()
     .from("records")
     .select("id, record_places(place:places(id, name, address, saved_at))")
@@ -9,4 +9,4 @@ export async function fetchRecordPlaces(recordId: string) {
 
   if (error) throw error;
   return data;
-}
+};

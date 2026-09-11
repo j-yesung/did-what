@@ -16,31 +16,31 @@ export const placesQueryOptions = queryOptions({
   queryFn: fetchPlaces,
 });
 
-export function placeQueryKey(placeId: string) {
+export const placeQueryKey = (placeId: string) => {
   return [...PLACES_QUERY_KEY, "detail", placeId] as const;
-}
+};
 
-export function placeQueryOptions(placeId: string) {
+export const placeQueryOptions = (placeId: string) => {
   return queryOptions({
     ...MAIN_QUERY_OPTIONS,
     queryKey: placeQueryKey(placeId),
     queryFn: () => fetchPlace(placeId),
   });
-}
+};
 
-export function placeRecordsQueryOptions(placeId: string) {
+export const placeRecordsQueryOptions = (placeId: string) => {
   return queryOptions({
     ...MAIN_QUERY_OPTIONS,
     queryKey: [...PLACES_QUERY_KEY, "records", placeId],
     queryFn: () => fetchPlaceRecords(placeId),
   });
-}
+};
 
-export function placeSearchQueryOptions(params: PlaceSearchParams) {
+export const placeSearchQueryOptions = (params: PlaceSearchParams) => {
   return queryOptions({
     enabled: params.query.trim().length > 0,
     queryFn: ({ signal }) => searchPlaces(params, signal),
     queryKey: [...PLACE_SEARCH_KEY, params],
     staleTime: 60_000,
   });
-}
+};

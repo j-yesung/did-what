@@ -7,7 +7,7 @@ export type RecordRegionFilter = {
   code: string;
 };
 
-export async function fetchRegionRecords(region: RecordRegionFilter) {
+export const fetchRegionRecords = async (region: RecordRegionFilter) => {
   const regionFilter = region.administrativeCodes.map((code) => `region_code.like.${code}*`).join(",");
   const { data, error } = await createClient()
     .from("records")
@@ -19,4 +19,4 @@ export async function fetchRegionRecords(region: RecordRegionFilter) {
 
   if (error) throw error;
   return data;
-}
+};

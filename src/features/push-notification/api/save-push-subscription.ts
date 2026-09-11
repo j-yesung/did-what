@@ -7,15 +7,15 @@ import type { PushActionState, PushSubscriptionInput } from "../model/push-subsc
 const MAX_ENDPOINT_LENGTH = 1000;
 const MAX_KEY_LENGTH = 200;
 
-function isValid({ auth, endpoint, p256dh }: PushSubscriptionInput) {
+const isValid = ({ auth, endpoint, p256dh }: PushSubscriptionInput) => {
   if (!endpoint.startsWith("https://") || endpoint.length > MAX_ENDPOINT_LENGTH) return false;
   if (!p256dh || p256dh.length > MAX_KEY_LENGTH) return false;
   if (!auth || auth.length > MAX_KEY_LENGTH) return false;
 
   return true;
-}
+};
 
-export async function saveSubscription(input: PushSubscriptionInput): Promise<PushActionState> {
+export const saveSubscription = async (input: PushSubscriptionInput): Promise<PushActionState> => {
   if (!isValid(input)) return { message: "알림 정보를 확인할 수 없습니다.", status: "error" };
 
   const { member, supabase, user } = await requireMember();
@@ -32,4 +32,4 @@ export async function saveSubscription(input: PushSubscriptionInput): Promise<Pu
 
   if (error) return { message: "알림을 켜지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   return { status: "success" };
-}
+};

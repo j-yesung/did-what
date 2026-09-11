@@ -10,7 +10,7 @@ import { getSignupErrorMessage } from "../model/auth-error-message";
 import type { AuthActionState } from "../model/auth-form";
 import { validateSignupInput } from "../model/auth-form";
 
-export async function signup(formData: FormData): Promise<AuthActionState> {
+export const signup = async (formData: FormData): Promise<AuthActionState> => {
   const displayName = String(formData.get("displayName") ?? "").trim();
   const email = String(formData.get("email") ?? "")
     .trim()
@@ -51,4 +51,4 @@ export async function signup(formData: FormData): Promise<AuthActionState> {
   }
 
   redirect("/");
-}
+};

@@ -26,10 +26,10 @@ export function PlaceSearchSaveButton({ onSaved, selections }: PlaceSearchSaveBu
     success: `${selections.length}곳을 내 장소에 저장했어요`,
   });
 
-  function handleSave() {
+  const handleSave = () => {
     pendingPlaceIds.current = selections.map(({ placeId }) => placeId);
     save.mutate(selections);
-  }
+  };
 
   return (
     <Button fullWidth loading={save.isPending} onClick={handleSave} size="large" type="button">
