@@ -4,11 +4,14 @@ import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
 import type { RecordFilters } from "../model/record-filters";
 import type { RecordCursor } from "../model/record-page";
-import { fetchRecord } from "./fetch-record";
-import { fetchRecordLocations } from "./fetch-record-locations";
-import { fetchRecordPage } from "./fetch-record-page";
-import { fetchRecordPlaces } from "./fetch-record-places";
-import { fetchRegionRecords, type RecordRegionFilter } from "./fetch-region-records";
+import {
+  fetchRecord,
+  fetchRecordLocations,
+  fetchRecordPage,
+  fetchRecordPlaces,
+  fetchRegionRecords,
+  type RecordRegionFilter,
+} from "./client-queries";
 
 export const RECORDS_QUERY_KEY = ["records"] as const;
 export const RECORD_DETAILS_QUERY_KEY = [...RECORDS_QUERY_KEY, "detail"] as const;

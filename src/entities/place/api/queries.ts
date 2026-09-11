@@ -2,9 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
-import { fetchPlace } from "./fetch-place";
-import { fetchPlaceRecords } from "./fetch-place-records";
-import { fetchPlaces } from "./fetch-places";
+import { fetchPlace, fetchPlaceRecords, fetchPlaces } from "./client-queries";
 import { type PlaceSearchParams, searchPlaces } from "./search-places";
 
 const PLACES_QUERY_KEY = ["places"] as const;
