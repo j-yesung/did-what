@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 
-test("100%에서 손을 뗀 뒤 1초 후 이동하며 되돌리기와 취소를 지원한다", (t) => {
+test("100%에서 손을 뗀 뒤 아이콘 애니메이션과 함께 이동하며 되돌리기와 취소를 지원한다", (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
   let cleanup;
   let reducedMotion = false;
@@ -56,14 +56,15 @@ test("100%에서 손을 뗀 뒤 1초 후 이동하며 되돌리기와 취소를 
   onTouchStart(touch(500));
   onTouchMove(touch(320));
   assert.equal(hook.indicatorRef.current.dataset.ready, "true");
-  assert.equal(animations, 1);
+  assert.equal(animations, 0);
   t.mock.timers.tick(2000);
   assert.equal(destinations.length, 0);
   onTouchMove(touch(300));
+  assert.equal(animations, 0);
+  onTouchEnd();
   assert.equal(animations, 1);
   onTouchEnd();
-  onTouchEnd();
-  t.mock.timers.tick(999);
+  t.mock.timers.tick(549);
   assert.equal(destinations.length, 0);
   assert.equal(hook.indicatorRef.current.dataset.ready, "true");
   t.mock.timers.tick(1);
@@ -79,15 +80,15 @@ test("100%에서 손을 뗀 뒤 1초 후 이동하며 되돌리기와 취소를 
   t.mock.timers.tick(1000);
   assert.equal(destinations.length, 1);
 
-  // 다시 채워도 손을 뗄 때부터 새로운 1초를 기다린다.
+  // 다시 채워도 손을 뗄 때부터 새로운 0.55초를 기다린다.
   onTouchMove(touch(250));
-  t.mock.timers.tick(999);
+  t.mock.timers.tick(549);
   assert.equal(destinations.length, 1);
   onTouchMove(touch(240));
   t.mock.timers.tick(1);
   assert.equal(destinations.length, 1);
   onTouchEnd();
-  t.mock.timers.tick(999);
+  t.mock.timers.tick(549);
   assert.equal(destinations.length, 1);
   t.mock.timers.tick(1);
   assert.equal(destinations.length, 2);

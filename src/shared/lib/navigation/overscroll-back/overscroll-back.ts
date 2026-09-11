@@ -1,4 +1,5 @@
 export const OVERSCROLL_BACK_THRESHOLD = 180;
+export const OVERSCROLL_BACK_NAVIGATION_DELAY = 550;
 const SCROLL_END_TOLERANCE = 4;
 
 type TouchPoint = { x: number; y: number };

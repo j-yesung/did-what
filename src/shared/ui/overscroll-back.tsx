@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { CircleChevronLeftIcon } from "@animateicons/react/lucide";
 import { CaretDownIcon } from "@phosphor-icons/react";
 
+import { OVERSCROLL_BACK_NAVIGATION_DELAY } from "@/shared/lib/navigation/overscroll-back/overscroll-back";
 import { useOverscrollBack } from "@/shared/lib/navigation/overscroll-back/use-overscroll-back";
 
 type OverscrollBackProps = {
@@ -65,7 +66,7 @@ export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) 
             isAnimated={false}
             ref={completeIconRef}
             size={28}
-            duration={0.75}
+            duration={OVERSCROLL_BACK_NAVIGATION_DELAY / 1000}
           />
         </div>
       </div>
