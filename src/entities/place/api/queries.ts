@@ -7,8 +7,8 @@ import { fetchPlaceRecords } from "./fetch-place-records";
 import { fetchPlaces } from "./fetch-places";
 import { type PlaceSearchParams, searchPlaces } from "./search-places";
 
-export const PLACES_QUERY_KEY = ["places"] as const;
-export const PLACE_SEARCH_KEY = ["places", "search"] as const;
+const PLACES_QUERY_KEY = ["places"] as const;
+const PLACE_SEARCH_KEY = ["places", "search"] as const;
 
 export const placesQueryOptions = queryOptions({
   ...MAIN_QUERY_OPTIONS,

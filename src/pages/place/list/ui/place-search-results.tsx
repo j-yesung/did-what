@@ -6,8 +6,7 @@ import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
-import { type PlaceSearchResult, searchPlaces } from "@/entities/place/api/search-places";
+import { type PlaceSearchResult, placesQueryOptions, type SavedPlaceRow, searchPlaces } from "@/entities/place";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/place/save-place";
 import { KAKAO_SEARCH_MAX_PAGE, type KakaoPlace } from "@/shared/api/kakao-local";
 import { FOCUS_RING } from "@/shared/lib/interaction";

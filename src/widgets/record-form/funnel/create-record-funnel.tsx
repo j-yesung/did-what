@@ -6,7 +6,7 @@ import { MapPinCheckIcon } from "@animateicons/react/lucide";
 import { useQuery } from "@tanstack/react-query";
 import { useFunnel } from "@use-funnel/browser";
 
-import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification/api/queries";
+import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
 import { placesQueryOptions } from "@/entities/place";
 import {
   DEFAULT_RECORD_WEATHER,

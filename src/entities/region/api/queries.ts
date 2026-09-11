@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { searchRegions } from "./search-regions";
 
 /** 지역 검색 캐시를 한꺼번에 비울 때 쓰는 접두어. */
-export const REGION_SEARCH_KEY = ["regions", "search"] as const;
+const REGION_SEARCH_KEY = ["regions", "search"] as const;
 
 export function regionSearchQueryOptions(query: string) {
   return queryOptions({

@@ -11,7 +11,7 @@ import {
   type NotificationItem,
   notificationListQueryOptions,
   unreadNotificationCountQueryOptions,
-} from "@/entities/notification/api/queries";
+} from "@/entities/notification";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
 import { readNotification } from "@/features/notification/read-notification";
 import { showNotice } from "@/shared/lib/notice";
