@@ -7,7 +7,12 @@ import type { CircleChevronLeftIconHandle } from "@animateicons/react/lucide";
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useScrollRestoration } from "@/shared/lib/navigation/use-scroll-restoration";
 
-import { getOverscrollBackProgress, isAtScrollEnd, OVERSCROLL_BACK_THRESHOLD } from "./overscroll-back";
+import {
+  getOverscrollBackProgress,
+  isAtScrollEnd,
+  OVERSCROLL_BACK_NAVIGATION_DELAY,
+  OVERSCROLL_BACK_THRESHOLD,
+} from "./overscroll-back";
 
 type SwipeStart = { scrollDistanceToEnd: number; scrollY: number; x: number; y: number };
 
@@ -124,7 +129,6 @@ export function useOverscrollBack(fallbackHref: string) {
       indicator.dataset.dragging = "false";
       if (readyRef.current) return;
       readyRef.current = true;
-      if (!reduceMotionRef.current) completeIconRef.current?.startAnimation();
     } else if (readyRef.current) {
       readyRef.current = false;
       completeIconRef.current?.stopAnimation();
@@ -139,11 +143,13 @@ export function useOverscrollBack(fallbackHref: string) {
       return;
     }
 
+    if (!reduceMotionRef.current) completeIconRef.current?.startAnimation();
+
     navigationTimerRef.current = setTimeout(() => {
       // 이탈 확인에서 계속 작성을 선택해도 다음 스와이프를 받을 수 있게 한다.
       resetSwipe();
       goBackTo(fallbackHref);
-    }, 1000);
+    }, OVERSCROLL_BACK_NAVIGATION_DELAY);
   };
 
   return {
