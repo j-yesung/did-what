@@ -10,14 +10,14 @@ export type RecordWeather = (typeof RECORD_WEATHER_OPTIONS)[number]["value"];
 
 export const DEFAULT_RECORD_WEATHER: RecordWeather = "sunny";
 
-export function isRecordWeather(value: unknown): value is RecordWeather {
+export const isRecordWeather = (value: unknown): value is RecordWeather => {
   return RECORD_WEATHER_OPTIONS.some((option) => option.value === value);
-}
+};
 
-export function normalizeRecordWeather(value: unknown): RecordWeather {
+export const normalizeRecordWeather = (value: unknown): RecordWeather => {
   return isRecordWeather(value) ? value : DEFAULT_RECORD_WEATHER;
-}
+};
 
-export function getRecordWeatherLabel(weather: RecordWeather) {
+export const getRecordWeatherLabel = (weather: RecordWeather) => {
   return RECORD_WEATHER_OPTIONS.find((option) => option.value === weather)?.label ?? "맑음";
-}
+};

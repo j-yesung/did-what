@@ -65,7 +65,10 @@ export function RecordFunnelLayout({ backDisabled, children, footer, onBack, ste
           {RECORD_CREATE_STEPS.map((item, index) => (
             <span
               aria-hidden="true"
-              className={cn("h-1 flex-1 rounded-full", index <= stepIndex ? "bg-primary" : "bg-border")}
+              className={cn(
+                "h-1 flex-1 rounded-full transition-colors duration-250",
+                index <= stepIndex ? "bg-primary" : "bg-border",
+              )}
               key={item}
             />
           ))}
@@ -73,12 +76,7 @@ export function RecordFunnelLayout({ backDisabled, children, footer, onBack, ste
       </header>
 
       <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-7" ref={contentRef}>
-        <section
-          aria-labelledby={`record-create-${step}-title`}
-          className="motion-safe:data-[direction=backward]:animate-[funnel-step-backward_160ms_cubic-bezier(0.2,0,0,1)_both] motion-safe:data-[direction=forward]:animate-[funnel-step-forward_160ms_cubic-bezier(0.2,0,0,1)_both]"
-          data-direction={direction}
-          key={step}
-        >
+        <section aria-labelledby={`record-create-${step}-title`} data-direction={direction} data-funnel-step key={step}>
           <h2
             className="font-[780] text-[clamp(26px,8vw,32px)] leading-tight tracking-[-0.045em] outline-none"
             id={`record-create-${step}-title`}

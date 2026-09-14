@@ -18,11 +18,11 @@ type NoticeListener = (notice: Notice) => void;
 
 const listeners = new Set<NoticeListener>();
 
-export function showNotice(notice: Notice) {
+export const showNotice = (notice: Notice) => {
   for (const listener of listeners) listener(notice);
-}
+};
 
-export function subscribeNotice(listener: NoticeListener) {
+export const subscribeNotice = (listener: NoticeListener) => {
   listeners.add(listener);
   return () => listeners.delete(listener);
-}
+};

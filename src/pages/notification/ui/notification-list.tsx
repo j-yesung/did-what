@@ -11,7 +11,7 @@ import {
   type NotificationItem,
   notificationListQueryOptions,
   unreadNotificationCountQueryOptions,
-} from "@/entities/notification/api/queries";
+} from "@/entities/notification";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
 import { readNotification } from "@/features/notification/read-notification";
 import { showNotice } from "@/shared/lib/notice";
@@ -61,12 +61,12 @@ export function NotificationList({ memberId }: NotificationListProps) {
     onError: () => showNotice({ title: "모두 읽지 못했어요", variant: "error" }),
   });
 
-  function openNotification(notification: NotificationItem) {
+  const openNotification = (notification: NotificationItem) => {
     const href = notification.record_id ? `/records/${notification.record_id}` : null;
     if (!href || readOne.isPending || notification.read_at) return;
 
     readOne.mutate(notification);
-  }
+  };
 
   const notifications = listQuery.data?.pages.flatMap((page) => page.notifications) ?? [];
   const unreadCount = unreadQuery.data ?? 0;

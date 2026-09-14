@@ -24,7 +24,7 @@ const LEGACY_INTEGRATED_REGION_PREFIXES = new Set(["29", "46"]);
  * 고른 지역이 실재하는지 이름으로 다시 조회해 확인한다.
  * 시·군·구가 없는 세종은 읍·면·동 8자리, 나머지는 시·군·구 5자리로 맞춰 본다.
  */
-async function verifyRegion(code: string, name: string) {
+const verifyRegion = async (code: string, name: string) => {
   const result = await searchKakaoRegions(name);
   if (!("regions" in result)) return null;
 
@@ -49,18 +49,18 @@ async function verifyRegion(code: string, name: string) {
       );
     }) ?? null
   );
-}
+};
 
-async function verifyKakaoPlace(reference: Extract<RecordPlaceReference, { kind: "kakao" }>) {
+const verifyKakaoPlace = async (reference: Extract<RecordPlaceReference, { kind: "kakao" }>) => {
   const result = await searchKakaoPlaces(reference.query, reference.page, reference.scope);
   const place = result.places?.find((item) => item.id === reference.providerPlaceId);
   if (!place) return null;
 
   const region = await resolveKakaoRegion(place.longitude, place.latitude);
   return region ? { place, reference, region } : null;
-}
+};
 
-async function verifyRecordPlaces(references: RecordPlaceReference[], ownerId: string, supabase: SupabaseClient) {
+const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: string, supabase: SupabaseClient) => {
   const existingReferences = references.filter(
     (reference): reference is Extract<RecordPlaceReference, { kind: "existing" }> => reference.kind === "existing",
   );
@@ -110,23 +110,23 @@ async function verifyRecordPlaces(references: RecordPlaceReference[], ownerId: s
       save: verified.reference.save,
     })),
   ];
-}
+};
 
-export async function validateRecordSelections(data: RecordInput, ownerId: string, supabase: SupabaseClient) {
+export const validateRecordSelections = async (data: RecordInput, ownerId: string, supabase: SupabaseClient) => {
   const region = await verifyRegion(data.regionCode, data.regionName);
   if (!region) return null;
 
   const places = await verifyRecordPlaces(data.places, ownerId, supabase);
   if (!places) return null;
   return { places, region };
-}
+};
 
-export async function resolveRecordPlace(input: {
+export const resolveRecordPlace = async (input: {
   page: number;
   providerPlaceId: string;
   query: string;
   scope: KakaoSearchScope | null;
-}): Promise<ResolveRecordPlaceResult> {
+}): Promise<ResolveRecordPlaceResult> => {
   await requireUser();
   const idResult = validateKakaoPlaceId(input.providerPlaceId);
   const queryResult = validateKakaoQuery(input.query);
@@ -153,8 +153,7 @@ export async function resolveRecordPlace(input: {
         save: false,
         scope,
       },
-      saved: false,
     },
     region: { ...region, label: region.name },
   };
-}
+};

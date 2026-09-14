@@ -6,7 +6,7 @@ import { MapPinCheckIcon } from "@animateicons/react/lucide";
 import { useQuery } from "@tanstack/react-query";
 import { useFunnel } from "@use-funnel/browser";
 
-import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification/api/queries";
+import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
 import { placesQueryOptions } from "@/entities/place";
 import {
   DEFAULT_RECORD_WEATHER,
@@ -123,14 +123,14 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
   const busy = save.isPending;
   busyRef.current = busy;
 
-  function updateContext(patch: Partial<RecordCreateContext>) {
+  const updateContext = (patch: Partial<RecordCreateContext>) => {
     const next = { ...draft, ...patch, dirty: true };
     setFieldErrors({});
     setDraft(next);
     void funnel.history.replace(funnel.step, next);
-  }
+  };
 
-  function goNext() {
+  const goNext = () => {
     const errors = validateRecordCreateStep(funnel.step, draft);
     if (Object.keys(errors).length) {
       setFieldErrors(errors);
@@ -139,9 +139,9 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
 
     const next = RECORD_CREATE_STEPS[getRecordCreateStepIndex(funnel.step) + 1];
     if (next) void funnel.history.push(next, draft);
-  }
+  };
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const errors = validateRecordCreateStep("what", draft);
     if (Object.keys(errors).length) {
@@ -151,9 +151,9 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
 
     const formData = toRecordCreateFormData(draft);
     save.mutate(formData);
-  }
+  };
 
-  function renderStep(step: RecordCreateStep) {
+  const renderStep = (step: RecordCreateStep) => {
     if (step === "when") {
       return (
         <FieldGroup className="gap-0">
@@ -188,28 +188,32 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
       if (placesQuery.isError) return <LoadErrorAlert title="선택지를 불러오지 못했어요" />;
 
       return (
-        <RecordLocationFields
-          initialPlaces={draft.places}
-          initialRegion={draft.region ?? undefined}
-          onValueChange={(region: RecordLocationRegion | null, places: RecordLocationPlace[]) =>
-            updateContext({ places, region })
-          }
-          placeError={fieldErrors.places}
-          regionError={fieldErrors.regionCode}
-          savedPlaces={placesQuery.data}
-        />
+        <FieldGroup className="gap-10">
+          <RecordLocationFields
+            initialPlaces={draft.places}
+            initialRegion={draft.region ?? undefined}
+            onValueChange={(region: RecordLocationRegion | null, places: RecordLocationPlace[]) =>
+              updateContext({ places, region })
+            }
+            placeError={fieldErrors.places}
+            regionError={fieldErrors.regionCode}
+            savedPlaces={placesQuery.data}
+          />
+        </FieldGroup>
       );
     }
 
     return (
-      <RecordTextFields
-        activityError={fieldErrors.activity}
-        initialActivity={draft.activity}
-        initialMemo={draft.memo}
-        memoError={fieldErrors.memo}
-      />
+      <FieldGroup className="gap-10 [&>[data-slot=field-separator]]:hidden">
+        <RecordTextFields
+          activityError={fieldErrors.activity}
+          initialActivity={draft.activity}
+          initialMemo={draft.memo}
+          memoError={fieldErrors.memo}
+        />
+      </FieldGroup>
     );
-  }
+  };
 
   const nextDisabled = busy || (funnel.step === "where" && !placesQuery.isSuccess);
 

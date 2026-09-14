@@ -19,11 +19,14 @@ export type PlaceSearchResult = {
 };
 
 /** signal은 TanStack Query가 넘겨준다. 검색어가 바뀌어 이전 요청이 필요 없어지면 그대로 취소된다. */
-export async function searchPlaces({ latitude, longitude, page = 1, query }: PlaceSearchParams, signal?: AbortSignal) {
+export const searchPlaces = async (
+  { latitude, longitude, page = 1, query }: PlaceSearchParams,
+  signal?: AbortSignal,
+) => {
   const { data } = await apiClient.get<PlaceSearchResult>("/places/search", {
     params: { latitude, longitude, page, query },
     signal,
   });
 
   return data;
-}
+};

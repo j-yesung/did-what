@@ -8,7 +8,7 @@ const METROPOLITAN_NAMES = new Map([
   ["세종특별자치시", "세종"],
 ]);
 
-export function getPlaceRegionLabel(regionName: string | null, address: string | null): string {
+export const getPlaceRegionLabel = (regionName: string | null, address: string | null): string => {
   const [province = "", district = ""] = (regionName ?? address ?? "").trim().split(/\s+/);
 
   if (!province) return "지역 정보 없음";
@@ -18,4 +18,4 @@ export function getPlaceRegionLabel(regionName: string | null, address: string |
   if (metropolitanName) return metropolitanName;
 
   return (district || province).replace(/(?:시|군)$/, "");
-}
+};

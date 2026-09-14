@@ -5,17 +5,17 @@ import { validateKakaoQuery } from "./validation.ts";
 const KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json";
 const KAKAO_COORD_REGION_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json";
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
-}
+};
 
 /** 주소에서 잘라낼 지점을 찾을 때 쓴다. "72-1" 같은 지번과 구분해야 해서 여기서는 접미사로 좁혀 본다. */
-function isLocalityName(name: string): boolean {
+const isLocalityName = (name: string): boolean => {
   return /(?:동|읍|면|\d가)$/.test(name);
-}
+};
 
 /** 시·군·구가 없는 세종은 읍·면·동, 나머지는 시·군·구 단위로 통일한다. */
-function toDistrict(code: string, depth1: string, depth2: string, depth3: string) {
+const toDistrict = (code: string, depth1: string, depth2: string, depth3: string) => {
   const province = depth1.trim();
   const district = depth2.trim();
   const locality = depth3.trim();
@@ -30,9 +30,9 @@ function toDistrict(code: string, depth1: string, depth2: string, depth3: string
     fullName: `${province} ${name}`,
     name,
   };
-}
+};
 
-function parseRegionDocument(document: unknown): KakaoRegion | null {
+const parseRegionDocument = (document: unknown): KakaoRegion | null => {
   if (!isRecord(document) || !isRecord(document.address)) {
     return null;
   }
@@ -71,9 +71,9 @@ function parseRegionDocument(document: unknown): KakaoRegion | null {
   }
 
   return { ...district, latitude, longitude };
-}
+};
 
-export function parseKakaoRegionSearchResponse(payload: unknown): KakaoRegion[] | null {
+export const parseKakaoRegionSearchResponse = (payload: unknown): KakaoRegion[] | null => {
   if (!isRecord(payload) || !Array.isArray(payload.documents)) {
     return null;
   }
@@ -89,9 +89,9 @@ export function parseKakaoRegionSearchResponse(payload: unknown): KakaoRegion[] 
   }
 
   return [...regions.values()];
-}
+};
 
-export function parseKakaoCoordinateRegionResponse(payload: unknown): { code: string; fullName: string } | null {
+export const parseKakaoCoordinateRegionResponse = (payload: unknown): { code: string; fullName: string } | null => {
   if (!isRecord(payload) || !Array.isArray(payload.documents)) {
     return null;
   }
@@ -118,9 +118,9 @@ export function parseKakaoCoordinateRegionResponse(payload: unknown): { code: st
   }
 
   return null;
-}
+};
 
-export function getRelatedRegionQueries(places: KakaoPlace[]): string[] {
+export const getRelatedRegionQueries = (places: KakaoPlace[]): string[] => {
   const counts = new Map<string, { count: number; index: number }>();
 
   places.forEach((place, index) => {
@@ -143,9 +143,9 @@ export function getRelatedRegionQueries(places: KakaoPlace[]): string[] {
     .sort(([, a], [, b]) => b.count - a.count || a.index - b.index)
     .slice(0, 3)
     .map(([query]) => query);
-}
+};
 
-async function fetchKakaoRegions(query: string, apiKey: string) {
+const fetchKakaoRegions = async (query: string, apiKey: string) => {
   const url = new URL(KAKAO_ADDRESS_URL);
   url.searchParams.set("query", query);
   url.searchParams.set("size", "30");
@@ -156,9 +156,9 @@ async function fetchKakaoRegions(query: string, apiKey: string) {
     signal: AbortSignal.timeout(5_000),
   });
   return response.ok ? parseKakaoRegionSearchResponse(await response.json()) : null;
-}
+};
 
-export async function searchKakaoRegions(value: string): Promise<KakaoRegionSearchResult> {
+export const searchKakaoRegions = async (value: string): Promise<KakaoRegionSearchResult> => {
   const queryResult = validateKakaoQuery(value);
 
   if (!queryResult.valid) {
@@ -190,9 +190,9 @@ export async function searchKakaoRegions(value: string): Promise<KakaoRegionSear
   } catch {
     return { error: "지역을 검색하지 못했습니다. 잠시 후 다시 시도해 주세요." };
   }
-}
+};
 
-export async function resolveKakaoRegion(longitude: number, latitude: number): Promise<KakaoRegion | null> {
+export const resolveKakaoRegion = async (longitude: number, latitude: number): Promise<KakaoRegion | null> => {
   if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
     return null;
   }
@@ -220,4 +220,4 @@ export async function resolveKakaoRegion(longitude: number, latitude: number): P
   } catch {
     return null;
   }
-}
+};

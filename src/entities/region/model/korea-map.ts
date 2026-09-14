@@ -93,45 +93,45 @@ export const KOREA_MAP_CELL_STYLE = {
   radius: 1.2,
 } as const;
 
-export function getActivityLevel(count: number): ActivityLevel {
+export const getActivityLevel = (count: number): ActivityLevel => {
   if (count >= 7) return 4;
   if (count >= 4) return 3;
   if (count >= 2) return 2;
   if (count >= 1) return 1;
   return 0;
-}
+};
 
-export function isRegionCode(value: string): value is RegionCode {
+export const isRegionCode = (value: string): value is RegionCode => {
   return REGION_CODES.has(value);
-}
+};
 
-export function getRegion(regionCode: string) {
+export const getRegion = (regionCode: string) => {
   const canonicalCode = REGION_CODE_ALIASES.get(regionCode) ?? regionCode;
   return REGIONS.find(({ code }) => code === canonicalCode);
-}
+};
 
-export function getRegionCode(administrativeCode: string): RegionCode | null {
+export const getRegionCode = (administrativeCode: string): RegionCode | null => {
   const prefix = administrativeCode.slice(0, 2);
   return REGIONS.find((region) => (region.administrativeCodes as readonly string[]).includes(prefix))?.code ?? null;
-}
+};
 
-export function filterRecordsByRegion<T extends { region_code: string }>(
+export const filterRecordsByRegion = <T extends { region_code: string }>(
   records: readonly T[],
   regionCode: RegionCode,
-) {
+) => {
   return records.filter((record) => getRegionCode(record.region_code) === regionCode);
-}
+};
 
-export function getRegionProgressLabel({
+export const getRegionProgressLabel = ({
   totalCount,
   visitedCount,
-}: Pick<RegionActivityMap, "totalCount" | "visitedCount">) {
+}: Pick<RegionActivityMap, "totalCount" | "visitedCount">) => {
   if (visitedCount === 0) return `0 / ${totalCount} · 미기록`;
   if (visitedCount === totalCount) return `${totalCount} / ${totalCount} · 모두 채움`;
   return `${visitedCount} / ${totalCount} · ${totalCount - visitedCount}곳 남음`;
-}
+};
 
-function isPointInRing([x, y]: Position, ring: Position[]) {
+const isPointInRing = ([x, y]: Position, ring: Position[]) => {
   let inside = false;
 
   for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index++) {
@@ -145,34 +145,34 @@ function isPointInRing([x, y]: Position, ring: Position[]) {
   }
 
   return inside;
-}
+};
 
-function isPointInPolygon(point: Position, [outerRing, ...holes]: PolygonCoordinates) {
+const isPointInPolygon = (point: Position, [outerRing, ...holes]: PolygonCoordinates) => {
   return isPointInRing(point, outerRing) && !holes.some((hole) => isPointInRing(point, hole));
-}
+};
 
-function containsPoint(geometry: Geometry, point: Position) {
+const containsPoint = (geometry: Geometry, point: Position) => {
   const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
   return polygons.some((polygon) => isPointInPolygon(point, polygon));
-}
+};
 
-function getBoundaryRegionCode(value: string): RegionCode | null {
+const getBoundaryRegionCode = (value: string): RegionCode | null => {
   const canonicalCode = REGION_CODE_ALIASES.get(value) ?? value;
   return isRegionCode(canonicalCode) ? canonicalCode : null;
-}
+};
 
-function getBounds(geometries: Geometry[]) {
+const getBounds = (geometries: Geometry[]) => {
   let minLongitude = Number.POSITIVE_INFINITY;
   let maxLongitude = Number.NEGATIVE_INFINITY;
   let minLatitude = Number.POSITIVE_INFINITY;
   let maxLatitude = Number.NEGATIVE_INFINITY;
 
-  function include([longitude, latitude]: Position) {
+  const include = ([longitude, latitude]: Position) => {
     minLongitude = Math.min(minLongitude, longitude);
     maxLongitude = Math.max(maxLongitude, longitude);
     minLatitude = Math.min(minLatitude, latitude);
     maxLatitude = Math.max(maxLatitude, latitude);
-  }
+  };
 
   for (const geometry of geometries) {
     const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
@@ -180,9 +180,9 @@ function getBounds(geometries: Geometry[]) {
   }
 
   return { minLongitude, maxLongitude, minLatitude, maxLatitude };
-}
+};
 
-function generateCells(columns: number): KoreaMapGrid {
+const generateCells = (columns: number): KoreaMapGrid => {
   const bounds = getBounds(BOUNDARIES.map(({ geometry }) => geometry));
   const projectedWidth = (bounds.maxLongitude - bounds.minLongitude) * LONGITUDE_SCALE;
   const projectedStep = projectedWidth / columns;
@@ -219,9 +219,9 @@ function generateCells(columns: number): KoreaMapGrid {
     width: columns * CELL_PITCH - CELL_GAP,
     height: rows * CELL_PITCH - CELL_GAP,
   };
-}
+};
 
-function generateRegionCells(regionCode: RegionCode): KoreaMapGrid {
+const generateRegionCells = (regionCode: RegionCode): KoreaMapGrid => {
   const geometries = BOUNDARIES.filter(
     ({ properties }) => getBoundaryRegionCode(properties.shapeISO) === regionCode,
   ).map(({ geometry }) => geometry);
@@ -275,9 +275,9 @@ function generateRegionCells(regionCode: RegionCode): KoreaMapGrid {
     rows,
     width: maxX - minX + CELL_SIZE,
   };
-}
+};
 
-function mapRecordsToCells(cells: KoreaMapCell[], records: RecordLocation[]) {
+const mapRecordsToCells = (cells: KoreaMapCell[], records: RecordLocation[]) => {
   if (cells.length === 0) return [];
 
   const counts = new Map<string, number>();
@@ -304,16 +304,16 @@ function mapRecordsToCells(cells: KoreaMapCell[], records: RecordLocation[]) {
     const count = counts.get(cell.id) ?? 0;
     return { ...cell, count, level: getActivityLevel(count) };
   });
-}
+};
 
 const KOREA_MAP_GRID = generateCells(GRID_COLUMNS);
 const REGION_MAP_GRIDS = new Map(REGIONS.map(({ code }) => [code, generateRegionCells(code)]));
 
-export function createKoreaMap(records: RecordLocation[]): KoreaMapGrid {
+export const createKoreaMap = (records: RecordLocation[]): KoreaMapGrid => {
   return { ...KOREA_MAP_GRID, cells: mapRecordsToCells(KOREA_MAP_GRID.cells, records) };
-}
+};
 
-export function createRegionActivityMaps(records: RegionRecordLocation[]): RegionActivityMap[] {
+export const createRegionActivityMaps = (records: RegionRecordLocation[]): RegionActivityMap[] => {
   const recordsByRegion = new Map<RegionCode, RegionRecordLocation[]>(REGIONS.map(({ code }) => [code, []]));
   for (const record of records) {
     const regionCode = getRegionCode(record.administrativeCode);
@@ -338,4 +338,4 @@ export function createRegionActivityMaps(records: RegionRecordLocation[]): Regio
       width: grid?.width ?? 0,
     };
   });
-}
+};

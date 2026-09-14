@@ -1,6 +1,6 @@
 import { CaretRightIcon } from "@phosphor-icons/react";
 
-import type { NotificationItem } from "@/entities/notification/api/queries";
+import type { NotificationItem } from "@/entities/notification";
 import { cn } from "@/shared/lib/utils";
 import { ListRow } from "@/shared/ui/list-row";
 import { PressLink } from "@/shared/ui/press-link";

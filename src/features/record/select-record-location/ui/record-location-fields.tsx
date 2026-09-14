@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 
-import { TrashIcon } from "@phosphor-icons/react";
+import { XIcon } from "@phosphor-icons/react";
 
 import type { PlaceOption } from "@/entities/place";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
+import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
 import { IconButton } from "@/shared/ui/icon-button";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
-import { PlacePickerDialog } from "./place-picker-dialog";
+import { PlacePickerDrawer } from "./place-picker-drawer";
 import { RegionPickerDialog } from "./region-picker-dialog";
+import { SavedPlacePickerDrawer } from "./saved-place-picker-drawer";
+
+const MAX_VISITED_PLACES = 10;
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
@@ -33,36 +35,46 @@ export function RecordLocationFields({
   const [region, setRegion] = useState<RecordLocationRegion | null>(initialRegion ?? null);
   const [places, setPlaces] = useState(initialPlaces);
 
-  function selectRegion(nextRegion: RecordLocationRegion) {
+  const selectRegion = (nextRegion: RecordLocationRegion) => {
     if (nextRegion.code === region?.code) return;
 
     setRegion(nextRegion);
     onValueChange?.(nextRegion, places);
-  }
+  };
 
-  function addPlace(place: RecordLocationPlace, placeRegion: RecordLocationRegion) {
-    if (places.some((item) => item.key === place.key)) return;
+  const addSearchedPlaces = (selections: Array<{ place: RecordLocationPlace; region: RecordLocationRegion }>) => {
+    const availableCount = MAX_VISITED_PLACES - places.length;
+    const additions = selections
+      .filter(({ place }) => !places.some((current) => current.key === place.key))
+      .slice(0, availableCount);
+    if (!additions.length) return;
 
-    const nextRegion = region ?? placeRegion;
-    const nextPlaces = [...places, place];
+    const nextRegion = region ?? additions[0].region;
+    const nextPlaces = [...places, ...additions.map(({ place }) => place)];
     if (!region) setRegion(nextRegion);
     setPlaces(nextPlaces);
     onValueChange?.(nextRegion, nextPlaces);
-  }
+  };
 
-  function toggleSave(key: string, checked: boolean) {
-    const nextPlaces = places.map((place) =>
-      place.key === key ? { ...place, reference: { ...place.reference, save: checked || place.saved } } : place,
-    );
-    setPlaces(nextPlaces);
-    onValueChange?.(region, nextPlaces);
-  }
-
-  function removePlace(key: string) {
+  const removePlace = (key: string) => {
     const nextPlaces = places.filter((item) => item.key !== key);
     setPlaces(nextPlaces);
     onValueChange?.(region, nextPlaces);
-  }
+  };
+
+  const addSavedPlaces = (selectedPlaces: RecordLocationPlace[]) => {
+    if (!region) return;
+
+    const availableCount = MAX_VISITED_PLACES - places.length;
+    const additions = selectedPlaces
+      .filter((place) => !places.some((current) => current.key === place.key))
+      .slice(0, availableCount);
+    if (!additions.length) return;
+
+    const nextPlaces = [...places, ...additions];
+    setPlaces(nextPlaces);
+    onValueChange?.(region, nextPlaces);
+  };
 
   const selectedKeys = new Set(places.map((place) => place.key));
 
@@ -85,51 +97,51 @@ export function RecordLocationFields({
       </Field>
 
       <Field data-invalid={Boolean(placeError)}>
-        <FieldLabel>방문 장소</FieldLabel>
-        <FieldDescription>최대 10곳까지 추가할 수 있어요.</FieldDescription>
+        <FieldContent className="gap-1">
+          <FieldLabel>방문 장소</FieldLabel>
+          <FieldDescription>최대 {MAX_VISITED_PLACES}곳까지 추가할 수 있어요.</FieldDescription>
+        </FieldContent>
 
         {places.length ? (
           <ul className="flex flex-col gap-2">
-            {places.map((place) => {
-              const saveChecked = place.saved || place.reference.save;
-              return (
-                <li className="rounded-xl border bg-card p-3" key={place.key}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm">{place.name}</p>
-                      <p className="mt-1 text-muted-foreground text-xs">{place.address ?? "주소 정보 없음"}</p>
-                    </div>
-                    <IconButton
-                      aria-label={`${place.name} 방문 장소에서 제거`}
-                      icon={TrashIcon}
-                      iconStrokeWidth={2}
-                      onClick={() => removePlace(place.key)}
-                      size="sm"
-                      type="button"
-                    />
+            {places.map((place) => (
+              <li className="rounded-xl border bg-card px-3 py-2" key={place.key}>
+                <div className="flex min-h-11 items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-sm">{place.name}</p>
+                    <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address ?? "주소 정보 없음"}</p>
                   </div>
-                  <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm" htmlFor={`save-${place.key}`}>
-                    <Checkbox
-                      checked={saveChecked}
-                      disabled={place.saved}
-                      id={`save-${place.key}`}
-                      onCheckedChange={(checked) => toggleSave(place.key, checked)}
-                    />
-                    {place.saved ? "내 장소에 저장됨" : "기록을 저장할 때 내 장소에도 추가"}
-                  </label>
-                </li>
-              );
-            })}
+                  <IconButton
+                    aria-label={`${place.name} 방문 장소에서 제거`}
+                    icon={XIcon}
+                    iconSize={18}
+                    iconStrokeWidth={2}
+                    onClick={() => removePlace(place.key)}
+                    type="button"
+                  />
+                </div>
+              </li>
+            ))}
           </ul>
         ) : null}
 
-        <PlacePickerDialog
-          disabled={places.length >= 10}
-          onAdd={addPlace}
-          region={region}
-          savedPlaces={savedPlaces}
-          selectedKeys={selectedKeys}
-        />
+        <div className="grid grid-cols-2 gap-2">
+          <SavedPlacePickerDrawer
+            disabled={!region || savedPlaces.length === 0 || places.length >= MAX_VISITED_PLACES}
+            maxSelectionCount={MAX_VISITED_PLACES - places.length}
+            onAdd={addSavedPlaces}
+            region={region}
+            savedPlaces={savedPlaces}
+            selectedKeys={selectedKeys}
+          />
+          <PlacePickerDrawer
+            disabled={places.length >= MAX_VISITED_PLACES}
+            maxSelectionCount={MAX_VISITED_PLACES - places.length}
+            onAdd={addSearchedPlaces}
+            region={region}
+            selectedKeys={selectedKeys}
+          />
+        </div>
         <FieldError id="places-error">{placeError}</FieldError>
       </Field>
     </>

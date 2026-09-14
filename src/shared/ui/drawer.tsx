@@ -15,7 +15,7 @@ type DrawerContextProps = {
 
 const DrawerContext = React.createContext<DrawerContextProps | null>(null);
 
-function useDrawer() {
+const useDrawer = () => {
   const context = React.useContext(DrawerContext);
 
   if (!context) {
@@ -23,7 +23,7 @@ function useDrawer() {
   }
 
   return context;
-}
+};
 
 function Drawer({
   modal = true,

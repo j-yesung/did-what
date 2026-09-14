@@ -19,16 +19,16 @@ const MAX_QUERY_LENGTH = 100;
  */
 const RESERVED_PATTERN = /[,()%"\\*]/g;
 
-function readParam(value: string | string[] | undefined) {
+const readParam = (value: string | string[] | undefined) => {
   return typeof value === "string" ? value.trim() : "";
-}
+};
 
-function readDate(value: string | string[] | undefined) {
+const readDate = (value: string | string[] | undefined) => {
   const date = readParam(value);
   return isIsoDate(date) ? date : "";
-}
+};
 
-export function parseRecordFilters(params: RecordSearchParams): RecordFilters {
+export const parseRecordFilters = (params: RecordSearchParams): RecordFilters => {
   const query = readParam(params.q).replace(RESERVED_PATTERN, "").trim().slice(0, MAX_QUERY_LENGTH);
   const from = readDate(params.from);
   const to = readDate(params.to);
@@ -40,15 +40,15 @@ export function parseRecordFilters(params: RecordSearchParams): RecordFilters {
     sort: readParam(params.sort) === "oldest" ? "oldest" : "recent",
     to: swap ? from : to,
   };
-}
+};
 
 // 기본값(검색어 없음·기간 없음·최신순)이 아니면 목록이 걸러진 상태다.
-export function hasRecordFilters(filters: RecordFilters) {
+export const hasRecordFilters = (filters: RecordFilters) => {
   return Boolean(filters.query || filters.from || filters.to) || filters.sort !== "recent";
-}
+};
 
 // 지금 필터를 유지한 채 일부만 바꾼 목록 주소를 만든다.
-export function buildRecordsHref(filters: RecordFilters, overrides: Partial<RecordFilters> = {}) {
+export const buildRecordsHref = (filters: RecordFilters, overrides: Partial<RecordFilters> = {}) => {
   const next = { ...filters, ...overrides };
   const params = new URLSearchParams();
 
@@ -59,4 +59,4 @@ export function buildRecordsHref(filters: RecordFilters, overrides: Partial<Reco
 
   const search = params.toString();
   return search ? `/records?${search}` : "/records";
-}
+};

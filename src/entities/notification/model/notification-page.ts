@@ -5,6 +5,6 @@ export type NotificationCursor = {
   id: number;
 };
 
-export function getNotificationCursorFilter(cursor: NotificationCursor) {
+export const getNotificationCursorFilter = (cursor: NotificationCursor) => {
   return `created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`;
-}
+};

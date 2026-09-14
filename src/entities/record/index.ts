@@ -1,6 +1,3 @@
-export type { RecordDetail } from "./api/fetch-record";
-export type { RecordLocationRow } from "./api/fetch-record-locations";
-export type { RegionRecordRow } from "./api/fetch-region-records";
 export {
   RECORD_DETAILS_QUERY_KEY,
   RECORDS_QUERY_KEY,
@@ -22,12 +19,10 @@ export {
 export {
   type RecordFieldErrors,
   type RecordInput,
-  type RecordInputValues,
   type RecordPlaceReference,
   readRecordInput,
   validateRecordInput,
 } from "./model/record-form";
-export { RECORD_PAGE_SIZE, type RecordCursor } from "./model/record-page";
 export type { RecordFormState, RecordSummary } from "./model/types";
 export {
   DEFAULT_RECORD_WEATHER,

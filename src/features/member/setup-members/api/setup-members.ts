@@ -10,7 +10,7 @@ import { normalizeMemberNames, validateMemberNames } from "../model/member-setup
 
 export type SetupMembersState = { message: string; status: "error" };
 
-export async function setupMembers(formData: FormData): Promise<SetupMembersState> {
+export const setupMembers = async (formData: FormData): Promise<SetupMembersState> => {
   const names = normalizeMemberNames(formData.getAll("memberName").map(String));
   const endpoint = String(formData.get("endpoint") ?? "") || null;
   const selectedIndex = Number(formData.get("currentMemberIndex"));
@@ -37,4 +37,4 @@ export async function setupMembers(formData: FormData): Promise<SetupMembersStat
   await reassignPushSubscription({ endpoint, memberId: selectedMember.id, ownerId: user.id, supabase });
   await setCurrentMember(selectedMember.id);
   redirect("/");
-}
+};

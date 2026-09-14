@@ -62,25 +62,25 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
   const fieldErrors = save.data?.fieldErrors;
 
   useEffect(() => {
-    function warnBeforeUnload(event: BeforeUnloadEvent) {
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
       if (formRef.current?.dataset.dirty !== "true") return;
 
       event.preventDefault();
       event.returnValue = "";
-    }
+    };
 
     window.addEventListener("beforeunload", warnBeforeUnload);
     return () => window.removeEventListener("beforeunload", warnBeforeUnload);
   }, []);
 
-  function markDirty() {
+  const markDirty = () => {
     if (formRef.current) formRef.current.dataset.dirty = "true";
-  }
+  };
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     save.mutate(new FormData(event.currentTarget));
-  }
+  };
 
   if (placesQuery.isPending) {
     return (

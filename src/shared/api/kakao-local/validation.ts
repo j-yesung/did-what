@@ -2,7 +2,7 @@ import type { KakaoSearchScope } from "./types.ts";
 
 export const KAKAO_SEARCH_MAX_PAGE = 45;
 
-export function validateKakaoQuery(value: string): { valid: true; query: string } | { valid: false; error: string } {
+export const validateKakaoQuery = (value: string): { valid: true; query: string } | { valid: false; error: string } => {
   const query = value.trim();
 
   if (query.length < 1 || query.length > 100) {
@@ -10,9 +10,9 @@ export function validateKakaoQuery(value: string): { valid: true; query: string 
   }
 
   return { query, valid: true };
-}
+};
 
-export function validateKakaoPlaceId(value: string): { valid: true; id: string } | { valid: false; error: string } {
+export const validateKakaoPlaceId = (value: string): { valid: true; id: string } | { valid: false; error: string } => {
   const id = value.trim();
 
   if (!/^\d{1,100}$/.test(id)) {
@@ -20,10 +20,10 @@ export function validateKakaoPlaceId(value: string): { valid: true; id: string }
   }
 
   return { id, valid: true };
-}
+};
 
 /** 좌표 한 짝이 온전할 때만 기준점으로 인정한다. 빈 문자열이나 null이 0으로 둔갑하지 않도록 숫자 변환을 좁혀 둔다. */
-export function normalizeKakaoScope(latitudeValue: unknown, longitudeValue: unknown): KakaoSearchScope | null {
+export const normalizeKakaoScope = (latitudeValue: unknown, longitudeValue: unknown): KakaoSearchScope | null => {
   const toNumber = (value: unknown) =>
     typeof value === "number" || (typeof value === "string" && value.trim()) ? Number(value) : Number.NaN;
   const latitude = toNumber(latitudeValue);
@@ -41,10 +41,10 @@ export function normalizeKakaoScope(latitudeValue: unknown, longitudeValue: unkn
   }
 
   return { latitude, longitude };
-}
+};
 
-export function normalizeKakaoPage(value: unknown): number {
+export const normalizeKakaoPage = (value: unknown): number => {
   const page = typeof value === "number" || typeof value === "string" ? Number(value) : 1;
 
   return Number.isInteger(page) && page >= 1 && page <= KAKAO_SEARCH_MAX_PAGE ? page : 1;
-}
+};

@@ -4,7 +4,7 @@ import { BellIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 
-import { unreadNotificationCountQueryOptions } from "@/entities/notification/api/queries";
+import { unreadNotificationCountQueryOptions } from "@/entities/notification";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { IconButton } from "@/shared/ui/icon-button";

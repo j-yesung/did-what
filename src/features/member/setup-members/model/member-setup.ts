@@ -1,10 +1,10 @@
 export const MIN_MEMBER_COUNT = 2;
 
-export function normalizeMemberNames(values: string[]) {
+export const normalizeMemberNames = (values: string[]) => {
   return values.map((value) => value.trim());
-}
+};
 
-export function validateMemberNames(values: string[]) {
+export const validateMemberNames = (values: string[]) => {
   const names = normalizeMemberNames(values);
 
   if (names.length < MIN_MEMBER_COUNT) return "함께 사용하는 사람을 두 명 이상 입력해 주세요.";
@@ -14,4 +14,4 @@ export function validateMemberNames(values: string[]) {
   if (new Set(normalized).size !== normalized.length) return "서로 다른 이름을 입력해 주세요.";
 
   return null;
-}
+};

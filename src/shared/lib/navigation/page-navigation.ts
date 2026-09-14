@@ -1,7 +1,7 @@
 const PREVIOUS_HREF_KEY = "didWhatPreviousHref";
 const navigations = new WeakMap<Window, ReturnType<typeof createPageNavigation>>();
 
-function createPageNavigation(browser: Window) {
+const createPageNavigation = (browser: Window) => {
   const history = browser.history;
   const pushState = history.pushState.bind(history);
   const replaceState = history.replaceState.bind(history);
@@ -44,14 +44,14 @@ function createPageNavigation(browser: Window) {
       return traversal;
     },
   };
-}
+};
 
 /** PageShell과 장소 검색이 같은 이동 상태를 공유한다. */
-export function getPageNavigation(browser: Window) {
+export const getPageNavigation = (browser: Window) => {
   let navigation = navigations.get(browser);
   if (!navigation) {
     navigation = createPageNavigation(browser);
     navigations.set(browser, navigation);
   }
   return navigation;
-}
+};

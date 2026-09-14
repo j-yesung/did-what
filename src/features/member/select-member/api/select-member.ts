@@ -16,7 +16,7 @@ type SelectMemberInput = {
 
 export type SelectMemberState = { message: string; status: "error" };
 
-export async function selectMember(input: SelectMemberInput): Promise<SelectMemberState> {
+export const selectMember = async (input: SelectMemberInput): Promise<SelectMemberState> => {
   if (!isUuid(input.memberId)) return { message: "구성원을 확인할 수 없습니다.", status: "error" };
 
   const { supabase, user } = await requireUser();
@@ -43,4 +43,4 @@ export async function selectMember(input: SelectMemberInput): Promise<SelectMemb
   await setCurrentMember(member.id);
   revalidatePath("/", "layout");
   redirect(input.destination === "/settings" ? "/settings" : "/");
-}
+};

@@ -1,4 +1,4 @@
-export function getLoginErrorMessage(code?: string) {
+export const getLoginErrorMessage = (code?: string) => {
   if (code === "email_not_confirmed") {
     return "이메일 인증을 먼저 완료해 주세요.";
   }
@@ -8,9 +8,9 @@ export function getLoginErrorMessage(code?: string) {
   }
 
   return "로그인 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.";
-}
+};
 
-export function getSignupErrorMessage(code?: string) {
+export const getSignupErrorMessage = (code?: string) => {
   if (code === "weak_password") {
     return "조금 더 안전한 비밀번호를 사용해 주세요.";
   }
@@ -20,4 +20,4 @@ export function getSignupErrorMessage(code?: string) {
   }
 
   return "회원가입 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.";
-}
+};

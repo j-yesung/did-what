@@ -32,7 +32,7 @@ export type RecordInput = {
   memo?: string;
 };
 
-export type RecordInputValues = {
+type RecordInputValues = {
   recordedAt: string;
   recordedUntil: string;
   regionCode: string;
@@ -44,7 +44,7 @@ export type RecordInputValues = {
   memo: string;
 };
 
-export function readRecordInput(formData: FormData): RecordInputValues {
+export const readRecordInput = (formData: FormData): RecordInputValues => {
   return {
     activity: String(formData.get("activity") ?? ""),
     memo: String(formData.get("memo") ?? ""),
@@ -56,14 +56,14 @@ export function readRecordInput(formData: FormData): RecordInputValues {
     regionName: String(formData.get("regionName") ?? ""),
     weather: String(formData.get("weather") ?? ""),
   };
-}
+};
 
 const REGION_CODE_PATTERN = /^\d{10}$/;
 const KAKAO_PLACE_ID_PATTERN = /^\d{1,100}$/;
 const MAX_VISITED_PLACES = 10;
 
 /** 지역을 고르기 전에 검색했다면 기준점이 없다. 없는 경우와 형태가 깨진 경우를 구분해야 해서 실패는 false로 돌려준다. */
-function parseScope(value: unknown): KakaoSearchScope | null | false {
+const parseScope = (value: unknown): KakaoSearchScope | null | false => {
   if (value === null || value === undefined) return null;
   if (typeof value !== "object") return false;
 
@@ -82,9 +82,9 @@ function parseScope(value: unknown): KakaoSearchScope | null | false {
   }
 
   return { latitude, longitude };
-}
+};
 
-function parsePlaces(value: string): RecordPlaceReference[] | null {
+const parsePlaces = (value: string): RecordPlaceReference[] | null => {
   try {
     const parsed: unknown = JSON.parse(value || "[]");
     if (!Array.isArray(parsed) || parsed.length > MAX_VISITED_PLACES) return null;
@@ -138,11 +138,11 @@ function parsePlaces(value: string): RecordPlaceReference[] | null {
   } catch {
     return null;
   }
-}
+};
 
-export function validateRecordInput(
+export const validateRecordInput = (
   values: RecordInputValues,
-): { data: RecordInput; fieldErrors?: never } | { data?: never; fieldErrors: RecordFieldErrors } {
+): { data: RecordInput; fieldErrors?: never } | { data?: never; fieldErrors: RecordFieldErrors } => {
   const fieldErrors: RecordFieldErrors = {};
   const regionLabel = values.regionLabel.trim();
   const regionName = values.regionName.trim();
@@ -203,4 +203,4 @@ export function validateRecordInput(
       ...(memo ? { memo } : {}),
     },
   };
-}
+};

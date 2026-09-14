@@ -6,13 +6,13 @@ const KAKAO_SEARCH_RADIUS = 20_000;
 const KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
 const SEARCH_ERROR_MESSAGE = "장소를 검색하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
-}
+};
 
-export function parseKakaoSearchResponse(
+export const parseKakaoSearchResponse = (
   payload: unknown,
-): { isEnd: boolean; pageableCount: number; places: KakaoPlace[] } | null {
+): { isEnd: boolean; pageableCount: number; places: KakaoPlace[] } | null => {
   if (
     !isRecord(payload) ||
     !Array.isArray(payload.documents) ||
@@ -74,16 +74,16 @@ export function parseKakaoSearchResponse(
   }
 
   return { isEnd: payload.meta.is_end, pageableCount: payload.meta.pageable_count, places };
-}
+};
 
-export async function searchKakaoPlaces(
+export const searchKakaoPlaces = async (
   value: string,
   pageValue: unknown = 1,
   scope?: KakaoSearchScope | null,
 ): Promise<
   | { isEnd: boolean; page: number; pageableCount: number; places: KakaoPlace[]; error?: never }
   | { places?: never; error: string }
-> {
+> => {
   const queryResult = validateKakaoQuery(value);
 
   if (!queryResult.valid) {
@@ -126,4 +126,4 @@ export async function searchKakaoPlaces(
   } catch {
     return { error: SEARCH_ERROR_MESSAGE };
   }
-}
+};

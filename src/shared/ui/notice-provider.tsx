@@ -57,20 +57,20 @@ export function NoticeProvider() {
   useEffect(() => {
     if (!notice || !open) return;
 
-    function handlePointerDown(event: PointerEvent) {
+    const handlePointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (target instanceof Node && noticeRef.current?.contains(target)) return;
       dismiss();
-    }
+    };
 
     document.addEventListener("pointerdown", handlePointerDown, true);
     return () => document.removeEventListener("pointerdown", handlePointerDown, true);
   }, [dismiss, notice, open]);
 
   useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") dismiss();
-    }
+    };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);

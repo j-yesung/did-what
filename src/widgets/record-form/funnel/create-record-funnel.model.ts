@@ -19,11 +19,11 @@ export type RecordCreateContext = {
 
 export type RecordCreateStepMap = Record<RecordCreateStep, RecordCreateContext>;
 
-export function getRecordCreateStepIndex(step: RecordCreateStep) {
+export const getRecordCreateStepIndex = (step: RecordCreateStep) => {
   return RECORD_CREATE_STEPS.indexOf(step);
-}
+};
 
-export function validateRecordCreateStep(step: RecordCreateStep, context: RecordCreateContext): RecordFieldErrors {
+export const validateRecordCreateStep = (step: RecordCreateStep, context: RecordCreateContext): RecordFieldErrors => {
   const fieldErrors: RecordFieldErrors = {};
 
   if (step === "when") {
@@ -47,16 +47,16 @@ export function validateRecordCreateStep(step: RecordCreateStep, context: Record
   }
 
   return fieldErrors;
-}
+};
 
-export function getRecordCreateErrorStep(fieldErrors: RecordFieldErrors): RecordCreateStep | null {
+export const getRecordCreateErrorStep = (fieldErrors: RecordFieldErrors): RecordCreateStep | null => {
   if (fieldErrors.recordedAt || fieldErrors.recordedUntil || fieldErrors.weather) return "when";
   if (fieldErrors.regionCode || fieldErrors.places) return "where";
   if (fieldErrors.activity || fieldErrors.memo) return "what";
   return null;
-}
+};
 
-export function toRecordCreateFormData(context: RecordCreateContext) {
+export const toRecordCreateFormData = (context: RecordCreateContext) => {
   const formData = new FormData();
 
   formData.set("activity", context.activity);
@@ -70,4 +70,4 @@ export function toRecordCreateFormData(context: RecordCreateContext) {
   formData.set("weather", context.weather);
 
   return formData;
-}
+};

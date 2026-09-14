@@ -8,13 +8,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { showNotice } from "@/shared/lib/notice";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 
-import { pushEndpointQueryOptions } from "../api/queries";
-import { removeSubscription } from "../api/remove-push-subscription";
-import { saveSubscription } from "../api/save-push-subscription";
-import { enablePush, isPushSupported } from "../api/subscribe-push";
-import { disablePush } from "../api/unsubscribe-push";
+import { disablePush, enablePush, isPushSupported, pushEndpointQueryOptions } from "../api/browser-subscription";
+import { removeSubscription, saveSubscription } from "../api/subscription-actions";
 
-export function usePushToggle() {
+export const usePushToggle = () => {
   const queryClient = useQueryClient();
 
   const [hydrated, setHydrated] = useState(false);
@@ -36,7 +33,7 @@ export function usePushToggle() {
     setHydrated(true);
   }, []);
 
-  async function turnOn() {
+  const turnOn = async () => {
     const result = await enablePush();
 
     if (result.status === "unsupported") {
@@ -77,9 +74,9 @@ export function usePushToggle() {
     }
 
     queryClient.setQueryData(pushEndpointQueryOptions.queryKey, result.keys.endpoint);
-  }
+  };
 
-  async function turnOff() {
+  const turnOff = async () => {
     const endpoint = await disablePush();
     queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
     if (!endpoint) return;
@@ -92,9 +89,9 @@ export function usePushToggle() {
         variant: "warning",
       });
     }
-  }
+  };
 
-  async function processToggleQueue() {
+  const processToggleQueue = async () => {
     while (pendingChecked.current !== null) {
       const nextChecked = pendingChecked.current;
       pendingChecked.current = null;
@@ -108,9 +105,9 @@ export function usePushToggle() {
         });
       }
     }
-  }
+  };
 
-  function enqueueToggle(nextChecked: boolean) {
+  const enqueueToggle = (nextChecked: boolean) => {
     pendingChecked.current = nextChecked;
     if (!pendingToggle.current) {
       pendingToggle.current = processToggleQueue().finally(() => {
@@ -119,9 +116,9 @@ export function usePushToggle() {
     }
 
     return pendingToggle.current;
-  }
+  };
 
-  function handleCheckedChange(nextChecked: boolean) {
+  const handleCheckedChange = (nextChecked: boolean) => {
     showNotice({
       icon: nextChecked ? BellRingIcon : BellOffIcon,
       title: nextChecked ? `이 기기로 알림을 받아요` : "알림을 껐어요",
@@ -132,7 +129,7 @@ export function usePushToggle() {
       setOptimisticChecked(nextChecked);
       await enqueueToggle(nextChecked);
     });
-  }
+  };
 
   return { checked, isUnsupported, handleCheckedChange };
-}
+};

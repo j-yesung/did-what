@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { waitForPressRelease } from "@/shared/lib/navigation/wait-for-press-release";
 
-export function usePressNavigate() {
+export const usePressNavigate = () => {
   const router = useRouter();
   const pending = useRef<AbortController | null>(null);
 
@@ -49,4 +49,4 @@ export function usePressNavigate() {
       controller.abort();
     });
   };
-}
+};

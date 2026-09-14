@@ -27,11 +27,11 @@ export function RecordWeatherField({
 }: RecordWeatherFieldProps) {
   const [weather, setWeather] = useState<RecordWeather>(initialWeather);
 
-  function handleWeatherChange(nextWeather: string) {
+  const handleWeatherChange = (nextWeather: string) => {
     if (!isRecordWeather(nextWeather)) return;
     setWeather(nextWeather);
     onChange?.(nextWeather);
-  }
+  };
 
   return (
     <div aria-labelledby="record-weather-label" role="group">

@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
 };
 
-export async function generateViewport(): Promise<Viewport> {
+export const generateViewport = async (): Promise<Viewport> => {
   const theme = await getTheme();
 
   return {
@@ -68,7 +68,7 @@ export async function generateViewport(): Promise<Viewport> {
     userScalable: false,
     viewportFit: "cover",
   };
-}
+};
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const theme = await getTheme();

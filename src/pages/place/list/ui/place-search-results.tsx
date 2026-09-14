@@ -6,8 +6,7 @@ import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
-import { type PlaceSearchResult, searchPlaces } from "@/entities/place/api/search-places";
+import { type PlaceSearchResult, placesQueryOptions, type SavedPlaceRow, searchPlaces } from "@/entities/place";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/place/save-place";
 import { KAKAO_SEARCH_MAX_PAGE, type KakaoPlace } from "@/shared/api/kakao-local";
 import { FOCUS_RING } from "@/shared/lib/interaction";
@@ -47,7 +46,7 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
   const results = resultsQuery.data.pages.flatMap(({ page, places }) => places.map((place) => ({ page, place })));
   const hasSelectedPlaces = selectedPlaces.size > 0;
 
-  function selectPlace(place: KakaoPlace, page: number, savedPlaceId?: string) {
+  const selectPlace = (place: KakaoPlace, page: number, savedPlaceId?: string) => {
     if (savedPlaceId) return;
     setSelectedPlaces((current) => {
       const next = new Map(current);
@@ -58,18 +57,18 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
       }
       return next;
     });
-  }
+  };
 
-  function handlePlaceKeyDown(
+  const handlePlaceKeyDown = (
     event: KeyboardEvent<HTMLLIElement>,
     place: KakaoPlace,
     page: number,
     savedPlaceId?: string,
-  ) {
+  ) => {
     if (savedPlaceId || (event.key !== "Enter" && event.key !== " ")) return;
     event.preventDefault();
     selectPlace(place, page, savedPlaceId);
-  }
+  };
 
   return (
     <section

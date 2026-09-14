@@ -1,6 +1,15 @@
+import { queryOptions } from "@tanstack/react-query";
+
+import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
+
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
 const SERVICE_WORKER_PATH = "/sw.js";
+
+export const pushEndpointQueryOptions = queryOptions({
+  queryKey: ["push-endpoint"],
+  queryFn: getPushEndpoint,
+});
 
 export type PushKeys = {
   auth: string;
@@ -20,14 +29,14 @@ export type EnablePushResult =
  * 스펙상 applicationServerKey에 base64url 문자열을 그대로 넣을 수 있지만 브라우저마다 지원이 갈린다.
  * 대상이 iOS 홈 화면 설치본이라 확실한 쪽인 BufferSource로 넘긴다.
  */
-function toApplicationServerKey(base64Url: string) {
+const toApplicationServerKey = (base64Url: string) => {
   const padded = base64Url.padEnd(base64Url.length + ((4 - (base64Url.length % 4)) % 4), "=");
   const binary = atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
 
   return Uint8Array.from(binary, (character) => character.charCodeAt(0));
-}
+};
 
-export function isPushSupported() {
+export const isPushSupported = () => {
   return (
     typeof window !== "undefined" &&
     "serviceWorker" in navigator &&
@@ -35,10 +44,10 @@ export function isPushSupported() {
     "Notification" in window &&
     Boolean(VAPID_PUBLIC_KEY)
   );
-}
+};
 
 /** 이미 구독된 기기의 정보만 읽는다. 서비스 워커를 새로 등록하지 않는다. */
-export async function getCurrentPushKeys(): Promise<PushKeys | null> {
+export const getCurrentPushKeys = async (): Promise<PushKeys | null> => {
   if (!isPushSupported()) return null;
 
   const registration = await navigator.serviceWorker.getRegistration();
@@ -49,10 +58,10 @@ export async function getCurrentPushKeys(): Promise<PushKeys | null> {
   if (!auth || !p256dh) return null;
 
   return { auth, endpoint: subscription.endpoint, p256dh };
-}
+};
 
 /** 권한 요청은 사용자 제스처 안에서만 뜨므로 버튼 클릭에서 곧장 부른다. */
-export async function enablePush(): Promise<EnablePushResult> {
+export const enablePush = async (): Promise<EnablePushResult> => {
   if (!isPushSupported()) return { status: "unsupported" };
 
   /**
@@ -77,6 +86,18 @@ export async function enablePush(): Promise<EnablePushResult> {
   if (!auth || !p256dh) return { status: "unsupported" };
 
   return { keys: { auth, endpoint: subscription.endpoint, p256dh }, status: "granted" };
-}
+};
 
 /** 브라우저 구독을 해지하고 서버에서 지울 endpoint를 돌려준다. */
+export const disablePush = async () => {
+  if (!isPushSupported()) return null;
+
+  const registration = await navigator.serviceWorker.getRegistration();
+  const subscription = await registration?.pushManager.getSubscription();
+  if (!subscription) return null;
+
+  const { endpoint } = subscription;
+  await subscription.unsubscribe();
+
+  return endpoint;
+};

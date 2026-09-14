@@ -32,11 +32,11 @@ export function MemberSetupForm() {
     },
   });
 
-  function removeMember(id: number) {
+  const removeMember = (id: number) => {
     const next = members.filter((member) => member.id !== id);
     if (selectedId === id) setSelectedId(next[0].id);
     setMembers(next);
-  }
+  };
 
   return (
     <form

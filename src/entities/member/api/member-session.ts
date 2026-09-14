@@ -14,7 +14,7 @@ import type { AccountMember } from "../model/types";
 const CURRENT_MEMBER_COOKIE = "did-what-member";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
-export async function getAccountMembers(supabase: SupabaseClient<Database>, ownerId: string) {
+export const getAccountMembers = async (supabase: SupabaseClient<Database>, ownerId: string) => {
   const { data, error } = await supabase
     .from("account_members")
     .select("id, name, is_active, created_at, updated_at, owner_id")
@@ -23,9 +23,9 @@ export async function getAccountMembers(supabase: SupabaseClient<Database>, owne
 
   if (error) throw error;
   return data satisfies AccountMember[];
-}
+};
 
-export async function setCurrentMember(memberId: string) {
+export const setCurrentMember = async (memberId: string) => {
   const store = await cookies();
   store.set(CURRENT_MEMBER_COOKIE, memberId, {
     httpOnly: true,
@@ -34,11 +34,11 @@ export async function setCurrentMember(memberId: string) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
   });
-}
+};
 
-export async function getCurrentMemberId() {
+export const getCurrentMemberId = async () => {
   return (await cookies()).get(CURRENT_MEMBER_COOKIE)?.value;
-}
+};
 
 export const requireMember = cache(async () => {
   const { supabase, user } = await requireUser();
