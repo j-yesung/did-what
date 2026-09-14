@@ -188,26 +188,30 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
       if (placesQuery.isError) return <LoadErrorAlert title="선택지를 불러오지 못했어요" />;
 
       return (
-        <RecordLocationFields
-          initialPlaces={draft.places}
-          initialRegion={draft.region ?? undefined}
-          onValueChange={(region: RecordLocationRegion | null, places: RecordLocationPlace[]) =>
-            updateContext({ places, region })
-          }
-          placeError={fieldErrors.places}
-          regionError={fieldErrors.regionCode}
-          savedPlaces={placesQuery.data}
-        />
+        <FieldGroup className="gap-10">
+          <RecordLocationFields
+            initialPlaces={draft.places}
+            initialRegion={draft.region ?? undefined}
+            onValueChange={(region: RecordLocationRegion | null, places: RecordLocationPlace[]) =>
+              updateContext({ places, region })
+            }
+            placeError={fieldErrors.places}
+            regionError={fieldErrors.regionCode}
+            savedPlaces={placesQuery.data}
+          />
+        </FieldGroup>
       );
     }
 
     return (
-      <RecordTextFields
-        activityError={fieldErrors.activity}
-        initialActivity={draft.activity}
-        initialMemo={draft.memo}
-        memoError={fieldErrors.memo}
-      />
+      <FieldGroup className="gap-10 [&>[data-slot=field-separator]]:hidden">
+        <RecordTextFields
+          activityError={fieldErrors.activity}
+          initialActivity={draft.activity}
+          initialMemo={draft.memo}
+          memoError={fieldErrors.memo}
+        />
+      </FieldGroup>
     );
   };
 
