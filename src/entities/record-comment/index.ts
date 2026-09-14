@@ -1,5 +1,6 @@
 export { RECORD_COMMENTS_QUERY_KEY, recordCommentListQueryOptions } from "./api/queries";
 export {
+  formatCommentTime,
   normalizeCommentBody,
   type OptimisticCommentAction,
   type RecordComment,
