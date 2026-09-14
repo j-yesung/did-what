@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 
-import { ChatCircleTextIcon, PencilSimpleIcon, TrashIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { ArrowUpIcon, PencilSimpleIcon, TrashIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  formatCommentTime,
   normalizeCommentBody,
   type OptimisticCommentAction,
   type RecordComment,
@@ -14,8 +15,8 @@ import {
   reduceOptimisticComments,
 } from "@/entities/record-comment";
 import { showNotice } from "@/shared/lib/notice";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { IconButton } from "@/shared/ui/icon-button";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
@@ -23,15 +24,13 @@ import { Textarea } from "@/shared/ui/textarea";
 
 import { createComment, deleteComment, updateComment } from "../api/comment-actions";
 
-const COMMENT_TIME = new Intl.DateTimeFormat("ko-KR", {
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  month: "short",
-  timeZone: "Asia/Seoul",
-});
+const getVisibleViewportBottom = () => {
+  const viewport = window.visualViewport;
+  return viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+};
 
 type RecordCommentsProps = {
+  activity: string;
   member: { id: string; name: string };
   recordId: string;
 };
@@ -80,9 +79,13 @@ const updateCommentCache = (
   };
 };
 
-export function RecordComments({ member, recordId }: RecordCommentsProps) {
+export function RecordComments({ activity, member, recordId }: RecordCommentsProps) {
   const [draft, setDraft] = useState("");
+  const [floating, setFloating] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [viewportBottom, setViewportBottom] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const composerRef = useRef<HTMLFormElement>(null);
   const submittingRef = useRef(false);
   const scrolledHashRef = useRef("");
   const queryClient = useQueryClient();
@@ -93,6 +96,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
   }, [commentsQuery.data]);
   const [optimisticComments, dispatchOptimistic] = useOptimistic(comments, reduceOptimisticComments);
   const normalizedDraft = normalizeCommentBody(draft);
+  const composing = focused;
 
   const commitCache = (action: CacheAction) => {
     queryClient.setQueryData<InfiniteData<RecordCommentPage>>(queryOptions.queryKey, (current) =>
@@ -223,44 +227,43 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
     commentsQuery.isFetchingNextPage,
   ]);
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-1.5 text-muted-foreground">
-          <ChatCircleTextIcon aria-hidden="true" size={18} />
-          댓글
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <form
-          className="flex flex-col gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            submitComment();
-          }}
-        >
-          <label className="font-medium text-sm" htmlFor="record-comment-body">
-            {member.name}으로 댓글 남기기
-          </label>
-          <Textarea
-            id="record-comment-body"
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="함께 기억하고 싶은 이야기를 남겨보세요."
-            rows={2}
-            value={draft}
-          />
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground text-xs">{[...draft.trim()].length}/1,000</span>
-            <Button disabled={!normalizedDraft || isPending} type="submit">
-              댓글 남기기
-            </Button>
-          </div>
-        </form>
+  useEffect(() => {
+    if (!floating) return;
 
-        {commentsQuery.isPending ? (
-          <p className="py-4 text-center text-muted-foreground text-sm">댓글을 불러오는 중이에요.</p>
-        ) : commentsQuery.isError && !commentsQuery.data ? (
-          <div className="flex items-center justify-between gap-3 rounded-lg bg-muted p-3 text-sm">
+    const viewport = window.visualViewport;
+    const syncViewportBottom = () => setViewportBottom(getVisibleViewportBottom());
+    syncViewportBottom();
+    viewport?.addEventListener("resize", syncViewportBottom);
+    viewport?.addEventListener("scroll", syncViewportBottom);
+
+    return () => {
+      viewport?.removeEventListener("resize", syncViewportBottom);
+      viewport?.removeEventListener("scroll", syncViewportBottom);
+    };
+  }, [floating]);
+
+  useLayoutEffect(() => {
+    if (!floating) return;
+    const composer = composerRef.current;
+    if (!composer?.matches(":popover-open")) composer?.showPopover();
+
+    return () => {
+      if (composer?.matches(":popover-open")) composer.hidePopover();
+    };
+  }, [floating]);
+
+  return (
+    <section aria-labelledby="record-comments-title" className="-mx-5 border-t px-5 pt-5">
+      <header className="px-1.5">
+        <h3 className="flex items-center gap-1.5 font-semibold text-base" id="record-comments-title">
+          댓글 <span className="font-normal text-muted-foreground text-sm">{optimisticComments.length}</span>
+        </h3>
+      </header>
+      <div className="flex flex-col">
+        {commentsQuery.isPending && optimisticComments.length === 0 ? (
+          <p className="py-5 text-center text-muted-foreground text-sm">댓글을 불러오는 중이에요.</p>
+        ) : commentsQuery.isError && !commentsQuery.data && optimisticComments.length === 0 ? (
+          <div className="flex items-center justify-between gap-3 px-1.5 py-4 text-sm">
             <span className="flex items-center gap-2 text-muted-foreground">
               <WarningCircleIcon aria-hidden="true" /> 댓글을 불러오지 못했어요.
             </span>
@@ -268,10 +271,8 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
               다시 시도
             </Button>
           </div>
-        ) : optimisticComments.length === 0 ? (
-          <p className="py-4 text-center text-muted-foreground text-sm">이 기록에 첫 댓글을 남겨보세요.</p>
-        ) : (
-          <ol aria-label={`댓글 ${optimisticComments.length}개`} className="flex flex-col gap-4">
+        ) : optimisticComments.length > 0 ? (
+          <ol aria-label={`댓글 ${optimisticComments.length}개`} className="-mx-5">
             {optimisticComments.map((comment) => (
               <CommentRow
                 comment={comment}
@@ -282,7 +283,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
               />
             ))}
           </ol>
-        )}
+        ) : null}
 
         {commentsQuery.hasNextPage ? (
           <LoadMoreButton
@@ -291,8 +292,74 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
             onClick={() => commentsQuery.fetchNextPage()}
           />
         ) : null}
-      </CardContent>
-    </Card>
+
+        <form
+          className={cn(
+            "mt-3 [&:not(:popover-open)]:block",
+            floating &&
+              "fixed inset-x-0 z-50 m-0 mx-auto w-full max-w-(--app-width) border-0 border-t bg-background px-5 pt-3 pb-3 shadow-[0_-8px_24px_rgb(0_0_0/0.08)]",
+          )}
+          onSubmit={(event) => {
+            event.preventDefault();
+            submitComment();
+          }}
+          popover={floating ? "manual" : undefined}
+          ref={composerRef}
+          style={floating ? { top: viewportBottom, transform: "translateY(-100%)" } : undefined}
+        >
+          {composing ? (
+            <div className="mb-3 px-1.5" key="context">
+              <p className="truncate text-muted-foreground text-sm">
+                <strong className="font-semibold text-foreground">{activity}</strong>에 댓글 남기는 중
+              </p>
+            </div>
+          ) : null}
+          <div className="flex min-h-14 items-center gap-3 rounded-3xl bg-muted p-1.5" key="composer">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <img
+                alt=""
+                className={cn("size-9 shrink-0 rounded-full bg-background object-cover", composing && "hidden")}
+                src="/member-avatar.svg"
+              />
+              <label className="sr-only" htmlFor="record-comment-body">
+                {member.name}으로 댓글 남기기
+              </label>
+              <Textarea
+                className={cn(
+                  "min-h-9 resize-none border-0 bg-transparent py-2 shadow-none focus-visible:ring-0",
+                  composing ? "px-2" : "px-0",
+                )}
+                id="record-comment-body"
+                onBlur={() => {
+                  setFloating(false);
+                  setFocused(false);
+                }}
+                onChange={(event) => setDraft(event.target.value)}
+                onFocus={() => {
+                  setFocused(true);
+                  if (window.matchMedia("(max-width: 1024px) and (any-pointer: coarse)").matches) {
+                    setViewportBottom(getVisibleViewportBottom());
+                    setFloating(true);
+                  }
+                }}
+                placeholder="댓글 남기기..."
+                rows={1}
+                value={draft}
+              />
+            </div>
+            <Button
+              aria-label="댓글 게시"
+              className="size-11 min-w-0 self-end rounded-full p-0"
+              disabled={!normalizedDraft || isPending}
+              onPointerDown={(event) => event.preventDefault()}
+              type="submit"
+            >
+              <ArrowUpIcon aria-hidden="true" />
+            </Button>
+          </div>
+        </form>
+      </div>
+    </section>
   );
 }
 
@@ -312,81 +379,85 @@ function CommentRow({ comment, currentMemberId, onDelete, onEdit }: CommentRowPr
   const normalizedDraft = normalizeCommentBody(draft);
 
   return (
-    <li className="scroll-mt-24" id={`comment-${comment.id}`}>
-      <article aria-busy={comment.pending || undefined} className={comment.pending ? "opacity-60" : undefined}>
-        <header className="flex min-w-0 items-start justify-between gap-3">
-          <div className="min-w-0">
+    <li className="scroll-mt-24 border-b px-[1.625rem] py-4" id={`comment-${comment.id}`}>
+      <article
+        aria-busy={comment.pending || undefined}
+        className={cn("grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3", comment.pending && "opacity-60")}
+      >
+        <img alt="" className="size-9 rounded-full bg-muted object-cover" src="/member-avatar.svg" />
+        <div className="min-w-0">
+          <header>
             <p className="truncate font-semibold text-sm">
               {comment.author.name}
               {mine ? <span className="ml-1 font-medium text-primary text-xs">나</span> : null}
+              <span className="ml-2 font-normal text-muted-foreground text-xs">
+                <time dateTime={comment.created_at}>{formatCommentTime(comment.created_at)}</time>
+                {changed ? " · 수정됨" : null}
+                {comment.pending ? " · 저장 중" : null}
+              </span>
             </p>
-            <p className="text-muted-foreground text-xs">
-              <time dateTime={comment.created_at}>{COMMENT_TIME.format(new Date(comment.created_at))}</time>
-              {changed ? " · 수정됨" : null}
-              {comment.pending ? " · 저장 중" : null}
-            </p>
-          </div>
-          {mine && !editing ? (
-            <div className="flex shrink-0 gap-1">
-              <IconButton
-                aria-label={`${comment.author.name} 댓글 수정`}
-                disabled={comment.pending}
-                icon={PencilSimpleIcon}
-                onClick={() => {
-                  setDraft(comment.body);
-                  setEditing(true);
-                }}
-                size="sm"
-              />
-              <IconButton
-                aria-label={`${comment.author.name} 댓글 삭제`}
-                disabled={comment.pending}
-                icon={TrashIcon}
-                onClick={() => setDeleteOpen(true)}
-                size="sm"
-              />
-            </div>
-          ) : null}
-        </header>
+          </header>
 
-        {editing ? (
-          <form
-            className="mt-2 flex flex-col gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!normalizedDraft || normalizedDraft === comment.body) return;
-              setEditing(false);
-              onEdit(comment, normalizedDraft, () => setEditing(true));
-            }}
-          >
-            <label className="sr-only" htmlFor={`comment-edit-${comment.id}`}>
-              댓글 수정
-            </label>
-            <Textarea
-              id={`comment-edit-${comment.id}`}
-              onChange={(event) => setDraft(event.target.value)}
-              value={draft}
-            />
-            <div className="flex justify-end gap-2">
-              <Button
-                color="dark"
-                onClick={() => {
-                  setDraft(comment.body);
-                  setEditing(false);
-                }}
-                type="button"
-                variant="weak"
-              >
-                취소
-              </Button>
-              <Button disabled={!normalizedDraft || normalizedDraft === comment.body} type="submit">
-                저장
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">{comment.body}</p>
-        )}
+          {editing ? (
+            <form
+              className="mt-2 flex flex-col gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!normalizedDraft || normalizedDraft === comment.body) return;
+                setEditing(false);
+                onEdit(comment, normalizedDraft, () => setEditing(true));
+              }}
+            >
+              <label className="sr-only" htmlFor={`comment-edit-${comment.id}`}>
+                댓글 수정
+              </label>
+              <Textarea
+                id={`comment-edit-${comment.id}`}
+                onChange={(event) => setDraft(event.target.value)}
+                value={draft}
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  color="dark"
+                  onClick={() => {
+                    setDraft(comment.body);
+                    setEditing(false);
+                  }}
+                  type="button"
+                  variant="weak"
+                >
+                  취소
+                </Button>
+                <Button disabled={!normalizedDraft || normalizedDraft === comment.body} type="submit">
+                  저장
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed">{comment.body}</p>
+              {mine ? (
+                <footer className="mt-1 -ml-3 flex items-center gap-1">
+                  <IconButton
+                    aria-label={`${comment.author.name} 댓글 수정`}
+                    disabled={comment.pending}
+                    icon={PencilSimpleIcon}
+                    onClick={() => {
+                      setDraft(comment.body);
+                      setEditing(true);
+                    }}
+                  />
+                  <IconButton
+                    aria-label={`${comment.author.name} 댓글 삭제`}
+                    disabled={comment.pending}
+                    icon={TrashIcon}
+                    onClick={() => setDeleteOpen(true)}
+                  />
+                </footer>
+              ) : null}
+            </>
+          )}
+        </div>
       </article>
 
       <ConfirmDialog
