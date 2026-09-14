@@ -10,7 +10,7 @@ import {
 
 export const NOTIFICATIONS_QUERY_KEY = ["notifications"] as const;
 
-const NOTIFICATION_COLUMNS = "id, sender_name, record_id, record_title, read_at, created_at";
+const NOTIFICATION_COLUMNS = "id, event_type, comment_id, sender_name, record_id, record_title, read_at, created_at";
 
 const fetchNotificationPage = async (memberId: string, cursor: NotificationCursor | null) => {
   let query = createClient()
@@ -36,6 +36,13 @@ const fetchNotificationPage = async (memberId: string, cursor: NotificationCurso
 };
 
 export type NotificationItem = Awaited<ReturnType<typeof fetchNotificationPage>>["notifications"][number];
+
+export const getNotificationHref = (notification: NotificationItem) => {
+  if (!notification.record_id) return null;
+  return notification.comment_id
+    ? `/records/${notification.record_id}#comment-${notification.comment_id}`
+    : `/records/${notification.record_id}`;
+};
 
 export const notificationListQueryOptions = (memberId: string) => {
   return infiniteQueryOptions({

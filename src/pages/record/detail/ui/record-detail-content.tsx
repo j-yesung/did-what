@@ -13,6 +13,7 @@ import {
 } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { DeleteRecordButton } from "@/features/record/delete-record";
+import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
@@ -22,10 +23,12 @@ import { OverscrollBack } from "@/shared/ui/overscroll-back";
 import { PressLink } from "@/shared/ui/press-link";
 
 type RecordDetailContentProps = {
+  member: { id: string; name: string };
+  ownerId: string;
   recordId: string;
 };
 
-export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
+export function RecordDetailContent({ member, ownerId, recordId }: RecordDetailContentProps) {
   const queryClient = useQueryClient();
   const summaryQueryKey = recordSummaryQueryKey(recordId);
   const cachedSummary = queryClient.getQueryState(summaryQueryKey)?.isInvalidated
@@ -129,6 +132,8 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
                 </CardContent>
               </Card>
             ) : null}
+
+            <RecordComments member={member} ownerId={ownerId} recordId={record.id} />
 
             <footer className="mt-auto flex justify-center py-2">
               <DeleteRecordButton activity={record.activity} recordId={record.id} />

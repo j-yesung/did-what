@@ -7,6 +7,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { useRouter } from "next/navigation";
 
 import {
+  getNotificationHref,
   NOTIFICATIONS_QUERY_KEY,
   type NotificationItem,
   notificationListQueryOptions,
@@ -44,7 +45,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
         return;
       }
       await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
-      const href = notification.record_id ? `/records/${notification.record_id}` : null;
+      const href = getNotificationHref(notification);
       if (href) router.push(href);
     },
     onError: () => showNotice({ title: "알림을 열지 못했어요", variant: "error" }),
@@ -62,7 +63,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
   });
 
   const openNotification = (notification: NotificationItem) => {
-    const href = notification.record_id ? `/records/${notification.record_id}` : null;
+    const href = getNotificationHref(notification);
     if (!href || readOne.isPending || notification.read_at) return;
 
     readOne.mutate(notification);
@@ -101,7 +102,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
               <BellSimpleIcon aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>아직 새로운 알림이 없어요</EmptyTitle>
-            <EmptyDescription>함께한 사람이 기록을 남기면 여기에 차곡차곡 쌓여요.</EmptyDescription>
+            <EmptyDescription>함께한 사람이 기록이나 댓글을 남기면 여기에 차곡차곡 쌓여요.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (

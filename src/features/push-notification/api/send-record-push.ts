@@ -38,26 +38,21 @@ const configured = (() => {
 /** 구독이 만료되거나 기기에서 앱이 지워졌을 때 푸시 서비스가 돌려주는 상태 코드. */
 const GONE_STATUS_CODES = new Set([404, 410]);
 
-type SendRecordPushInput = {
+type SendMemberPushInput = {
   ownerId: string;
-  recordId: string;
   senderMemberId: string;
-  senderName: string;
   supabase: SupabaseClient;
+  tag: string;
+  title: string;
+  url: string;
 };
 
 /**
- * 같은 계정에 묶인 다른 기기로 새 기록 알림을 보낸다.
+ * 같은 계정에 묶인 다른 구성원의 기기로 알림을 보낸다.
  *
  * 작성 구성원의 모든 기기와 비활성 구성원의 기기는 발송 대상에서 제외한다.
  */
-export const sendRecordPush = async ({
-  ownerId,
-  recordId,
-  senderMemberId,
-  senderName,
-  supabase,
-}: SendRecordPushInput) => {
+const sendMemberPush = async ({ ownerId, senderMemberId, supabase, tag, title, url }: SendMemberPushInput) => {
   if (!configured) return;
 
   const { data: subscriptions } = await supabase
@@ -69,14 +64,10 @@ export const sendRecordPush = async ({
 
   if (!subscriptions?.length) return;
 
-  /**
-   * 활동 내용은 담지 않는다. iOS가 앱 이름을 따로 붙이므로 제목 한 줄이면 알림으로 충분하고,
-   * 잠금 화면에 기록 내용이 그대로 뜨는 것도 피한다.
-   */
   const payload = JSON.stringify({
-    tag: `record-${recordId}`,
-    title: `${senderName}이가 기록을 추가했어요`,
-    url: `/records/${recordId}`,
+    tag,
+    title,
+    url,
   });
 
   const results = await Promise.all(
@@ -103,4 +94,35 @@ export const sendRecordPush = async ({
   if (goneEndpoints.length) {
     await supabase.from("push_subscriptions").delete().in("endpoint", goneEndpoints);
   }
+};
+
+type SendRecordPushInput = Omit<SendMemberPushInput, "tag" | "title" | "url"> & {
+  recordId: string;
+  senderName: string;
+};
+
+/** 기록 내용은 잠금 화면에 노출하지 않는다. */
+export const sendRecordPush = async ({ recordId, senderName, ...input }: SendRecordPushInput) => {
+  return sendMemberPush({
+    ...input,
+    tag: `record-${recordId}`,
+    title: `${senderName}이가 기록을 추가했어요`,
+    url: `/records/${recordId}`,
+  });
+};
+
+type SendCommentPushInput = Omit<SendMemberPushInput, "tag" | "title" | "url"> & {
+  commentId: string;
+  recordId: string;
+  senderName: string;
+};
+
+/** 댓글 내용은 잠금 화면에 노출하지 않는다. */
+export const sendCommentPush = async ({ commentId, recordId, senderName, ...input }: SendCommentPushInput) => {
+  return sendMemberPush({
+    ...input,
+    tag: `comment-${commentId}`,
+    title: `${senderName}님이 댓글을 남겼어요`,
+    url: `/records/${recordId}#comment-${commentId}`,
+  });
 };

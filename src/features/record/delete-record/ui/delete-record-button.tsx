@@ -6,6 +6,7 @@ import { Trash2Icon } from "@animateicons/react/lucide";
 
 import { placesQueryOptions } from "@/entities/place";
 import { RECORDS_QUERY_KEY } from "@/entities/record";
+import { RECORD_COMMENTS_QUERY_KEY } from "@/entities/record-comment";
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
@@ -25,7 +26,7 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
   const remove = useActionMutation(() => deleteRecord(recordId), {
     error: "기록을 삭제하지 못했어요",
     icon: Trash2Icon,
-    invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
+    invalidate: [RECORDS_QUERY_KEY, RECORD_COMMENTS_QUERY_KEY, placesQueryOptions.queryKey],
     success: "기록을 삭제했어요",
     onSuccess: () => goBackTo("/records"),
   });
@@ -46,7 +47,7 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
             기록 삭제
           </Button>
         }
-        description="이 기록은 삭제한 뒤 되돌릴 수 없어요."
+        description={"이 기록과 댓글은 삭제한 뒤\n되돌릴 수 없어요."}
         onClose={() => setOpen(false)}
         open={open}
         title={`“${activity}” 기록을 삭제할까요?`}
