@@ -4,8 +4,6 @@
 
 apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기록·장소·알림·설정과 공통 컴포넌트를 정적으로 검토했다. 실제 브라우저와 iPhone에서 재현한 결과는 아니므로, 키보드·스크롤·시각적 밀도에 관한 판단은 별도로 표시했다.
 
-제목 앞의 ✅는 반영이 끝난 항목이다.
-
 ## 변경이 꼭 필요한 것 — 영향도순
 
 ### 1. 화면 끝 스크롤이 뒤로가기로 이어지는 동작
@@ -48,17 +46,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **관련 파일:** `src/features/push-notification/model/use-push-toggle.ts`, `src/shared/lib/server-action/use-action-mutation.ts`, `src/pages/notification/ui/notification-list.tsx`
 
-### ✅ 5. 화면 이동 전 180ms 강제 대기 제거
-
-**현재 문제:** 기록·지역·장소·알림 진입에 `useDelayedNavigate`가 사용된다. 눌림 복귀를 보여주기 위해 클릭 이후 항상 180ms 기다린다. 연속 클릭으로 만들어진 타이머를 취소하는 처리도 없다.
-
-**개선 이유:** 사전 로딩으로 빠르게 준비된 화면에도 고정 지연이 붙는다. 사용자의 다음 행동보다 효과 재생을 우선하는 구조다.
-
-**권장 방법:** 눌림은 pointer-down부터 보여주고, 정상적인 클릭이 확정되면 바로 이동한다. 이동 직전에 눌림 복귀 애니메이션이 끝날 필요는 없다.
-
-**관련 파일:** `src/shared/lib/navigation/use-delayed-navigate.ts`, `src/entities/record/ui/record-card.tsx`, `src/pages/place/list/ui/saved-place-list.tsx`
-
-### 6. reduced-motion의 남은 누락 보완
+### 5. reduced-motion의 남은 누락 보완
 
 **현재 문제:** 화면 전환·Spinner·일반 버튼에는 대응이 있지만 다음에는 이동이 남는다.
 
@@ -73,7 +61,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **관련 파일:** `src/shared/ui/notice-provider.tsx`, `src/shared/ui/segmented-control.tsx`, `src/shared/ui/switch.tsx`, `src/pages/place/list/ui/place-search-results.tsx`, `src/shared/ui/dialog.tsx`
 
-### 7. 작은 터치 대상과 시트의 명시적 닫기
+### 6. 작은 터치 대상과 시트의 명시적 닫기
 
 **현재 문제:** `IconButton sm`은 28px이고 방문 장소 제거와 Notice 닫기에 사용된다. 공통 작은 버튼도 높이가 32px이다. 지역·장소 검색 시트에는 화면 안의 명시적인 닫기 버튼이 없다.
 
@@ -83,7 +71,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **관련 파일:** `src/shared/ui/icon-button.tsx`, `src/shared/ui/button.tsx`, `src/features/record/select-record-location/ui/record-location-fields.tsx`, `src/features/record/select-record-location/ui/region-search-content.tsx`, `src/features/record/select-record-location/ui/place-picker-panel.tsx`
 
-### 8. 목록 추가·삭제 후 포커스와 결과 안내
+### 7. 목록 추가·삭제 후 포커스와 결과 안내
 
 **현재 문제:** 방문 장소 제거와 구성원 삭제는 누른 버튼을 DOM에서 바로 없애지만 다음 포커스를 지정하지 않는다. 구성원 추가도 새 입력으로 이동하지 않는다.
 
@@ -95,7 +83,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 ## 있으면 좋은 것 — 영향도순
 
-### 9. iOS 키보드와 복귀 스크롤 검증
+### 8. iOS 키보드와 복귀 스크롤 검증
 
 **현재 우려:** 작성 화면은 `h-dvh` 안에 본문 스크롤과 하단 버튼을 배치한다. 검색 시트에는 VirtualKeyboardProvider가 있지만 검색란과 결과 목록의 스크롤 구조가 나뉘어 있다. 상세 스크롤 복원은 최초 layout 시점 한 번뿐이라 비동기 콘텐츠가 나중에 늘어나면 저장 위치에 도달하지 못할 수 있다.
 
@@ -107,7 +95,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **참고:** [Base UI Drawer — Virtual keyboard aware](https://base-ui.com/react/components/drawer#virtual-keyboard-aware)
 
-### 10. 일상적인 성공 Notice의 시각적 비중 낮추기
+### 9. 일상적인 성공 Notice의 시각적 비중 낮추기
 
 **현재 문제:** 성공·경고·오류가 모두 화면 중앙의 큰 표면과 애니메이션 아이콘을 사용한다. 모달처럼 보이지만 배경 조작은 가능하고, 바깥을 누르면 사라진다. 포커스·읽기 중 자동 닫힘을 멈추는 처리도 없다.
 
@@ -117,7 +105,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **관련 파일:** `src/shared/ui/notice-provider.tsx`
 
-### 11. press feedback을 면적과 역할에 맞게 정리
+### 10. press feedback을 면적과 역할에 맞게 정리
 
 **현재 문제:** 일반 Button과 ListRow는 누를 때 200ms·0.96배, TextButton 계열은 80ms·0.97배다. 하단 탭은 축소와 표면 효과를 모두 꺼서 경로가 바뀌기 전 반응이 약하다. 큰 기록 항목도 일반 버튼처럼 4% 줄어든다.
 
@@ -127,7 +115,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **관련 파일:** `src/shared/ui/button.tsx`, `src/shared/ui/list-row.tsx`, `src/shared/lib/interaction.ts`, `src/widgets/bottom-navigation.tsx`, `src/pages/record/list/ui/record-filter-form.tsx`
 
-### 12. 확인창 이동량을 줄이고 시트 속도는 실측 후 조정
+### 11. 확인창 이동량을 줄이고 시트 속도는 실측 후 조정
 
 **현재 문제:** ConfirmDialog는 100px 아래에서 300ms 동안 나타나고, 닫힐 때는 100ms fade만 사용한다. 작은 확인 작업치고 이동량이 크다. Drawer는 450ms 전환을 사용하지만 드래그 중에는 시간을 0으로 만들고 해제 강도도 반영하고 있다.
 
@@ -136,26 +124,6 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 **권장 방법:** 확인창은 짧은 fade 또는 작은 이동으로 줄이고 등장·퇴장의 표현을 맞춘다. Drawer는 빠른 열기→닫기→재잡기를 실제로 시험한 뒤, 느리게 느껴지면 300–350ms부터 비교한다. spring 도입은 중단·반전의 불연속이 확인될 때만 고려한다.
 
 **관련 파일:** `src/shared/ui/confirm-dialog.tsx`, `src/shared/ui/drawer.tsx`
-
-### ✅ 13. 기록 목록에서 필터보다 추억이 먼저 보이게 조정
-
-**현재 문제:** 기록 목록 상단에 검색란, 별도 기간 카드, 카드 안의 기간 버튼, 정렬 버튼이 연속된다. 지역 목록은 2열에서 이름 13px·설명 11px를 사용하고, 장소 행은 이름과 설명 모두 한 줄로 자른다.
-
-**개선 이유:** 기록을 돌아보는 화면에서 탐색 도구가 차지하는 비중이 크고, 긴 이름이나 큰 글씨에서는 정보 구분이 어려울 수 있다.
-
-**권장 방법:** 기간 선택을 한 줄 컨트롤로 줄이는 안을 먼저 비교한다. 지역·장소 이름은 필요할 때 두 줄을 허용하고, 작은 보조 정보는 12–13px와 충분한 행간을 검토하면 좋다. 전체 spacing 체계를 바꾸기보다 좁은 화면·글자 확대에서 깨지는 부분을 조정한다. **시각적 우열은 렌더링 비교가 필요하다.**
-
-**관련 파일:** `src/pages/record/list/ui/record-period-filter.tsx`, `src/pages/region/list/ui/regions-content.tsx`, `src/shared/ui/list-row.tsx`, `src/shared/ui/layouts/page-header.tsx`
-
-### ✅ 14. 메모 복사 기능 제공
-
-**현재 문제:** 전역 `user-select: none`으로 메모를 길게 눌러 복사할 수 없다.
-
-**개선 이유:** 기억을 다른 곳에 옮기거나 공유할 때 메모 복사는 자연스러운 사용 행동이다.
-
-**권장 방법:** 메모 카드 우측 상단에 복사 아이콘을 두고, 누르면 메모 전체를 클립보드에 복사한 뒤 짧은 완료 피드백을 보여준다.
-
-**관련 파일:** `src/pages/record/detail/ui/record-detail-content.tsx`
 
 ## 변경하지 않는 것이 좋은 것
 
@@ -166,4 +134,4 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 | 날짜 선택의 초안→적용, 삭제·이탈 확인 | 날짜를 고르다 취소해도 확정 값이 유지되고, 기록 삭제는 되돌릴 수 없음을 설명한다. 사용자 통제권에 도움이 된다. | 동작은 유지하고 닫기·오류·포커스만 보완 | `src/widgets/record-form/field/date-field.tsx`, `src/features/record/delete-record/ui/delete-record-button.tsx` |
 | 정적인 지도와 목록, 단순한 표면 | 읽고 회상하는 콘텐츠에 불필요한 움직임이 없다. 현재 불투명 표면도 충분한 구분을 제공한다. | 셀 순차 등장, 목록 stagger, 반복 bounce, 전면 blur, 상시 햅틱·소리 추가하지 않기 | `src/widgets/region-activity-map.tsx`, `src/entities/record/ui/record-timeline.tsx`, `src/shared/ui/card.tsx` |
 
-첫 개선 범위로는 **1–6번**을 권한다. 새로운 시각 효과 없이도 잘못된 이탈, 기다림, 상태 혼동을 줄여 iOS/PWA의 체감 완성도를 높일 수 있다.
+첫 개선 범위로는 **1–5번**을 권한다. 새로운 시각 효과 없이도 잘못된 이탈, 기다림, 상태 혼동을 줄여 iOS/PWA의 체감 완성도를 높일 수 있다.
