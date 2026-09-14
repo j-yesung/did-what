@@ -1,16 +1,11 @@
 "use client";
 
-import { type KeyboardEvent, useState } from "react";
+import { useState } from "react";
 
 import { BookmarkIcon } from "@phosphor-icons/react";
 
 import type { PlaceOption } from "@/entities/place";
-import { FOCUS_RING } from "@/shared/lib/interaction";
-import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Checkbox } from "@/shared/ui/checkbox";
 import {
   Drawer,
   DrawerContent,
@@ -24,6 +19,7 @@ import {
 import { SearchField } from "@/shared/ui/search-field";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
+import { SelectablePlaceCard } from "./selectable-place-card";
 
 type SavedPlacePickerDrawerProps = {
   disabled?: boolean;
@@ -72,12 +68,6 @@ export function SavedPlacePickerDrawer({
       else next.delete(placeId);
       return next;
     });
-  };
-
-  const handlePlaceKeyDown = (event: KeyboardEvent<HTMLLIElement>, placeId: string, selected: boolean) => {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    togglePlace(placeId, !selected);
   };
 
   const addSelectedPlaces = () => {
@@ -133,57 +123,17 @@ export function SavedPlacePickerDrawer({
                   const disabled = added || selectionLimitReached;
 
                   return (
-                    <li
-                      aria-checked={added || selected}
-                      aria-disabled={disabled}
-                      className={cn(
-                        "w-full min-w-0 rounded-xl transition-transform duration-200 active:scale-[0.99]",
-                        FOCUS_RING,
-                        disabled ? "cursor-default" : "cursor-pointer",
-                      )}
+                    <SelectablePlaceCard
+                      added={added}
+                      address={place.address ?? place.region_name ?? "주소 정보 없음"}
+                      checkboxDisabled={selectionLimitReached}
+                      disabled={disabled}
                       key={place.id}
-                      onClick={() => {
-                        if (!disabled) togglePlace(place.id, !selected);
-                      }}
-                      onKeyDown={(event) => {
-                        if (!disabled) handlePlaceKeyDown(event, place.id, selected);
-                      }}
-                      role="checkbox"
-                      tabIndex={disabled ? -1 : 0}
-                    >
-                      <Card
-                        className={cn(
-                          "w-full min-w-0 transition-[background-color,box-shadow] duration-200",
-                          selected && "bg-secondary ring-2 ring-primary/40 dark:bg-pressed dark:ring-foreground/15",
-                        )}
-                        data-selected={selected}
-                        size="sm"
-                      >
-                        <CardHeader className="min-w-0 grid-cols-[minmax(0,1fr)_auto]">
-                          <CardTitle className="min-w-0 truncate">{place.name}</CardTitle>
-                          <CardDescription>내 장소</CardDescription>
-                          <CardAction>
-                            {added ? (
-                              <Badge>추가됨</Badge>
-                            ) : (
-                              <Checkbox
-                                aria-hidden="true"
-                                checked={selected}
-                                className="pointer-events-none size-6"
-                                disabled={selectionLimitReached}
-                                tabIndex={-1}
-                                variant="circle"
-                              />
-                            )}
-                          </CardAction>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="wrap-break-word text-muted-foreground text-sm">
-                            {place.address ?? place.region_name ?? "주소 정보 없음"}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </li>
+                      label="내 장소"
+                      name={place.name}
+                      onSelect={() => togglePlace(place.id, !selected)}
+                      selected={selected}
+                    />
                   );
                 })}
               </ul>

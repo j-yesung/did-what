@@ -37,7 +37,9 @@ export type Database = {
       };
       notifications: {
         Row: {
+          comment_id: string | null;
           created_at: string;
+          event_type: string;
           id: number;
           owner_id: string;
           read_at: string | null;
@@ -48,7 +50,9 @@ export type Database = {
           sender_name: string;
         };
         Insert: {
+          comment_id?: string | null;
           created_at?: string;
+          event_type?: string;
           id?: never;
           owner_id: string;
           read_at?: string | null;
@@ -59,7 +63,9 @@ export type Database = {
           sender_name: string;
         };
         Update: {
+          comment_id?: string | null;
           created_at?: string;
+          event_type?: string;
           id?: never;
           owner_id?: string;
           read_at?: string | null;
@@ -70,6 +76,13 @@ export type Database = {
           sender_name?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "notifications_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "record_comments";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "notifications_owner_recipient_member_fkey";
             columns: ["owner_id", "recipient_member_id"];
@@ -203,6 +216,51 @@ export type Database = {
           },
         ];
       };
+      record_comments: {
+        Row: {
+          author_member_id: string;
+          body: string;
+          created_at: string;
+          id: string;
+          owner_id: string;
+          record_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          author_member_id: string;
+          body: string;
+          created_at?: string;
+          id: string;
+          owner_id: string;
+          record_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          author_member_id?: string;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          owner_id?: string;
+          record_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "record_comments_owner_author_member_fkey";
+            columns: ["owner_id", "author_member_id"];
+            isOneToOne: false;
+            referencedRelation: "account_members";
+            referencedColumns: ["owner_id", "id"];
+          },
+          {
+            foreignKeyName: "record_comments_owner_record_fkey";
+            columns: ["owner_id", "record_id"];
+            isOneToOne: false;
+            referencedRelation: "records";
+            referencedColumns: ["owner_id", "id"];
+          },
+        ];
+      };
       record_places: {
         Row: {
           created_at: string;
@@ -303,6 +361,24 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_record_comment: {
+        Args: {
+          p_author_member_id: string;
+          p_body: string;
+          p_comment_id: string;
+          p_record_id: string;
+        };
+        Returns: {
+          author_member_id: string;
+          author_name: string;
+          body: string;
+          created: boolean;
+          created_at: string;
+          id: string;
+          record_id: string;
+          updated_at: string;
+        }[];
+      };
       create_owned_record_with_places: {
         Args: {
           p_activity: string;

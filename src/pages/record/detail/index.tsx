@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { requireMember } from "@/entities/member/server";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 import { RecordDetailContent } from "./ui/record-detail-content";
@@ -9,11 +10,11 @@ type RecordDetailPageProps = {
 };
 
 export async function RecordDetailPage({ params }: RecordDetailPageProps) {
-  const { recordId } = await params;
+  const [{ recordId }, { member }] = await Promise.all([params, requireMember()]);
 
   if (!isUuid(recordId)) {
     notFound();
   }
 
-  return <RecordDetailContent recordId={recordId} />;
+  return <RecordDetailContent member={{ id: member.id, name: member.name }} recordId={recordId} />;
 }

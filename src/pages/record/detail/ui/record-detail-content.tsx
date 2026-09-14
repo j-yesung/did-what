@@ -13,8 +13,8 @@ import {
 } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { DeleteRecordButton } from "@/features/record/delete-record";
+import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -22,10 +22,11 @@ import { OverscrollBack } from "@/shared/ui/overscroll-back";
 import { PressLink } from "@/shared/ui/press-link";
 
 type RecordDetailContentProps = {
+  member: { id: string; name: string };
   recordId: string;
 };
 
-export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
+export function RecordDetailContent({ member, recordId }: RecordDetailContentProps) {
   const queryClient = useQueryClient();
   const summaryQueryKey = recordSummaryQueryKey(recordId);
   const cachedSummary = queryClient.getQueryState(summaryQueryKey)?.isInvalidated
@@ -91,44 +92,42 @@ export function RecordDetailContent({ recordId }: RecordDetailContentProps) {
             </section>
 
             {recordPlaces && recordPlaces.length > 0 ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-muted-foreground">방문 장소</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="flex flex-col gap-2">
-                    {recordPlaces.map(({ place }) => (
-                      <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
-                        <div className="min-w-0">
-                          <p className="font-medium">{place.name}</p>
-                          {place.address ? (
-                            <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address}</p>
-                          ) : null}
-                        </div>
-                        <PlaceSaveButton placeId={place.id} placeName={place.name} saved={Boolean(place.saved_at)} />
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+              <section aria-labelledby="record-places-title" className="-mx-5 border-t px-6 pt-5">
+                <h3 className="mb-3 font-semibold text-base" id="record-places-title">
+                  우리 어디 갔지?
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {recordPlaces.map(({ place }) => (
+                    <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
+                      <div className="min-w-0">
+                        <p className="font-medium">{place.name}</p>
+                        {place.address ? (
+                          <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address}</p>
+                        ) : null}
+                      </div>
+                      <PlaceSaveButton placeId={place.id} placeName={place.name} saved={Boolean(place.saved_at)} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ) : null}
 
             {record.memo ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-muted-foreground">우리 뭐했지?</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm leading-relaxed">
-                    {record.memo.split("\n").map((line, index) => (
-                      <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <section aria-labelledby="record-memo-title" className="-mx-5 border-t px-6 pt-5">
+                <h3 className="mb-3 font-semibold text-base" id="record-memo-title">
+                  우리 뭐했지?
+                </h3>
+                <div className="flex flex-col gap-2 text-sm leading-relaxed">
+                  {record.memo.split("\n").map((line, index) => (
+                    <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </section>
             ) : null}
+
+            <RecordComments activity={record.activity} member={member} recordId={record.id} />
 
             <footer className="mt-auto flex justify-center py-2">
               <DeleteRecordButton activity={record.activity} recordId={record.id} />
