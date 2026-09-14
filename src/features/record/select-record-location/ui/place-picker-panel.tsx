@@ -1,78 +1,96 @@
 "use client";
 
-import { type SubmitEvent, useState } from "react";
+import { type KeyboardEvent, type SubmitEvent, startTransition, useMemo, useOptimistic, useState } from "react";
 
-import { BookmarkIcon, MapPinIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 
-import type { PlaceOption } from "@/entities/place";
 import { usePlaceSearch } from "@/entities/place";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
+import { FOCUS_RING } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { DrawerDescription, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { SearchField } from "@/shared/ui/search-field";
 
 import { resolveRecordPlace } from "../api/resolve-record-location";
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 
 type PlacePickerPanelProps = {
-  onAdd: (place: RecordLocationPlace, region: RecordLocationRegion) => void;
+  maxSelectionCount: number;
+  onAdd: (selections: Array<{ place: RecordLocationPlace; region: RecordLocationRegion }>) => void;
   region: RecordLocationRegion | null;
-  savedPlaces: PlaceOption[];
   selectedKeys: Set<string>;
 };
 
-export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: PlacePickerPanelProps) {
+export function PlacePickerPanel({ maxSelectionCount, onAdd, region, selectedKeys }: PlacePickerPanelProps) {
   const [selectionError, setSelectionError] = useState<string>();
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState("");
+  const [selectedPlaces, setSelectedPlaces] = useState<
+    Map<string, { place: RecordLocationPlace; region: RecordLocationRegion }>
+  >(() => new Map());
+  const selectedPlaceKeys = useMemo(() => new Set(selectedPlaces.keys()), [selectedPlaces]);
+  const [optimisticSelectedKeys, selectOptimistically] = useOptimistic(selectedPlaceKeys, (current, key: string) =>
+    new Set(current).add(key),
+  );
   const search = usePlaceSearch({ latitude: region?.latitude, longitude: region?.longitude, page: 1, query });
 
-  const inRegion = (place: PlaceOption) => region && place.region_code.slice(0, 5) === region.code.slice(0, 5);
-
-  const sortedSavedPlaces = region ? [...savedPlaces].sort((a, b) => Number(inRegion(b)) - Number(inRegion(a))) : [];
-
-  const addSavedPlace = (place: PlaceOption) => {
-    if (!region) return;
-
-    onAdd(
-      {
-        address: place.address,
-        key: `existing:${place.id}`,
-        name: place.name,
-        reference: { kind: "existing", placeId: place.id, save: false },
-        saved: true,
-      },
-      region,
-    );
-  };
-
-  const resolve = useMutation({
-    mutationFn: resolveRecordPlace,
-    onMutate: () => setSelectionError(undefined),
-    onSuccess: (result) => {
-      if ("error" in result) {
-        setSelectionError(result.error);
-        return;
-      }
-
-      onAdd(result.place, result.region);
-    },
-    onError: () => setSelectionError("장소를 확인하지 못했어요.\n잠시 후 다시 시도해 주세요."),
-  });
+  const resolve = useMutation({ mutationFn: resolveRecordPlace });
 
   const selectPlace = (place: KakaoPlace) => {
     const searched = search.data;
-    if (!searched) return;
+    const key = `kakao:${place.id}`;
+    if (!searched || selectedKeys.has(key) || resolve.isPending) return;
 
-    resolve.mutate({
-      page: searched.page,
-      providerPlaceId: place.id,
-      query: searched.query,
-      scope: searched.scope,
+    if (optimisticSelectedKeys.has(key)) {
+      setSelectedPlaces((current) => {
+        const next = new Map(current);
+        next.delete(key);
+        return next;
+      });
+      return;
+    }
+
+    if (optimisticSelectedKeys.size >= maxSelectionCount) return;
+
+    setSelectionError(undefined);
+    startTransition(async () => {
+      selectOptimistically(key);
+
+      try {
+        const result = await resolve.mutateAsync({
+          page: searched.page,
+          providerPlaceId: place.id,
+          query: searched.query,
+          scope: searched.scope,
+        });
+        if ("error" in result) {
+          setSelectionError(result.error);
+          return;
+        }
+
+        setSelectedPlaces((current) => {
+          if (current.size >= maxSelectionCount || selectedKeys.has(result.place.key)) return current;
+          const next = new Map(current);
+          next.set(result.place.key, result);
+          return next;
+        });
+      } catch {
+        setSelectionError("장소를 확인하지 못했어요.\n잠시 후 다시 시도해 주세요.");
+      }
     });
+  };
+
+  const handlePlaceKeyDown = (event: KeyboardEvent<HTMLLIElement>, place: KakaoPlace) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    selectPlace(place);
   };
 
   const handleSearch = (event: SubmitEvent<HTMLFormElement>) => {
@@ -99,39 +117,7 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
         </DrawerDescription>
       </DrawerHeader>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
-        {sortedSavedPlaces.length ? (
-          <section aria-labelledby="saved-place-quick-add" className="flex flex-col gap-2">
-            <h3
-              className="flex items-center gap-1.5 px-0.5 font-[650] text-muted-foreground text-xs"
-              id="saved-place-quick-add"
-            >
-              <BookmarkIcon strokeWidth={2} className="size-3.5 text-foreground" aria-hidden="true" />내 장소에서 바로
-              추가
-            </h3>
-            <ul className="flex max-h-23 flex-wrap gap-1.5 overflow-y-auto overscroll-contain">
-              {sortedSavedPlaces.map((place) => {
-                const added = selectedKeys.has(`existing:${place.id}`);
-
-                return (
-                  <li key={place.id}>
-                    <Button
-                      className="rounded-lg"
-                      disabled={added || resolve.isPending}
-                      onClick={() => addSavedPlace(place)}
-                      size="small"
-                      type="button"
-                      variant={added ? "weak" : "outline"}
-                    >
-                      {place.name}
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ) : null}
-
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 pb-0">
         <form aria-label="방문 장소 검색" onSubmit={handleSearch} role="search">
           <SearchField
             aria-label="방문 장소 이름"
@@ -159,42 +145,83 @@ export function PlacePickerPanel({ onAdd, region, savedPlaces, selectedKeys }: P
         ) : null}
 
         {search.data?.places.length ? (
-          <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pr-1">
+          <ul className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain p-1">
             {search.data.places.map((place) => {
-              const selected = selectedKeys.has(`kakao:${place.id}`);
+              const key = `kakao:${place.id}`;
+              const added = selectedKeys.has(key);
+              const selected = optimisticSelectedKeys.has(key);
+              const selectionLimitReached = optimisticSelectedKeys.size >= maxSelectionCount && !selected;
+              const disabled = added || resolve.isPending || selectionLimitReached;
+
               return (
-                <li className="rounded-xl border bg-card p-3" key={place.id}>
-                  <div className="flex items-start gap-3">
-                    <MapPinIcon
-                      strokeWidth={2}
-                      className="mt-0.5 size-4.5 shrink-0 stroke-2 text-foreground"
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm">{place.name}</p>
-                      <p className="mt-1 text-muted-foreground text-xs leading-relaxed">
+                <li
+                  aria-checked={added || selected}
+                  aria-disabled={disabled}
+                  className={cn(
+                    "w-full min-w-0 rounded-xl transition-transform duration-200 active:scale-[0.99]",
+                    FOCUS_RING,
+                    disabled ? "cursor-default" : "cursor-pointer",
+                  )}
+                  key={place.id}
+                  onClick={() => selectPlace(place)}
+                  onKeyDown={(event) => handlePlaceKeyDown(event, place)}
+                  role="checkbox"
+                  tabIndex={disabled ? -1 : 0}
+                >
+                  <Card
+                    className={cn(
+                      "w-full min-w-0 transition-[background-color,box-shadow] duration-200",
+                      selected && "bg-secondary ring-2 ring-primary/40 dark:bg-pressed dark:ring-foreground/15",
+                    )}
+                    data-selected={selected}
+                    size="sm"
+                  >
+                    <CardHeader className="min-w-0 grid-cols-[minmax(0,1fr)_auto]">
+                      <CardTitle className="min-w-0 truncate">{place.name}</CardTitle>
+                      <CardDescription>Kakao 장소 검색 결과</CardDescription>
+                      <CardAction>
+                        {added ? (
+                          <Badge>추가됨</Badge>
+                        ) : (
+                          <Checkbox
+                            aria-hidden="true"
+                            checked={selected}
+                            className="pointer-events-none size-6"
+                            disabled={selectionLimitReached}
+                            tabIndex={-1}
+                            variant="circle"
+                          />
+                        )}
+                      </CardAction>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="wrap-break-word text-muted-foreground text-sm">
                         {place.address ?? "주소 정보 없음"}
                       </p>
-                    </div>
-                  </div>
-                  <Button
-                    className="mt-3"
-                    disabled={selected || resolve.isPending}
-                    fullWidth
-                    loading={resolve.isPending && resolve.variables.providerPlaceId === place.id}
-                    onClick={() => selectPlace(place)}
-                    size="small"
-                    type="button"
-                    variant="outline"
-                  >
-                    {selected ? "추가됨" : "방문 장소에 추가"}
-                  </Button>
+                    </CardContent>
+                  </Card>
                 </li>
               );
             })}
           </ul>
         ) : null}
       </div>
+
+      <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+        <Button
+          aria-busy={resolve.isPending || undefined}
+          disabled={optimisticSelectedKeys.size === 0}
+          fullWidth
+          onClick={() => {
+            if (resolve.isPending) return;
+            onAdd([...selectedPlaces.values()]);
+          }}
+          size="large"
+          type="button"
+        >
+          {optimisticSelectedKeys.size > 0 ? `${optimisticSelectedKeys.size}곳 추가` : "장소 선택"}
+        </Button>
+      </DrawerFooter>
     </>
   );
 }

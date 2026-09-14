@@ -153,7 +153,6 @@ export const resolveRecordPlace = async (input: {
         save: false,
         scope,
       },
-      saved: false,
     },
     region: { ...region, label: region.name },
   };

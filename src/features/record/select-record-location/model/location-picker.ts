@@ -8,7 +8,6 @@ export type RecordLocationPlace = {
   key: string;
   name: string;
   reference: RecordPlaceReference;
-  saved: boolean;
 };
 
 /** 기록에서 지역만 뽑아 쓸 때의 최소 형태. records 쿼리가 돌려주는 행의 일부다. */

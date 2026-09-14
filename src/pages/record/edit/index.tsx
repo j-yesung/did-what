@@ -62,7 +62,6 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
                 key: `existing:${place.id}`,
                 name: place.name,
                 reference: { kind: "existing" as const, placeId: place.id, save: false },
-                saved: Boolean(place.saved_at),
               })),
               recordedAt: record.recorded_at,
               recordedUntil: record.recorded_until,

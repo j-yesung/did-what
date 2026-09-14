@@ -4,22 +4,32 @@ import { useState } from "react";
 
 import { PlusIcon } from "@phosphor-icons/react";
 
-import type { PlaceOption } from "@/entities/place";
 import { Button } from "@/shared/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger, DrawerVirtualKeyboardProvider } from "@/shared/ui/drawer";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import { PlacePickerPanel } from "./place-picker-panel";
 
-type PlacePickerDialogProps = {
+type PlacePickerSelection = {
+  place: RecordLocationPlace;
+  region: RecordLocationRegion;
+};
+
+type PlacePickerDrawerProps = {
   disabled?: boolean;
-  onAdd: (place: RecordLocationPlace, region: RecordLocationRegion) => void;
+  maxSelectionCount: number;
+  onAdd: (selections: PlacePickerSelection[]) => void;
   region: RecordLocationRegion | null;
-  savedPlaces: PlaceOption[];
   selectedKeys: Set<string>;
 };
 
-export function PlacePickerDialog({ disabled, onAdd, region, savedPlaces, selectedKeys }: PlacePickerDialogProps) {
+export function PlacePickerDrawer({
+  disabled,
+  maxSelectionCount,
+  onAdd,
+  region,
+  selectedKeys,
+}: PlacePickerDrawerProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -28,18 +38,18 @@ export function PlacePickerDialog({ disabled, onAdd, region, savedPlaces, select
         disabled={disabled}
         render={<Button disabled={disabled} size="large" type="button" variant="neutral" />}
       >
-        <PlusIcon aria-hidden="true" className="size-4" strokeWidth={2} />
-        방문 장소 추가
+        <PlusIcon aria-hidden="true" data-icon="inline-start" strokeWidth={2} />새 장소 검색
       </DrawerTrigger>
       <DrawerVirtualKeyboardProvider>
         <DrawerContent className="[--drawer-height:var(--drawer-content-max-height)]">
           <PlacePickerPanel
-            onAdd={(place, placeRegion) => {
-              onAdd(place, placeRegion);
+            key={String(open)}
+            maxSelectionCount={maxSelectionCount}
+            onAdd={(selections) => {
+              onAdd(selections);
               setOpen(false);
             }}
             region={region}
-            savedPlaces={savedPlaces}
             selectedKeys={selectedKeys}
           />
         </DrawerContent>
