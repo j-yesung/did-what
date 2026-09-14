@@ -295,7 +295,7 @@ export function RecordComments({ activity, member, recordId }: RecordCommentsPro
 
         <form
           className={cn(
-            "mt-3 [&:not(:popover-open)]:block",
+            "mt-3 not-[&:popover-open]:block",
             floating &&
               "fixed inset-x-0 z-50 m-0 mx-auto w-full max-w-(--app-width) border-0 border-t bg-background px-5 pt-3 pb-3 shadow-[0_-8px_24px_rgb(0_0_0/0.08)]",
           )}
@@ -379,7 +379,7 @@ function CommentRow({ comment, currentMemberId, onDelete, onEdit }: CommentRowPr
   const normalizedDraft = normalizeCommentBody(draft);
 
   return (
-    <li className="scroll-mt-24 border-b px-[1.625rem] py-4" id={`comment-${comment.id}`}>
+    <li className="scroll-mt-24 border-b px-6.5 py-4" id={`comment-${comment.id}`}>
       <article
         aria-busy={comment.pending || undefined}
         className={cn("grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3", comment.pending && "opacity-60")}
@@ -435,7 +435,7 @@ function CommentRow({ comment, currentMemberId, onDelete, onEdit }: CommentRowPr
             </form>
           ) : (
             <>
-              <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed">{comment.body}</p>
+              <p className="wrap-break-word mt-1 whitespace-pre-wrap text-[15px] leading-relaxed">{comment.body}</p>
               {mine ? (
                 <footer className="mt-1 -ml-3 flex items-center gap-1">
                   <IconButton
