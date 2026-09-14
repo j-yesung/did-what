@@ -33,7 +33,6 @@ const COMMENT_TIME = new Intl.DateTimeFormat("ko-KR", {
 
 type RecordCommentsProps = {
   member: { id: string; name: string };
-  ownerId: string;
   recordId: string;
 };
 
@@ -81,20 +80,16 @@ const updateCommentCache = (
   };
 };
 
-export function RecordComments({ member, ownerId, recordId }: RecordCommentsProps) {
+export function RecordComments({ member, recordId }: RecordCommentsProps) {
   const [draft, setDraft] = useState("");
   const [isPending, startTransition] = useTransition();
   const submittingRef = useRef(false);
   const scrolledHashRef = useRef("");
   const queryClient = useQueryClient();
-  const queryOptions = recordCommentListQueryOptions(ownerId, recordId);
+  const queryOptions = recordCommentListQueryOptions(recordId);
   const commentsQuery = useInfiniteQuery(queryOptions);
   const comments = useMemo(() => {
-    const byId = new Map<string, RecordComment>();
-    for (const comment of commentsQuery.data?.pages.flatMap((page) => page.comments) ?? []) {
-      if (!byId.has(comment.id)) byId.set(comment.id, comment);
-    }
-    return [...byId.values()];
+    return commentsQuery.data?.pages.flatMap((page) => page.comments) ?? [];
   }, [commentsQuery.data]);
   const [optimisticComments, dispatchOptimistic] = useOptimistic(comments, reduceOptimisticComments);
   const normalizedDraft = normalizeCommentBody(draft);

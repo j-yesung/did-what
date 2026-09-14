@@ -202,7 +202,7 @@
 | `src/entities/notification/` | 이벤트 종류·댓글 참조 조회 | 중간: 기존 기록 알림과 댓글 알림 분기 |
 | `src/pages/notification/` | 댓글 알림 문구·링크·삭제 상태 표시 | 중간: 알림 목록 UI와 접근성 이름 |
 | `src/features/push-notification/` | 발송 공통부 추출, 댓글 푸시 추가 | 중간: 기존 기록 푸시 회귀 가능성 |
-| `src/pages/record/detail/index.tsx` | 현재 멤버·계정 정보 전달 | 중간: 서버/클라이언트 경계 |
+| `src/pages/record/detail/index.tsx` | 현재 멤버 정보 전달 | 중간: 서버/클라이언트 경계 |
 | `src/pages/record/detail/ui/record-detail-content.tsx` 및 댓글 영역 컴포넌트 | 본문 아래 조합, 독립 로딩·오류 | 중간: 상세 화면 높이·모바일 스크롤 |
 | `src/features/record/delete-record/ui/delete-record-button.tsx` | 댓글 삭제 안내·캐시 제거 | 중간: 기존 기록 삭제 회귀 |
 | `docs/future-features.md` | 구현 완료 후 댓글 항목 정리, 반응은 유지 | 낮음 |

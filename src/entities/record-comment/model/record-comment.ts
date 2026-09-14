@@ -1,3 +1,5 @@
+export { getCreatedAtCursorFilter as getRecordCommentCursorFilter } from "@/shared/lib/pagination/get-created-at-cursor-filter";
+
 export const RECORD_COMMENT_PAGE_SIZE = 20;
 
 export type RecordComment = {
@@ -31,10 +33,6 @@ export const normalizeCommentBody = (value: unknown) => {
 
   const body = value.trim();
   return body.length > 0 && [...body].length <= 1000 ? body : null;
-};
-
-export const getRecordCommentCursorFilter = (cursor: RecordCommentCursor) => {
-  return `created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`;
 };
 
 export const reduceOptimisticComments = (comments: RecordComment[], action: OptimisticCommentAction) => {

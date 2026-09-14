@@ -24,11 +24,10 @@ import { PressLink } from "@/shared/ui/press-link";
 
 type RecordDetailContentProps = {
   member: { id: string; name: string };
-  ownerId: string;
   recordId: string;
 };
 
-export function RecordDetailContent({ member, ownerId, recordId }: RecordDetailContentProps) {
+export function RecordDetailContent({ member, recordId }: RecordDetailContentProps) {
   const queryClient = useQueryClient();
   const summaryQueryKey = recordSummaryQueryKey(recordId);
   const cachedSummary = queryClient.getQueryState(summaryQueryKey)?.isInvalidated
@@ -133,7 +132,7 @@ export function RecordDetailContent({ member, ownerId, recordId }: RecordDetailC
               </Card>
             ) : null}
 
-            <RecordComments member={member} ownerId={ownerId} recordId={record.id} />
+            <RecordComments member={member} recordId={record.id} />
 
             <footer className="mt-auto flex justify-center py-2">
               <DeleteRecordButton activity={record.activity} recordId={record.id} />

@@ -10,11 +10,11 @@ type RecordDetailPageProps = {
 };
 
 export async function RecordDetailPage({ params }: RecordDetailPageProps) {
-  const [{ recordId }, { member, user }] = await Promise.all([params, requireMember()]);
+  const [{ recordId }, { member }] = await Promise.all([params, requireMember()]);
 
   if (!isUuid(recordId)) {
     notFound();
   }
 
-  return <RecordDetailContent member={{ id: member.id, name: member.name }} ownerId={user.id} recordId={recordId} />;
+  return <RecordDetailContent member={{ id: member.id, name: member.name }} recordId={recordId} />;
 }

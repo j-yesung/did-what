@@ -13,11 +13,10 @@ export const RECORD_COMMENTS_QUERY_KEY = ["record-comments"] as const;
 const RECORD_COMMENT_COLUMNS =
   "id, record_id, author_member_id, body, created_at, updated_at, author:account_members!record_comments_owner_author_member_fkey(name)";
 
-const fetchRecordCommentPage = async (ownerId: string, recordId: string, cursor: RecordCommentCursor | null) => {
+const fetchRecordCommentPage = async (recordId: string, cursor: RecordCommentCursor | null) => {
   let query = createClient()
     .from("record_comments")
     .select(RECORD_COMMENT_COLUMNS)
-    .eq("owner_id", ownerId)
     .eq("record_id", recordId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
@@ -37,10 +36,10 @@ const fetchRecordCommentPage = async (ownerId: string, recordId: string, cursor:
   };
 };
 
-export const recordCommentListQueryOptions = (ownerId: string, recordId: string) => {
+export const recordCommentListQueryOptions = (recordId: string) => {
   return infiniteQueryOptions({
-    queryKey: [...RECORD_COMMENTS_QUERY_KEY, ownerId, recordId],
-    queryFn: ({ pageParam }) => fetchRecordCommentPage(ownerId, recordId, pageParam),
+    queryKey: [...RECORD_COMMENTS_QUERY_KEY, recordId],
+    queryFn: ({ pageParam }) => fetchRecordCommentPage(recordId, pageParam),
     initialPageParam: null as RecordCommentCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     refetchOnWindowFocus: true,

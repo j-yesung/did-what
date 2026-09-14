@@ -1,10 +1,8 @@
+export { getCreatedAtCursorFilter as getNotificationCursorFilter } from "@/shared/lib/pagination/get-created-at-cursor-filter";
+
 export const NOTIFICATION_PAGE_SIZE = 20;
 
 export type NotificationCursor = {
   createdAt: string;
   id: number;
-};
-
-export const getNotificationCursorFilter = (cursor: NotificationCursor) => {
-  return `created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`;
 };

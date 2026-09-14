@@ -1,6 +1,6 @@
 "use client";
 
-import { type KeyboardEvent, type SubmitEvent, startTransition, useMemo, useOptimistic, useState } from "react";
+import { type SubmitEvent, startTransition, useMemo, useOptimistic, useState } from "react";
 
 import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
@@ -8,18 +8,14 @@ import { useMutation } from "@tanstack/react-query";
 import { usePlaceSearch } from "@/entities/place";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
-import { FOCUS_RING } from "@/shared/lib/interaction";
-import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Checkbox } from "@/shared/ui/checkbox";
 import { DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { SearchField } from "@/shared/ui/search-field";
 
 import { resolveRecordPlace } from "../api/resolve-record-location";
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
+import { SelectablePlaceCard } from "./selectable-place-card";
 
 type PlacePickerPanelProps = {
   maxSelectionCount: number;
@@ -87,12 +83,6 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, region, selectedKey
     });
   };
 
-  const handlePlaceKeyDown = (event: KeyboardEvent<HTMLLIElement>, place: KakaoPlace) => {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    selectPlace(place);
-  };
-
   const handleSearch = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -154,53 +144,17 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, region, selectedKey
               const disabled = added || resolve.isPending || selectionLimitReached;
 
               return (
-                <li
-                  aria-checked={added || selected}
-                  aria-disabled={disabled}
-                  className={cn(
-                    "w-full min-w-0 rounded-xl transition-transform duration-200 active:scale-[0.99]",
-                    FOCUS_RING,
-                    disabled ? "cursor-default" : "cursor-pointer",
-                  )}
+                <SelectablePlaceCard
+                  added={added}
+                  address={place.address ?? "주소 정보 없음"}
+                  checkboxDisabled={selectionLimitReached}
+                  disabled={disabled}
                   key={place.id}
-                  onClick={() => selectPlace(place)}
-                  onKeyDown={(event) => handlePlaceKeyDown(event, place)}
-                  role="checkbox"
-                  tabIndex={disabled ? -1 : 0}
-                >
-                  <Card
-                    className={cn(
-                      "w-full min-w-0 transition-[background-color,box-shadow] duration-200",
-                      selected && "bg-secondary ring-2 ring-primary/40 dark:bg-pressed dark:ring-foreground/15",
-                    )}
-                    data-selected={selected}
-                    size="sm"
-                  >
-                    <CardHeader className="min-w-0 grid-cols-[minmax(0,1fr)_auto]">
-                      <CardTitle className="min-w-0 truncate">{place.name}</CardTitle>
-                      <CardDescription>Kakao 장소 검색 결과</CardDescription>
-                      <CardAction>
-                        {added ? (
-                          <Badge>추가됨</Badge>
-                        ) : (
-                          <Checkbox
-                            aria-hidden="true"
-                            checked={selected}
-                            className="pointer-events-none size-6"
-                            disabled={selectionLimitReached}
-                            tabIndex={-1}
-                            variant="circle"
-                          />
-                        )}
-                      </CardAction>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="wrap-break-word text-muted-foreground text-sm">
-                        {place.address ?? "주소 정보 없음"}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </li>
+                  label="Kakao 장소 검색 결과"
+                  name={place.name}
+                  onSelect={() => selectPlace(place)}
+                  selected={selected}
+                />
               );
             })}
           </ul>
