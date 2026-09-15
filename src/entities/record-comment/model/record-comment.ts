@@ -22,7 +22,6 @@ export type RecordComment = {
   id: string;
   pending?: boolean;
   record_id: string;
-  updated_at: string;
 };
 
 export type RecordCommentCursor = {
@@ -35,10 +34,7 @@ export type RecordCommentPage = {
   nextCursor: RecordCommentCursor | null;
 };
 
-export type OptimisticCommentAction =
-  | { comment: RecordComment; type: "create" }
-  | { body: string; id: string; type: "update" }
-  | { id: string; type: "delete" };
+export type OptimisticCommentAction = { comment: RecordComment; type: "create" } | { id: string; type: "delete" };
 
 export const formatCommentTime = (timestamp: string, now = new Date()) => {
   const date = new Date(timestamp);
@@ -60,11 +56,6 @@ export const normalizeCommentBody = (value: unknown) => {
 
 export const reduceOptimisticComments = (comments: RecordComment[], action: OptimisticCommentAction) => {
   if (action.type === "delete") return comments.filter((comment) => comment.id !== action.id);
-  if (action.type === "update") {
-    return comments.map((comment) =>
-      comment.id === action.id ? { ...comment, body: action.body, pending: true } : comment,
-    );
-  }
 
   return [action.comment, ...comments.filter((comment) => comment.id !== action.comment.id)];
 };

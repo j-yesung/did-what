@@ -11,7 +11,7 @@ import {
 export const RECORD_COMMENTS_QUERY_KEY = ["record-comments"] as const;
 
 const RECORD_COMMENT_COLUMNS =
-  "id, record_id, author_member_id, body, created_at, updated_at, author:account_members!record_comments_owner_author_member_fkey(name)";
+  "id, record_id, author_member_id, body, created_at, author:account_members!record_comments_owner_author_member_fkey(name)";
 
 const fetchRecordCommentPage = async (recordId: string, cursor: RecordCommentCursor | null) => {
   let query = createClient()
