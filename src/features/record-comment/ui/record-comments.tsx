@@ -10,8 +10,8 @@ import {
   normalizeCommentBody,
   type OptimisticCommentAction,
   type RecordComment,
-  type RecordCommentPage,
   recordCommentListQueryOptions,
+  type RecordCommentPage,
   reduceOptimisticComments,
 } from "@/entities/record-comment";
 import { showNotice } from "@/shared/lib/notice";
@@ -263,7 +263,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
             submitComment();
           }}
         >
-          <div className="flex min-h-14 items-center gap-3 rounded-3xl bg-muted p-1.5" key="composer">
+          <div className="flex min-h-14 items-center gap-3 rounded-3xl bg-surface p-1.5" key="composer">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <img
                 alt=""
@@ -274,7 +274,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
                 {member.name}으로 댓글 남기기
               </label>
               <Textarea
-                className="min-h-9 resize-none border-0 bg-transparent px-0 py-2 shadow-none focus-visible:ring-0"
+                className="min-h-9 resize-none border-0 bg-transparent! px-0 py-2 shadow-none focus-visible:ring-0"
                 id="record-comment-body"
                 onChange={(event) => setDraft(event.target.value)}
                 placeholder="댓글 남기기..."
@@ -284,12 +284,13 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
             </div>
             <Button
               aria-label="댓글 게시"
-              className="size-11 min-w-0 self-end rounded-full p-0"
+              className="size-11 min-w-0 self-end rounded-full bg-dark p-0 text-dark-foreground dark:bg-light dark:text-dark"
+              color="dark"
               disabled={!normalizedDraft || isPending}
               onPointerDown={(event) => event.preventDefault()}
               type="submit"
             >
-              <ArrowUpIcon aria-hidden="true" />
+              <ArrowUpIcon aria-hidden="true" weight="bold" />
             </Button>
           </div>
         </form>

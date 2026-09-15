@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { Trash2Icon } from "@animateicons/react/lucide";
-import { DotsThreeOutlineIcon } from "@phosphor-icons/react";
+import { TrashIcon } from "@phosphor-icons/react";
 
 import { placesQueryOptions } from "@/entities/place";
 import { RECORDS_QUERY_KEY } from "@/entities/record";
@@ -44,7 +44,16 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
 
   return (
     <Drawer onOpenChange={setOpen} open={open} showSwipeHandle>
-      <DrawerTrigger render={<IconButton aria-label="기록 더보기" icon={DotsThreeOutlineIcon} iconStrokeWidth={2} />} />
+      <DrawerTrigger
+        render={
+          <IconButton
+            aria-label="기록 삭제"
+            className="text-destructive active:bg-destructive/10"
+            icon={TrashIcon}
+            iconStrokeWidth={2}
+          />
+        }
+      />
       <DrawerContent className="[--drawer-height:auto]">
         <DrawerHeader className="gap-2 px-5 pt-6 text-left group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-bold text-xl leading-7">{`“${activity}” 기록을 삭제할까요?`}</DrawerTitle>
