@@ -26,6 +26,7 @@ export function RecordCard({ isLast, onDetailPrefetch, record }: RecordCardProps
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
   const href = `/records/${record.id}`;
+
   const cacheRecordSummary = () => queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
 
   return (
