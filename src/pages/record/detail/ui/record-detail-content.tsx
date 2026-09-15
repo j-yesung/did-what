@@ -110,56 +110,58 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
           />
         ) : record ? (
           <>
-            <section aria-labelledby="record-activity-title" className="p-1">
-              <h1
-                className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
-                id="record-activity-title"
-              >
-                {record.activity}
-              </h1>
-              <p className="mt-2 text-muted-foreground text-sm">
-                {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))}`}
-              </p>
-              <p className="mt-1 text-muted-foreground text-sm">
-                {[record.region_label, record.region_name].filter(Boolean).join(" / ") || "지역 정보 없음"}
-              </p>
-            </section>
+            <div className="flex flex-1 flex-col gap-5">
+              <section aria-labelledby="record-activity-title" className="p-1">
+                <h1
+                  className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
+                  id="record-activity-title"
+                >
+                  {record.activity}
+                </h1>
+                <p className="mt-2 text-muted-foreground text-sm">
+                  {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))}`}
+                </p>
+                <p className="mt-1 text-muted-foreground text-sm">
+                  {[record.region_label, record.region_name].filter(Boolean).join(" / ") || "지역 정보 없음"}
+                </p>
+              </section>
 
-            {recordPlaces && recordPlaces.length > 0 ? (
-              <PageSection aria-labelledby="record-places-title">
-                <h2 className="mb-3 font-semibold text-base" id="record-places-title">
-                  우리 어디 갔지?
-                </h2>
-                <ul className="flex flex-col gap-2">
-                  {recordPlaces.map(({ place }) => (
-                    <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
-                      <div className="min-w-0">
-                        <p className="font-medium">{place.name}</p>
-                        {place.address ? (
-                          <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address}</p>
-                        ) : null}
-                      </div>
-                      <PlaceSaveButton placeId={place.id} placeName={place.name} saved={Boolean(place.saved_at)} />
-                    </li>
-                  ))}
-                </ul>
-              </PageSection>
-            ) : null}
+              {recordPlaces && recordPlaces.length > 0 ? (
+                <PageSection aria-labelledby="record-places-title">
+                  <h2 className="mb-3 font-semibold text-base" id="record-places-title">
+                    우리 어디 갔지?
+                  </h2>
+                  <ul className="flex flex-col gap-2">
+                    {recordPlaces.map(({ place }) => (
+                      <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
+                        <div className="min-w-0">
+                          <p className="font-medium">{place.name}</p>
+                          {place.address ? (
+                            <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address}</p>
+                          ) : null}
+                        </div>
+                        <PlaceSaveButton placeId={place.id} placeName={place.name} saved={Boolean(place.saved_at)} />
+                      </li>
+                    ))}
+                  </ul>
+                </PageSection>
+              ) : null}
 
-            {record.memo ? (
-              <PageSection aria-labelledby="record-memo-title">
-                <h2 className="mb-3 font-semibold text-base" id="record-memo-title">
-                  우리 뭐했지?
-                </h2>
-                <div className="flex flex-col gap-2 text-sm leading-relaxed">
-                  {record.memo.split("\n").map((line, index) => (
-                    <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </PageSection>
-            ) : null}
+              {record.memo ? (
+                <PageSection aria-labelledby="record-memo-title">
+                  <h2 className="mb-3 font-semibold text-base" id="record-memo-title">
+                    우리 뭐했지?
+                  </h2>
+                  <div className="flex flex-col gap-2 text-sm leading-relaxed">
+                    {record.memo.split("\n").map((line, index) => (
+                      <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </PageSection>
+              ) : null}
+            </div>
 
             <RecordComments member={member} recordId={record.id} />
           </>
