@@ -32,7 +32,13 @@ export function BottomNavigation() {
       aria-label="주요 메뉴"
       className="pointer-events-none fixed inset-x-0 bottom-(--nav-bottom-offset) z-40 pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]"
     >
-      <ul className="liquid-glass pointer-events-auto relative mx-auto grid h-(--nav-height) w-[calc(100%-32px)] max-w-[384px] grid-cols-4 overflow-hidden rounded-full p-0.5">
+      <ul
+        className="liquid-glass pointer-events-auto relative mx-auto grid h-(--nav-height) w-[calc(100%-32px)] overflow-hidden rounded-full p-0.5"
+        style={{
+          gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))`,
+          maxWidth: `calc(${TABS.length} * (var(--nav-height) + 16px))`,
+        }}
+      >
         <li aria-hidden="true" className="pointer-events-none absolute inset-x-1 inset-y-0 z-3 flex items-center">
           <span
             className="liquid-glass-navigation-active block h-[calc(100%-8px)] rounded-full transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
@@ -45,20 +51,16 @@ export function BottomNavigation() {
           return (
             <li className="relative z-10 min-w-0" key={href}>
               <Button
+                aria-label={label}
                 aria-current={active ? "page" : undefined}
-                className="h-full flex-col gap-1 rounded-full px-0 py-0 text-[clamp(11px,2.8vw,12px)] transition-colors duration-200 ease-out after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:font-[650] data-[active=true]:font-bold data-[active=false]:text-muted-foreground data-[active=true]:text-foreground [&>span]:flex-col"
+                className="h-full rounded-full px-0 py-0 transition-colors duration-200 ease-out after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:text-muted-foreground data-[active=true]:text-foreground"
                 data-active={active}
                 fullWidth
                 nativeButton={false}
                 render={<PressLink href={href} prefetch />}
                 variant="ghost"
               >
-                <TabIcon
-                  aria-hidden="true"
-                  className="size-[clamp(20px,5.6vw,24px)]"
-                  weight={active ? "fill" : "regular"}
-                />
-                {label}
+                <TabIcon aria-hidden="true" className="size-6" weight={active ? "fill" : "regular"} />
               </Button>
             </li>
           );
