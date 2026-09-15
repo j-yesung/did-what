@@ -2,6 +2,7 @@
 
 import { MapPinIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 import {
   getPlaceRegionLabel,
@@ -17,6 +18,7 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 
 export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
 
@@ -48,6 +50,7 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
       <div className="flex flex-col gap-2.5 overflow-hidden">
         {places.map((place) => {
           const href = `/places/${place.id}`;
+          const cachePlace = () => queryClient.setQueryData(placeQueryKey(place.id), place);
 
           return (
             <ListRow
@@ -57,13 +60,14 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
               render={
                 <PressLink
                   href={href}
-                  onClick={() => {
-                    queryClient.setQueryData(placeQueryKey(place.id), place);
-                  }}
+                  onClick={cachePlace}
                   onPointerDown={(event) => {
-                    if (event.button === 0) void queryClient.prefetchQuery(placeRecordsQueryOptions(place.id));
+                    if (event.button !== 0) return;
+                    cachePlace();
+                    router.prefetch(href);
+                    void queryClient.prefetchQuery(placeRecordsQueryOptions(place.id));
                   }}
-                  prefetch
+                  prefetch={false}
                 />
               }
               right={

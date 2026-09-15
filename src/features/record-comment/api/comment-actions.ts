@@ -19,15 +19,11 @@ type CreateCommentInput = {
   recordId: string;
 };
 
-type UpdateCommentInput = {
-  body: string;
+type DeleteCommentInput = {
   commentId: string;
   expectedMemberId: string;
-  expectedUpdatedAt: string;
   recordId: string;
 };
-
-type DeleteCommentInput = Omit<UpdateCommentInput, "body">;
 
 const invalidComment = (): CommentActionState => ({
   message: "댓글 내용을 다시 확인해 주세요.",
@@ -36,10 +32,6 @@ const invalidComment = (): CommentActionState => ({
 
 const hasValidContext = (input: { commentId: string; expectedMemberId: string; recordId: string }) => {
   return isUuid(input.commentId) && isUuid(input.expectedMemberId) && isUuid(input.recordId);
-};
-
-const hasValidUpdatedAt = (value: string) => {
-  return typeof value === "string" && value.length <= 40 && !Number.isNaN(Date.parse(value));
 };
 
 export const createComment = async (input: CreateCommentInput): Promise<CommentActionState> => {
@@ -69,7 +61,6 @@ export const createComment = async (input: CreateCommentInput): Promise<CommentA
     created_at: saved.created_at,
     id: saved.id,
     record_id: saved.record_id,
-    updated_at: saved.updated_at,
   };
 
   if (saved.created) {
@@ -90,38 +81,8 @@ export const createComment = async (input: CreateCommentInput): Promise<CommentA
   return { comment, status: "success" };
 };
 
-export const updateComment = async (input: UpdateCommentInput): Promise<CommentActionState> => {
-  const body = normalizeCommentBody(input.body);
-  if (!body || !hasValidContext(input) || !hasValidUpdatedAt(input.expectedUpdatedAt)) return invalidComment();
-
-  const { member, supabase, user } = await requireMember();
-  if (member.id !== input.expectedMemberId) {
-    return { message: "작성 멤버가 변경됐어요. 화면을 확인한 뒤 다시 수정해 주세요.", status: "error" };
-  }
-
-  const { data, error } = await supabase
-    .from("record_comments")
-    .update({ body })
-    .eq("id", input.commentId)
-    .eq("record_id", input.recordId)
-    .eq("owner_id", user.id)
-    .eq("author_member_id", member.id)
-    .eq("updated_at", input.expectedUpdatedAt)
-    .select("id, record_id, author_member_id, body, created_at, updated_at")
-    .maybeSingle();
-
-  if (error || !data) {
-    return { message: "댓글이 이미 변경됐거나 수정할 수 없어요.", status: "error" };
-  }
-
-  return {
-    comment: { ...data, author: { name: member.name } },
-    status: "success",
-  };
-};
-
 export const deleteComment = async (input: DeleteCommentInput): Promise<CommentActionState> => {
-  if (!hasValidContext(input) || !hasValidUpdatedAt(input.expectedUpdatedAt)) return invalidComment();
+  if (!hasValidContext(input)) return invalidComment();
 
   const { member, supabase, user } = await requireMember();
   if (member.id !== input.expectedMemberId) {
@@ -135,7 +96,6 @@ export const deleteComment = async (input: DeleteCommentInput): Promise<CommentA
     .eq("record_id", input.recordId)
     .eq("owner_id", user.id)
     .eq("author_member_id", member.id)
-    .eq("updated_at", input.expectedUpdatedAt)
     .select("id")
     .maybeSingle();
 

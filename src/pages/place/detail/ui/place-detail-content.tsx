@@ -1,10 +1,11 @@
 "use client";
 
 import { CalendarDotsIcon, MapPinAreaIcon, MapPinIcon, NotePencilIcon } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { placeQueryOptions, placeRecordsQueryOptions, placesQueryOptions } from "@/entities/place";
 import { EmptyRecords, RecordCard, RecordTimeline } from "@/entities/record";
+import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { DeletePlaceButton } from "@/features/place/delete-place/ui/delete-place-button";
 import { formatDate } from "@/shared/lib/date/format-date";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -17,7 +18,10 @@ type PlaceDetailContentProps = {
 };
 
 export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
+  const queryClient = useQueryClient();
   const placesQuery = useQuery(placesQueryOptions);
+  const prefetchComments = (recordId: string) =>
+    void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   const cachedPlace = placesQuery.data?.find(({ id }) => id === placeId);
   const placeQuery = useQuery({
     ...placeQueryOptions(placeId),
@@ -75,7 +79,12 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                 </div>
 
                 {records.map((record, index) => (
-                  <RecordCard isLast={index === records.length - 1} key={record.id} record={record} />
+                  <RecordCard
+                    isLast={index === records.length - 1}
+                    key={record.id}
+                    onDetailPrefetch={prefetchComments}
+                    record={record}
+                  />
                 ))}
               </RecordTimeline>
             ) : (

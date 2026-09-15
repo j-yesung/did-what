@@ -107,7 +107,7 @@ export const sendRecordPush = async ({ recordId, senderName, ...input }: SendRec
     ...input,
     tag: `record-${recordId}`,
     title: `${senderName}이가 기록을 추가했어요`,
-    url: `/records/${recordId}`,
+    url: `/records/${recordId}?from=notification`,
   });
 };
 
@@ -123,6 +123,6 @@ export const sendCommentPush = async ({ commentId, recordId, senderName, ...inpu
     ...input,
     tag: `comment-${commentId}`,
     title: `${senderName}님이 댓글을 남겼어요`,
-    url: `/records/${recordId}#comment-${commentId}`,
+    url: `/records/${recordId}?from=notification#comment-${commentId}`,
   });
 };

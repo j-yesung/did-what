@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import { MapTrifoldIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 import { recordLocationsQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
 import { createRegionActivityMaps, getRegionProgressLabel, RegionMiniMap } from "@/entities/region";
@@ -12,6 +13,7 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 
 export function RegionsContent() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const recordsQuery = useQuery(recordLocationsQueryOptions);
   const recordLocations = useMemo(
@@ -55,9 +57,11 @@ export function RegionsContent() {
                     <PressLink
                       href={href}
                       onPointerDown={(event) => {
-                        if (event.button === 0) void queryClient.prefetchQuery(regionRecordsQueryOptions(map));
+                        if (event.button !== 0) return;
+                        router.prefetch(href);
+                        void queryClient.prefetchQuery(regionRecordsQueryOptions(map));
                       }}
-                      prefetch
+                      prefetch={false}
                     />
                   }
                   variant="ghost"

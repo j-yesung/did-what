@@ -1,8 +1,10 @@
 "use client";
 
 import { MagnifyingGlassMinusIcon, NotePencilIcon } from "@phosphor-icons/react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { EmptyRecords, hasRecordFilters, RecordCard, type RecordFilters, RecordTimeline } from "@/entities/record";
+import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -16,7 +18,12 @@ type RecordListProps = {
 };
 
 export function RecordList({ filters }: RecordListProps) {
+  const queryClient = useQueryClient();
   const recordsQuery = useRecordListQuery(filters);
+
+  const prefetchComments = (recordId: string) => {
+    void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
+  };
 
   if (recordsQuery.isPending) return null;
 
@@ -53,7 +60,12 @@ export function RecordList({ filters }: RecordListProps) {
     <RecordTimeline aria-label={`불러온 기록 ${records.length}개`}>
       <p className="px-1 text-muted-foreground text-xs">{isFiltered ? "조건에 맞는 기록" : "최근 기록"}</p>
       {records.map((record, index) => (
-        <RecordCard isLast={index === records.length - 1} key={record.id} record={record} />
+        <RecordCard
+          isLast={index === records.length - 1}
+          key={record.id}
+          onDetailPrefetch={prefetchComments}
+          record={record}
+        />
       ))}
       {recordsQuery.hasNextPage ? (
         <LoadMoreButton

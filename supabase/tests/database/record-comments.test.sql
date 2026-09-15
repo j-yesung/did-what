@@ -1,6 +1,6 @@
 begin;
 
-select plan(18);
+select plan(17);
 
 select has_table('public', 'record_comments', '댓글 테이블이 존재한다');
 select has_column('public', 'notifications', 'event_type', '알림 종류 컬럼이 존재한다');
@@ -106,19 +106,15 @@ select results_eq(
   '작성자 자신에게는 알리지 않는다'
 );
 
-select lives_ok(
+select throws_ok(
   $$
     update public.record_comments
     set body = '수정한 댓글'
     where id = '00000000-0000-4000-8000-000000001001'
   $$,
-  '댓글을 수정할 수 있다'
-);
-
-select results_eq(
-  $$ select count(*) from public.notifications where event_type = 'comment_created' $$,
-  array[1::bigint],
-  '댓글 수정은 새 알림을 만들지 않는다'
+  '42501',
+  null,
+  '댓글을 수정할 수 없다'
 );
 
 select lives_ok(

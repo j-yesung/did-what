@@ -39,9 +39,8 @@ export type NotificationItem = Awaited<ReturnType<typeof fetchNotificationPage>>
 
 export const getNotificationHref = (notification: NotificationItem) => {
   if (!notification.record_id) return null;
-  return notification.comment_id
-    ? `/records/${notification.record_id}#comment-${notification.comment_id}`
-    : `/records/${notification.record_id}`;
+  const recordHref = `/records/${notification.record_id}?from=notification`;
+  return notification.comment_id ? `${recordHref}#comment-${notification.comment_id}` : recordHref;
 };
 
 export const notificationListQueryOptions = (memberId: string) => {

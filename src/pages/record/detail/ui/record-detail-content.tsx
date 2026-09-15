@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   getRecordWeatherLabel,
@@ -15,8 +18,11 @@ import { PlaceSaveButton } from "@/features/place/save-place";
 import { DeleteRecordButton } from "@/features/record/delete-record";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
+import { canGoBack } from "@/shared/lib/navigation/use-go-back";
+import { showNotice } from "@/shared/lib/notice";
 import { IconButton } from "@/shared/ui/icon-button";
-import { PageHeader, PageShell } from "@/shared/ui/layouts";
+import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
 import { PressLink } from "@/shared/ui/press-link";
@@ -27,7 +33,12 @@ type RecordDetailContentProps = {
 };
 
 export function RecordDetailContent({ member, recordId }: RecordDetailContentProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const seededNotificationHistory = useRef(false);
+  const redirectedMissingRecord = useRef(false);
   const queryClient = useQueryClient();
+  const fromNotification = searchParams?.get("from") === "notification";
   const summaryQueryKey = recordSummaryQueryKey(recordId);
   const cachedSummary = queryClient.getQueryState(summaryQueryKey)?.isInvalidated
     ? undefined
@@ -47,6 +58,27 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   const recordMissing = hasCachedSummary
     ? recordPlacesQuery.isSuccess && !recordPlacesQuery.data
     : recordQuery.isSuccess && !recordQuery.data;
+
+  useEffect(() => {
+    if (!fromNotification || canGoBack()) return;
+
+    const detailHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const state = window.history.state;
+    window.history.replaceState(state, "", "/");
+    window.history.pushState({ ...state, [HOME_HISTORY_GUARD]: true }, "", "/");
+    window.history.pushState(state, "", "/records");
+    window.history.pushState(state, "", detailHref);
+    seededNotificationHistory.current = true;
+  }, [fromNotification]);
+
+  useEffect(() => {
+    if (!fromNotification || !recordMissing || redirectedMissingRecord.current) return;
+
+    redirectedMissingRecord.current = true;
+    showNotice({ title: "기록이 삭제됐어요", variant: "warning" });
+    if (seededNotificationHistory.current) router.back();
+    else router.replace("/records");
+  }, [fromNotification, recordMissing, router]);
 
   return (
     <OverscrollBack fallbackHref="/records">
@@ -69,7 +101,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
           back="/records"
         />
 
-        {recordMissing ? (
+        {recordMissing && !fromNotification ? (
           <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 찾을 수 없어요" />
         ) : hasError ? (
           <LoadErrorAlert
@@ -78,56 +110,58 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
           />
         ) : record ? (
           <>
-            <section aria-labelledby="record-activity-title" className="p-1">
-              <h1
-                className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
-                id="record-activity-title"
-              >
-                {record.activity}
-              </h1>
-              <p className="mt-2 text-muted-foreground text-sm">
-                {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))}`}
-              </p>
-              <p className="mt-1 text-muted-foreground text-sm">
-                {[record.region_label, record.region_name].filter(Boolean).join(" / ") || "지역 정보 없음"}
-              </p>
-            </section>
-
-            {recordPlaces && recordPlaces.length > 0 ? (
-              <section aria-labelledby="record-places-title" className="-mx-5 border-t px-6 pt-5">
-                <h2 className="mb-3 font-semibold text-base" id="record-places-title">
-                  우리 어디 갔지?
-                </h2>
-                <ul className="flex flex-col gap-2">
-                  {recordPlaces.map(({ place }) => (
-                    <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
-                      <div className="min-w-0">
-                        <p className="font-medium">{place.name}</p>
-                        {place.address ? (
-                          <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address}</p>
-                        ) : null}
-                      </div>
-                      <PlaceSaveButton placeId={place.id} placeName={place.name} saved={Boolean(place.saved_at)} />
-                    </li>
-                  ))}
-                </ul>
+            <div className="flex flex-1 flex-col gap-5">
+              <section aria-labelledby="record-activity-title" className="p-1">
+                <h1
+                  className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
+                  id="record-activity-title"
+                >
+                  {record.activity}
+                </h1>
+                <p className="mt-2 text-muted-foreground text-sm">
+                  {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))}`}
+                </p>
+                <p className="mt-1 text-muted-foreground text-sm">
+                  {[record.region_label, record.region_name].filter(Boolean).join(" / ") || "지역 정보 없음"}
+                </p>
               </section>
-            ) : null}
 
-            {record.memo ? (
-              <section aria-labelledby="record-memo-title" className="-mx-5 border-t px-6 pt-5">
-                <h2 className="mb-3 font-semibold text-base" id="record-memo-title">
-                  우리 뭐했지?
-                </h2>
-                <div className="flex flex-col gap-2 text-sm leading-relaxed">
-                  {record.memo.split("\n").map((line, index) => (
-                    <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </section>
-            ) : null}
+              {recordPlaces && recordPlaces.length > 0 ? (
+                <PageSection aria-labelledby="record-places-title">
+                  <h2 className="mb-3 font-semibold text-base" id="record-places-title">
+                    우리 어디 갔지?
+                  </h2>
+                  <ul className="flex flex-col gap-2">
+                    {recordPlaces.map(({ place }) => (
+                      <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
+                        <div className="min-w-0">
+                          <p className="font-medium">{place.name}</p>
+                          {place.address ? (
+                            <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address}</p>
+                          ) : null}
+                        </div>
+                        <PlaceSaveButton placeId={place.id} placeName={place.name} saved={Boolean(place.saved_at)} />
+                      </li>
+                    ))}
+                  </ul>
+                </PageSection>
+              ) : null}
+
+              {record.memo ? (
+                <PageSection aria-labelledby="record-memo-title">
+                  <h2 className="mb-3 font-semibold text-base" id="record-memo-title">
+                    우리 뭐했지?
+                  </h2>
+                  <div className="flex flex-col gap-2 text-sm leading-relaxed">
+                    {record.memo.split("\n").map((line, index) => (
+                      <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </PageSection>
+              ) : null}
+            </div>
 
             <RecordComments member={member} recordId={record.id} />
           </>
