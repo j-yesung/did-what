@@ -2,6 +2,7 @@
 
 import { CaretRightIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
@@ -20,10 +21,12 @@ type RecordCardProps = {
 };
 
 export function RecordCard({ isLast, onDetailPrefetch, record }: RecordCardProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
   const href = `/records/${record.id}`;
+  const cacheRecordSummary = () => queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
 
   return (
     <article
@@ -43,15 +46,15 @@ export function RecordCard({ isLast, onDetailPrefetch, record }: RecordCardProps
         render={
           <PressLink
             href={href}
-            onClick={() => {
-              queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
-            }}
+            onClick={cacheRecordSummary}
             onPointerDown={(event) => {
               if (event.button !== 0) return;
+              cacheRecordSummary();
+              router.prefetch(href);
               void queryClient.prefetchQuery(recordPlacesQueryOptions(record.id));
               onDetailPrefetch?.(record.id);
             }}
-            prefetch
+            prefetch={false}
           />
         }
         variant="ghost"
