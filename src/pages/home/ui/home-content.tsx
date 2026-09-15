@@ -24,11 +24,7 @@ export function HomeContent() {
   );
 
   useEffect(() => {
-    const raiseHistoryGuard = () => {
-      window.history.pushState({ ...window.history.state, [HOME_HISTORY_GUARD]: true }, "");
-    };
-
-    if (!window.history.state?.[HOME_HISTORY_GUARD]) raiseHistoryGuard();
+    if (!window.history.state?.[HOME_HISTORY_GUARD]) return;
 
     const onPopState = () => {
       if (!window.history.state?.[HOME_HISTORY_GUARD]) window.history.forward();

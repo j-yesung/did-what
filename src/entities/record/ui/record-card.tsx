@@ -15,10 +15,11 @@ import { WeatherIcon } from "./weather-icon";
 
 type RecordCardProps = {
   isLast: boolean;
+  onDetailPrefetch?: (recordId: string) => void;
   record: RecordSummary;
 };
 
-export function RecordCard({ isLast, record }: RecordCardProps) {
+export function RecordCard({ isLast, onDetailPrefetch, record }: RecordCardProps) {
   const queryClient = useQueryClient();
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
@@ -46,7 +47,9 @@ export function RecordCard({ isLast, record }: RecordCardProps) {
               queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
             }}
             onPointerDown={(event) => {
-              if (event.button === 0) void queryClient.prefetchQuery(recordPlacesQueryOptions(record.id));
+              if (event.button !== 0) return;
+              void queryClient.prefetchQuery(recordPlacesQueryOptions(record.id));
+              onDetailPrefetch?.(record.id);
             }}
             prefetch
           />

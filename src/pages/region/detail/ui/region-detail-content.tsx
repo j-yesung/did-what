@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 
 import { MapTrifoldIcon, NotePencilIcon } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   EmptyRecords,
@@ -12,6 +12,7 @@ import {
   recordLocationsQueryOptions,
   regionRecordsQueryOptions,
 } from "@/entities/record";
+import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { createRegionActivityMaps, type Region, RegionMiniMap } from "@/entities/region";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -22,7 +23,10 @@ type RegionDetailContentProps = {
 };
 
 export function RegionDetailContent({ region }: RegionDetailContentProps) {
+  const queryClient = useQueryClient();
   const locationsQuery = useQuery(recordLocationsQueryOptions);
+  const prefetchComments = (recordId: string) =>
+    void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   const recordsQuery = useQuery(regionRecordsQueryOptions(region));
   const recordLocations = useMemo(
     () =>
@@ -87,7 +91,12 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
                 </div>
 
                 {records.map((record, index) => (
-                  <RecordCard isLast={index === records.length - 1} key={record.id} record={record} />
+                  <RecordCard
+                    isLast={index === records.length - 1}
+                    key={record.id}
+                    onDetailPrefetch={prefetchComments}
+                    record={record}
+                  />
                 ))}
               </RecordTimeline>
             ) : (
