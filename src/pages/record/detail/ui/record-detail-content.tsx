@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   getRecordWeatherLabel,
@@ -15,6 +18,9 @@ import { PlaceSaveButton } from "@/features/place/save-place";
 import { DeleteRecordButton } from "@/features/record/delete-record";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
+import { canGoBack } from "@/shared/lib/navigation/use-go-back";
+import { showNotice } from "@/shared/lib/notice";
 import { IconButton } from "@/shared/ui/icon-button";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -27,7 +33,12 @@ type RecordDetailContentProps = {
 };
 
 export function RecordDetailContent({ member, recordId }: RecordDetailContentProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const seededNotificationHistory = useRef(false);
+  const redirectedMissingRecord = useRef(false);
   const queryClient = useQueryClient();
+  const fromNotification = searchParams?.get("from") === "notification";
   const summaryQueryKey = recordSummaryQueryKey(recordId);
   const cachedSummary = queryClient.getQueryState(summaryQueryKey)?.isInvalidated
     ? undefined
@@ -47,6 +58,27 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   const recordMissing = hasCachedSummary
     ? recordPlacesQuery.isSuccess && !recordPlacesQuery.data
     : recordQuery.isSuccess && !recordQuery.data;
+
+  useEffect(() => {
+    if (!fromNotification || canGoBack()) return;
+
+    const detailHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const state = window.history.state;
+    window.history.replaceState(state, "", "/");
+    window.history.pushState({ ...state, [HOME_HISTORY_GUARD]: true }, "", "/");
+    window.history.pushState(state, "", "/records");
+    window.history.pushState(state, "", detailHref);
+    seededNotificationHistory.current = true;
+  }, [fromNotification]);
+
+  useEffect(() => {
+    if (!fromNotification || !recordMissing || redirectedMissingRecord.current) return;
+
+    redirectedMissingRecord.current = true;
+    showNotice({ title: "기록이 삭제됐어요", variant: "warning" });
+    if (seededNotificationHistory.current) router.back();
+    else router.replace("/records");
+  }, [fromNotification, recordMissing, router]);
 
   return (
     <OverscrollBack fallbackHref="/records">
@@ -69,7 +101,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
           back="/records"
         />
 
-        {recordMissing ? (
+        {recordMissing && !fromNotification ? (
           <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 찾을 수 없어요" />
         ) : hasError ? (
           <LoadErrorAlert
