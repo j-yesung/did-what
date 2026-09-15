@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 
 import { ArrowUpIcon, PencilSimpleIcon, TrashIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,12 +10,11 @@ import {
   normalizeCommentBody,
   type OptimisticCommentAction,
   type RecordComment,
-  type RecordCommentPage,
   recordCommentListQueryOptions,
+  type RecordCommentPage,
   reduceOptimisticComments,
 } from "@/entities/record-comment";
 import { showNotice } from "@/shared/lib/notice";
-import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { IconButton } from "@/shared/ui/icon-button";
@@ -24,13 +23,7 @@ import { Textarea } from "@/shared/ui/textarea";
 
 import { createComment, deleteComment, updateComment } from "../api/comment-actions";
 
-const getVisibleViewportBottom = () => {
-  const viewport = window.visualViewport;
-  return viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
-};
-
 type RecordCommentsProps = {
-  activity: string;
   member: { id: string; name: string };
   recordId: string;
 };
@@ -79,13 +72,9 @@ const updateCommentCache = (
   };
 };
 
-export function RecordComments({ activity, member, recordId }: RecordCommentsProps) {
+export function RecordComments({ member, recordId }: RecordCommentsProps) {
   const [draft, setDraft] = useState("");
-  const [floating, setFloating] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [viewportBottom, setViewportBottom] = useState(0);
   const [isPending, startTransition] = useTransition();
-  const composerRef = useRef<HTMLFormElement>(null);
   const submittingRef = useRef(false);
   const scrolledHashRef = useRef("");
   const queryClient = useQueryClient();
@@ -96,7 +85,6 @@ export function RecordComments({ activity, member, recordId }: RecordCommentsPro
   }, [commentsQuery.data]);
   const [optimisticComments, dispatchOptimistic] = useOptimistic(comments, reduceOptimisticComments);
   const normalizedDraft = normalizeCommentBody(draft);
-  const composing = focused;
 
   const commitCache = (action: CacheAction) => {
     queryClient.setQueryData<InfiniteData<RecordCommentPage>>(queryOptions.queryKey, (current) =>
@@ -227,37 +215,12 @@ export function RecordComments({ activity, member, recordId }: RecordCommentsPro
     commentsQuery.isFetchingNextPage,
   ]);
 
-  useEffect(() => {
-    if (!floating) return;
-
-    const viewport = window.visualViewport;
-    const syncViewportBottom = () => setViewportBottom(getVisibleViewportBottom());
-    syncViewportBottom();
-    viewport?.addEventListener("resize", syncViewportBottom);
-    viewport?.addEventListener("scroll", syncViewportBottom);
-
-    return () => {
-      viewport?.removeEventListener("resize", syncViewportBottom);
-      viewport?.removeEventListener("scroll", syncViewportBottom);
-    };
-  }, [floating]);
-
-  useLayoutEffect(() => {
-    if (!floating) return;
-    const composer = composerRef.current;
-    if (!composer?.matches(":popover-open")) composer?.showPopover();
-
-    return () => {
-      if (composer?.matches(":popover-open")) composer.hidePopover();
-    };
-  }, [floating]);
-
   return (
     <section aria-labelledby="record-comments-title" className="-mx-5 border-t px-5 pt-5">
       <header className="px-1.5">
-        <h3 className="flex items-center gap-1.5 font-semibold text-base" id="record-comments-title">
+        <h2 className="flex items-center gap-1.5 font-semibold text-base" id="record-comments-title">
           댓글 <span className="font-normal text-muted-foreground text-sm">{optimisticComments.length}</span>
-        </h3>
+        </h2>
       </header>
       <div className="flex flex-col">
         {commentsQuery.isPending && optimisticComments.length === 0 ? (
@@ -294,54 +257,26 @@ export function RecordComments({ activity, member, recordId }: RecordCommentsPro
         ) : null}
 
         <form
-          className={cn(
-            "mt-3 not-[&:popover-open]:block",
-            floating &&
-              "fixed inset-x-0 z-50 m-0 mx-auto w-full max-w-(--app-width) border-0 border-t bg-background px-5 pt-3 pb-3 shadow-[0_-8px_24px_rgb(0_0_0/0.08)]",
-          )}
+          className="mt-3"
           onSubmit={(event) => {
             event.preventDefault();
             submitComment();
           }}
-          popover={floating ? "manual" : undefined}
-          ref={composerRef}
-          style={floating ? { top: viewportBottom, transform: "translateY(-100%)" } : undefined}
         >
-          {composing ? (
-            <div className="mb-3 px-1.5" key="context">
-              <p className="truncate text-muted-foreground text-sm">
-                <strong className="font-semibold text-foreground">{activity}</strong>에 댓글 남기는 중
-              </p>
-            </div>
-          ) : null}
-          <div className="flex min-h-14 items-center gap-3 rounded-3xl bg-muted p-1.5" key="composer">
+          <div className="flex min-h-14 items-center gap-3 rounded-3xl bg-surface p-1.5" key="composer">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <img
                 alt=""
-                className={cn("size-9 shrink-0 rounded-full bg-background object-cover", composing && "hidden")}
+                className="size-9 shrink-0 rounded-full bg-background object-cover"
                 src="/member-avatar.svg"
               />
               <label className="sr-only" htmlFor="record-comment-body">
                 {member.name}으로 댓글 남기기
               </label>
               <Textarea
-                className={cn(
-                  "min-h-9 resize-none border-0 bg-transparent py-2 shadow-none focus-visible:ring-0",
-                  composing ? "px-2" : "px-0",
-                )}
+                className="min-h-9 resize-none border-0 bg-transparent! px-0 py-2 shadow-none focus-visible:ring-0"
                 id="record-comment-body"
-                onBlur={() => {
-                  setFloating(false);
-                  setFocused(false);
-                }}
                 onChange={(event) => setDraft(event.target.value)}
-                onFocus={() => {
-                  setFocused(true);
-                  if (window.matchMedia("(max-width: 1024px) and (any-pointer: coarse)").matches) {
-                    setViewportBottom(getVisibleViewportBottom());
-                    setFloating(true);
-                  }
-                }}
                 placeholder="댓글 남기기..."
                 rows={1}
                 value={draft}
@@ -349,12 +284,13 @@ export function RecordComments({ activity, member, recordId }: RecordCommentsPro
             </div>
             <Button
               aria-label="댓글 게시"
-              className="size-11 min-w-0 self-end rounded-full p-0"
+              className="size-11 min-w-0 self-end rounded-full bg-dark p-0 text-dark-foreground dark:bg-light dark:text-dark"
+              color="dark"
               disabled={!normalizedDraft || isPending}
               onPointerDown={(event) => event.preventDefault()}
               type="submit"
             >
-              <ArrowUpIcon aria-hidden="true" />
+              <ArrowUpIcon aria-hidden="true" weight="bold" />
             </Button>
           </div>
         </form>
@@ -380,10 +316,7 @@ function CommentRow({ comment, currentMemberId, onDelete, onEdit }: CommentRowPr
 
   return (
     <li className="scroll-mt-24 border-b px-6.5 py-4" id={`comment-${comment.id}`}>
-      <article
-        aria-busy={comment.pending || undefined}
-        className={cn("grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3", comment.pending && "opacity-60")}
-      >
+      <article aria-busy={comment.pending || undefined} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
         <img alt="" className="size-9 rounded-full bg-muted object-cover" src="/member-avatar.svg" />
         <div className="min-w-0">
           <header>
@@ -393,7 +326,6 @@ function CommentRow({ comment, currentMemberId, onDelete, onEdit }: CommentRowPr
               <span className="ml-2 font-normal text-muted-foreground text-xs">
                 <time dateTime={comment.created_at}>{formatCommentTime(comment.created_at)}</time>
                 {changed ? " · 수정됨" : null}
-                {comment.pending ? " · 저장 중" : null}
               </span>
             </p>
           </header>
@@ -437,7 +369,7 @@ function CommentRow({ comment, currentMemberId, onDelete, onEdit }: CommentRowPr
             <>
               <p className="wrap-break-word mt-1 whitespace-pre-wrap text-[15px] leading-relaxed">{comment.body}</p>
               {mine ? (
-                <footer className="mt-1 -ml-3 flex items-center gap-1">
+                <footer className="mt-1 flex items-center justify-end gap-1">
                   <IconButton
                     aria-label={`${comment.author.name} 댓글 수정`}
                     disabled={comment.pending}

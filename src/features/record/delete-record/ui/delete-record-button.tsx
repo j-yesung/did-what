@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Trash2Icon } from "@animateicons/react/lucide";
+import { TrashIcon } from "@phosphor-icons/react";
 
 import { placesQueryOptions } from "@/entities/place";
 import { RECORDS_QUERY_KEY } from "@/entities/record";
@@ -10,7 +11,17 @@ import { RECORD_COMMENTS_QUERY_KEY } from "@/entities/record-comment";
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
-import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/shared/ui/drawer";
+import { IconButton } from "@/shared/ui/icon-button";
 
 import { deleteRecord } from "../api/delete-record";
 
@@ -32,26 +43,42 @@ export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonPro
   });
 
   return (
-    <>
-      <Button color="danger" fullWidth onClick={() => setOpen(true)} size="large" variant="weak">
-        기록 삭제
-      </Button>
-      <ConfirmDialog
-        cancelButton={
-          <ConfirmDialogCancelButton disabled={remove.isPending} onClick={() => setOpen(false)}>
-            취소
-          </ConfirmDialogCancelButton>
+    <Drawer onOpenChange={setOpen} open={open} showSwipeHandle>
+      <DrawerTrigger
+        render={
+          <IconButton
+            aria-label="기록 삭제"
+            className="text-destructive active:bg-destructive/10"
+            icon={TrashIcon}
+            iconStrokeWidth={2}
+          />
         }
-        confirmButton={
-          <Button color="danger" loading={remove.isPending} onClick={() => remove.mutate()} variant="fill">
+      />
+      <DrawerContent className="[--drawer-height:auto]">
+        <DrawerHeader className="gap-2 px-5 pt-6 text-left group-data-[swipe-axis=y]/drawer-popup:text-left">
+          <DrawerTitle className="font-bold text-xl leading-7">{`“${activity}” 기록을 삭제할까요?`}</DrawerTitle>
+          <DrawerDescription className="text-base leading-6">
+            이 기록과 댓글은 삭제한 뒤 되돌릴 수 없어요.
+          </DrawerDescription>
+        </DrawerHeader>
+        <DrawerFooter className="mt-6 flex-row px-5 pb-5">
+          <DrawerClose
+            disabled={remove.isPending}
+            render={<Button className="flex-1" color="dark" disabled={remove.isPending} size="large" variant="weak" />}
+          >
+            취소
+          </DrawerClose>
+          <Button
+            className="flex-1"
+            color="danger"
+            loading={remove.isPending}
+            onClick={() => remove.mutate()}
+            size="large"
+          >
             기록 삭제
           </Button>
-        }
-        description={"이 기록과 댓글은 삭제한 뒤\n되돌릴 수 없어요."}
-        onClose={() => setOpen(false)}
-        open={open}
-        title={`“${activity}” 기록을 삭제할까요?`}
-      />
-    </>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

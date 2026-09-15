@@ -59,7 +59,7 @@ export const createComment = async (input: CreateCommentInput): Promise<CommentA
   });
   const saved = data?.[0];
   if (error || !saved) {
-    return { message: "댓글을 남기지 못했어요. 잠시 후 다시 시도해 주세요.", status: "error" };
+    return { message: "잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
   const comment: RecordComment = {

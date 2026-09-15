@@ -54,17 +54,19 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
         <PageHeader
           action={
             !recordMissing && record ? (
-              <IconButton
-                aria-label="기록 수정"
-                icon={NotePencilIcon}
-                iconSize={28}
-                nativeButton={false}
-                render={<PressLink href={`/records/${record.id}/edit`} />}
-              />
+              <div className="flex items-center gap-2">
+                <IconButton
+                  aria-label="기록 수정"
+                  icon={NotePencilIcon}
+                  iconSize={28}
+                  nativeButton={false}
+                  render={<PressLink href={`/records/${record.id}/edit`} />}
+                />
+                <DeleteRecordButton activity={record.activity} recordId={record.id} />
+              </div>
             ) : undefined
           }
           back="/records"
-          title="기록 상세"
         />
 
         {recordMissing ? (
@@ -77,12 +79,12 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
         ) : record ? (
           <>
             <section aria-labelledby="record-activity-title" className="p-1">
-              <h2
+              <h1
                 className="mt-2 text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
                 id="record-activity-title"
               >
                 {record.activity}
-              </h2>
+              </h1>
               <p className="mt-2 text-muted-foreground text-sm">
                 {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))}`}
               </p>
@@ -93,9 +95,9 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
 
             {recordPlaces && recordPlaces.length > 0 ? (
               <section aria-labelledby="record-places-title" className="-mx-5 border-t px-6 pt-5">
-                <h3 className="mb-3 font-semibold text-base" id="record-places-title">
+                <h2 className="mb-3 font-semibold text-base" id="record-places-title">
                   우리 어디 갔지?
-                </h3>
+                </h2>
                 <ul className="flex flex-col gap-2">
                   {recordPlaces.map(({ place }) => (
                     <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
@@ -114,9 +116,9 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
 
             {record.memo ? (
               <section aria-labelledby="record-memo-title" className="-mx-5 border-t px-6 pt-5">
-                <h3 className="mb-3 font-semibold text-base" id="record-memo-title">
+                <h2 className="mb-3 font-semibold text-base" id="record-memo-title">
                   우리 뭐했지?
-                </h3>
+                </h2>
                 <div className="flex flex-col gap-2 text-sm leading-relaxed">
                   {record.memo.split("\n").map((line, index) => (
                     <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
@@ -127,11 +129,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
               </section>
             ) : null}
 
-            <RecordComments activity={record.activity} member={member} recordId={record.id} />
-
-            <footer className="mt-auto flex justify-center py-2">
-              <DeleteRecordButton activity={record.activity} recordId={record.id} />
-            </footer>
+            <RecordComments member={member} recordId={record.id} />
           </>
         ) : null}
       </PageShell>

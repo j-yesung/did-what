@@ -48,7 +48,7 @@ export function NotificationBell({ className, memberId }: NotificationBellProps)
       {badgeLabel ? (
         <Badge
           aria-hidden="true"
-          className="absolute top-1 right-1 z-10 min-w-4 justify-center rounded-full px-1 py-0 text-[10px]"
+          className="absolute -top-1 right-0.5 z-10 size-5 justify-center rounded-full p-0 text-[11px]"
           tone="danger"
         >
           {badgeLabel}
