@@ -43,6 +43,6 @@ export const recordCommentListQueryOptions = (recordId: string) => {
     initialPageParam: null as RecordCommentCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     refetchOnWindowFocus: true,
-    staleTime: 0,
+    staleTime: 5_000,
   });
 };
