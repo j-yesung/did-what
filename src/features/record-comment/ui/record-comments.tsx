@@ -10,14 +10,15 @@ import {
   normalizeCommentBody,
   type OptimisticCommentAction,
   type RecordComment,
-  recordCommentListQueryOptions,
   type RecordCommentPage,
+  recordCommentListQueryOptions,
   reduceOptimisticComments,
 } from "@/entities/record-comment";
 import { showNotice } from "@/shared/lib/notice";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { IconButton } from "@/shared/ui/icon-button";
+import { PageSection } from "@/shared/ui/layouts";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 import { Textarea } from "@/shared/ui/textarea";
 
@@ -216,7 +217,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
   ]);
 
   return (
-    <section aria-labelledby="record-comments-title" className="-mx-5 border-t px-5 pt-5">
+    <PageSection aria-labelledby="record-comments-title" className="px-5">
       <header className="px-1.5">
         <h2 className="flex items-center gap-1.5 font-semibold text-base" id="record-comments-title">
           댓글 <span className="font-normal text-muted-foreground text-sm">{optimisticComments.length}</span>
@@ -295,7 +296,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
           </div>
         </form>
       </div>
-    </section>
+    </PageSection>
   );
 }
 

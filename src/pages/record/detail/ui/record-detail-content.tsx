@@ -16,7 +16,7 @@ import { DeleteRecordButton } from "@/features/record/delete-record";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { IconButton } from "@/shared/ui/icon-button";
-import { PageHeader, PageShell } from "@/shared/ui/layouts";
+import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
 import { PressLink } from "@/shared/ui/press-link";
@@ -94,7 +94,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
             </section>
 
             {recordPlaces && recordPlaces.length > 0 ? (
-              <section aria-labelledby="record-places-title" className="-mx-5 border-t px-6 pt-5">
+              <PageSection aria-labelledby="record-places-title">
                 <h2 className="mb-3 font-semibold text-base" id="record-places-title">
                   우리 어디 갔지?
                 </h2>
@@ -111,11 +111,11 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
                     </li>
                   ))}
                 </ul>
-              </section>
+              </PageSection>
             ) : null}
 
             {record.memo ? (
-              <section aria-labelledby="record-memo-title" className="-mx-5 border-t px-6 pt-5">
+              <PageSection aria-labelledby="record-memo-title">
                 <h2 className="mb-3 font-semibold text-base" id="record-memo-title">
                   우리 뭐했지?
                 </h2>
@@ -126,7 +126,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
                     </p>
                   ))}
                 </div>
-              </section>
+              </PageSection>
             ) : null}
 
             <RecordComments member={member} recordId={record.id} />

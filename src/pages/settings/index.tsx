@@ -4,8 +4,7 @@ import { CurrentMemberSetting } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
 import { ThemeSelect } from "@/features/switch-theme";
 import { getTheme } from "@/features/switch-theme/server";
-import { Card, CardContent } from "@/shared/ui/card";
-import { PageShell } from "@/shared/ui/layouts";
+import { PageSection, PageShell } from "@/shared/ui/layouts";
 import { ListHeader } from "@/shared/ui/list-header";
 
 export async function SettingsPage() {
@@ -15,14 +14,20 @@ export async function SettingsPage() {
     <PageShell withBottomNavigation>
       <ListHeader title="설정" />
 
-      <Card className="flex-1">
-        <CardContent className="flex flex-1 flex-col gap-6">
+      <div className="flex flex-1 flex-col">
+        <PageSection className="pb-5">
           <CurrentMemberSetting name={member.name} />
+        </PageSection>
+        <PageSection className="pb-5">
           <ThemeSelect value={theme} />
+        </PageSection>
+        <PageSection className="pb-5">
           <PushToggle />
+        </PageSection>
+        <PageSection className="mt-auto">
           <LogoutButton />
-        </CardContent>
-      </Card>
+        </PageSection>
+      </div>
     </PageShell>
   );
 }
