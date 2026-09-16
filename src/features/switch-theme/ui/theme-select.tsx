@@ -1,7 +1,9 @@
-import { cn } from "@/shared/lib/utils";
-import { Checkbox } from "@/shared/ui/checkbox";
+"use client";
+
+import { useEffect, useState, useTransition } from "react";
+
 import { FieldLegend, FieldSet } from "@/shared/ui/field";
-import { TextButton } from "@/shared/ui/text-button";
+import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 
 import { setTheme } from "../api/update-theme";
 import { THEME_OPTIONS, type Theme } from "../model/theme";
@@ -11,38 +13,29 @@ type ThemeSelectProps = {
 };
 
 export function ThemeSelect({ value }: ThemeSelectProps) {
-  return (
-    <form action={setTheme}>
-      <FieldSet className="gap-0">
-        <FieldLegend>화면 모드</FieldLegend>
-        <div className="flex flex-col">
-          {THEME_OPTIONS.map((option) => {
-            const selected = option.value === value;
+  const [selectedTheme, setSelectedTheme] = useState(value);
+  const [isPending, startTransition] = useTransition();
 
-            return (
-              <TextButton
-                aria-pressed={selected}
-                className={cn("min-h-11 w-full justify-between", selected && "font-[650]")}
-                key={option.value}
-                name="theme"
-                tone={selected ? "default" : "muted"}
-                type="submit"
-                value={option.value}
-              >
-                {option.label}
-                <Checkbox
-                  aria-hidden="true"
-                  checked={selected}
-                  className="pointer-events-none"
-                  readOnly
-                  tabIndex={-1}
-                  variant="check"
-                />
-              </TextButton>
-            );
-          })}
-        </div>
-      </FieldSet>
-    </form>
+  useEffect(() => setSelectedTheme(value), [value]);
+
+  const handleValueChange = (nextValue: string) => {
+    const nextTheme = nextValue as Theme;
+    const formData = new FormData();
+    formData.set("theme", nextTheme);
+    setSelectedTheme(nextTheme);
+    startTransition(() => setTheme(formData));
+  };
+
+  return (
+    <FieldSet className="gap-2" disabled={isPending}>
+      <FieldLegend>화면 모드</FieldLegend>
+      <SegmentedControl name="theme" size="large" onValueChange={handleValueChange} value={selectedTheme}>
+        {THEME_OPTIONS.map((option) => (
+          <SegmentedControlItem key={option.value} value={option.value}>
+            {option.label}
+          </SegmentedControlItem>
+        ))}
+      </SegmentedControl>
+    </FieldSet>
   );
 }

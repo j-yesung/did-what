@@ -29,8 +29,8 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
         : undefined;
 
   return (
-    <PageShell withBottomNavigation>
-      <ListHeader title="기억하고 싶은 장소" />
+    <PageShell className="gap-4" withBottomNavigation>
+      <ListHeader title="장소" />
 
       <PlaceSearchForm query={query} searchError={searchError} />
 
