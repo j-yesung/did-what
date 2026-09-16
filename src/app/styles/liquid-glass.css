@@ -10,6 +10,23 @@
     backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
   }
 
+  /* 상단 툴바는 화면 가장자리에 가까워 하단 네비게이션보다 얕은 그림자를 쓴다. */
+  .liquid-glass-toolbar {
+    box-shadow:
+      inset 1px 1px 0 var(--nav-glass-highlight),
+      inset 0 0 5px var(--nav-glass-highlight),
+      var(--shadow-toolbar-glass);
+  }
+
+  .app-toolbar [data-slot="icon-button"]:active {
+    scale: 1;
+    background: transparent;
+  }
+
+  .app-toolbar [data-slot="icon-button"]:active::after {
+    opacity: 0;
+  }
+
   .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
   .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-item"] {
     border-radius: 9999px;

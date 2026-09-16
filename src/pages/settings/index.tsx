@@ -11,20 +11,20 @@ export async function SettingsPage() {
   const [theme, { member }] = await Promise.all([getTheme(), requireMember()]);
 
   return (
-    <PageShell withBottomNavigation>
+    <PageShell className="gap-4" withBottomNavigation>
       <ListHeader title="설정" />
 
       <div className="flex flex-1 flex-col">
-        <PageSection className="pb-5">
+        <PageSection className="pt-4 pb-4">
           <CurrentMemberSetting name={member.name} />
         </PageSection>
-        <PageSection className="pb-5">
+        <PageSection className="pt-4 pb-4">
           <ThemeSelect value={theme} />
         </PageSection>
-        <PageSection className="pb-5">
+        <PageSection className="pt-4 pb-4">
           <PushToggle />
         </PageSection>
-        <PageSection className="mt-auto">
+        <PageSection className="mt-auto pt-4">
           <LogoutButton />
         </PageSection>
       </div>

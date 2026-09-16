@@ -114,7 +114,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
                 onOpen={openNotification}
                 pending={readOne.isPending && readOne.variables?.id === notification.id}
               />
-              {index < notifications.length - 1 ? <Separator className="ml-5" /> : null}
+              {index < notifications.length - 1 ? <Separator /> : null}
             </Fragment>
           ))}
           {listQuery.hasNextPage ? (

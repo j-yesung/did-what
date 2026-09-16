@@ -3,9 +3,8 @@ import { type ReactNode, Suspense } from "react";
 import { MainDataPrefetch } from "@/app/providers/main-data-prefetch";
 import { AppLoading } from "@/app/ui/app-loading";
 import { requireMember } from "@/entities/member/server";
+import { AppToolbar } from "@/widgets/app-toolbar";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
-import { NotificationBell } from "@/widgets/notification/notification-bell";
-import { RecordCreateButton } from "@/widgets/record-create-button";
 
 export const dynamic = "force-dynamic";
 
@@ -24,14 +23,7 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
   return (
     <>
       <MainDataPrefetch />
-      <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
-        <div className="mx-auto flex w-full max-w-(--app-width) justify-end px-5 pt-[calc(24px+env(safe-area-inset-top))]">
-          <div className="pointer-events-auto flex items-center gap-2">
-            <RecordCreateButton />
-            <NotificationBell className="size-13" memberId={member.id} />
-          </div>
-        </div>
-      </div>
+      <AppToolbar memberId={member.id} />
       {children}
       <BottomNavigation />
     </>

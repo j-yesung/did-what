@@ -11,7 +11,6 @@ import {
   placesQueryOptions,
   type SavedPlaceRow,
 } from "@/entities/place";
-import { Badge } from "@/shared/ui/badge";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -43,17 +42,16 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
   }
 
   return (
-    <section aria-label={`저장한 장소 ${places.length}곳`} className="flex flex-col gap-3">
-      <div className="px-1">
-        <h2 className="mt-1 font-bold text-lg">저장한 장소</h2>
-      </div>
-      <div className="flex flex-col gap-2.5 overflow-hidden">
+    <section aria-label={`저장한 장소 ${places.length}곳`} className="flex flex-col gap-2">
+      <h2 className="px-1 font-semibold text-muted-foreground text-sm">저장한 장소 {places.length}</h2>
+      <div className="flex flex-col divide-y overflow-hidden">
         {places.map((place) => {
           const href = `/places/${place.id}`;
           const cachePlace = () => queryClient.setQueryData(placeQueryKey(place.id), place);
 
           return (
             <ListRow
+              className="px-1 py-2.5"
               key={place.id}
               aria-label={`${place.name} 상세 보기`}
               nativeButton={false}
@@ -72,13 +70,7 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
               }
               right={
                 (place.record_places[0]?.count ?? 0) > 0 ? (
-                  <Badge
-                    aria-label={`기록 ${place.record_places[0]?.count}개`}
-                    className="min-h-6 min-w-6 justify-center rounded-full bg-primary px-1.5 py-1 text-primary-foreground text-xs"
-                    tone="primary"
-                  >
-                    {place.record_places[0]?.count}
-                  </Badge>
+                  <span className="text-muted-foreground text-xs">기록 {place.record_places[0]?.count}</span>
                 ) : null
               }
             >
