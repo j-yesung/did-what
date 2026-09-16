@@ -11,7 +11,7 @@ type IconButtonSize = "sm" | "default" | "lg";
 const ICON_BUTTON_VARIANT: Record<IconButtonVariant, string> = {
   border: "border-border bg-transparent text-muted-foreground active:bg-muted",
   clear: "bg-transparent text-muted-foreground active:bg-muted",
-  fill: "bg-muted text-muted-foreground active:bg-transparent",
+  fill: "bg-primary text-primary-foreground active:bg-primary",
 };
 
 const ICON_BUTTON_SIZE: Record<IconButtonSize, string> = {

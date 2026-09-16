@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
+import { DateInput } from "@/shared/ui/date-input";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
 
 type RecordDateFieldProps = {
   defaultRecordedAt: string;
@@ -33,26 +33,26 @@ export function RecordDateField({
       <div className="grid grid-cols-2 gap-3">
         <Field className="min-w-0" data-invalid={Boolean(recordedAtError)}>
           <FieldLabel htmlFor="record-start-date">시작일</FieldLabel>
-          <Input
+          <DateInput
             aria-describedby={recordedAtError ? "record-start-date-error" : undefined}
             aria-invalid={Boolean(recordedAtError)}
             id="record-start-date"
             name="recordedAt"
             onChange={(event) => {
               const value = event.target.value;
+              const nextRecordedUntil = !recordedUntil || recordedUntil < value ? value : recordedUntil;
               setRecordedAt(value);
-              setRecordedUntil(value);
-              onValueChange?.(value, value);
+              setRecordedUntil(nextRecordedUntil);
+              onValueChange?.(value, nextRecordedUntil);
             }}
             required
-            type="date"
             value={recordedAt}
           />
           <FieldError id="record-start-date-error">{recordedAtError}</FieldError>
         </Field>
         <Field className="min-w-0" data-invalid={Boolean(recordedUntilError)}>
           <FieldLabel htmlFor="record-end-date">종료일</FieldLabel>
-          <Input
+          <DateInput
             aria-describedby={recordedUntilError ? "record-end-date-error" : undefined}
             aria-invalid={Boolean(recordedUntilError)}
             id="record-end-date"
@@ -63,7 +63,6 @@ export function RecordDateField({
               setRecordedUntil(value);
               onValueChange?.(recordedAt, value);
             }}
-            type="date"
             value={recordedUntil}
           />
           <FieldError id="record-end-date-error">{recordedUntilError}</FieldError>

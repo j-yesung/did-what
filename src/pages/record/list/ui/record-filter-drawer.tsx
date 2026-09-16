@@ -7,10 +7,10 @@ import { format, parseISO } from "date-fns";
 
 import type { RecordSort } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
+import { DateInput } from "@/shared/ui/date-input";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { IconButton } from "@/shared/ui/icon-button";
-import { Input } from "@/shared/ui/input";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 
 type RecordPeriod = {
@@ -45,7 +45,8 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) {
-      setDraftRange(period);
+      const today = format(new Date(), "yyyy-MM-dd");
+      setDraftRange(from || to ? period : { from: today, to: today });
       setDraftSort(sort);
     }
   };
@@ -73,6 +74,7 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
         render={
           <IconButton
             aria-label={`기록 필터, 기간 ${getPeriodLabel(period)}, 정렬 ${sort === "recent" ? "최신순" : "오래된순"}`}
+            aria-pressed={hasFilters}
             className="shrink-0"
             icon={SlidersHorizontalIcon}
             type="button"
@@ -107,24 +109,29 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <Field className="min-w-0">
-                <FieldLabel htmlFor="filter-start-date">시작일</FieldLabel>
-                <Input
+                <FieldLabel className="text-muted-foreground" htmlFor="filter-start-date">
+                  시작일
+                </FieldLabel>
+                <DateInput
                   id="filter-start-date"
                   onChange={(event) => {
                     const value = event.target.value;
-                    setDraftRange({ from: value, to: value });
+                    setDraftRange((current) => ({
+                      from: value,
+                      to: !current.to || current.to < value ? value : current.to,
+                    }));
                   }}
-                  type="date"
                   value={draftRange.from}
                 />
               </Field>
               <Field className="min-w-0">
-                <FieldLabel htmlFor="filter-end-date">종료일</FieldLabel>
-                <Input
+                <FieldLabel className="text-muted-foreground" htmlFor="filter-end-date">
+                  종료일
+                </FieldLabel>
+                <DateInput
                   id="filter-end-date"
                   min={draftRange.from || undefined}
                   onChange={(event) => setDraftRange((current) => ({ ...current, to: event.target.value }))}
-                  type="date"
                   value={draftRange.to}
                 />
               </Field>

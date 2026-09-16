@@ -4,14 +4,24 @@ import { cn } from "@/shared/lib/utils";
 
 type InputProps = React.ComponentProps<"input"> & {
   actionButton?: React.ReactNode;
+  containerClassName?: string;
   variant?: "default" | "underline";
 };
 
-function Input({ className, disabled, actionButton, readOnly, type, variant = "default", ...props }: InputProps) {
+function Input({
+  className,
+  containerClassName,
+  disabled,
+  actionButton,
+  readOnly,
+  type,
+  variant = "default",
+  ...props
+}: InputProps) {
   const hasActionButton = Boolean(actionButton);
 
   return (
-    <div className="relative w-full" data-slot="input-field">
+    <div className={cn("relative w-full", containerClassName)} data-slot="input-field">
       <input
         {...props}
         className={cn(
