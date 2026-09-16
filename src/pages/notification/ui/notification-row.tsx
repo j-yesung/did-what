@@ -33,11 +33,7 @@ export function NotificationRow({ notification, onOpen, pending }: NotificationR
       aria-label={`${unread ? "읽지 않은 알림, " : ""}${notification.sender_name}님이 ${message}, ${notification.record_title}, ${
         deleted ? "삭제된 기록" : "기록 보기"
       }`}
-      className={cn(
-        "items-start py-4",
-        unread &&
-          "bg-primary/5 before:absolute before:top-4 before:bottom-4 before:left-0 before:w-0.5 before:rounded-full before:bg-primary",
-      )}
+      className="items-start py-4"
       disabled={deleted || pending}
       nativeButton={!link}
       onClick={link ? undefined : () => onOpen(notification)}
@@ -45,11 +41,15 @@ export function NotificationRow({ notification, onOpen, pending }: NotificationR
       type={link ? undefined : "button"}
     >
       <span className="flex min-w-0 items-start gap-3">
+        <span
+          aria-hidden="true"
+          className={cn("mt-2 size-1.5 shrink-0 rounded-full", unread ? "bg-primary" : "bg-transparent")}
+        />
         <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className={cn("text-foreground text-sm leading-5", unread && "font-semibold")}>
-            <strong>{notification.sender_name}</strong>님이 {message}
+          <span className="text-foreground text-sm leading-5">
+            {notification.sender_name}님이 {message}
           </span>
-          <span className={cn("truncate text-base text-foreground", unread ? "font-bold" : "font-medium")}>
+          <span className={cn("truncate text-base text-foreground", unread ? "font-semibold" : "font-normal")}>
             {notification.record_title}
           </span>
           <span className="flex items-center gap-2 text-muted-foreground text-xs">

@@ -1,6 +1,5 @@
 "use client";
 
-import { MapPinIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -11,7 +10,7 @@ import {
   placesQueryOptions,
   type SavedPlaceRow,
 } from "@/entities/place";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
@@ -29,13 +28,10 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
 
   if (places.length === 0) {
     return (
-      <Empty className="border bg-card py-12">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <MapPinIcon strokeWidth={2} aria-hidden="true" />
-          </EmptyMedia>
-          <EmptyTitle>아직 저장한 장소가 없어요</EmptyTitle>
-          <EmptyDescription>위 검색란에서 첫 번째 추억의 장소를 찾아 저장해 보세요.</EmptyDescription>
+      <Empty className="flex-none border-0 py-10">
+        <EmptyHeader className="gap-1">
+          <EmptyTitle className="font-semibold text-base">저장한 장소가 없어요</EmptyTitle>
+          <EmptyDescription className="text-sm/normal">장소를 검색해 저장해 보세요.</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
