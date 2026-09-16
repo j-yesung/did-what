@@ -13,7 +13,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
   const filters = parseRecordFilters(await searchParams);
 
   return (
-    <PageShell withBottomNavigation>
+    <PageShell className="gap-4" withBottomNavigation>
       <ListHeader title="우리의 기록" />
 
       <RecordFilterForm filters={filters} />
