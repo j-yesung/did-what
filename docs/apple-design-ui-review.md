@@ -113,7 +113,7 @@ apple-design 기준으로 로그인·구성원 설정부터 지도·지역·기�
 
 **권장 방법:** 작은 버튼은 즉시 표면 변화와 80–100ms 정도의 얕은 축소, 넓은 행은 표면 변화 중심을 권한다. 하단 탭에는 눌린 동안의 작은 색 변화면 충분하다. hover는 마우스 환경에만 적용하고, 기존 focus ring을 유지한다. 현재 정렬 링크에는 선택 전 press 표현도 보완할 여지가 있다.
 
-**관련 파일:** `src/shared/ui/button.tsx`, `src/shared/ui/list-row.tsx`, `src/shared/lib/interaction.ts`, `src/widgets/bottom-navigation.tsx`, `src/pages/record/list/ui/record-filter-form.tsx`
+**관련 파일:** `src/shared/ui/button.tsx`, `src/shared/ui/list-row.tsx`, `src/shared/lib/interaction.ts`, `src/widgets/bottom-navigation/index.tsx`, `src/pages/record/list/ui/record-filter-form.tsx`
 
 ### 11. 확인창 이동량을 줄이고 시트 속도는 실측 후 조정
 

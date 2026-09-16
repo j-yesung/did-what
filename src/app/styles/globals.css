@@ -124,7 +124,7 @@
   --app-width: 430px;
 
   /* 플로팅 내비게이션과 콘텐츠 사이의 안전 여백. iOS 홈 인디케이터 영역도 포함한다. */
-  --nav-height: clamp(52px, calc((100vw - 32px) / 6), 64px);
+  --nav-height: clamp(48px, calc((100vw - 32px) / 6), 58px);
   --nav-bottom-gap: 6px;
   --nav-bottom-offset: max(var(--nav-bottom-gap), calc(var(--nav-bottom-gap) + env(safe-area-inset-bottom) - 16px));
   --nav-content-gap: 16px;
