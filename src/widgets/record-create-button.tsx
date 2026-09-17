@@ -2,19 +2,20 @@
 
 import { NotePencilIcon } from "@phosphor-icons/react";
 
-import { IconButton } from "@/shared/ui/icon-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { PressLink } from "@/shared/ui/press-link";
 
 export function RecordCreateButton() {
   return (
-    <IconButton
+    <LiquidGlassButton
       aria-label="기록 남기기"
-      className="rounded-full text-foreground"
-      icon={NotePencilIcon}
-      iconSize={22}
+      className="size-11"
       nativeButton={false}
       render={<PressLink href="/records/new" prefetch />}
-      variant="clear"
-    />
+      shape="circle"
+      surface="group"
+    >
+      <NotePencilIcon data-icon="inline-start" />
+    </LiquidGlassButton>
   );
 }

@@ -25,6 +25,7 @@ import { buttonVariants } from "@/shared/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { IconButton } from "@/shared/ui/icon-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
@@ -61,21 +62,21 @@ function RecordDayCreateButton({ date }: { date: string }) {
 
   return (
     <motion.div
-      className="app-toolbar liquid-glass liquid-glass-toolbar inline-flex shrink-0 rounded-full border p-0.5"
+      className="inline-flex shrink-0"
       onTap={handleTapEnd}
       onTapCancel={handleTapCancel}
       onTapStart={handleTapStart}
       style={{ transform }}
     >
-      <IconButton
+      <LiquidGlassButton
         aria-label="선택한 날짜에 기록 추가"
-        className="rounded-full text-foreground active:bg-transparent active:after:opacity-0"
-        icon={NotePencilIcon}
-        iconSize={22}
+        className="size-12 active:scale-100"
         nativeButton={false}
         render={<PressLink href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} prefetch />}
-        variant="clear"
-      />
+        shape="circle"
+      >
+        <NotePencilIcon data-icon="inline-start" />
+      </LiquidGlassButton>
     </motion.div>
   );
 }

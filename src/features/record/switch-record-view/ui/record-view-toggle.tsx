@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 
 import { useToolbarTapScale } from "@/shared/lib/use-toolbar-tap-scale";
-import { IconButton } from "@/shared/ui/icon-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { type RecordView, saveRecordView } from "../model/record-view-preference";
@@ -20,17 +20,15 @@ export function RecordViewToggle() {
 
   return (
     <motion.div
-      className="app-toolbar liquid-glass liquid-glass-toolbar pointer-events-auto inline-flex rounded-full border p-0.5"
+      className="pointer-events-auto inline-flex"
       onTap={handleTapEnd}
       onTapCancel={handleTapCancel}
       onTapStart={handleTapStart}
       style={{ transform }}
     >
-      <IconButton
+      <LiquidGlassButton
         aria-label={calendar ? "달력" : "목록"}
-        className="rounded-full text-foreground active:bg-transparent active:after:opacity-0"
-        icon={calendar ? CalendarDotsIcon : ListBulletsIcon}
-        iconSize={22}
+        className="active:scale-100"
         nativeButton={false}
         render={
           <PressLink
@@ -39,8 +37,10 @@ export function RecordViewToggle() {
             prefetch
           />
         }
-        variant="clear"
-      />
+        shape="circle"
+      >
+        {calendar ? <CalendarDotsIcon data-icon="inline-start" /> : <ListBulletsIcon data-icon="inline-start" />}
+      </LiquidGlassButton>
     </motion.div>
   );
 }

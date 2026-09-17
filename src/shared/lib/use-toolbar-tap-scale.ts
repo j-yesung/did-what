@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { useMotionTemplate, useReducedMotion, useSpring } from "motion/react";
 
 const TOOLBAR_SPRING = { damping: 10, mass: 1, stiffness: 180, type: "spring" } as const;
-const TOOLBAR_SCALE = 1.14;
+const TOOLBAR_SCALE = 1.2;
 const MIN_PRESS_DURATION = 160;
 
 export const useToolbarTapScale = () => {
