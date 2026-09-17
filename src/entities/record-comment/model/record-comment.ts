@@ -10,6 +10,17 @@ const COMMENT_DATE_TIME = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
 });
 
+const formatCommentDateTime = (date: Date) => {
+  return COMMENT_DATE_TIME.formatToParts(date)
+    .map(({ type, value }) => {
+      if (type !== "dayPeriod") return value;
+      if (value === "AM") return "오전";
+      if (value === "PM") return "오후";
+      return value;
+    })
+    .join("");
+};
+
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
@@ -44,7 +55,7 @@ export const formatCommentTime = (timestamp: string, now = new Date()) => {
   if (elapsed < HOUR) return `${Math.floor(elapsed / MINUTE)}분 전`;
   if (elapsed < DAY) return `${Math.floor(elapsed / HOUR)}시간 전`;
   if (elapsed < 7 * DAY) return `${Math.floor(elapsed / DAY)}일 전`;
-  return COMMENT_DATE_TIME.format(date);
+  return formatCommentDateTime(date);
 };
 
 export const normalizeCommentBody = (value: unknown) => {

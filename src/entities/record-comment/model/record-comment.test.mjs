@@ -24,6 +24,7 @@ test("댓글 시간은 최근에는 상대 시간, 일주일 뒤에는 날짜로
   assert.equal(formatCommentTime("2026-09-14T09:00:00+09:00", now), "3시간 전");
   assert.equal(formatCommentTime("2026-09-12T12:00:00+09:00", now), "2일 전");
   assert.equal(formatCommentTime("2026-09-07T11:00:00+09:00", now), "9월 7일 오전 11:00");
+  assert.equal(formatCommentTime("2026-09-06T23:00:00+09:00", now), "9월 6일 오후 11:00");
 });
 
 test("댓글 본문은 공백을 정리하고 Unicode 글자 수를 검증한다", () => {
