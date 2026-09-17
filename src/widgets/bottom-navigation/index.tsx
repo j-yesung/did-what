@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
 
 import { Gear, type Icon, MapPin, MapPinArea, PencilSimple } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 
+import { readRecordView } from "@/features/record/switch-record-view";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
@@ -51,12 +52,16 @@ export function BottomNavigation() {
     animateIndicator(indicatorRef.current, previousActiveIndex, activeIndex, TABS.length);
   }, [activeIndex, pendingIndex]);
 
-  const cancelPendingTab = (index: number) => {
+  const handleCancelPendingTab = (index: number) => {
     if (pressedTabRef.current !== index) return;
 
     pressedTabRef.current = null;
     cancelIndicatorMotion(indicatorRef.current);
     setPendingIndex((current) => (current === index ? null : current));
+  };
+
+  const handleRecordViewClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (readRecordView() === "calendar") event.currentTarget.href = "/records?view=calendar";
   };
 
   if (activeIndex === -1) return null;
@@ -110,10 +115,12 @@ export function BottomNavigation() {
                 }}
                 onPointerLeave={(event) => {
                   if (event.pointerType === "touch" && event.buttons === 0) return;
-                  cancelPendingTab(index);
+                  handleCancelPendingTab(index);
                 }}
-                onPointerCancel={() => cancelPendingTab(index)}
-                render={<PressLink href={href} prefetch />}
+                onPointerCancel={() => handleCancelPendingTab(index)}
+                render={
+                  <PressLink href={href} onClick={href === "/records" ? handleRecordViewClick : undefined} prefetch />
+                }
                 variant="ghost"
               >
                 <TabIcon aria-hidden="true" className="size-5.5" weight={active ? "fill" : "regular"} />

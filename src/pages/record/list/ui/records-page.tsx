@@ -1,11 +1,10 @@
 import { parseRecordFilters, type RecordSearchParams } from "@/entities/record";
+import { RecordViewPreference } from "@/features/record/switch-record-view";
 import { PageShell } from "@/shared/ui/layouts";
 
 import { RecordCalendar } from "./record-calendar";
 import { RecordFilterForm } from "./record-filter-form";
 import { RecordList } from "./record-list";
-import { RecordViewPreference } from "./record-view-preference";
-import { RecordViewToggle } from "./record-view-toggle";
 
 type RecordsPageProps = {
   searchParams: Promise<RecordSearchParams>;
@@ -19,10 +18,9 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
-      <header className="flex min-h-13 items-center px-1">
+      <header className="min-h-13">
         <h1 className="sr-only">우리의 기록</h1>
         <RecordViewPreference hasExplicitView={hasExplicitView} view={view} />
-        <RecordViewToggle view={view} />
       </header>
 
       {view === "calendar" ? (

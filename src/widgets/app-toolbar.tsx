@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 
+import { RecordViewToggle } from "@/features/record/switch-record-view";
 import { useToolbarTapScale } from "@/shared/lib/use-toolbar-tap-scale";
 import { NotificationBell } from "@/widgets/notification/notification-bell";
 import { RecordCreateButton } from "@/widgets/record-create-button";
@@ -18,10 +19,11 @@ export function AppToolbar({ memberId }: { memberId: string }) {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
-      <div className="mx-auto flex w-full max-w-(--app-width) justify-end px-5 pt-[calc(24px+env(safe-area-inset-top))]">
+      <div className="mx-auto flex w-full max-w-(--app-width) items-start px-5 pt-[calc(24px+env(safe-area-inset-top))]">
+        {pathname === "/records" ? <RecordViewToggle /> : null}
         <motion.div
           aria-label="빠른 작업"
-          className="app-toolbar liquid-glass liquid-glass-toolbar pointer-events-auto flex items-center gap-0.5 rounded-full border p-0.5"
+          className="app-toolbar pointer-events-auto relative isolate ml-auto flex items-center gap-0.5 overflow-hidden rounded-full border border-foreground/20 bg-[radial-gradient(ellipse_at_28%_8%,color-mix(in_oklab,var(--color-light)_12%,transparent),transparent_58%),radial-gradient(ellipse_at_72%_92%,color-mix(in_oklab,var(--color-dark)_6%,transparent),transparent_62%),linear-gradient(180deg,color-mix(in_oklab,var(--color-light)_8%,transparent)_0%,color-mix(in_oklab,var(--color-light)_6%,transparent)_45%,color-mix(in_oklab,var(--color-light)_5%,transparent)_100%)] p-0.5 shadow-[inset_0_-1px_1px_color-mix(in_oklab,var(--color-dark)_6%,transparent),0_4px_12px_color-mix(in_oklab,var(--color-dark)_6%,transparent)] [-webkit-backdrop-filter:blur(5px)_saturate(115%)] [backdrop-filter:blur(5px)_saturate(115%)]"
           onTap={handleTapEnd}
           onTapCancel={handleTapCancel}
           onTapStart={handleTapStart}
