@@ -24,7 +24,9 @@ export function RecordTextFields({
   return (
     <>
       <Field data-invalid={Boolean(activityError)}>
-        <FieldLabel htmlFor="activity">기록 제목</FieldLabel>
+        <FieldLabel className="font-semibold text-base" htmlFor="activity">
+          기록 제목
+        </FieldLabel>
         <Input
           className="h-12"
           defaultValue={initialActivity}
@@ -42,7 +44,7 @@ export function RecordTextFields({
       <FieldSeparator />
 
       <Field data-invalid={Boolean(memoError)}>
-        <FieldLabel htmlFor="memo">
+        <FieldLabel className="font-semibold text-base" htmlFor="memo">
           무엇을 했나요? <span className="font-[650] text-[11px] text-muted-foreground">(선택)</span>
         </FieldLabel>
         <Textarea

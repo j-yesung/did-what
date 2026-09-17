@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import type { DateRange } from "react-day-picker";
-import { ko } from "react-day-picker/locale";
 
-import { format, parseISO } from "date-fns";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import { Button } from "@/shared/ui/button";
-import { Calendar } from "@/shared/ui/calendar";
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
+import { DateInput } from "@/shared/ui/date-input";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
+import { Switch } from "@/shared/ui/switch";
+
+const DATE_FIELD_TRANSITION = { duration: 0.2, ease: [0.23, 1, 0.32, 1] as const };
 
 type RecordDateFieldProps = {
   defaultRecordedAt: string;
@@ -28,94 +27,93 @@ export function RecordDateField({
   recordedAtError,
   recordedUntilError,
 }: RecordDateFieldProps) {
-  const firstRecordedAt = initialRecordedAt ?? defaultRecordedAt;
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange>(() => ({
-    from: parseISO(firstRecordedAt),
-    to: parseISO(initialRecordedUntil ?? firstRecordedAt),
-  }));
-  const [draftDateRange, setDraftDateRange] = useState<DateRange>();
-  const selectedStart = dateRange.from ?? parseISO(firstRecordedAt);
-  const selectedEnd = dateRange.to ?? selectedStart;
-  const recordedAt = format(selectedStart, "yyyy-MM-dd");
-  const recordedUntil = format(selectedEnd, "yyyy-MM-dd");
-  const hasError = Boolean(recordedAtError || recordedUntilError);
+  const [recordedAt, setRecordedAt] = useState(initialRecordedAt ?? defaultRecordedAt);
+  const [recordedUntil, setRecordedUntil] = useState(initialRecordedUntil ?? initialRecordedAt ?? defaultRecordedAt);
+  const [isSingleDay, setIsSingleDay] = useState(
+    (initialRecordedUntil ?? initialRecordedAt ?? defaultRecordedAt) === recordedAt,
+  );
+  const shouldReduceMotion = useReducedMotion();
+  const transition = shouldReduceMotion ? { duration: 0 } : DATE_FIELD_TRANSITION;
+
+  const handleSingleDayChange = (checked: boolean) => {
+    setIsSingleDay(checked);
+    if (!checked) return;
+
+    setRecordedUntil(recordedAt);
+    onValueChange?.(recordedAt, recordedAt);
+  };
 
   return (
     <div aria-labelledby="record-date-label" role="group">
-      <FieldLabel className="mb-1.5 leading-normal" htmlFor="record-date-trigger" id="record-date-label">
-        언제
-      </FieldLabel>
-      <Field data-invalid={hasError}>
-        <Drawer
-          onOpenChange={(open) => {
-            setDatePickerOpen(open);
-            if (open) setDraftDateRange(dateRange);
-          }}
-          open={datePickerOpen}
-          showSwipeHandle
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="font-semibold text-base" id="record-date-label">
+          언제
+        </p>
+        <label
+          className="flex cursor-pointer items-center gap-2 text-muted-foreground text-sm"
+          htmlFor="record-single-day"
         >
-          <DrawerTrigger
-            render={
-              <Button
-                id="record-date-trigger"
-                className="justify-start [&>span]:w-full"
-                fullWidth
-                size="field"
-                type="button"
-                variant="outline"
-                aria-invalid={hasError}
-                aria-describedby={hasError ? "record-date-error" : undefined}
-                aria-labelledby="record-date-label"
-              />
-            }
-          >
-            <span className="flex w-full items-center justify-between gap-3">
-              <span>{recordedAt === recordedUntil ? recordedAt : `${recordedAt} ~ ${recordedUntil}`}</span>
-              <span className="shrink-0 text-muted-foreground text-xs">기간 설정</span>
-            </span>
-          </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>언제 갔나요?</DrawerTitle>
-            </DrawerHeader>
-
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
-              <Calendar
-                className="w-full rounded-xl"
-                classNames={{ root: "w-full" }}
-                defaultMonth={draftDateRange?.from ?? selectedStart}
-                fixedWeeks
-                locale={ko}
-                mode="range"
-                onSelect={setDraftDateRange}
-                selected={draftDateRange}
-              />
-            </div>
-
-            <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
-              <Button
-                disabled={!draftDateRange?.from}
-                fullWidth
-                onClick={() => {
-                  if (!draftDateRange?.from) return;
-                  const nextRange = { from: draftDateRange.from, to: draftDateRange.to ?? draftDateRange.from };
-                  setDateRange(nextRange);
-                  onValueChange?.(format(nextRange.from, "yyyy-MM-dd"), format(nextRange.to, "yyyy-MM-dd"));
-                  setDatePickerOpen(false);
-                }}
-                size="large"
-                type="button"
-              >
-                적용
-              </Button>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-        <input name="recordedAt" type="hidden" value={recordedAt} />
-        <input name="recordedUntil" type="hidden" value={recordedUntil} />
-        <FieldError id="record-date-error">{recordedAtError ?? recordedUntilError}</FieldError>
-      </Field>
+          하루 기록
+          <Switch checked={isSingleDay} id="record-single-day" onCheckedChange={handleSingleDayChange} />
+        </label>
+      </div>
+      <motion.div
+        className={isSingleDay ? "grid grid-cols-1 gap-3" : "grid grid-cols-2 gap-3"}
+        layout
+        transition={transition}
+      >
+        <Field className="min-w-0" data-invalid={Boolean(recordedAtError)}>
+          <FieldLabel className="text-muted-foreground" htmlFor="record-start-date">
+            {isSingleDay ? "기록한 날" : "첫날"}
+          </FieldLabel>
+          <DateInput
+            aria-describedby={recordedAtError ? "record-start-date-error" : undefined}
+            aria-invalid={Boolean(recordedAtError)}
+            id="record-start-date"
+            name="recordedAt"
+            onChange={(event) => {
+              const value = event.target.value;
+              const nextRecordedUntil = isSingleDay || !recordedUntil || recordedUntil < value ? value : recordedUntil;
+              setRecordedAt(value);
+              setRecordedUntil(nextRecordedUntil);
+              onValueChange?.(value, nextRecordedUntil);
+            }}
+            required
+            value={recordedAt}
+          />
+          <FieldError id="record-start-date-error">{recordedAtError}</FieldError>
+        </Field>
+        <AnimatePresence initial={false} mode="popLayout">
+          {!isSingleDay ? (
+            <motion.div
+              animate={{ opacity: 1, transform: "translateX(0)" }}
+              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, transform: "translateX(8px)" }}
+              initial={shouldReduceMotion ? false : { opacity: 0, transform: "translateX(8px)" }}
+              transition={transition}
+            >
+              <Field className="min-w-0" data-invalid={Boolean(recordedUntilError)}>
+                <FieldLabel className="text-muted-foreground" htmlFor="record-end-date">
+                  마지막 날
+                </FieldLabel>
+                <DateInput
+                  aria-describedby={recordedUntilError ? "record-end-date-error" : undefined}
+                  aria-invalid={Boolean(recordedUntilError)}
+                  id="record-end-date"
+                  min={recordedAt || undefined}
+                  name="recordedUntil"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setRecordedUntil(value);
+                    onValueChange?.(recordedAt, value);
+                  }}
+                  value={recordedUntil}
+                />
+                <FieldError id="record-end-date-error">{recordedUntilError}</FieldError>
+              </Field>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

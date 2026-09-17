@@ -2,7 +2,7 @@
 
 import { Fragment } from "react";
 
-import { BellSimpleIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -17,7 +17,7 @@ import { readAllNotifications } from "@/features/notification/read-all-notificat
 import { readNotification } from "@/features/notification/read-notification";
 import { showNotice } from "@/shared/lib/notice";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader } from "@/shared/ui/layouts/page-header";
 import { PageShell } from "@/shared/ui/layouts/page-shell";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -96,13 +96,10 @@ export function NotificationList({ memberId }: NotificationListProps) {
       {listQuery.isPending ? null : listQuery.isError && !listQuery.data ? (
         <LoadErrorAlert icon={<WarningCircleIcon aria-hidden="true" />} title="알림을 불러오지 못했어요" />
       ) : notifications.length === 0 ? (
-        <Empty className="border bg-card py-16">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <BellSimpleIcon aria-hidden="true" />
-            </EmptyMedia>
-            <EmptyTitle>아직 새로운 알림이 없어요</EmptyTitle>
-            <EmptyDescription>함께한 사람이 기록이나 댓글을 남기면 여기에 차곡차곡 쌓여요.</EmptyDescription>
+        <Empty className="border-0 py-12">
+          <EmptyHeader className="gap-1">
+            <EmptyTitle className="font-semibold text-base">새 알림이 없어요</EmptyTitle>
+            <EmptyDescription className="text-sm/normal">새 기록과 댓글을 여기서 확인해요.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (

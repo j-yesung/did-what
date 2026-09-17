@@ -1,6 +1,7 @@
 export {
   RECORD_DETAILS_QUERY_KEY,
   RECORDS_QUERY_KEY,
+  recordCalendarQueryOptions,
   recordDetailQueryOptions,
   recordListQueryOptions,
   recordLocationsQueryOptions,

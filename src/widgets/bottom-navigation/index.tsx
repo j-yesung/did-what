@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
-import { animateIndicator, cancelIndicatorMotion, settleIndicator } from "./motion";
+import { animateIndicator, cancelIndicatorMotion } from "./motion";
 
 type Tab = {
   href: string;
@@ -31,7 +31,6 @@ export function BottomNavigation() {
   const activeIndexRef = useRef(activeIndex);
   const pressedTabRef = useRef<number | null>(null);
   const indicatorRef = useRef<HTMLSpanElement>(null);
-  const indicatorSettleRef = useRef<HTMLSpanElement>(null);
 
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
 
@@ -50,14 +49,13 @@ export function BottomNavigation() {
 
     setPendingIndex(null);
     animateIndicator(indicatorRef.current, previousActiveIndex, activeIndex, TABS.length);
-    settleIndicator(indicatorSettleRef.current, Math.sign(activeIndex - previousActiveIndex));
   }, [activeIndex, pendingIndex]);
 
   const cancelPendingTab = (index: number) => {
     if (pressedTabRef.current !== index) return;
 
     pressedTabRef.current = null;
-    cancelIndicatorMotion(indicatorRef.current, indicatorSettleRef.current);
+    cancelIndicatorMotion(indicatorRef.current);
     setPendingIndex((current) => (current === index ? null : current));
   };
 
@@ -80,9 +78,7 @@ export function BottomNavigation() {
             className="block h-[calc(100%-8px)] transition-transform duration-280 ease-[cubic-bezier(0.77,0,0.175,1)] motion-reduce:transition-none"
             style={{ transform: `translateX(${displayedActiveIndex * 100}%)`, width: `${100 / TABS.length}%` }}
           >
-            <span className="block size-full" ref={indicatorSettleRef}>
-              <span className="liquid-glass-navigation-active block size-full rounded-full" ref={indicatorRef} />
-            </span>
+            <span className="liquid-glass-navigation-active block size-full rounded-full" ref={indicatorRef} />
           </span>
         </li>
         {TABS.map(({ href, icon: TabIcon, label }, index) => {
@@ -102,7 +98,7 @@ export function BottomNavigation() {
 
                   if (index === activeIndex) {
                     pressedTabRef.current = null;
-                    cancelIndicatorMotion(indicatorRef.current, indicatorSettleRef.current);
+                    cancelIndicatorMotion(indicatorRef.current);
                     setPendingIndex(null);
                     return;
                   }
@@ -111,7 +107,6 @@ export function BottomNavigation() {
                   pressedTabRef.current = index;
                   setPendingIndex(index);
                   animateIndicator(indicatorRef.current, fromIndex, index, TABS.length);
-                  settleIndicator(indicatorSettleRef.current, Math.sign(index - fromIndex));
                 }}
                 onPointerLeave={(event) => {
                   if (event.pointerType === "touch" && event.buttons === 0) return;

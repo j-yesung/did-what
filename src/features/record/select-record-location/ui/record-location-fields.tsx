@@ -86,7 +86,7 @@ export function RecordLocationFields({
       <input name="places" type="hidden" value={JSON.stringify(places.map((place) => place.reference))} />
 
       <Field data-invalid={Boolean(regionError)}>
-        <FieldLabel>어느 지역에 갔나요?</FieldLabel>
+        <FieldLabel className="font-semibold text-base">어느 지역에 갔나요?</FieldLabel>
         <RegionPickerDialog
           aria-describedby={regionError ? "regionCode-error" : undefined}
           aria-invalid={Boolean(regionError)}
@@ -98,7 +98,7 @@ export function RecordLocationFields({
 
       <Field data-invalid={Boolean(placeError)}>
         <FieldContent className="gap-1">
-          <FieldLabel>방문 장소</FieldLabel>
+          <FieldLabel className="font-semibold text-base">방문 장소</FieldLabel>
           <FieldDescription>최대 {MAX_VISITED_PLACES}곳까지 추가할 수 있어요.</FieldDescription>
         </FieldContent>
 

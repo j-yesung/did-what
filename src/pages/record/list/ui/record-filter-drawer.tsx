@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import type { DateRange } from "react-day-picker";
-import { ko } from "react-day-picker/locale";
 
 import { SlidersHorizontalIcon } from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
 
 import type { RecordSort } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
-import { Calendar } from "@/shared/ui/calendar";
+import { DateInput } from "@/shared/ui/date-input";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
+import { Field, FieldLabel } from "@/shared/ui/field";
 import { IconButton } from "@/shared/ui/icon-button";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 
@@ -22,15 +21,6 @@ type RecordPeriod = {
 type RecordPeriodFilterProps = RecordPeriod & {
   onApply: (filters: RecordPeriod & { sort: RecordSort }) => void;
   sort: RecordSort;
-};
-
-const toDateRange = ({ from, to }: RecordPeriod): DateRange | undefined => {
-  if (!from && !to) return undefined;
-
-  return {
-    from: from ? parseISO(from) : undefined,
-    to: to ? parseISO(to) : undefined,
-  };
 };
 
 const formatDate = (value: string) => {
@@ -46,26 +36,29 @@ const getPeriodLabel = ({ from, to }: RecordPeriod) => {
 
 export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilterProps) {
   const [open, setOpen] = useState(false);
-  const [draftRange, setDraftRange] = useState<DateRange>();
+  const [draftRange, setDraftRange] = useState<RecordPeriod>({ from, to });
   const [draftSort, setDraftSort] = useState(sort);
+
   const period = { from, to };
   const hasFilters = Boolean(from || to) || sort !== "recent";
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) {
-      setDraftRange(toDateRange(period));
+      const today = format(new Date(), "yyyy-MM-dd");
+      setDraftRange(from || to ? period : { from: today, to: today });
       setDraftSort(sort);
     }
   };
 
   const handleApply = () => {
-    const start = draftRange?.from ?? draftRange?.to;
-    const end = draftRange?.to ?? start;
+    if (draftRange.from && draftRange.to && draftRange.to < draftRange.from) return;
+    const start = draftRange.from || draftRange.to;
+    const end = draftRange.to || start;
     onApply({
-      from: start ? format(start, "yyyy-MM-dd") : "",
+      from: start,
       sort: draftSort,
-      to: end ? format(end, "yyyy-MM-dd") : "",
+      to: end,
     });
     setOpen(false);
   };
@@ -81,6 +74,7 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
         render={
           <IconButton
             aria-label={`기록 필터, 기간 ${getPeriodLabel(period)}, 정렬 ${sort === "recent" ? "최신순" : "오래된순"}`}
+            aria-pressed={hasFilters}
             className="shrink-0"
             icon={SlidersHorizontalIcon}
             type="button"
@@ -91,12 +85,12 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
 
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>기록 필터</DrawerTitle>
+          <DrawerTitle className="text-left font-bold text-xl leading-7">기록 필터</DrawerTitle>
         </DrawerHeader>
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4">
           <section aria-labelledby="record-sort-title">
-            <h3 className="mb-2 font-medium text-sm" id="record-sort-title">
+            <h3 className="mb-2 font-semibold text-base" id="record-sort-title">
               정렬
             </h3>
             <SegmentedControl
@@ -110,19 +104,38 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
           </section>
 
           <section aria-labelledby="record-period-title">
-            <h3 className="mb-2 font-medium text-sm" id="record-period-title">
+            <h3 className="mb-2 font-semibold text-base" id="record-period-title">
               기간
             </h3>
-            <Calendar
-              className="w-full rounded-xl"
-              classNames={{ root: "w-full" }}
-              defaultMonth={draftRange?.from ?? draftRange?.to ?? new Date()}
-              fixedWeeks
-              locale={ko}
-              mode="range"
-              onSelect={setDraftRange}
-              selected={draftRange}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <Field className="min-w-0">
+                <FieldLabel className="text-muted-foreground" htmlFor="filter-start-date">
+                  첫날
+                </FieldLabel>
+                <DateInput
+                  id="filter-start-date"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setDraftRange((current) => ({
+                      from: value,
+                      to: !current.to || current.to < value ? value : current.to,
+                    }));
+                  }}
+                  value={draftRange.from}
+                />
+              </Field>
+              <Field className="min-w-0">
+                <FieldLabel className="text-muted-foreground" htmlFor="filter-end-date">
+                  마지막 날
+                </FieldLabel>
+                <DateInput
+                  id="filter-end-date"
+                  min={draftRange.from || undefined}
+                  onChange={(event) => setDraftRange((current) => ({ ...current, to: event.target.value }))}
+                  value={draftRange.to}
+                />
+              </Field>
+            </div>
           </section>
         </div>
 
@@ -132,7 +145,13 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
               필터 초기화
             </Button>
           ) : null}
-          <Button fullWidth onClick={handleApply} size="large" type="button">
+          <Button
+            disabled={Boolean(draftRange.from && draftRange.to && draftRange.to < draftRange.from)}
+            fullWidth
+            onClick={handleApply}
+            size="large"
+            type="button"
+          >
             적용
           </Button>
         </DrawerFooter>

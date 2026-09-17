@@ -4,7 +4,7 @@ import { type SubmitEvent, useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
-import { buildRecordsHref, type RecordFilters } from "@/entities/record";
+import { buildRecordsHref, hasRecordFilters, type RecordFilters } from "@/entities/record";
 import { SearchField } from "@/shared/ui/search-field";
 
 import { RecordFilterDrawer } from "./record-filter-drawer";
@@ -20,6 +20,17 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
   useEffect(() => {
     setQuery(filters.query);
   }, [filters.query]);
+
+  useEffect(() => {
+    if (!hasRecordFilters(filters)) return;
+
+    const resetFiltersOnExit = () => {
+      window.history.replaceState(window.history.state, "", "/records");
+    };
+
+    window.addEventListener("pagehide", resetFiltersOnExit);
+    return () => window.removeEventListener("pagehide", resetFiltersOnExit);
+  }, [filters]);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDotsIcon, MapPinAreaIcon, MapPinIcon, NotePencilIcon } from "@phosphor-icons/react";
+import { MapPinIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { placeQueryOptions, placeRecordsQueryOptions, placesQueryOptions } from "@/entities/place";
@@ -8,7 +8,6 @@ import { EmptyRecords, RecordCard, RecordTimeline } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { DeletePlaceButton } from "@/features/place/delete-place/ui/delete-place-button";
 import { formatDate } from "@/shared/lib/date/format-date";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -48,31 +47,25 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
           />
         ) : (
           <>
-            <Card>
-              <CardHeader>
-                <CardDescription className="flex items-center gap-1.5 font-bold text-foreground text-xs">
-                  <MapPinAreaIcon strokeWidth={2} className="size-4" aria-hidden="true" />
-                  기억의 장소
-                </CardDescription>
-                <CardTitle className="text-xl">{place.name}</CardTitle>
-                <CardDescription>{place.address ?? "주소 정보 없음"}</CardDescription>
-                <CardAction>
-                  <DeletePlaceButton name={place.name} placeId={place.id} recordCount={recordCount} />
-                </CardAction>
-              </CardHeader>
-              <CardContent>
-                <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                  <CalendarDotsIcon strokeWidth={2} className="size-4" aria-hidden="true" />
-                  {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
-                </p>
-              </CardContent>
-            </Card>
+            <section aria-labelledby="place-title" className="px-1 py-2">
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-balance font-bold text-2xl tracking-[-0.035em]" id="place-title">
+                    {place.name}
+                  </h1>
+                  <p className="mt-1 text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
+                  <p className="mt-2 text-muted-foreground text-xs">
+                    {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
+                  </p>
+                </div>
+                <DeletePlaceButton name={place.name} placeId={place.id} recordCount={recordCount} />
+              </div>
+            </section>
 
             {recordsQuery.isPending ? null : records.length ? (
               <RecordTimeline aria-labelledby="place-records-title">
                 <div className="flex items-center justify-between gap-3 px-1">
-                  <h2 className="flex items-center gap-2 font-bold" id="place-records-title">
-                    <NotePencilIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
+                  <h2 className="font-semibold text-base" id="place-records-title">
                     이곳의 기록
                   </h2>
                   <p className="text-muted-foreground text-xs">{records.length}개</p>
