@@ -14,8 +14,7 @@
   .liquid-glass-toolbar {
     box-shadow:
       inset 1px 1px 0 var(--nav-glass-highlight),
-      inset 0 0 5px var(--nav-glass-highlight),
-      var(--shadow-toolbar-glass);
+      inset 0 0 5px var(--nav-glass-highlight);
   }
 
   .app-toolbar [data-slot="icon-button"]:active {
