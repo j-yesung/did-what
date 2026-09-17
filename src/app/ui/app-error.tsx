@@ -10,7 +10,7 @@ import { PressLink } from "@/shared/ui/press-link";
 export function AppError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <PageShell className="items-center justify-center" withBottomNavigation>
-      <Empty className="border bg-card py-14">
+      <Empty>
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <WarningCircleIcon strokeWidth={2} aria-hidden="true" />
