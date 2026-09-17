@@ -1,11 +1,13 @@
 import {
   getCalendarDayAction,
+  getCalendarHref,
   getCalendarRange,
   getOverlapRange,
   getTitleLines,
   getToday,
   getVisibleTitleCount,
   groupRecordsByDate,
+  parseCalendarDate,
   parseCalendarMonth,
   shiftMonth,
 } from "@/pages/record/list/model/record-calendar";
@@ -31,6 +33,19 @@ test("잘못된 월은 오늘이 속한 월로 되돌리고 연도를 넘겨 이
   }
   assert.equal(shiftMonth("2026-12", 1), "2027-01");
   assert.equal(shiftMonth("2026-01", -1), "2025-12");
+});
+
+test("Drawer 복원 날짜는 달력 범위 안의 올바른 날짜만 받는다", () => {
+  assert.equal(parseCalendarDate("2026-09-17", "2026-09"), "2026-09-17");
+  assert.equal(parseCalendarDate("2026-10-10", "2026-09"), "2026-10-10", "마지막 주의 이웃 날짜");
+  assert.equal(parseCalendarDate("2026-10-11", "2026-09"), null);
+  assert.equal(parseCalendarDate("2026-02-30", "2026-02"), null);
+  assert.equal(parseCalendarDate(null, "2026-09"), null);
+});
+
+test("달력 주소에 Drawer 복원 날짜를 선택적으로 넣는다", () => {
+  assert.equal(getCalendarHref("2026-09"), "/records?view=calendar&month=2026-09");
+  assert.equal(getCalendarHref("2026-09", "2026-09-17"), "/records?view=calendar&month=2026-09&date=2026-09-17");
 });
 
 test("오늘은 한국 시간 기준 날짜다", () => {

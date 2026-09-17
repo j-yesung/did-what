@@ -1,5 +1,7 @@
 import { addDays, addMonths, eachDayOfInterval, format, parseISO, startOfWeek } from "date-fns";
 
+import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
+
 type CalendarRange = {
   from: string;
   to: string;
@@ -22,6 +24,16 @@ export const getToday = (now = new Date()) => {
 
 export const parseCalendarMonth = (value: string | null | undefined, today: string) => {
   return value && MONTH_PATTERN.test(value) ? value : today.slice(0, 7);
+};
+
+export const parseCalendarDate = (value: string | null | undefined, month: string) => {
+  if (!value || !isIsoDate(value)) return null;
+  const range = getCalendarRange(month);
+  return range.from <= value && value <= range.to ? value : null;
+};
+
+export const getCalendarHref = (month: string, date?: string | null) => {
+  return `/records?view=calendar&month=${month}${date ? `&date=${date}` : ""}`;
 };
 
 export const shiftMonth = (month: string, amount: number) => {

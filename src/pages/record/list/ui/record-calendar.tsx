@@ -25,12 +25,14 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 import {
   getCalendarDayAction,
+  getCalendarHref,
   getCalendarRange,
   getOverlapRange,
   getTitleLines,
   getToday,
   getVisibleTitleCount,
   groupRecordsByDate,
+  parseCalendarDate,
   parseCalendarMonth,
   shiftMonth,
 } from "../model/record-calendar";
@@ -129,14 +131,20 @@ const CALENDAR_CLASS_NAMES = {
   weeks: "flex flex-1 flex-col",
 };
 
+const replaceCalendarHref = (month: string, date?: string | null) => {
+  window.history.replaceState(window.history.state, "", getCalendarHref(month, date));
+};
+
 export function RecordCalendar() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const today = getToday();
-  const [month, setMonth] = useState(() => parseCalendarMonth(searchParams?.get("month"), today));
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [pendingDate, setPendingDate] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+  const initialMonth = parseCalendarMonth(searchParams?.get("month"), today);
+  const initialDate = parseCalendarDate(searchParams?.get("date"), initialMonth);
+  const [month, setMonth] = useState(initialMonth);
+  const [selectedDate, setSelectedDate] = useState<string | null>(initialDate);
+  const [pendingDate, setPendingDate] = useState<string | null>(initialDate);
+  const [open, setOpen] = useState(Boolean(initialDate));
   const [titleLines, setTitleLines] = useState(DEFAULT_TITLE_LINES);
   // 마지막으로 기록을 받아 둔 달. 새 달을 받는 동안 겹치는 날짜를 이 달의 기록으로 채운다.
   const [loadedMonth, setLoadedMonth] = useState<string | null>(null);
@@ -195,7 +203,7 @@ export function RecordCalendar() {
       setPendingDate(null);
       setOpen(false);
     }
-    window.history.replaceState(null, "", `/records?view=calendar&month=${nextMonth}`);
+    replaceCalendarHref(nextMonth);
   };
 
   // 누르는 순간 그다음 달까지 받아 두어 연달아 넘겨도 받아 둔 달이 이어진다.
@@ -219,17 +227,20 @@ export function RecordCalendar() {
   const openDay = (date: Date, modifiers: Modifiers) => {
     const nextDate = format(date, "yyyy-MM-dd");
     const action = getCalendarDayAction(getDayRecords(nextDate), selectedDate === nextDate && !open);
+    const nextMonth = modifiers.outside ? format(date, "yyyy-MM") : month;
 
-    if (modifiers.outside) changeMonth(format(date, "yyyy-MM"), true);
+    if (modifiers.outside) changeMonth(nextMonth, true);
 
     if (action === "clear") {
       setSelectedDate(null);
+      replaceCalendarHref(nextMonth);
       return;
     }
 
     setSelectedDate(nextDate);
     setPendingDate(action === "wait" ? nextDate : null);
     setOpen(action === "open" || action === "wait");
+    replaceCalendarHref(nextMonth, action === "open" || action === "wait" ? nextDate : null);
   };
 
   useEffect(() => {
@@ -239,13 +250,15 @@ export function RecordCalendar() {
 
     setPendingDate(null);
     setOpen(records.length > 0);
-  }, [getDayRecords, pendingDate]);
+    replaceCalendarHref(month, records.length > 0 ? pendingDate : null);
+  }, [getDayRecords, month, pendingDate]);
 
   const handleDrawerOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) return;
     setSelectedDate(null);
     setPendingDate(null);
+    replaceCalendarHref(month);
   };
 
   const selectedRecords = getDayRecords(selectedDate);
