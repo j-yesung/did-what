@@ -110,7 +110,7 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
             <div className="grid grid-cols-2 gap-3">
               <Field className="min-w-0">
                 <FieldLabel className="text-muted-foreground" htmlFor="filter-start-date">
-                  시작일
+                  첫날
                 </FieldLabel>
                 <DateInput
                   id="filter-start-date"
@@ -126,7 +126,7 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
               </Field>
               <Field className="min-w-0">
                 <FieldLabel className="text-muted-foreground" htmlFor="filter-end-date">
-                  종료일
+                  마지막 날
                 </FieldLabel>
                 <DateInput
                   id="filter-end-date"

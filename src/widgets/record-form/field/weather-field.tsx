@@ -35,7 +35,7 @@ export function RecordWeatherField({
 
   return (
     <div aria-labelledby="record-weather-label" role="group">
-      <FieldTitle className="mb-1.5" id="record-weather-label">
+      <FieldTitle className="mb-2 font-semibold text-base" id="record-weather-label">
         날씨
         <WeatherIcon weather={weather} className={FIELD_ICON} aria-hidden="true" />
       </FieldTitle>
