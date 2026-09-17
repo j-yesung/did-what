@@ -47,7 +47,7 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
 
           return (
             <ListRow
-              className="px-1 py-2.5"
+              className="px-3 py-2.5"
               key={place.id}
               aria-label={`${place.name} 상세 보기`}
               nativeButton={false}
