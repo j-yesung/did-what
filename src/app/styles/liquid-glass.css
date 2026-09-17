@@ -26,17 +26,35 @@
     opacity: 0;
   }
 
+  .liquid-glass[data-slot="segmented-control"] {
+    border: 1px solid color-mix(in oklab, var(--foreground) 20%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--fill-light) 8%, transparent),
+      color-mix(in oklab, var(--fill-light) 6%, transparent) 45%,
+      color-mix(in oklab, var(--fill-light) 5%, transparent)
+    );
+    box-shadow:
+      inset 0 -1px 1px color-mix(in oklab, var(--fill-dark) 6%, transparent),
+      0 4px 12px color-mix(in oklab, var(--fill-dark) 6%, transparent);
+    -webkit-backdrop-filter: blur(5px) saturate(1.15);
+    backdrop-filter: blur(5px) saturate(1.15);
+  }
+
   .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
   .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-item"] {
     border-radius: 9999px;
   }
 
-  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
+  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"] {
+    background: color-mix(in oklab, var(--fill-nav-active) 40%, transparent);
+    box-shadow: none;
+  }
+
   .liquid-glass-navigation-active {
     background: color-mix(in oklab, var(--fill-nav-active) 55%, transparent);
   }
 
-  .liquid-glass[data-slot="segmented-control"],
   .liquid-glass[data-slot="icon-button"] {
     box-shadow: none;
   }
@@ -75,6 +93,12 @@
 
   .liquid-glass[data-slot="icon-button"] {
     background: var(--surface);
+  }
+
+  .liquid-glass[data-slot="segmented-control"] {
+    border-color: var(--border);
+    background: var(--surface);
+    box-shadow: none;
   }
 
   .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
