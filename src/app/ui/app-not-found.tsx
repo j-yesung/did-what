@@ -8,7 +8,7 @@ import { PressLink } from "@/shared/ui/press-link";
 export function AppNotFound() {
   return (
     <PageShell className="items-center justify-center" withBottomNavigation>
-      <Empty className="border bg-card py-14">
+      <Empty className="py-14">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <MapPinIcon strokeWidth={2} aria-hidden="true" />

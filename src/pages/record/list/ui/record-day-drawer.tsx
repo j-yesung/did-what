@@ -1,19 +1,27 @@
 "use client";
 
-import { Fragment } from "react";
+import { type MouseEvent, useRef } from "react";
 
-import { CaretRightIcon } from "@phosphor-icons/react";
+import { CaretRightIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 
 import {
   getRecordWeatherLabel,
   normalizeRecordWeather,
   type RecordSummary,
+  recordPlacesQueryOptions,
   recordSummaryQueryKey,
   WeatherIcon,
 } from "@/entities/record";
+import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { useScrollRestoration } from "@/shared/lib/navigation/use-scroll-restoration";
+import { useToolbarTapScale } from "@/shared/lib/use-toolbar-tap-scale";
+import { cn } from "@/shared/lib/utils";
+import { buttonVariants } from "@/shared/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { IconButton } from "@/shared/ui/icon-button";
@@ -22,6 +30,8 @@ import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 import { Spinner } from "@/shared/ui/spinner";
 
+import { getCalendarHref } from "../model/record-calendar";
+
 const DAY_TITLE = new Intl.DateTimeFormat("ko-KR", { day: "numeric", month: "long", weekday: "long" });
 
 type RecordDayDrawerProps = {
@@ -29,35 +39,98 @@ type RecordDayDrawerProps = {
   isError: boolean;
   onOpenChange: (open: boolean) => void;
   open: boolean;
-  /** 달력 기록을 아직 받지 못했으면 undefined. 빈 배열과 구분해야 '기록 없음'을 잘못 보여주지 않는다. */
   records: readonly RecordSummary[] | undefined;
 };
 
+function RecordDayCreateButton({ date }: { date: string }) {
+  const { handleTapCancel, handleTapEnd, handleTapStart, transform } = useToolbarTapScale();
+
+  const closeDrawerOnReturn = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    )
+      return;
+
+    window.history.replaceState(window.history.state, "", getCalendarHref(date.slice(0, 7)));
+  };
+
+  return (
+    <motion.div
+      className="app-toolbar liquid-glass liquid-glass-toolbar inline-flex shrink-0 rounded-full border p-0.5"
+      onTap={handleTapEnd}
+      onTapCancel={handleTapCancel}
+      onTapStart={handleTapStart}
+      style={{ transform }}
+    >
+      <IconButton
+        aria-label="선택한 날짜에 기록 추가"
+        className="rounded-full text-foreground active:bg-transparent active:after:opacity-0"
+        icon={NotePencilIcon}
+        iconSize={22}
+        nativeButton={false}
+        render={<PressLink href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} prefetch />}
+        variant="clear"
+      />
+    </motion.div>
+  );
+}
+
 export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: RecordDayDrawerProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const multipleRecords = Boolean(records && records.length > 1);
+
+  useScrollRestoration(scrollRef, open);
+
+  const cacheRecordSummary = (record: RecordSummary) => {
+    queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
+  };
+
+  // 목록의 기록 카드와 같이 누르는 순간 상세 화면에 필요한 데이터를 모두 받기 시작한다.
+  const prefetchDetail = (record: RecordSummary) => {
+    cacheRecordSummary(record);
+    router.prefetch(`/records/${record.id}`);
+    void queryClient.prefetchQuery(recordPlacesQueryOptions(record.id));
+    void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(record.id));
+  };
 
   return (
     <Drawer onOpenChange={onOpenChange} open={open} showSwipeHandle>
-      <DrawerContent>
-        <DrawerHeader className="px-5 text-left group-data-[swipe-axis=y]/drawer-popup:text-left">
-          <DrawerTitle className="font-bold text-xl leading-7">
-            {date ? DAY_TITLE.format(parseISO(date)) : null}
-          </DrawerTitle>
+      <DrawerContent className="data-[swipe-axis=y]:max-h-[70dvh]">
+        <DrawerHeader className="flex-row items-center justify-between gap-3 px-5 text-left group-data-[swipe-axis=y]/drawer-popup:text-left">
+          <div className="min-w-0">
+            <DrawerTitle className="truncate font-bold text-xl leading-7">
+              {date ? DAY_TITLE.format(parseISO(date)) : null}
+            </DrawerTitle>
+            {multipleRecords ? (
+              <p className="mt-0.5 text-muted-foreground text-sm tabular-nums">기록 {records?.length}개</p>
+            ) : null}
+          </div>
+          {date ? <RecordDayCreateButton date={date} /> : null}
         </DrawerHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-4 pb-[max(--spacing(5),env(safe-area-inset-bottom))]">
+        <div
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(--spacing(5),env(safe-area-inset-bottom))]",
+            multipleRecords ? "pt-2" : "pt-4",
+          )}
+          ref={scrollRef}
+        >
           {records ? (
             records.length > 0 ? (
-              records.map((record, index) => {
-                const region = [record.region_label, record.region_name].filter(Boolean).join(" / ");
-                const weather = normalizeRecordWeather(record.weather);
+              records.length === 1 ? (
+                records.map((record) => {
+                  const region = [record.region_label, record.region_name].filter(Boolean).join(" / ");
+                  const weather = normalizeRecordWeather(record.weather);
 
-                return (
-                  <Fragment key={record.id}>
-                    {/* 다크 모드에서 border 토큰이 Drawer 배경과 같은 색이라 보이지 않는다. */}
-                    {index > 0 ? <Separator className="my-5 bg-muted-foreground/20" /> : null}
-                    <article>
-                      {/* 본문을 잘못 눌러 이동하지 않도록 상세 이동은 제목 옆 버튼에만 둔다. 음수 여백으로 줄 높이는 늘리지 않는다. */}
+                  return (
+                    <article key={record.id}>
                       <div className="flex items-start gap-2">
                         <h3 className="min-w-0 flex-1 text-balance font-bold text-lg leading-snug tracking-[-0.02em]">
                           {record.activity}
@@ -71,8 +144,11 @@ export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: 
                           render={
                             <PressLink
                               href={`/records/${record.id}`}
-                              // 상세 화면이 요약을 바로 그리고 방문 장소만 불러오게 한다.
-                              onClick={() => queryClient.setQueryData(recordSummaryQueryKey(record.id), record)}
+                              onClick={() => cacheRecordSummary(record)}
+                              onPointerDown={(event) => {
+                                if (event.button === 0) prefetchDetail(record);
+                              }}
+                              prefetch={false}
                             />
                           }
                         />
@@ -98,9 +174,66 @@ export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: 
                         <p className="mt-3 whitespace-pre-wrap text-foreground leading-relaxed">{record.memo}</p>
                       ) : null}
                     </article>
-                  </Fragment>
-                );
-              })
+                  );
+                })
+              ) : (
+                <ul>
+                  {records.map((record, index) => {
+                    const region = [record.region_label, record.region_name].filter(Boolean).join(" / ");
+                    const weather = normalizeRecordWeather(record.weather);
+                    const period =
+                      record.recorded_until && record.recorded_until !== record.recorded_at
+                        ? `${format(parseISO(record.recorded_at), "M.d")}–${format(parseISO(record.recorded_until), "M.d")}`
+                        : null;
+                    const href = `/records/${record.id}`;
+
+                    return (
+                      <li key={record.id}>
+                        {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
+                        <PressLink
+                          className={cn(
+                            buttonVariants({ variant: "ghost" }),
+                            "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
+                          )}
+                          href={href}
+                          onClick={() => cacheRecordSummary(record)}
+                          onPointerDown={(event) => {
+                            if (event.button === 0) prefetchDetail(record);
+                          }}
+                          prefetch={false}
+                        >
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate font-semibold text-base leading-5">{record.activity}</span>
+                            <span className="mt-1 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
+                              {period ? (
+                                <>
+                                  <span className="shrink-0 tabular-nums">{period}</span>
+                                  <span className="shrink-0" aria-hidden="true">
+                                    ·
+                                  </span>
+                                </>
+                              ) : null}
+                              {region ? (
+                                <>
+                                  <span className="truncate">{region}</span>
+                                  <span className="shrink-0" aria-hidden="true">
+                                    ·
+                                  </span>
+                                </>
+                              ) : null}
+                              <span className="inline-flex shrink-0 items-center gap-1">
+                                <WeatherIcon weather={weather} className="size-4" aria-hidden="true" />
+                                {getRecordWeatherLabel(weather)}
+                              </span>
+                            </span>
+                          </span>
+                          <CaretRightIcon className="ml-2 shrink-0" size={20} aria-hidden="true" />
+                        </PressLink>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )
             ) : (
               <Empty className="py-10">
                 <EmptyHeader>

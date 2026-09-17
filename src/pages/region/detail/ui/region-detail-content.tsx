@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 
 import { MapTrifoldIcon, NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   EmptyRecords,
+  formatRecordTimelineMonth,
+  getRecordTimelineItemState,
   RecordCard,
   RecordTimeline,
   recordLocationsQueryOptions,
@@ -14,6 +16,7 @@ import {
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { createRegionActivityMaps, type Region, RegionMiniMap } from "@/entities/region";
+import { cn } from "@/shared/lib/utils";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -81,8 +84,8 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
             ) : null}
 
             {recordsQuery.isPending ? null : records.length > 0 ? (
-              <RecordTimeline aria-labelledby="region-records-title">
-                <div className="flex items-center justify-between gap-3 px-1">
+              <RecordTimeline aria-labelledby="region-records-title" className="gap-0">
+                <div className="mb-2 flex items-center justify-between gap-3 px-1">
                   <h2 className="flex items-center gap-2 font-bold" id="region-records-title">
                     <NotePencilIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
                     <span>이 지역의 기록</span>
@@ -90,14 +93,25 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
                   <p className="text-muted-foreground text-xs">{records.length}개</p>
                 </div>
 
-                {records.map((record, index) => (
-                  <RecordCard
-                    isLast={index === records.length - 1}
-                    key={record.id}
-                    onDetailPrefetch={prefetchComments}
-                    record={record}
-                  />
-                ))}
+                {records.map((record, index) => {
+                  const { startsDate, startsMonth } = getRecordTimelineItemState(records, index);
+
+                  return (
+                    <Fragment key={record.id}>
+                      {startsMonth ? (
+                        <p className={cn("px-1 pb-2 font-bold text-lg tracking-[-0.025em]", index > 0 && "mt-6")}>
+                          {formatRecordTimelineMonth(record.recorded_at)}
+                        </p>
+                      ) : null}
+                      <RecordCard
+                        isLast={index === records.length - 1}
+                        onDetailPrefetch={prefetchComments}
+                        record={record}
+                        startsDate={startsDate}
+                      />
+                    </Fragment>
+                  );
+                })}
               </RecordTimeline>
             ) : (
               <EmptyRecords title={`${region.name}에 남긴 기록이 없어요`} />

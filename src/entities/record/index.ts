@@ -24,6 +24,7 @@ export {
   readRecordInput,
   validateRecordInput,
 } from "./model/record-form";
+export { formatRecordTimelineMonth, getRecordTimelineItemState } from "./model/record-timeline";
 export type { RecordFormState, RecordSummary } from "./model/types";
 export {
   DEFAULT_RECORD_WEATHER,

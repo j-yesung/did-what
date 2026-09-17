@@ -1,58 +1,18 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
-import { motion, useMotionTemplate, useReducedMotion, useSpring } from "motion/react";
+import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 
+import { useToolbarTapScale } from "@/shared/lib/use-toolbar-tap-scale";
 import { NotificationBell } from "@/widgets/notification/notification-bell";
 import { RecordCreateButton } from "@/widgets/record-create-button";
 
 const TOOLBAR_ENTRY_PATHS = new Set(["/", "/regions", "/records", "/places", "/settings"]);
-const TOOLBAR_SPRING = { damping: 10, mass: 1, stiffness: 180, type: "spring" } as const;
-const TOOLBAR_SCALE = 1.14;
-const MIN_PRESS_DURATION = 160;
 
 export function AppToolbar({ memberId }: { memberId: string }) {
   const pathname = usePathname() ?? "";
-  const shouldReduceMotion = useReducedMotion();
-  const scale = useSpring(1, TOOLBAR_SPRING);
-  const transform = useMotionTemplate`scale(${scale})`;
-  const pressedAtRef = useRef(0);
-  const releaseTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  useEffect(() => {
-    if (shouldReduceMotion) scale.jump(1);
-
-    return () => {
-      if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
-    };
-  }, [scale, shouldReduceMotion]);
-
-  const handleTapStart = () => {
-    if (shouldReduceMotion) return;
-    if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
-
-    pressedAtRef.current = performance.now();
-    scale.set(TOOLBAR_SCALE);
-  };
-
-  const handleTapEnd = () => {
-    if (shouldReduceMotion) return;
-    if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
-
-    const remainingDuration = Math.max(0, MIN_PRESS_DURATION - (performance.now() - pressedAtRef.current));
-    releaseTimerRef.current = setTimeout(() => {
-      releaseTimerRef.current = null;
-      scale.set(1);
-    }, remainingDuration);
-  };
-
-  const handleTapCancel = () => {
-    if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
-    releaseTimerRef.current = null;
-    scale.set(1);
-  };
+  const { handleTapCancel, handleTapEnd, handleTapStart, transform } = useToolbarTapScale();
 
   if (!TOOLBAR_ENTRY_PATHS.has(pathname)) return null;
 

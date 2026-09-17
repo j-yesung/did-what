@@ -1,5 +1,7 @@
 import { addDays, addMonths, eachDayOfInterval, format, parseISO, startOfWeek } from "date-fns";
 
+import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
+
 type CalendarRange = {
   from: string;
   to: string;
@@ -9,6 +11,8 @@ type DatedRecord = {
   recorded_at: string;
   recorded_until: string | null;
 };
+
+export type CalendarDayAction = "clear" | "create" | "open" | "wait";
 
 const MONTH_PATTERN = /^[1-9]\d{3}-(0[1-9]|1[0-2])$/;
 const KST_OFFSET = 9 * 60 * 60 * 1000;
@@ -22,6 +26,16 @@ export const parseCalendarMonth = (value: string | null | undefined, today: stri
   return value && MONTH_PATTERN.test(value) ? value : today.slice(0, 7);
 };
 
+export const parseCalendarDate = (value: string | null | undefined, month: string) => {
+  if (!value || !isIsoDate(value)) return null;
+  const range = getCalendarRange(month);
+  return range.from <= value && value <= range.to ? value : null;
+};
+
+export const getCalendarHref = (month: string, date?: string | null) => {
+  return `/records?view=calendar&month=${month}${date ? `&date=${date}` : ""}`;
+};
+
 export const shiftMonth = (month: string, amount: number) => {
   return format(addMonths(parseISO(`${month}-01`), amount), "yyyy-MM");
 };
@@ -30,6 +44,13 @@ export const shiftMonth = (month: string, amount: number) => {
 export const getCalendarRange = (month: string): CalendarRange => {
   const start = startOfWeek(parseISO(`${month}-01`));
   return { from: format(start, "yyyy-MM-dd"), to: format(addDays(start, 41), "yyyy-MM-dd") };
+};
+
+// 두 달력이 함께 보여주는 날짜 범위. 앞뒤 달의 날짜는 이전 달 조회 결과로도 채울 수 있다.
+export const getOverlapRange = (a: CalendarRange, b: CalendarRange): CalendarRange | null => {
+  const from = a.from > b.from ? a.from : b.from;
+  const to = a.to < b.to ? a.to : b.to;
+  return from <= to ? { from, to } : null;
 };
 
 /**
@@ -43,6 +64,15 @@ export const getTitleLines = (buttonHeight: number, rootFontSize: number) => {
 // 줄이 모자라면 마지막 줄은 '+N'이 쓴다.
 export const getVisibleTitleCount = (recordCount: number, lines: number) => {
   return recordCount > lines ? lines - 1 : recordCount;
+};
+
+export const getCalendarDayAction = (
+  records: readonly unknown[] | undefined,
+  isSelected: boolean,
+): CalendarDayAction => {
+  if (!records) return "wait";
+  if (records.length > 0) return "open";
+  return isSelected ? "clear" : "create";
 };
 
 // 여러 날 기록은 범위 안의 모든 날짜에 넣는다. 날짜 안의 순서는 받은 순서(최신순)를 따른다.

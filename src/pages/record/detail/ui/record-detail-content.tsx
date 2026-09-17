@@ -54,7 +54,9 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   });
   const record = recordQuery.data ?? cachedSummary;
   const recordPlaces = recordQuery.data?.record_places ?? recordPlacesQuery.data?.record_places;
-  const hasError = hasCachedSummary ? recordPlacesQuery.isError : recordQuery.isError;
+  const hasError = !hasCachedSummary && recordQuery.isError;
+  const placesError = hasCachedSummary && recordPlacesQuery.isError;
+  const placeCount = recordPlaces?.length ?? cachedSummary?.record_places?.[0]?.count ?? 0;
   const recordMissing = hasCachedSummary
     ? recordPlacesQuery.isSuccess && !recordPlacesQuery.data
     : recordQuery.isSuccess && !recordQuery.data;
@@ -106,7 +108,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
         ) : hasError ? (
           <LoadErrorAlert
             icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />}
-            title={hasCachedSummary ? "방문 장소 정보를 불러오지 못했어요" : "기록을 불러오지 못했어요"}
+            title="기록을 불러오지 못했어요"
           />
         ) : record ? (
           <>
@@ -126,13 +128,15 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
                 </p>
               </section>
 
-              {recordPlaces && recordPlaces.length > 0 ? (
+              {placesError ? (
+                <LoadErrorAlert title="방문 장소 정보를 불러오지 못했어요" />
+              ) : placeCount > 0 ? (
                 <PageSection aria-labelledby="record-places-title">
                   <h2 className="mb-3 font-semibold text-base" id="record-places-title">
                     우리 어디 갔지?
                   </h2>
-                  <ul className="flex flex-col gap-2">
-                    {recordPlaces.map(({ place }) => (
+                  <ul aria-busy={!recordPlaces || undefined} className="flex flex-col gap-2">
+                    {(recordPlaces ?? []).map(({ place }) => (
                       <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
                         <div className="min-w-0">
                           <p className="font-medium">{place.name}</p>
@@ -143,6 +147,15 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
                         <PlaceSaveButton placeId={place.id} placeName={place.name} saved={Boolean(place.saved_at)} />
                       </li>
                     ))}
+                    {recordPlaces
+                      ? null
+                      : Array.from({ length: placeCount }, (_, index) => (
+                          <li
+                            aria-hidden="true"
+                            className="h-11 animate-pulse rounded-lg bg-muted"
+                            key={`${record.id}-place-skeleton-${index}`}
+                          />
+                        ))}
                   </ul>
                 </PageSection>
               ) : null}

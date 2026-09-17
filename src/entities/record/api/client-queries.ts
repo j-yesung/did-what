@@ -11,7 +11,7 @@ import {
 import { RECORD_DETAIL_COLUMNS, RECORD_LOCATION_COLUMNS } from "./record-columns";
 
 const RECORD_PAGE_COLUMNS =
-  "id, activity, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name";
+  "id, activity, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name, record_places(count), record_comments(count)";
 const REGION_RECORD_COLUMNS = "id, activity, memo, weather, recorded_at, recorded_until, created_at, region_code";
 
 export type RecordRegionFilter = {
