@@ -10,6 +10,8 @@ type DatedRecord = {
   recorded_until: string | null;
 };
 
+export type CalendarDayAction = "clear" | "create" | "open" | "wait";
+
 const MONTH_PATTERN = /^[1-9]\d{3}-(0[1-9]|1[0-2])$/;
 const KST_OFFSET = 9 * 60 * 60 * 1000;
 
@@ -32,6 +34,13 @@ export const getCalendarRange = (month: string): CalendarRange => {
   return { from: format(start, "yyyy-MM-dd"), to: format(addDays(start, 41), "yyyy-MM-dd") };
 };
 
+// 두 달력이 함께 보여주는 날짜 범위. 앞뒤 달의 날짜는 이전 달 조회 결과로도 채울 수 있다.
+export const getOverlapRange = (a: CalendarRange, b: CalendarRange): CalendarRange | null => {
+  const from = a.from > b.from ? a.from : b.from;
+  const to = a.to < b.to ? a.to : b.to;
+  return from <= to ? { from, to } : null;
+};
+
 /**
  * 날짜 칸에 제목을 몇 줄 놓을 수 있는지. 칸 높이는 화면 높이를 6주가 나눠 가지므로 기기마다 다르다.
  * 버튼 위 여백(0.25rem)과 날짜 숫자(1.5rem) 아래로 한 줄(1rem + 간격 1px)씩 쌓는다. 날짜 칸 스타일과 맞춰야 한다.
@@ -43,6 +52,15 @@ export const getTitleLines = (buttonHeight: number, rootFontSize: number) => {
 // 줄이 모자라면 마지막 줄은 '+N'이 쓴다.
 export const getVisibleTitleCount = (recordCount: number, lines: number) => {
   return recordCount > lines ? lines - 1 : recordCount;
+};
+
+export const getCalendarDayAction = (
+  records: readonly unknown[] | undefined,
+  isSelected: boolean,
+): CalendarDayAction => {
+  if (!records) return "wait";
+  if (records.length > 0) return "open";
+  return isSelected ? "clear" : "create";
 };
 
 // 여러 날 기록은 범위 안의 모든 날짜에 넣는다. 날짜 안의 순서는 받은 순서(최신순)를 따른다.

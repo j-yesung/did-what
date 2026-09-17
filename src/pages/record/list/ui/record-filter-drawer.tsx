@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { SlidersHorizontalIcon } from "@phosphor-icons/react";
+import { SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
 
 import type { RecordSort } from "@/entities/record";
@@ -45,20 +45,17 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) {
-      const today = format(new Date(), "yyyy-MM-dd");
-      setDraftRange(from || to ? period : { from: today, to: today });
+      setDraftRange(period);
       setDraftSort(sort);
     }
   };
 
   const handleApply = () => {
     if (draftRange.from && draftRange.to && draftRange.to < draftRange.from) return;
-    const start = draftRange.from || draftRange.to;
-    const end = draftRange.to || start;
     onApply({
-      from: start,
+      from: draftRange.from,
       sort: draftSort,
-      to: end,
+      to: draftRange.to,
     });
     setOpen(false);
   };
@@ -112,28 +109,56 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
                 <FieldLabel className="text-muted-foreground" htmlFor="filter-start-date">
                   첫날
                 </FieldLabel>
-                <DateInput
-                  id="filter-start-date"
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setDraftRange((current) => ({
-                      from: value,
-                      to: !current.to || current.to < value ? value : current.to,
-                    }));
-                  }}
-                  value={draftRange.from}
-                />
+                <div className="relative">
+                  <DateInput
+                    className={draftRange.from ? "[&>span]:pr-9" : undefined}
+                    id="filter-start-date"
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setDraftRange((current) => ({
+                        from: value,
+                        to: !current.to || current.to < value ? value : current.to,
+                      }));
+                    }}
+                    value={draftRange.from}
+                  />
+                  {draftRange.from ? (
+                    <IconButton
+                      aria-label="첫날 지우기"
+                      className="absolute top-1/2 right-1 z-20 -translate-y-1/2"
+                      icon={XIcon}
+                      iconSize={16}
+                      onClick={() => setDraftRange((current) => ({ ...current, from: "" }))}
+                      size="sm"
+                      type="button"
+                    />
+                  ) : null}
+                </div>
               </Field>
               <Field className="min-w-0">
                 <FieldLabel className="text-muted-foreground" htmlFor="filter-end-date">
                   마지막 날
                 </FieldLabel>
-                <DateInput
-                  id="filter-end-date"
-                  min={draftRange.from || undefined}
-                  onChange={(event) => setDraftRange((current) => ({ ...current, to: event.target.value }))}
-                  value={draftRange.to}
-                />
+                <div className="relative">
+                  <DateInput
+                    className={draftRange.to ? "[&>span]:pr-9" : undefined}
+                    id="filter-end-date"
+                    min={draftRange.from || undefined}
+                    onChange={(event) => setDraftRange((current) => ({ ...current, to: event.target.value }))}
+                    value={draftRange.to}
+                  />
+                  {draftRange.to ? (
+                    <IconButton
+                      aria-label="마지막 날 지우기"
+                      className="absolute top-1/2 right-1 z-20 -translate-y-1/2"
+                      icon={XIcon}
+                      iconSize={16}
+                      onClick={() => setDraftRange((current) => ({ ...current, to: "" }))}
+                      size="sm"
+                      type="button"
+                    />
+                  ) : null}
+                </div>
               </Field>
             </div>
           </section>

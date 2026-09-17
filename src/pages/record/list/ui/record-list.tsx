@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { EmptyRecords, hasRecordFilters, RecordCard, type RecordFilters, RecordTimeline } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -39,7 +40,7 @@ export function RecordList({ filters }: RecordListProps) {
 
   if (records.length === 0) {
     return isFiltered ? (
-      <Empty className="gap-3 rounded-none border-0 px-1 py-10">
+      <Empty className="flex-1 gap-3 rounded-none border-0 px-1 py-10">
         <EmptyHeader className="gap-1">
           <EmptyTitle className="font-semibold text-base">조건에 맞는 기록이 없어요</EmptyTitle>
           <EmptyDescription className="text-sm/normal">검색어나 기간을 조정해 보세요.</EmptyDescription>
@@ -54,7 +55,14 @@ export function RecordList({ filters }: RecordListProps) {
   }
 
   return (
-    <RecordTimeline aria-label={`불러온 기록 ${records.length}개`}>
+    <RecordTimeline
+      aria-busy={recordsQuery.isPlaceholderData || undefined}
+      aria-label={`불러온 기록 ${records.length}개`}
+      className={cn(
+        "transition-opacity duration-200 motion-reduce:transition-none",
+        recordsQuery.isPlaceholderData && "opacity-50",
+      )}
+    >
       <p className="px-1 text-muted-foreground text-xs">{isFiltered ? "조건에 맞는 기록" : "최근 기록"}</p>
       {records.map((record, index) => (
         <RecordCard

@@ -30,7 +30,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
     <PageSection aria-labelledby="record-comments-title" className="px-5">
       <header className="px-1.5">
         <h2 className="flex items-center gap-1.5 font-semibold text-base" id="record-comments-title">
-          댓글 <span className="font-normal text-muted-foreground text-sm">{comments.length}</span>
+          댓글
         </h2>
       </header>
       <div className="flex flex-col">

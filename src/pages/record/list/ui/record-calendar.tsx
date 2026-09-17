@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   DayButton,
   type DayButtonProps,
@@ -22,10 +22,11 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { Spinner } from "@/shared/ui/spinner";
 
 import {
+  getCalendarDayAction,
   getCalendarRange,
+  getOverlapRange,
   getTitleLines,
   getToday,
   getVisibleTitleCount,
@@ -33,6 +34,7 @@ import {
   parseCalendarMonth,
   shiftMonth,
 } from "../model/record-calendar";
+import { CalendarRecordCreateButton } from "./calendar-record-create-button";
 import { RecordDayDrawer } from "./record-day-drawer";
 
 // 칸 높이를 재기 전(서버 렌더링 포함)에 쓰는 제목 줄 수
@@ -84,7 +86,8 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
       </span>
       {records.slice(0, visibleCount).map((record) => (
         <span
-          className="h-4 shrink-0 overflow-hidden whitespace-nowrap rounded-[0.25rem] bg-primary/20 px-1 text-[0.625rem] text-foreground leading-4"
+          // 늦게 도착한 제목이 툭 튀어나오지 않게 짧게 페이드한다.
+          className="fade-in-0 h-4 shrink-0 animate-in overflow-hidden whitespace-nowrap rounded-[0.25rem] bg-primary/20 px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none"
           key={record.id}
         >
           {record.activity}
@@ -132,13 +135,32 @@ export function RecordCalendar() {
   const today = getToday();
   const [month, setMonth] = useState(() => parseCalendarMonth(searchParams?.get("month"), today));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [pendingDate, setPendingDate] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [titleLines, setTitleLines] = useState(DEFAULT_TITLE_LINES);
+  // 마지막으로 기록을 받아 둔 달. 새 달을 받는 동안 겹치는 날짜를 이 달의 기록으로 채운다.
+  const [loadedMonth, setLoadedMonth] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const range = useMemo(() => getCalendarRange(month), [month]);
   const recordsQuery = useQuery(recordCalendarQueryOptions(range));
-  const recordsByDate = useMemo(() => groupRecordsByDate(recordsQuery.data ?? [], range), [recordsQuery.data, range]);
+  const overlapRange = useMemo(
+    () => (loadedMonth ? getOverlapRange(range, getCalendarRange(loadedMonth)) : null),
+    [loadedMonth, range],
+  );
+  const overlapRecords =
+    !recordsQuery.data && loadedMonth && overlapRange
+      ? queryClient.getQueryData(recordCalendarQueryOptions(getCalendarRange(loadedMonth)).queryKey)
+      : undefined;
+  const recordsByDate = useMemo(
+    () =>
+      recordsQuery.data
+        ? groupRecordsByDate(recordsQuery.data, range)
+        : overlapRecords && overlapRange
+          ? groupRecordsByDate(overlapRecords, overlapRange)
+          : new Map<string, RecordSummary[]>(),
+    [overlapRange, overlapRecords, recordsQuery.data, range],
+  );
   const isError = !recordsQuery.data && recordsQuery.isError;
   const calendarContext = useMemo(() => ({ recordsByDate, titleLines }), [recordsByDate, titleLines]);
 
@@ -165,30 +187,92 @@ export function RecordCalendar() {
   }, [month, queryClient, recordsQuery.isSuccess]);
 
   // 서버 요청과 이력 추가 없이 주소의 월만 바꿔 상세에서 돌아왔을 때 같은 달을 보여준다.
-  const changeMonth = (nextMonth: string) => {
+  const changeMonth = (nextMonth: string, keepSelection = false) => {
+    if (recordsQuery.data) setLoadedMonth(month);
     setMonth(nextMonth);
+    if (!keepSelection) {
+      setSelectedDate(null);
+      setPendingDate(null);
+      setOpen(false);
+    }
     window.history.replaceState(null, "", `/records?view=calendar&month=${nextMonth}`);
   };
 
-  const openDay = (date: Date, modifiers: Modifiers) => {
-    if (modifiers.outside) changeMonth(format(date, "yyyy-MM"));
-    setSelectedDate(format(date, "yyyy-MM-dd"));
-    setOpen(true);
+  // 누르는 순간 그다음 달까지 받아 두어 연달아 넘겨도 받아 둔 달이 이어진다.
+  const prefetchAhead = (amount: number) => {
+    for (const step of [amount, amount * 2]) {
+      void queryClient.prefetchQuery(recordCalendarQueryOptions(getCalendarRange(shiftMonth(month, step))));
+    }
   };
 
+  // 새 달을 받는 중이면 이전 달과 겹치는 날짜만 알 수 있다. 나머지 날짜에 '기록 없음'을 보여주면 안 된다.
+  const getDayRecords = useCallback(
+    (date: string | null) => {
+      if (!date) return undefined;
+      const known =
+        recordsQuery.data || (overlapRecords && overlapRange && overlapRange.from <= date && date <= overlapRange.to);
+      return known ? (recordsByDate.get(date) ?? []) : undefined;
+    },
+    [overlapRange, overlapRecords, recordsByDate, recordsQuery.data],
+  );
+
+  const openDay = (date: Date, modifiers: Modifiers) => {
+    const nextDate = format(date, "yyyy-MM-dd");
+    const action = getCalendarDayAction(getDayRecords(nextDate), selectedDate === nextDate && !open);
+
+    if (modifiers.outside) changeMonth(format(date, "yyyy-MM"), true);
+
+    if (action === "clear") {
+      setSelectedDate(null);
+      return;
+    }
+
+    setSelectedDate(nextDate);
+    setPendingDate(action === "wait" ? nextDate : null);
+    setOpen(action === "open" || action === "wait");
+  };
+
+  useEffect(() => {
+    if (!pendingDate) return;
+    const records = getDayRecords(pendingDate);
+    if (!records) return;
+
+    setPendingDate(null);
+    setOpen(records.length > 0);
+  }, [getDayRecords, pendingDate]);
+
+  const handleDrawerOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (nextOpen) return;
+    setSelectedDate(null);
+    setPendingDate(null);
+  };
+
+  const selectedRecords = getDayRecords(selectedDate);
+  const createDate = !open && selectedRecords?.length === 0 ? selectedDate : null;
+
   return (
-    <section className="flex flex-1 flex-col gap-2">
+    <section className="relative flex flex-1 flex-col gap-2">
       <header className="flex items-center justify-between gap-2 pl-1">
         <h2 aria-live="polite" className="font-bold text-xl tracking-[-0.03em]">
           {format(parseISO(`${month}-01`), "yyyy년 M월")}
         </h2>
         <div className="-mr-2 flex items-center gap-1">
-          {recordsQuery.isLoading ? <Spinner className="mr-1 text-muted-foreground [&>span]:size-1.5" /> : null}
           <Button color="dark" onClick={() => changeMonth(today.slice(0, 7))} variant="weak">
             오늘
           </Button>
-          <IconButton aria-label="이전 달" icon={CaretLeftIcon} onClick={() => changeMonth(shiftMonth(month, -1))} />
-          <IconButton aria-label="다음 달" icon={CaretRightIcon} onClick={() => changeMonth(shiftMonth(month, 1))} />
+          <IconButton
+            aria-label="이전 달"
+            icon={CaretLeftIcon}
+            onClick={() => changeMonth(shiftMonth(month, -1))}
+            onPointerDown={() => prefetchAhead(-1)}
+          />
+          <IconButton
+            aria-label="다음 달"
+            icon={CaretRightIcon}
+            onClick={() => changeMonth(shiftMonth(month, 1))}
+            onPointerDown={() => prefetchAhead(1)}
+          />
         </div>
       </header>
 
@@ -204,7 +288,7 @@ export function RecordCalendar() {
             fixedWeeks
             hideNavigation
             locale={ko}
-            modifiers={{ selected: open && selectedDate ? parseISO(selectedDate) : false }}
+            modifiers={{ selected: selectedDate ? parseISO(selectedDate) : false }}
             month={parseISO(`${month}-01`)}
             onDayClick={openDay}
             onMonthChange={(date) => changeMonth(format(date, "yyyy-MM"))}
@@ -214,12 +298,14 @@ export function RecordCalendar() {
         </div>
       </RecordCalendarContext.Provider>
 
+      <CalendarRecordCreateButton date={createDate} />
+
       <RecordDayDrawer
         date={selectedDate}
         isError={isError}
-        onOpenChange={setOpen}
+        onOpenChange={handleDrawerOpenChange}
         open={open}
-        records={recordsQuery.data && selectedDate ? (recordsByDate.get(selectedDate) ?? []) : undefined}
+        records={selectedRecords}
       />
     </section>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { CaretRightIcon } from "@phosphor-icons/react";
+import { CaretRightIcon, ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -26,6 +26,7 @@ export function RecordCard({ isLast, onDetailPrefetch, record }: RecordCardProps
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
   const href = `/records/${record.id}`;
+  const commentCount = record.record_comments?.[0]?.count ?? 0;
 
   const cacheRecordSummary = () => queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
 
@@ -80,6 +81,13 @@ export function RecordCard({ isLast, onDetailPrefetch, record }: RecordCardProps
             <WeatherIcon weather={normalizedWeather} className="size-4" aria-hidden="true" />
             {weatherLabel}
           </span>
+          {commentCount > 0 ? (
+            <span className="ml-auto inline-flex shrink-0 items-center gap-0.5 tabular-nums">
+              <ChatCircleIcon className="size-4" aria-hidden="true" />
+              <span className="sr-only">댓글</span>
+              {commentCount}
+            </span>
+          ) : null}
         </p>
       </Button>
     </article>

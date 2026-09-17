@@ -4,6 +4,7 @@ import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } fr
 
 import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
+import { RECORDS_QUERY_KEY } from "@/entities/record";
 import {
   normalizeCommentBody,
   type OptimisticCommentAction,
@@ -75,6 +76,8 @@ export const useRecordComments = ({ member, recordId }: UseRecordCommentsProps) 
       applyCommentCacheAction(current, action),
     );
     void queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
+    // 기록 목록의 댓글 수도 돌아갔을 때 다시 받는다.
+    void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "list"] });
   };
 
   const runOptimistic = (action: OptimisticCommentAction, request: () => Promise<void>) => {
