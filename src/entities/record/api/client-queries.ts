@@ -73,6 +73,20 @@ export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCurs
   };
 };
 
+// 기간과 겹치는 기록을 마지막 페이지까지 모은다. 중간에 실패하면 일부만 돌려주지 않고 전체를 실패로 둔다.
+export const fetchRecordsInPeriod = async (period: Pick<RecordFilters, "from" | "to">) => {
+  const filters: RecordFilters = { ...period, query: "", sort: "recent" };
+  let page = await fetchRecordPage(filters, null);
+  const records = [...page.records];
+
+  while (page.nextCursor) {
+    page = await fetchRecordPage(filters, page.nextCursor);
+    records.push(...page.records);
+  }
+
+  return records;
+};
+
 export const fetchRecordPlaces = async (recordId: string) => {
   const { data, error } = await createClient()
     .from("records")

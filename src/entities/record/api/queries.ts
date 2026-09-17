@@ -9,6 +9,7 @@ import {
   fetchRecordLocations,
   fetchRecordPage,
   fetchRecordPlaces,
+  fetchRecordsInPeriod,
   fetchRegionRecords,
   type RecordRegionFilter,
 } from "./client-queries";
@@ -50,6 +51,14 @@ export const recordListQueryOptions = (filters: RecordFilters) => {
     initialPageParam: null as RecordCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     placeholderData: keepPreviousData,
+  });
+};
+
+export const recordCalendarQueryOptions = (period: Pick<RecordFilters, "from" | "to">) => {
+  return queryOptions({
+    ...MAIN_QUERY_OPTIONS,
+    queryKey: [...RECORDS_QUERY_KEY, "calendar", period],
+    queryFn: () => fetchRecordsInPeriod(period),
   });
 };
 
