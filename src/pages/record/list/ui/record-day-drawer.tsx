@@ -61,7 +61,7 @@ function RecordDayCreateButton({ date }: { date: string }) {
     <PressScale className="inline-flex shrink-0">
       <LiquidGlassButton
         aria-label="선택한 날짜에 기록 추가"
-        className="size-12 active:scale-100"
+        className="size-12"
         nativeButton={false}
         render={<PressLink href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} prefetch />}
         shape="circle"

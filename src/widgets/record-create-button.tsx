@@ -18,7 +18,7 @@ export function RecordCreateButton({ children, href = "/records/new" }: RecordCr
   return (
     <LiquidGlassButton
       aria-label={labeled ? undefined : "기록 남기기"}
-      className={labeled ? "active:scale-100" : "size-11"}
+      className={labeled ? undefined : "size-11"}
       nativeButton={false}
       render={<PressLink href={href} prefetch />}
       shape={labeled ? "pill" : "circle"}

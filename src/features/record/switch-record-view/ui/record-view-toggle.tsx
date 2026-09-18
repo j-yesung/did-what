@@ -19,7 +19,6 @@ export function RecordViewToggle() {
     <PressScale className="pointer-events-auto inline-flex">
       <LiquidGlassButton
         aria-label={calendar ? "달력" : "목록"}
-        className="active:scale-100"
         nativeButton={false}
         render={
           <PressLink

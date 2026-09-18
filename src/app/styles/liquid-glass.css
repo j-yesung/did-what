@@ -1,20 +1,21 @@
 @layer utilities {
-  .liquid-glass {
-    border-color: color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
+  .liquid-glass,
+  .liquid-glass-control {
     background: var(--fill-nav-glass);
-    box-shadow:
-      inset 1px 1px 0 var(--nav-glass-highlight),
-      inset 0 0 5px var(--nav-glass-highlight),
-      var(--shadow-nav-glass);
     -webkit-backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
     backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
   }
 
+  .liquid-glass {
+    border-color: color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
+    box-shadow:
+      inset 1px 1px 0 var(--nav-glass-highlight),
+      inset 0 0 5px var(--nav-glass-highlight),
+      var(--shadow-nav-glass);
+  }
+
   .liquid-glass-control {
-    background: var(--fill-nav-glass);
     box-shadow: inset 0 1px 0 color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
-    -webkit-backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
-    backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
   }
 
   .app-toolbar [data-slot="icon-button"]:active {
@@ -26,61 +27,8 @@
     opacity: 0;
   }
 
-  .liquid-glass[data-slot="segmented-control"] {
-    border: 1px solid color-mix(in oklab, var(--foreground) 20%, transparent);
-    background: linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--fill-light) 8%, transparent),
-      color-mix(in oklab, var(--fill-light) 6%, transparent) 45%,
-      color-mix(in oklab, var(--fill-light) 5%, transparent)
-    );
-    box-shadow:
-      inset 0 -1px 1px color-mix(in oklab, var(--fill-dark) 6%, transparent),
-      0 4px 12px color-mix(in oklab, var(--fill-dark) 6%, transparent);
-    -webkit-backdrop-filter: blur(5px) saturate(1.15);
-    backdrop-filter: blur(5px) saturate(1.15);
-  }
-
-  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
-  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-item"] {
-    border-radius: 9999px;
-  }
-
-  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"] {
-    background: color-mix(in oklab, var(--fill-nav-active) 40%, transparent);
-    box-shadow: none;
-  }
-
   .liquid-glass-navigation-active {
     background: color-mix(in oklab, var(--fill-nav-active) 55%, transparent);
-  }
-
-  .liquid-glass[data-slot="icon-button"] {
-    box-shadow: none;
-  }
-
-  .liquid-glass[data-slot="icon-button"] {
-    border-color: color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
-    background: var(--fill-nav-glass);
-    transition-duration: 400ms;
-    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .liquid-glass[data-slot="icon-button"]:active {
-    scale: 1.16;
-    background: var(--fill-nav-glass);
-    transition-duration: 240ms;
-    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .liquid-glass[data-slot="icon-button"]:active::after {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .liquid-glass[data-slot="icon-button"]:active {
-    scale: 1;
   }
 }
 
@@ -92,17 +40,6 @@
     backdrop-filter: none;
   }
 
-  .liquid-glass[data-slot="icon-button"] {
-    background: var(--surface);
-  }
-
-  .liquid-glass[data-slot="segmented-control"] {
-    border-color: var(--border);
-    background: var(--surface);
-    box-shadow: none;
-  }
-
-  .liquid-glass[data-slot="segmented-control"] [data-slot="segmented-control-indicator"],
   .liquid-glass-navigation-active {
     background: var(--background);
   }
