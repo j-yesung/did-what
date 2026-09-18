@@ -4,6 +4,7 @@ import { test } from "node:test";
 
 const context = {
   activity: "",
+  category: "uncategorized",
   dirty: false,
   memo: "",
   places: [],
@@ -27,5 +28,6 @@ test("서버 필드 오류는 가장 앞 단계로 보낸다", () => {
   assert.equal(getRecordCreateErrorStep({ activity: "오류", weather: "오류" }), "when");
   assert.equal(getRecordCreateErrorStep({ activity: "오류", regionCode: "오류" }), "where");
   assert.equal(getRecordCreateErrorStep({ memo: "오류" }), "what");
+  assert.equal(getRecordCreateErrorStep({ category: "오류" }), "what");
   assert.equal(getRecordCreateErrorStep({}), null);
 });

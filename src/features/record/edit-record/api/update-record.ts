@@ -27,6 +27,7 @@ export const updateRecord = async (recordId: string, formData: FormData): Promis
 
   const { data: updated, error } = await supabase.rpc("update_owned_record_with_places", {
     p_activity: result.data.activity,
+    p_category: result.data.category,
     p_memo: result.data.memo ?? "",
     p_places: selections.places,
     p_record_id: recordId,

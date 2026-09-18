@@ -2,6 +2,7 @@ import type { KakaoSearchScope } from "@/shared/api/kakao-local";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
+import { isRecordCategory, type RecordCategory } from "./category";
 import { isRecordWeather, type RecordWeather } from "./weather";
 
 export type RecordPlaceReference =
@@ -17,7 +18,10 @@ export type RecordPlaceReference =
     };
 
 export type RecordFieldErrors = Partial<
-  Record<"recordedAt" | "recordedUntil" | "regionCode" | "places" | "weather" | "activity" | "memo", string>
+  Record<
+    "recordedAt" | "recordedUntil" | "regionCode" | "places" | "weather" | "activity" | "memo" | "category",
+    string
+  >
 >;
 
 export type RecordInput = {
@@ -30,6 +34,7 @@ export type RecordInput = {
   weather: RecordWeather;
   activity: string;
   memo?: string;
+  category: RecordCategory;
 };
 
 type RecordInputValues = {
@@ -42,11 +47,13 @@ type RecordInputValues = {
   weather: string;
   activity: string;
   memo: string;
+  category: string;
 };
 
 export const readRecordInput = (formData: FormData): RecordInputValues => {
   return {
     activity: String(formData.get("activity") ?? ""),
+    category: String(formData.get("category") ?? ""),
     memo: String(formData.get("memo") ?? ""),
     places: String(formData.get("places") ?? "[]"),
     recordedAt: String(formData.get("recordedAt") ?? ""),
@@ -184,7 +191,16 @@ export const validateRecordInput = (
     fieldErrors.memo = "메모는 500자 이하로 입력해 주세요.";
   }
 
-  if (Object.keys(fieldErrors).length > 0 || !places || !isRecordWeather(values.weather)) {
+  if (!isRecordCategory(values.category)) {
+    fieldErrors.category = "카테고리를 선택해 주세요.";
+  }
+
+  if (
+    Object.keys(fieldErrors).length > 0 ||
+    !places ||
+    !isRecordWeather(values.weather) ||
+    !isRecordCategory(values.category)
+  ) {
     return { fieldErrors };
   }
 
@@ -201,6 +217,7 @@ export const validateRecordInput = (
       weather: values.weather,
       activity,
       ...(memo ? { memo } : {}),
+      category: values.category,
     },
   };
 };

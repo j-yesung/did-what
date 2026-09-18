@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { normalizeRecordWeather } from "@/entities/record";
+import { normalizeRecordCategory, normalizeRecordWeather } from "@/entities/record";
 import { getRecord } from "@/entities/record/server";
 import { updateRecord } from "@/features/record/edit-record/api/update-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
@@ -56,6 +56,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
             action={updateRecord.bind(null, recordId)}
             initialValues={{
               activity: record.activity,
+              category: normalizeRecordCategory(record.category),
               memo: record.memo ?? "",
               places: record.record_places.map(({ place }) => ({
                 address: place.address,

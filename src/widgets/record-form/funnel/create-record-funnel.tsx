@@ -9,8 +9,10 @@ import { useFunnel } from "@use-funnel/browser";
 import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
 import { placesQueryOptions } from "@/entities/place";
 import {
+  DEFAULT_RECORD_CATEGORY,
   DEFAULT_RECORD_WEATHER,
   RECORDS_QUERY_KEY,
+  type RecordCategory,
   type RecordFieldErrors,
   type RecordFormState,
   type RecordWeather,
@@ -26,8 +28,10 @@ import { FieldGroup } from "@/shared/ui/field";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
+import { RecordActivityField } from "../field/activity-field";
+import { RecordCategoryField } from "../field/category-field";
 import { RecordDateField } from "../field/date-field";
-import { RecordTextFields } from "../field/text-fields";
+import { RecordMemoField } from "../field/memo-field";
 import { RecordWeatherField } from "../field/weather-field";
 import {
   getRecordCreateErrorStep,
@@ -83,6 +87,7 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
     () => ({
       context: {
         activity: "",
+        category: DEFAULT_RECORD_CATEGORY,
         dirty: false,
         memo: "",
         places: [],
@@ -204,13 +209,15 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
     }
 
     return (
-      <FieldGroup className="gap-10 [&>[data-slot=field-separator]]:hidden">
-        <RecordTextFields
-          activityError={fieldErrors.activity}
-          initialActivity={draft.activity}
-          initialMemo={draft.memo}
-          memoError={fieldErrors.memo}
+      <FieldGroup className="gap-10">
+        {/* 키보드가 올라오면 아래가 가려서, 한 번 탭으로 끝나는 선택을 맨 앞에 둔다. */}
+        <RecordCategoryField
+          categoryError={fieldErrors.category}
+          initialCategory={draft.category}
+          onChange={(category: RecordCategory) => updateContext({ category })}
         />
+        <RecordActivityField activityError={fieldErrors.activity} initialActivity={draft.activity} />
+        <RecordMemoField initialMemo={draft.memo} memoError={fieldErrors.memo} />
       </FieldGroup>
     );
   };

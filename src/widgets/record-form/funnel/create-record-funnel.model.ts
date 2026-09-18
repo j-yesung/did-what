@@ -1,4 +1,4 @@
-import type { RecordFieldErrors, RecordWeather } from "@/entities/record";
+import type { RecordCategory, RecordFieldErrors, RecordWeather } from "@/entities/record";
 import type { RecordLocationPlace, RecordLocationRegion } from "@/features/record/select-record-location";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 
@@ -8,6 +8,7 @@ export type RecordCreateStep = (typeof RECORD_CREATE_STEPS)[number];
 
 export type RecordCreateContext = {
   activity: string;
+  category: RecordCategory;
   dirty: boolean;
   memo: string;
   places: RecordLocationPlace[];
@@ -52,7 +53,7 @@ export const validateRecordCreateStep = (step: RecordCreateStep, context: Record
 export const getRecordCreateErrorStep = (fieldErrors: RecordFieldErrors): RecordCreateStep | null => {
   if (fieldErrors.recordedAt || fieldErrors.recordedUntil || fieldErrors.weather) return "when";
   if (fieldErrors.regionCode || fieldErrors.places) return "where";
-  if (fieldErrors.activity || fieldErrors.memo) return "what";
+  if (fieldErrors.activity || fieldErrors.memo || fieldErrors.category) return "what";
   return null;
 };
 
@@ -60,6 +61,7 @@ export const toRecordCreateFormData = (context: RecordCreateContext) => {
   const formData = new FormData();
 
   formData.set("activity", context.activity);
+  formData.set("category", context.category);
   formData.set("memo", context.memo);
   formData.set("places", JSON.stringify(context.places.map((place) => place.reference)));
   formData.set("recordedAt", context.recordedAt);
