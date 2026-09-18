@@ -16,6 +16,9 @@ export type CalendarDayAction = "clear" | "create" | "open" | "wait";
 
 const MONTH_PATTERN = /^[1-9]\d{3}-(0[1-9]|1[0-2])$/;
 const KST_OFFSET = 9 * 60 * 60 * 1000;
+const SWIPE_HYSTERESIS = 10;
+const SWIPE_DISTANCE = 48;
+const SWIPE_VELOCITY = 500;
 
 // 서버 렌더링과 브라우저가 같은 날을 그리도록 기기 시간대 대신 한국 시간(서머타임 없음)으로 정한다.
 export const getToday = (now = new Date()) => {
@@ -40,17 +43,16 @@ export const shiftMonth = (month: string, amount: number) => {
   return format(addMonths(parseISO(`${month}-01`), amount), "yyyy-MM");
 };
 
+export const getCalendarSwipeMonthShift = (offsetX: number, velocityX: number) => {
+  if (Math.abs(offsetX) < SWIPE_HYSTERESIS) return 0;
+  if (Math.abs(offsetX) < SWIPE_DISTANCE && Math.abs(velocityX) < SWIPE_VELOCITY) return 0;
+  return offsetX < 0 ? 1 : -1;
+};
+
 // 달력은 월 첫 주 일요일부터 6주(42일)를 고정으로 보여준다.
 export const getCalendarRange = (month: string): CalendarRange => {
   const start = startOfWeek(parseISO(`${month}-01`));
   return { from: format(start, "yyyy-MM-dd"), to: format(addDays(start, 41), "yyyy-MM-dd") };
-};
-
-// 두 달력이 함께 보여주는 날짜 범위. 앞뒤 달의 날짜는 이전 달 조회 결과로도 채울 수 있다.
-export const getOverlapRange = (a: CalendarRange, b: CalendarRange): CalendarRange | null => {
-  const from = a.from > b.from ? a.from : b.from;
-  const to = a.to < b.to ? a.to : b.to;
-  return from <= to ? { from, to } : null;
 };
 
 /**
@@ -64,6 +66,29 @@ export const getTitleLines = (buttonHeight: number, rootFontSize: number) => {
 // 줄이 모자라면 마지막 줄은 '+N'이 쓴다.
 export const getVisibleTitleCount = (recordCount: number, lines: number) => {
   return recordCount > lines ? lines - 1 : recordCount;
+};
+
+/**
+ * 달력 아래에 보여줄 이번 달 요약. 날짜별로 펼쳐 둔 Map을 다시 쓰므로 날짜 계산이 필요 없다.
+ * 여러 날 기록은 날짜마다 들어 있어 기록 수는 id로 중복을 걷어낸다.
+ */
+export const getCalendarMonthSummary = (
+  recordsByDate: ReadonlyMap<string, readonly { id: string; region_name?: string }[]>,
+  month: string,
+) => {
+  const recordIds = new Set<string>();
+  const regions = new Set<string>();
+
+  for (const [date, records] of recordsByDate) {
+    // 달력은 앞뒤 달의 날짜도 보여주므로 이번 달에 속한 날짜만 센다.
+    if (!date.startsWith(month)) continue;
+    for (const record of records) {
+      recordIds.add(record.id);
+      if (record.region_name) regions.add(record.region_name);
+    }
+  }
+
+  return { recordCount: recordIds.size, regionCount: regions.size };
 };
 
 export const getCalendarDayAction = (

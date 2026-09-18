@@ -1,16 +1,24 @@
 "use client";
 
+import type { AriaRole, ReactNode } from "react";
 import { useEffect, useRef } from "react";
 
-import { useMotionTemplate, useReducedMotion, useSpring } from "motion/react";
+import { motion, useMotionTemplate, useReducedMotion, useSpring } from "motion/react";
 
-const TOOLBAR_SPRING = { damping: 10, mass: 1, stiffness: 180, type: "spring" } as const;
-const TOOLBAR_SCALE = 1.2;
+const TAP_SPRING = { damping: 10, mass: 1, stiffness: 180, type: "spring" } as const;
+const TAP_SCALE = 1.2;
 const MIN_PRESS_DURATION = 160;
 
-export const useToolbarTapScale = () => {
+type PressScaleProps = {
+  "aria-label"?: string;
+  children: ReactNode;
+  className?: string;
+  role?: AriaRole;
+};
+
+export function PressScale({ "aria-label": ariaLabel, children, className, role }: PressScaleProps) {
   const shouldReduceMotion = useReducedMotion();
-  const scale = useSpring(1, TOOLBAR_SPRING);
+  const scale = useSpring(1, TAP_SPRING);
   const transform = useMotionTemplate`scale(${scale})`;
 
   const pressedAtRef = useRef(0);
@@ -29,7 +37,7 @@ export const useToolbarTapScale = () => {
     if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
 
     pressedAtRef.current = performance.now();
-    scale.set(TOOLBAR_SCALE);
+    scale.set(TAP_SCALE);
   };
 
   const handleTapEnd = () => {
@@ -49,5 +57,17 @@ export const useToolbarTapScale = () => {
     scale.set(1);
   };
 
-  return { handleTapCancel, handleTapEnd, handleTapStart, transform };
-};
+  return (
+    <motion.div
+      aria-label={ariaLabel}
+      className={className}
+      onTap={handleTapEnd}
+      onTapCancel={handleTapCancel}
+      onTapStart={handleTapStart}
+      role={role}
+      style={{ transform }}
+    >
+      {children}
+    </motion.div>
+  );
+}

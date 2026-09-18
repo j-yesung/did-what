@@ -90,6 +90,7 @@
   --border-default: var(--grey-200);
   --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.08);
   --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.18), 0 0 20px rgb(0 0 0 / 0.1);
+  --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.05);
   --nav-glass-highlight: rgb(255 255 255 / 0.75);
 
   /**
@@ -129,6 +130,9 @@
   --nav-bottom-offset: max(var(--nav-bottom-gap), calc(var(--nav-bottom-gap) + env(safe-area-inset-bottom) - 16px));
   --nav-content-gap: 16px;
   --nav-clearance: calc(var(--nav-height) + var(--nav-bottom-offset) + var(--nav-content-gap));
+
+  /* 상단 툴바 버튼의 지름. 지도 화면의 상단 여백이 같은 값을 본다. */
+  --toolbar-height: 54px;
 
   /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
   --map-empty: var(--grey-200);
@@ -215,6 +219,7 @@
   --border-default: var(--grey-800);
   --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.28);
   --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
+  --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
   --input: var(--grey-700);
 
@@ -249,6 +254,7 @@
     --border-default: var(--grey-800);
     --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.28);
     --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
+    --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
     --input: var(--grey-700);
 
@@ -412,6 +418,7 @@
   }
 }
 
+/** 날짜를 고르면 뜨는 CTA. 제자리에서 천천히 떠다녀 새로 생긴 것을 알린다. */
 @keyframes calendar-record-create-float {
   0%,
   100% {
@@ -428,6 +435,7 @@
     animation: calendar-record-create-float 2800ms cubic-bezier(0.77, 0, 0.175, 1) infinite;
   }
 
+  /* 누르는 중에는 멈춰야 목표가 움직이지 않는다. */
   .calendar-record-create-float:active,
   .calendar-record-create-float:focus-within {
     animation-play-state: paused;

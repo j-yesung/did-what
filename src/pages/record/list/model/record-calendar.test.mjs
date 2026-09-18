@@ -1,8 +1,9 @@
 import {
   getCalendarDayAction,
   getCalendarHref,
+  getCalendarMonthSummary,
   getCalendarRange,
-  getOverlapRange,
+  getCalendarSwipeMonthShift,
   getTitleLines,
   getToday,
   getVisibleTitleCount,
@@ -33,6 +34,15 @@ test("잘못된 월은 오늘이 속한 월로 되돌리고 연도를 넘겨 이
   }
   assert.equal(shiftMonth("2026-12", 1), "2027-01");
   assert.equal(shiftMonth("2026-01", -1), "2025-12");
+});
+
+test("가로 스와이프 거리나 속도가 충분할 때만 월을 넘긴다", () => {
+  assert.equal(getCalendarSwipeMonthShift(-48, 0), 1, "왼쪽으로 밀면 다음 달");
+  assert.equal(getCalendarSwipeMonthShift(48, 0), -1, "오른쪽으로 밀면 이전 달");
+  assert.equal(getCalendarSwipeMonthShift(-20, -500), 1, "짧고 빠른 왼쪽 플릭");
+  assert.equal(getCalendarSwipeMonthShift(20, 500), -1, "짧고 빠른 오른쪽 플릭");
+  assert.equal(getCalendarSwipeMonthShift(47, 499), 0);
+  assert.equal(getCalendarSwipeMonthShift(9, 900), 0, "작은 흔들림은 빠르더라도 무시");
 });
 
 test("Drawer 복원 날짜는 달력 범위 안의 올바른 날짜만 받는다", () => {
@@ -114,14 +124,20 @@ test("날짜의 조회 상태와 기록 유무에 따라 다음 동작을 고른
   assert.equal(getCalendarDayAction([], true), "clear");
 });
 
-test("이웃한 달끼리 함께 보이는 날짜만 겹치는 범위로 잡는다", () => {
-  assert.deepEqual(getOverlapRange(getCalendarRange("2026-09"), getCalendarRange("2026-10")), {
-    from: "2026-09-27",
-    to: "2026-10-10",
-  });
-  assert.deepEqual(getOverlapRange(getCalendarRange("2026-10"), getCalendarRange("2026-09")), {
-    from: "2026-09-27",
-    to: "2026-10-10",
-  });
-  assert.equal(getOverlapRange(getCalendarRange("2026-09"), getCalendarRange("2026-12")), null);
+test("이번 달 요약은 이번 달 날짜만 세고 여러 날 기록을 한 번만 센다", () => {
+  const recordsByDate = new Map([
+    ["2026-08-31", [{ id: "a", region_name: "종로구" }]],
+    [
+      "2026-09-01",
+      [
+        { id: "a", region_name: "종로구" },
+        { id: "b", region_name: "마포구" },
+      ],
+    ],
+    ["2026-09-02", [{ id: "a", region_name: "종로구" }]],
+    ["2026-09-03", [{ id: "c" }]],
+  ]);
+
+  assert.deepEqual(getCalendarMonthSummary(recordsByDate, "2026-09"), { recordCount: 3, regionCount: 2 });
+  assert.deepEqual(getCalendarMonthSummary(new Map(), "2026-09"), { recordCount: 0, regionCount: 0 });
 });
