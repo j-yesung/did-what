@@ -19,7 +19,12 @@ import { format, parseISO } from "date-fns";
 import { animate, motion, type PanInfo, useMotionValue, useReducedMotion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 
-import { type RecordSummary, recordCalendarQueryOptions } from "@/entities/record";
+import {
+  normalizeRecordCategory,
+  RECORD_CATEGORY_FILL,
+  type RecordSummary,
+  recordCalendarQueryOptions,
+} from "@/entities/record";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -99,15 +104,21 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
       </span>
       {records.slice(0, visibleCount).map((record) => (
         <span
-          // 늦게 도착한 제목이 툭 튀어나오지 않게 짧게 페이드한다.
-          className="fade-in-0 h-4 shrink-0 animate-in overflow-hidden whitespace-nowrap rounded-lg bg-primary/20 px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none"
+          className={cn(
+            // 늦게 도착한 제목이 툭 튀어나오지 않게 짧게 페이드한다.
+            "fade-in-0 h-4 shrink-0 animate-in overflow-hidden whitespace-nowrap rounded-lg px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none",
+            RECORD_CATEGORY_FILL[normalizeRecordCategory(record.category)],
+          )}
           key={record.id}
         >
           {record.activity}
         </span>
       ))}
+      {/* 여러 기록을 묶은 표시라 어느 카테고리도 대표할 수 없다. */}
       {hiddenCount > 0 ? (
-        <span className="h-4 shrink-0 px-1 text-[0.625rem] text-muted-foreground leading-4">+{hiddenCount}</span>
+        <span className="h-4 shrink-0 rounded-lg bg-muted-foreground/15 px-1 text-[0.625rem] text-muted-foreground leading-4">
+          +{hiddenCount}
+        </span>
       ) : null}
     </DayButton>
   );
