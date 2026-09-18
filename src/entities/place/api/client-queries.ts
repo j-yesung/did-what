@@ -16,7 +16,7 @@ export const fetchPlace = async (placeId: string) => {
 export const fetchPlaceRecords = async (placeId: string) => {
   const { data, error } = await createClient()
     .from("record_places")
-    .select("record:records!inner(id, activity, memo, weather, recorded_at, recorded_until)")
+    .select("record:records!inner(id, activity, category, memo, weather, recorded_at, recorded_until)")
     .eq("place_id", placeId);
 
   if (error) throw error;
