@@ -1,21 +1,30 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { NotePencilIcon } from "@phosphor-icons/react";
 
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { PressLink } from "@/shared/ui/press-link";
 
-export function RecordCreateButton() {
+type RecordCreateButtonProps = {
+  children?: ReactNode;
+  href?: string;
+};
+
+export function RecordCreateButton({ children, href = "/records/new" }: RecordCreateButtonProps) {
+  const labeled = children !== undefined;
+
   return (
     <LiquidGlassButton
-      aria-label="기록 남기기"
-      className="size-11"
+      aria-label={labeled ? undefined : "기록 남기기"}
+      className={labeled ? "liquid-glass liquid-glass-toolbar" : "size-11"}
       nativeButton={false}
-      render={<PressLink href="/records/new" prefetch />}
-      shape="circle"
-      surface="group"
+      render={<PressLink href={href} prefetch />}
+      shape={labeled ? "pill" : "circle"}
+      surface={labeled ? "glass" : "group"}
     >
-      <NotePencilIcon data-icon="inline-start" />
+      {children ?? <NotePencilIcon data-icon="inline-start" />}
     </LiquidGlassButton>
   );
 }

@@ -89,7 +89,7 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
       {records.slice(0, visibleCount).map((record) => (
         <span
           // 늦게 도착한 제목이 툭 튀어나오지 않게 짧게 페이드한다.
-          className="fade-in-0 h-4 shrink-0 animate-in overflow-hidden whitespace-nowrap rounded-[0.25rem] bg-primary/20 px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none"
+          className="fade-in-0 h-4 shrink-0 animate-in overflow-hidden whitespace-nowrap rounded-lg bg-primary/20 px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none"
           key={record.id}
         >
           {record.activity}
