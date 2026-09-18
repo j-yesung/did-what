@@ -16,6 +16,9 @@ export type CalendarDayAction = "clear" | "create" | "open" | "wait";
 
 const MONTH_PATTERN = /^[1-9]\d{3}-(0[1-9]|1[0-2])$/;
 const KST_OFFSET = 9 * 60 * 60 * 1000;
+const SWIPE_HYSTERESIS = 10;
+const SWIPE_DISTANCE = 48;
+const SWIPE_VELOCITY = 500;
 
 // 서버 렌더링과 브라우저가 같은 날을 그리도록 기기 시간대 대신 한국 시간(서머타임 없음)으로 정한다.
 export const getToday = (now = new Date()) => {
@@ -40,17 +43,16 @@ export const shiftMonth = (month: string, amount: number) => {
   return format(addMonths(parseISO(`${month}-01`), amount), "yyyy-MM");
 };
 
+export const getCalendarSwipeMonthShift = (offsetX: number, velocityX: number) => {
+  if (Math.abs(offsetX) < SWIPE_HYSTERESIS) return 0;
+  if (Math.abs(offsetX) < SWIPE_DISTANCE && Math.abs(velocityX) < SWIPE_VELOCITY) return 0;
+  return offsetX < 0 ? 1 : -1;
+};
+
 // 달력은 월 첫 주 일요일부터 6주(42일)를 고정으로 보여준다.
 export const getCalendarRange = (month: string): CalendarRange => {
   const start = startOfWeek(parseISO(`${month}-01`));
   return { from: format(start, "yyyy-MM-dd"), to: format(addDays(start, 41), "yyyy-MM-dd") };
-};
-
-// 두 달력이 함께 보여주는 날짜 범위. 앞뒤 달의 날짜는 이전 달 조회 결과로도 채울 수 있다.
-export const getOverlapRange = (a: CalendarRange, b: CalendarRange): CalendarRange | null => {
-  const from = a.from > b.from ? a.from : b.from;
-  const to = a.to < b.to ? a.to : b.to;
-  return from <= to ? { from, to } : null;
 };
 
 /**

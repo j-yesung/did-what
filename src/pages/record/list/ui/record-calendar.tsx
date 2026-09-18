@@ -6,14 +6,17 @@ import {
   type DayButtonProps,
   DayPicker,
   type Modifiers,
+  type MonthCaptionProps,
   type WeekProps,
   type WeeksProps,
 } from "react-day-picker";
 import { ko } from "react-day-picker/locale";
+import { flushSync } from "react-dom";
 
 import { CaretLeftIcon, CaretRightIcon, NotePencilIcon } from "@phosphor-icons/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
+import { animate, motion, type PanInfo, useMotionValue, useReducedMotion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 
 import { type RecordSummary, recordCalendarQueryOptions } from "@/entities/record";
@@ -27,7 +30,7 @@ import {
   getCalendarDayAction,
   getCalendarHref,
   getCalendarRange,
-  getOverlapRange,
+  getCalendarSwipeMonthShift,
   getTitleLines,
   getToday,
   getVisibleTitleCount,
@@ -41,6 +44,13 @@ import { RecordDayDrawer } from "./record-day-drawer";
 
 // 칸 높이를 재기 전(서버 렌더링 포함)에 쓰는 제목 줄 수
 const DEFAULT_TITLE_LINES = 2;
+// 앞뒤 한 달을 함께 그려 두어야 손가락을 따라 옆 달이 딸려 나온다.
+const MONTH_OFFSETS = [-1, 0, 1];
+const CURRENT_MONTH_INDEX = 1;
+// 옆 달을 넘어 튀면 그리지 않은 달 자리가 비치므로 되튐은 없앤다.
+const SNAP_SPRING = { bounce: 0, type: "spring", visualDuration: 0.25 } as const;
+
+const EMPTY_RECORDS_BY_DATE: ReadonlyMap<string, readonly RecordSummary[]> = new Map();
 
 type RecordCalendarContextValue = {
   recordsByDate: ReadonlyMap<string, readonly RecordSummary[]>;
@@ -48,7 +58,7 @@ type RecordCalendarContextValue = {
 };
 
 const RecordCalendarContext = createContext<RecordCalendarContextValue>({
-  recordsByDate: new Map(),
+  recordsByDate: EMPTY_RECORDS_BY_DATE,
   titleLines: DEFAULT_TITLE_LINES,
 });
 
@@ -114,14 +124,28 @@ function RecordWeek({ week: _week, ...props }: WeekProps) {
   return <tr role="row" {...props} />;
 }
 
+// 화면의 월 제목은 바깥 헤더가 맡으므로 라이브러리 캡션은 숨긴다.
+function RecordMonthCaption({
+  calendarMonth: _calendarMonth,
+  displayIndex: _displayIndex,
+  ...props
+}: MonthCaptionProps) {
+  return <div aria-hidden="true" {...props} />;
+}
+
 // 렌더마다 새 객체를 넘기면 DayPicker가 날짜 칸을 전부 다시 만들어 누름 반응과 포커스가 끊긴다.
-const CALENDAR_COMPONENTS = { DayButton: RecordDayButton, Week: RecordWeek, Weeks: RecordWeeks };
+const CALENDAR_COMPONENTS = {
+  DayButton: RecordDayButton,
+  MonthCaption: RecordMonthCaption,
+  Week: RecordWeek,
+  Weeks: RecordWeeks,
+};
 
 // 주는 남는 높이를 똑같이 나눠 갖고, 칸은 제목이 길어도 7등분 너비를 넘지 않는다.
 const CALENDAR_CLASS_NAMES = {
   day: "flex min-w-0 flex-1 basis-0 flex-col pt-1",
-  month: "flex flex-1 flex-col",
-  month_caption: "hidden",
+  month: "flex w-full flex-1 flex-col",
+  month_caption: "pointer-events-none absolute size-px overflow-hidden opacity-0",
   month_grid: "flex flex-1 flex-col",
   months: "flex flex-1 flex-col",
   root: "flex flex-1 flex-col",
@@ -135,9 +159,59 @@ const replaceCalendarHref = (month: string, date?: string | null) => {
   window.history.replaceState(window.history.state, "", getCalendarHref(month, date));
 };
 
+type CalendarMonthProps = {
+  isCurrent: boolean;
+  month: string;
+  onDayClick: (date: Date, modifiers: Modifiers) => void;
+  onMonthChange: (date: Date) => void;
+  records: readonly RecordSummary[] | undefined;
+  selectedDate: string | null;
+  titleLines: number;
+  today: string;
+};
+
+/** 한 달치 달력. 화면 밖의 앞뒤 달은 inert로 빼 낭독기와 탭 이동에서 달력이 셋으로 보이지 않게 한다. */
+function CalendarMonth({
+  isCurrent,
+  month,
+  onDayClick,
+  onMonthChange,
+  records,
+  selectedDate,
+  titleLines,
+  today,
+}: CalendarMonthProps) {
+  const recordsByDate = useMemo(
+    () => (records ? groupRecordsByDate(records, getCalendarRange(month)) : EMPTY_RECORDS_BY_DATE),
+    [month, records],
+  );
+  const calendarContext = useMemo(() => ({ recordsByDate, titleLines }), [recordsByDate, titleLines]);
+
+  return (
+    <RecordCalendarContext.Provider value={calendarContext}>
+      <div className="flex w-1/3 shrink-0 flex-col" inert={!isCurrent}>
+        <DayPicker
+          classNames={CALENDAR_CLASS_NAMES}
+          components={CALENDAR_COMPONENTS}
+          fixedWeeks
+          hideNavigation
+          locale={ko}
+          modifiers={{ selected: selectedDate ? parseISO(selectedDate) : false }}
+          month={parseISO(`${month}-01`)}
+          onDayClick={onDayClick}
+          onMonthChange={onMonthChange}
+          showOutsideDays
+          today={parseISO(today)}
+        />
+      </div>
+    </RecordCalendarContext.Provider>
+  );
+}
+
 export function RecordCalendar() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const shouldReduceMotion = useReducedMotion();
   const today = getToday();
   const initialMonth = parseCalendarMonth(searchParams?.get("month"), today);
   const initialDate = parseCalendarDate(searchParams?.get("date"), initialMonth);
@@ -146,57 +220,37 @@ export function RecordCalendar() {
   const [pendingDate, setPendingDate] = useState<string | null>(initialDate);
   const [open, setOpen] = useState(Boolean(initialDate));
   const [titleLines, setTitleLines] = useState(DEFAULT_TITLE_LINES);
-  // 마지막으로 기록을 받아 둔 달. 새 달을 받는 동안 겹치는 날짜를 이 달의 기록으로 채운다.
-  const [loadedMonth, setLoadedMonth] = useState<string | null>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const didSwipeRef = useRef(false);
+  // 달 하나 너비를 0으로 두고, 손가락을 따라가는 어긋남만 담는다.
+  const x = useMotionValue(0);
 
-  const range = useMemo(() => getCalendarRange(month), [month]);
-  const recordsQuery = useQuery(recordCalendarQueryOptions(range));
-  const overlapRange = useMemo(
-    () => (loadedMonth ? getOverlapRange(range, getCalendarRange(loadedMonth)) : null),
-    [loadedMonth, range],
-  );
-  const overlapRecords =
-    !recordsQuery.data && loadedMonth && overlapRange
-      ? queryClient.getQueryData(recordCalendarQueryOptions(getCalendarRange(loadedMonth)).queryKey)
-      : undefined;
+  const months = useMemo(() => MONTH_OFFSETS.map((offset) => shiftMonth(month, offset)), [month]);
+  const ranges = useMemo(() => months.map((value) => getCalendarRange(value)), [months]);
+  const monthQueries = useQueries({ queries: ranges.map((range) => recordCalendarQueryOptions(range)) });
+  const recordsQuery = monthQueries[CURRENT_MONTH_INDEX];
   const recordsByDate = useMemo(
-    () =>
-      recordsQuery.data
-        ? groupRecordsByDate(recordsQuery.data, range)
-        : overlapRecords && overlapRange
-          ? groupRecordsByDate(overlapRecords, overlapRange)
-          : new Map<string, RecordSummary[]>(),
-    [overlapRange, overlapRecords, recordsQuery.data, range],
+    () => (recordsQuery.data ? groupRecordsByDate(recordsQuery.data, ranges[CURRENT_MONTH_INDEX]) : undefined),
+    [ranges, recordsQuery.data],
   );
   const isError = !recordsQuery.data && recordsQuery.isError;
-  const calendarContext = useMemo(() => ({ recordsByDate, titleLines }), [recordsByDate, titleLines]);
 
   useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return;
+    const viewport = viewportRef.current;
+    if (!viewport) return;
     // 6주가 화면 높이를 나눠 가지므로 칸 높이는 기기마다 다르다. 들어가는 만큼만 제목을 보여준다.
     const observer = new ResizeObserver(() => {
-      const button = grid.querySelector("td button");
+      const button = viewport.querySelector("td button");
       if (!button) return;
       const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       setTitleLines(getTitleLines(button.getBoundingClientRect().height, rootFontSize));
     });
-    observer.observe(grid);
+    observer.observe(viewport);
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!recordsQuery.isSuccess) return;
-    // 보고 있는 월을 받은 뒤에만 앞뒤 한 달을 미리 받는다. 미리 받은 월을 기준으로 이어서 받지는 않는다.
-    for (const amount of [-1, 1]) {
-      void queryClient.prefetchQuery(recordCalendarQueryOptions(getCalendarRange(shiftMonth(month, amount))));
-    }
-  }, [month, queryClient, recordsQuery.isSuccess]);
-
   // 서버 요청과 이력 추가 없이 주소의 월만 바꿔 상세에서 돌아왔을 때 같은 달을 보여준다.
   const changeMonth = (nextMonth: string, keepSelection = false) => {
-    if (recordsQuery.data) setLoadedMonth(month);
     setMonth(nextMonth);
     if (!keepSelection) {
       setSelectedDate(null);
@@ -206,25 +260,43 @@ export function RecordCalendar() {
     replaceCalendarHref(nextMonth);
   };
 
-  // 누르는 순간 그다음 달까지 받아 두어 연달아 넘겨도 받아 둔 달이 이어진다.
-  const prefetchAhead = (amount: number) => {
-    for (const step of [amount, amount * 2]) {
-      void queryClient.prefetchQuery(recordCalendarQueryOptions(getCalendarRange(shiftMonth(month, step))));
+  /**
+   * 손을 뗀 자리에서 그대로 이어지도록 달을 먼저 바꾸고, 바뀐 만큼 좌표를 되돌린 뒤 0으로 붙인다.
+   * 전환 중에 또 넘겨도 바로 앞 전환이 이미 확정돼 있어 어긋나지 않는다.
+   */
+  const settleMonth = (amount: number) => {
+    if (amount !== 0) {
+      const offsetX = x.get();
+      const width = viewportRef.current?.offsetWidth ?? 0;
+      // 달이 바뀌는 순간과 좌표 보정이 같은 프레임에 끝나야 한 프레임 튐이 없다.
+      flushSync(() => changeMonth(shiftMonth(month, amount)));
+      x.set(offsetX + amount * width);
     }
+    animate(x, 0, shouldReduceMotion ? { duration: 0 } : SNAP_SPRING);
   };
 
-  // 새 달을 받는 중이면 이전 달과 겹치는 날짜만 알 수 있다. 나머지 날짜에 '기록 없음'을 보여주면 안 된다.
+  // 누르는 순간 그다음 달까지 받아 두어 연달아 넘겨도 받아 둔 달이 이어진다. 앞뒤 한 달은 이미 그리면서 받는다.
+  const prefetchAhead = (amount: number) => {
+    void queryClient.prefetchQuery(recordCalendarQueryOptions(getCalendarRange(shiftMonth(month, amount * 2))));
+  };
+
+  const handleDragEnd = (_event: PointerEvent, info: PanInfo) => {
+    settleMonth(getCalendarSwipeMonthShift(info.offset.x, info.velocity.x));
+    // 드래그 끝에 딸려 오는 click 한 번만 흘려보낸다.
+    window.setTimeout(() => {
+      didSwipeRef.current = false;
+    }, 0);
+  };
+
+  // 아직 이번 달을 받지 못했으면 '기록 없음'인지 알 수 없다.
   const getDayRecords = useCallback(
-    (date: string | null) => {
-      if (!date) return undefined;
-      const known =
-        recordsQuery.data || (overlapRecords && overlapRange && overlapRange.from <= date && date <= overlapRange.to);
-      return known ? (recordsByDate.get(date) ?? []) : undefined;
-    },
-    [overlapRange, overlapRecords, recordsByDate, recordsQuery.data],
+    (date: string | null) => (date && recordsByDate ? (recordsByDate.get(date) ?? []) : undefined),
+    [recordsByDate],
   );
 
   const openDay = (date: Date, modifiers: Modifiers) => {
+    if (didSwipeRef.current) return;
+
     const nextDate = format(date, "yyyy-MM-dd");
     const action = getCalendarDayAction(getDayRecords(nextDate), selectedDate === nextDate && !open);
     const nextMonth = modifiers.outside ? format(date, "yyyy-MM") : month;
@@ -277,13 +349,13 @@ export function RecordCalendar() {
           <IconButton
             aria-label="이전 달"
             icon={CaretLeftIcon}
-            onClick={() => changeMonth(shiftMonth(month, -1))}
+            onClick={() => settleMonth(-1)}
             onPointerDown={() => prefetchAhead(-1)}
           />
           <IconButton
             aria-label="다음 달"
             icon={CaretRightIcon}
-            onClick={() => changeMonth(shiftMonth(month, 1))}
+            onClick={() => settleMonth(1)}
             onPointerDown={() => prefetchAhead(1)}
           />
         </div>
@@ -293,23 +365,37 @@ export function RecordCalendar() {
         <LoadErrorAlert icon={<NotePencilIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />
       ) : null}
 
-      <RecordCalendarContext.Provider value={calendarContext}>
-        <div className="flex flex-1 flex-col" ref={gridRef}>
-          <DayPicker
-            classNames={CALENDAR_CLASS_NAMES}
-            components={CALENDAR_COMPONENTS}
-            fixedWeeks
-            hideNavigation
-            locale={ko}
-            modifiers={{ selected: selectedDate ? parseISO(selectedDate) : false }}
-            month={parseISO(`${month}-01`)}
-            onDayClick={openDay}
-            onMonthChange={(date) => changeMonth(format(date, "yyyy-MM"))}
-            showOutsideDays
-            today={parseISO(today)}
-          />
-        </div>
-      </RecordCalendarContext.Provider>
+      <div className="flex flex-1 touch-pan-y overflow-hidden" ref={viewportRef}>
+        <motion.div
+          // 가운데 달이 화면에 맞도록 세 달짜리 띠를 한 달만큼 왼쪽에서 시작한다.
+          className="-ml-[100%] flex w-[300%] shrink-0"
+          drag="x"
+          // 띠가 화면보다 넓어 앞뒤 한 달까지만 끌리고, 너비를 따로 재지 않아도 된다.
+          dragConstraints={viewportRef}
+          dragDirectionLock
+          dragElastic={0.1}
+          dragMomentum={false}
+          onDragEnd={handleDragEnd}
+          onDragStart={() => {
+            didSwipeRef.current = true;
+          }}
+          style={{ x }}
+        >
+          {months.map((value, index) => (
+            <CalendarMonth
+              isCurrent={index === CURRENT_MONTH_INDEX}
+              key={value}
+              month={value}
+              onDayClick={openDay}
+              onMonthChange={(date) => changeMonth(format(date, "yyyy-MM"))}
+              records={monthQueries[index].data}
+              selectedDate={selectedDate}
+              titleLines={titleLines}
+              today={today}
+            />
+          ))}
+        </motion.div>
+      </div>
 
       <CalendarRecordCreateButton date={createDate} />
 
