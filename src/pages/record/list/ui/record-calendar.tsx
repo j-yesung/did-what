@@ -47,7 +47,7 @@ const DEFAULT_TITLE_LINES = 2;
 // 앞뒤 한 달을 함께 그려 두어야 손가락을 따라 옆 달이 딸려 나온다.
 const MONTH_OFFSETS = [-1, 0, 1];
 const CURRENT_MONTH_INDEX = 1;
-// 옆 달을 넘어 튀면 그리지 않은 달 자리가 비치므로 되튐은 없앤다.
+// 손가락 속도를 그대로 이어받으므로 스프링에서 되튐을 더 주지는 않는다.
 const SNAP_SPRING = { bounce: 0, type: "spring", visualDuration: 0.25 } as const;
 
 const EMPTY_RECORDS_BY_DATE: ReadonlyMap<string, readonly RecordSummary[]> = new Map();
@@ -264,15 +264,17 @@ export function RecordCalendar() {
    * 손을 뗀 자리에서 그대로 이어지도록 달을 먼저 바꾸고, 바뀐 만큼 좌표를 되돌린 뒤 0으로 붙인다.
    * 전환 중에 또 넘겨도 바로 앞 전환이 이미 확정돼 있어 어긋나지 않는다.
    */
-  const settleMonth = (amount: number) => {
+  const settleMonth = (amount: number, velocity = 0) => {
     if (amount !== 0) {
       const offsetX = x.get();
       const width = viewportRef.current?.offsetWidth ?? 0;
       // 달이 바뀌는 순간과 좌표 보정이 같은 프레임에 끝나야 한 프레임 튐이 없다.
       flushSync(() => changeMonth(shiftMonth(month, amount)));
-      x.set(offsetX + amount * width);
+      // set으로 옮기면 한 달 너비만큼의 순간 이동을 속도로 읽어 스프링이 튀어 나간다. jump은 속도 기록을 지운다.
+      x.jump(offsetX + amount * width);
     }
-    animate(x, 0, shouldReduceMotion ? { duration: 0 } : SNAP_SPRING);
+    // 손가락이 가던 속도를 이어받아야 놓는 순간에 한 번 멈췄다 다시 가는 느낌이 없다.
+    animate(x, 0, shouldReduceMotion ? { duration: 0 } : { ...SNAP_SPRING, velocity });
   };
 
   // 누르는 순간 그다음 달까지 받아 두어 연달아 넘겨도 받아 둔 달이 이어진다. 앞뒤 한 달은 이미 그리면서 받는다.
@@ -281,7 +283,7 @@ export function RecordCalendar() {
   };
 
   const handleDragEnd = (_event: PointerEvent, info: PanInfo) => {
-    settleMonth(getCalendarSwipeMonthShift(info.offset.x, info.velocity.x));
+    settleMonth(getCalendarSwipeMonthShift(info.offset.x, info.velocity.x), info.velocity.x);
     // 드래그 끝에 딸려 오는 click 한 번만 흘려보낸다.
     window.setTimeout(() => {
       didSwipeRef.current = false;
