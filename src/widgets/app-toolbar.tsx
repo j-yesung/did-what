@@ -21,8 +21,8 @@ export function AppToolbar({ memberId }: { memberId: string }) {
         {pathname === "/" || pathname === "/regions" ? <MapViewToggle /> : null}
         {pathname === "/records" ? <RecordViewToggle /> : null}
         <PressScale
-          aria-label="press scale"
-          className="app-toolbar liquid-glass liquid-glass-toolbar pointer-events-auto relative isolate ml-auto flex items-center gap-0.5 overflow-hidden rounded-full border p-0.5"
+          aria-label="빠른 작업"
+          className="app-toolbar liquid-glass-control pointer-events-auto ml-auto flex items-center gap-0.5 rounded-full p-0.5"
           role="group"
         >
           <RecordCreateButton />
