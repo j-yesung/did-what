@@ -2,7 +2,7 @@
 
 import { type MouseEvent, useRef } from "react";
 
-import { CaretRightIcon, NotePencilIcon } from "@phosphor-icons/react";
+import { CaretRightIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -23,12 +23,12 @@ import { buttonVariants } from "@/shared/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { IconButton } from "@/shared/ui/icon-button";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 import { PressScale } from "@/shared/ui/press-scale";
 import { Separator } from "@/shared/ui/separator";
 import { Spinner } from "@/shared/ui/spinner";
+import { RecordCreateButton } from "@/widgets/record-create-button";
 
 import { getCalendarHref } from "../model/record-calendar";
 
@@ -58,16 +58,8 @@ function RecordDayCreateButton({ date }: { date: string }) {
   };
 
   return (
-    <PressScale className="inline-flex shrink-0">
-      <LiquidGlassButton
-        aria-label="선택한 날짜에 기록 추가"
-        className="size-12"
-        nativeButton={false}
-        render={<PressLink href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} prefetch />}
-        shape="circle"
-      >
-        <NotePencilIcon data-icon="inline-start" />
-      </LiquidGlassButton>
+    <PressScale className="pointer-events-auto inline-flex">
+      <RecordCreateButton href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} />
     </PressScale>
   );
 }

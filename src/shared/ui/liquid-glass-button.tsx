@@ -10,6 +10,12 @@ export type LiquidGlassButtonProps = ButtonPrimitive.Props & {
   surface?: "glass" | "group";
 };
 
+// glass는 홀로 떠 있는 컨트롤, group은 이미 글래스인 묶음 안에 들어가는 버튼.
+const SURFACE_CLASS: Record<NonNullable<LiquidGlassButtonProps["surface"]>, string> = {
+  glass: "liquid-glass-control",
+  group: "text-foreground",
+};
+
 export function LiquidGlassButton({
   children,
   className,
@@ -25,7 +31,7 @@ export function LiquidGlassButton({
         shape === "circle"
           ? "size-(--toolbar-height) min-w-0 p-0 text-foreground [&_svg]:size-6"
           : "h-(--toolbar-height) min-w-[148px] px-6 text-light",
-        surface === "glass" ? "liquid-glass-control" : "text-foreground",
+        SURFACE_CLASS[surface],
         FOCUS_RING,
         className,
       )}
