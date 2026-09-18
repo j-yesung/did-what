@@ -1,6 +1,7 @@
 import {
   getCalendarDayAction,
   getCalendarHref,
+  getCalendarMonthSummary,
   getCalendarRange,
   getCalendarSwipeMonthShift,
   getTitleLines,
@@ -121,4 +122,22 @@ test("날짜의 조회 상태와 기록 유무에 따라 다음 동작을 고른
   assert.equal(getCalendarDayAction([{ id: "record" }], false), "open");
   assert.equal(getCalendarDayAction([], false), "create");
   assert.equal(getCalendarDayAction([], true), "clear");
+});
+
+test("이번 달 요약은 이번 달 날짜만 세고 여러 날 기록을 한 번만 센다", () => {
+  const recordsByDate = new Map([
+    ["2026-08-31", [{ id: "a", region_name: "종로구" }]],
+    [
+      "2026-09-01",
+      [
+        { id: "a", region_name: "종로구" },
+        { id: "b", region_name: "마포구" },
+      ],
+    ],
+    ["2026-09-02", [{ id: "a", region_name: "종로구" }]],
+    ["2026-09-03", [{ id: "c" }]],
+  ]);
+
+  assert.deepEqual(getCalendarMonthSummary(recordsByDate, "2026-09"), { recordCount: 3, regionCount: 2 });
+  assert.deepEqual(getCalendarMonthSummary(new Map(), "2026-09"), { recordCount: 0, regionCount: 0 });
 });

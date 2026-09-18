@@ -29,6 +29,7 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import {
   getCalendarDayAction,
   getCalendarHref,
+  getCalendarMonthSummary,
   getCalendarRange,
   getCalendarSwipeMonthShift,
   getTitleLines,
@@ -141,7 +142,6 @@ const CALENDAR_COMPONENTS = {
   Weeks: RecordWeeks,
 };
 
-// 주는 남는 높이를 똑같이 나눠 갖고, 칸은 제목이 길어도 7등분 너비를 넘지 않는다.
 const CALENDAR_CLASS_NAMES = {
   day: "flex min-w-0 flex-1 basis-0 flex-col pt-1",
   month: "flex w-full flex-1 flex-col",
@@ -154,6 +154,32 @@ const CALENDAR_CLASS_NAMES = {
   weekdays: "flex",
   weeks: "flex flex-1 flex-col",
 };
+
+const SUMMARY_COUNT = "font-semibold text-foreground tabular-nums";
+
+function CalendarMonthSummary({
+  month,
+  recordsByDate,
+}: {
+  month: string;
+  recordsByDate: ReadonlyMap<string, readonly RecordSummary[]> | undefined;
+}) {
+  if (!recordsByDate) return null;
+
+  const { recordCount, regionCount } = getCalendarMonthSummary(recordsByDate, month);
+  if (recordCount === 0) return <p className="text-muted-foreground text-sm">아직 조용하네요</p>;
+
+  return (
+    <p className="text-muted-foreground text-sm">
+      {regionCount > 0 ? (
+        <>
+          <span className={SUMMARY_COUNT}>{regionCount}</span>개 지역에서{" "}
+        </>
+      ) : null}
+      <span className={SUMMARY_COUNT}>{recordCount}</span>번 함께했어요
+    </p>
+  );
+}
 
 const replaceCalendarHref = (month: string, date?: string | null) => {
   window.history.replaceState(window.history.state, "", getCalendarHref(month, date));
@@ -370,7 +396,7 @@ export function RecordCalendar() {
       <div className="flex flex-1 touch-pan-y overflow-hidden" ref={viewportRef}>
         <motion.div
           // 가운데 달이 화면에 맞도록 세 달짜리 띠를 한 달만큼 왼쪽에서 시작한다.
-          className="-ml-[100%] flex w-[300%] shrink-0"
+          className="ml-[-100%] flex w-[300%] shrink-0"
           drag="x"
           // 띠가 화면보다 넓어 앞뒤 한 달까지만 끌리고, 너비를 따로 재지 않아도 된다.
           dragConstraints={viewportRef}
@@ -397,6 +423,11 @@ export function RecordCalendar() {
             />
           ))}
         </motion.div>
+      </div>
+
+      {/* 떠 있는 CTA가 마지막 주를 가리지 않도록 늘 비워 두는 자리(bottom-4 + h-12). */}
+      <div className="flex h-18 shrink-0 items-center justify-center pb-2">
+        {createDate ? null : <CalendarMonthSummary month={month} recordsByDate={recordsByDate} />}
       </div>
 
       <CalendarRecordCreateButton date={createDate} />
