@@ -8,10 +8,12 @@ import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
 import {
+  getRecordCategoryLabel,
   getRecordWeatherLabel,
+  normalizeRecordCategory,
   normalizeRecordWeather,
-  type RecordSummary,
   recordPlacesQueryOptions,
+  type RecordSummary,
   recordSummaryQueryKey,
   WeatherIcon,
 } from "@/entities/record";
@@ -76,7 +78,6 @@ export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: 
     queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
   };
 
-  // 목록의 기록 카드와 같이 누르는 순간 상세 화면에 필요한 데이터를 모두 받기 시작한다.
   const prefetchDetail = (record: RecordSummary) => {
     cacheRecordSummary(record);
     router.prefetch(`/records/${record.id}`);
@@ -112,6 +113,7 @@ export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: 
                 records.map((record) => {
                   const region = [record.region_label, record.region_name].filter(Boolean).join(" / ");
                   const weather = normalizeRecordWeather(record.weather);
+                  const category = getRecordCategoryLabel(normalizeRecordCategory(record.category));
 
                   return (
                     <article key={record.id}>
@@ -153,6 +155,10 @@ export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: 
                           <WeatherIcon weather={weather} className="size-4" aria-hidden="true" />
                           {getRecordWeatherLabel(weather)}
                         </span>
+                        <span className="shrink-0" aria-hidden="true">
+                          ·
+                        </span>
+                        <span className="shrink-0">{category}</span>
                       </p>
                       {record.memo ? (
                         <p className="mt-3 whitespace-pre-wrap text-foreground leading-relaxed">{record.memo}</p>
@@ -165,6 +171,7 @@ export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: 
                   {records.map((record, index) => {
                     const region = [record.region_label, record.region_name].filter(Boolean).join(" / ");
                     const weather = normalizeRecordWeather(record.weather);
+                    const category = getRecordCategoryLabel(normalizeRecordCategory(record.category));
                     const period =
                       record.recorded_until && record.recorded_until !== record.recorded_at
                         ? `${format(parseISO(record.recorded_at), "M.d")}–${format(parseISO(record.recorded_until), "M.d")}`
@@ -209,6 +216,10 @@ export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: 
                                 <WeatherIcon weather={weather} className="size-4" aria-hidden="true" />
                                 {getRecordWeatherLabel(weather)}
                               </span>
+                              <span className="shrink-0" aria-hidden="true">
+                                ·
+                              </span>
+                              <span className="shrink-0">{category}</span>
                             </span>
                           </span>
                           <CaretRightIcon className="ml-2 shrink-0" size={20} aria-hidden="true" />

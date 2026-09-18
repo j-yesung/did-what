@@ -26,6 +26,7 @@ export const createRecord = async (formData: FormData): Promise<CreateRecordStat
   const { data: recordId, error } = await supabase.rpc("create_owned_record_with_places", {
     p_activity: result.data.activity,
     p_author_member_id: member.id,
+    p_category: result.data.category,
     p_memo: result.data.memo ?? "",
     p_places: selections.places,
     p_recorded_at: result.data.recordedAt,

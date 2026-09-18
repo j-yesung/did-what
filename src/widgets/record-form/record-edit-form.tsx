@@ -7,7 +7,7 @@ import { PencilIcon } from "@animateicons/react/lucide";
 import { useQuery } from "@tanstack/react-query";
 
 import { placesQueryOptions } from "@/entities/place";
-import { RECORDS_QUERY_KEY, type RecordFormState, type RecordWeather } from "@/entities/record";
+import { RECORDS_QUERY_KEY, type RecordCategory, type RecordFormState, type RecordWeather } from "@/entities/record";
 import {
   RecordLocationFields,
   type RecordLocationPlace,
@@ -21,14 +21,17 @@ import { LeaveGuard } from "@/shared/ui/leave-guard";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
+import { RecordActivityField } from "./field/activity-field";
+import { RecordCategoryField } from "./field/category-field";
 import { RecordDateField } from "./field/date-field";
-import { RecordTextFields } from "./field/text-fields";
+import { RecordMemoField } from "./field/memo-field";
 import { RecordWeatherField } from "./field/weather-field";
 
 type RecordEditFormProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
   initialValues: {
     activity: string;
+    category: RecordCategory;
     memo: string;
     places: RecordLocationPlace[];
     recordedAt: string;
@@ -140,12 +143,19 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
 
           <FieldSeparator />
 
-          <RecordTextFields
-            activityError={fieldErrors?.activity}
-            initialActivity={initialValues.activity}
-            initialMemo={initialValues.memo}
-            memoError={fieldErrors?.memo}
+          <RecordCategoryField
+            categoryError={fieldErrors?.category}
+            initialCategory={initialValues.category}
+            onChange={markDirty}
           />
+
+          <FieldSeparator />
+
+          <RecordActivityField activityError={fieldErrors?.activity} initialActivity={initialValues.activity} />
+
+          <FieldSeparator />
+
+          <RecordMemoField initialMemo={initialValues.memo} memoError={fieldErrors?.memo} />
         </FieldGroup>
 
         <Button className="mt-5" fullWidth loading={save.isPending} size="xlarge" type="submit">

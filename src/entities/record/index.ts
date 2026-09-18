@@ -10,6 +10,16 @@ export {
   regionRecordsQueryOptions,
 } from "./api/queries";
 export {
+  DEFAULT_RECORD_CATEGORY,
+  getRecordCategoryLabel,
+  isRecordCategory,
+  normalizeRecordCategory,
+  RECORD_CATEGORY_DOT,
+  RECORD_CATEGORY_FILL,
+  RECORD_CATEGORY_OPTIONS,
+  type RecordCategory,
+} from "./model/category";
+export {
   buildRecordsHref,
   hasRecordFilters,
   parseRecordFilters,

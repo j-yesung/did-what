@@ -2,6 +2,7 @@ import type { RecordFieldErrors } from "./record-form";
 
 export type RecordSummary = {
   activity: string;
+  category: string;
   id: string;
   memo: string | null;
   recorded_at: string;

@@ -7,7 +7,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import {
+  getRecordCategoryLabel,
   getRecordWeatherLabel,
+  normalizeRecordCategory,
   normalizeRecordWeather,
   type RecordSummary,
   recordDetailQueryOptions,
@@ -121,7 +123,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
                   {record.activity}
                 </h1>
                 <p className="mt-2 text-muted-foreground text-sm">
-                  {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))}`}
+                  {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))} · ${getRecordCategoryLabel(normalizeRecordCategory(record.category))}`}
                 </p>
                 <p className="mt-1 text-muted-foreground text-sm">
                   {[record.region_label, record.region_name].filter(Boolean).join(" / ") || "지역 정보 없음"}

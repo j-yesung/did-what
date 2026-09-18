@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   DayButton,
   type DayButtonProps,
@@ -19,7 +19,12 @@ import { format, parseISO } from "date-fns";
 import { animate, motion, type PanInfo, useMotionValue, useReducedMotion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 
-import { type RecordSummary, recordCalendarQueryOptions } from "@/entities/record";
+import {
+  normalizeRecordCategory,
+  RECORD_CATEGORY_FILL,
+  type RecordSummary,
+  recordCalendarQueryOptions,
+} from "@/entities/record";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -99,15 +104,21 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
       </span>
       {records.slice(0, visibleCount).map((record) => (
         <span
-          // 늦게 도착한 제목이 툭 튀어나오지 않게 짧게 페이드한다.
-          className="fade-in-0 h-4 shrink-0 animate-in overflow-hidden whitespace-nowrap rounded-lg bg-primary/20 px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none"
+          className={cn(
+            // 늦게 도착한 제목이 툭 튀어나오지 않게 짧게 페이드한다.
+            "fade-in-0 h-4 shrink-0 animate-in overflow-hidden whitespace-nowrap rounded-lg px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none",
+            RECORD_CATEGORY_FILL[normalizeRecordCategory(record.category)],
+          )}
           key={record.id}
         >
           {record.activity}
         </span>
       ))}
+      {/* 여러 기록을 묶은 표시라 어느 카테고리도 대표할 수 없다. */}
       {hiddenCount > 0 ? (
-        <span className="h-4 shrink-0 px-1 text-[0.625rem] text-muted-foreground leading-4">+{hiddenCount}</span>
+        <span className="h-4 shrink-0 rounded-lg bg-muted-foreground/15 px-1 text-[0.625rem] text-muted-foreground leading-4">
+          +{hiddenCount}
+        </span>
       ) : null}
     </DayButton>
   );
@@ -186,7 +197,6 @@ const replaceCalendarHref = (month: string, date?: string | null) => {
 };
 
 type CalendarMonthProps = {
-  isCurrent: boolean;
   month: string;
   onDayClick: (date: Date, modifiers: Modifiers) => void;
   onMonthChange: (date: Date) => void;
@@ -196,9 +206,11 @@ type CalendarMonthProps = {
   today: string;
 };
 
-/** 한 달치 달력. 화면 밖의 앞뒤 달은 inert로 빼 낭독기와 탭 이동에서 달력이 셋으로 보이지 않게 한다. */
-function CalendarMonth({
-  isCurrent,
+/**
+ * 한 달치 달력. 달을 넘기면 세 자리 중 두 달은 그대로 남으므로 memo로 다시 그리지 않는다.
+ * 그래서 자리마다 바뀌는 값(inert)은 바깥에 두고, 여기엔 달 자체에 매인 값만 받는다.
+ */
+const CalendarMonth = memo(function CalendarMonth({
   month,
   onDayClick,
   onMonthChange,
@@ -215,24 +227,22 @@ function CalendarMonth({
 
   return (
     <RecordCalendarContext.Provider value={calendarContext}>
-      <div className="flex w-1/3 shrink-0 flex-col" inert={!isCurrent}>
-        <DayPicker
-          classNames={CALENDAR_CLASS_NAMES}
-          components={CALENDAR_COMPONENTS}
-          fixedWeeks
-          hideNavigation
-          locale={ko}
-          modifiers={{ selected: selectedDate ? parseISO(selectedDate) : false }}
-          month={parseISO(`${month}-01`)}
-          onDayClick={onDayClick}
-          onMonthChange={onMonthChange}
-          showOutsideDays
-          today={parseISO(today)}
-        />
-      </div>
+      <DayPicker
+        classNames={CALENDAR_CLASS_NAMES}
+        components={CALENDAR_COMPONENTS}
+        fixedWeeks
+        hideNavigation
+        locale={ko}
+        modifiers={{ selected: selectedDate ? parseISO(selectedDate) : false }}
+        month={parseISO(`${month}-01`)}
+        onDayClick={onDayClick}
+        onMonthChange={onMonthChange}
+        showOutsideDays
+        today={parseISO(today)}
+      />
     </RecordCalendarContext.Provider>
   );
-}
+});
 
 export function RecordCalendar() {
   const searchParams = useSearchParams();
@@ -276,7 +286,7 @@ export function RecordCalendar() {
   }, []);
 
   // 서버 요청과 이력 추가 없이 주소의 월만 바꿔 상세에서 돌아왔을 때 같은 달을 보여준다.
-  const changeMonth = (nextMonth: string, keepSelection = false) => {
+  const changeMonth = useCallback((nextMonth: string, keepSelection = false) => {
     setMonth(nextMonth);
     if (!keepSelection) {
       setSelectedDate(null);
@@ -284,7 +294,7 @@ export function RecordCalendar() {
       setOpen(false);
     }
     replaceCalendarHref(nextMonth);
-  };
+  }, []);
 
   /**
    * 손을 뗀 자리에서 그대로 이어지도록 달을 먼저 바꾸고, 바뀐 만큼 좌표를 되돌린 뒤 0으로 붙인다.
@@ -342,6 +352,15 @@ export function RecordCalendar() {
     setOpen(action === "open" || action === "wait");
     replaceCalendarHref(nextMonth, action === "open" || action === "wait" ? nextDate : null);
   };
+
+  /**
+   * openDay는 보고 있는 달과 선택한 날짜에 매여 있어 렌더마다 새 함수가 된다.
+   * 그대로 내려보내면 달을 넘길 때 memo가 풀려 세 달이 전부 다시 그려지므로 ref로 최신 것만 꺼내 쓴다.
+   */
+  const openDayRef = useRef(openDay);
+  openDayRef.current = openDay;
+  const handleDayClick = useCallback((date: Date, modifiers: Modifiers) => openDayRef.current(date, modifiers), []);
+  const handleMonthChange = useCallback((date: Date) => changeMonth(format(date, "yyyy-MM")), [changeMonth]);
 
   useEffect(() => {
     if (!pendingDate) return;
@@ -410,17 +429,19 @@ export function RecordCalendar() {
           style={{ x }}
         >
           {months.map((value, index) => (
-            <CalendarMonth
-              isCurrent={index === CURRENT_MONTH_INDEX}
-              key={value}
-              month={value}
-              onDayClick={openDay}
-              onMonthChange={(date) => changeMonth(format(date, "yyyy-MM"))}
-              records={monthQueries[index].data}
-              selectedDate={selectedDate}
-              titleLines={titleLines}
-              today={today}
-            />
+            // 화면 밖의 앞뒤 달은 inert로 빼 낭독기와 탭 이동에서 달력이 셋으로 보이지 않게 한다.
+            // 달을 넘기면 이 값만 뒤집히므로 memo 바깥인 여기에 둬야 안쪽 달력이 그대로 남는다.
+            <div className="flex w-1/3 shrink-0 flex-col" inert={index !== CURRENT_MONTH_INDEX} key={value}>
+              <CalendarMonth
+                month={value}
+                onDayClick={handleDayClick}
+                onMonthChange={handleMonthChange}
+                records={monthQueries[index].data}
+                selectedDate={selectedDate}
+                titleLines={titleLines}
+                today={today}
+              />
+            </div>
           ))}
         </motion.div>
       </div>
