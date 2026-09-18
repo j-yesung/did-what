@@ -90,6 +90,7 @@
   --border-default: var(--grey-200);
   --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.08);
   --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.18), 0 0 20px rgb(0 0 0 / 0.1);
+  --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.05);
   --nav-glass-highlight: rgb(255 255 255 / 0.75);
 
   /**
@@ -218,6 +219,7 @@
   --border-default: var(--grey-800);
   --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.28);
   --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
+  --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
   --input: var(--grey-700);
 
@@ -252,6 +254,7 @@
     --border-default: var(--grey-800);
     --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.28);
     --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
+    --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
     --input: var(--grey-700);
 

@@ -2,11 +2,11 @@
   .liquid-glass,
   .liquid-glass-control {
     background: var(--fill-nav-glass);
-    -webkit-backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
-    backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
   }
 
   .liquid-glass {
+    -webkit-backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
+    backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
     border-color: color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
     box-shadow:
       inset 1px 1px 0 var(--nav-glass-highlight),
@@ -14,11 +14,10 @@
       var(--shadow-nav-glass);
   }
 
-  /* 그림자는 불투명한 면 위에서 유일한 경계다. 뒤에 비칠 내용이 있을 때는 가장자리를 또렷하게 한다. */
   .liquid-glass-control {
-    box-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent),
-      var(--shadow-notice);
+    -webkit-backdrop-filter: blur(4px) saturate(1.2);
+    backdrop-filter: blur(4px) saturate(1.2);
+    box-shadow: var(--shadow-glass-control);
   }
 
   .app-toolbar [data-slot="icon-button"]:active {
