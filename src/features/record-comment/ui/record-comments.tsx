@@ -53,6 +53,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
         <CommentCreateForm
           disabled={submitDisabled}
           draft={draft}
+          memberId={member.id}
           memberName={member.name}
           onDraftChange={setDraft}
           onSubmit={submitComment}

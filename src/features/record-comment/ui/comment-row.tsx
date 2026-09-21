@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { XIcon } from "@phosphor-icons/react";
 
+import { MemberAvatar } from "@/entities/member";
 import { formatCommentTime, type RecordComment } from "@/entities/record-comment";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
@@ -21,7 +22,7 @@ export function CommentRow({ comment, currentMemberId, onDelete }: CommentRowPro
     <>
       <li className="scroll-mt-24 border-b px-6.5 py-4" id={`comment-${comment.id}`}>
         <article aria-busy={comment.pending || undefined} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
-          <img alt="" className="size-9 rounded-full bg-muted object-cover" src="/member-avatar.svg" />
+          <MemberAvatar memberId={comment.author_member_id} name={comment.author.name} />
           <div className="min-w-0">
             <header className="flex min-h-7 min-w-0 items-center justify-between gap-2">
               <p className="min-w-0 truncate font-semibold text-sm">

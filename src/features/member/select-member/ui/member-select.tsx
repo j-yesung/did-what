@@ -6,7 +6,7 @@ import { UserRoundIcon } from "@animateicons/react/lucide";
 import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 
-import type { AccountMember } from "@/entities/member";
+import { type AccountMember, getMemberAvatarTone, getMemberInitial } from "@/entities/member";
 import { showNotice } from "@/shared/lib/notice";
 import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
@@ -78,14 +78,16 @@ export function MemberSelect({ currentMemberId, destination, members }: MemberSe
                   variant="ghost"
                 >
                   <span className="relative block w-full overflow-hidden rounded-xl bg-card">
-                    <img
-                      alt=""
+                    <span
+                      aria-hidden="true"
                       className={cn(
-                        "block aspect-square w-full object-cover transition-opacity",
+                        "flex aspect-square w-full select-none items-center justify-center font-semibold text-4xl transition-opacity",
+                        getMemberAvatarTone(member.id),
                         select.isPending && pendingMemberId !== member.id && "opacity-40",
                       )}
-                      src="/member-avatar.svg"
-                    />
+                    >
+                      {getMemberInitial(member.name)}
+                    </span>
                     {selected ? (
                       <span
                         aria-hidden="true"
