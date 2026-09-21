@@ -6,10 +6,10 @@ import { motion, useReducedMotion } from "motion/react";
 
 import { CircleCheckFilledIcon } from "@/shared/assets/icons/circle-check-filled";
 import { TriangleAlertFilledIcon } from "@/shared/assets/icons/triangle-alert-filled";
-import { subscribeToast, type Toast } from "@/shared/lib/toast";
+import { shouldDismissToast, subscribeToast, type Toast } from "@/shared/lib/toast";
 import { cn } from "@/shared/lib/utils";
 
-const EXIT_DURATION = 180;
+const EXIT_DURATION = 500;
 
 /**
  * 결과를 알리는 띠. 화면 아래에서 올라와 스스로 사라진다.
@@ -72,30 +72,53 @@ export function ToastProvider() {
     <div
       aria-atomic="true"
       aria-live={isSuccess ? "polite" : "assertive"}
-      className="pointer-events-none fixed inset-x-0 bottom-[max(var(--nav-clearance),calc(env(safe-area-inset-bottom)+24px))] z-60 flex justify-center px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-[max(calc(var(--nav-clearance)-8px),calc(env(safe-area-inset-bottom)+16px))] z-60 flex justify-center px-4"
       role="status"
     >
       <motion.section
         key={entry.id}
         animate={{ opacity: open ? 1 : 0, transform: open ? "translateY(0)" : hiddenTransform }}
-        className="flex w-fit max-w-full items-start gap-2 rounded-3xl border border-transparent bg-toast px-4 py-2.5 text-toast-foreground shadow-(--shadow-toast)"
+        className="w-fit max-w-full"
         initial={{ opacity: 0, transform: hiddenTransform }}
-        transition={{ duration: reduceMotion ? 0.1 : open ? 0.4 : EXIT_DURATION / 1000, ease: [0.23, 1, 0.32, 1] }}
+        transition={{
+          opacity: {
+            duration: reduceMotion ? 0.1 : open ? 0.4 : EXIT_DURATION / 1000,
+            ease: open ? [0.23, 1, 0.32, 1] : [0.25, 0.1, 0.25, 1],
+          },
+          transform: {
+            duration: reduceMotion ? 0.1 : 0.4,
+            ease: open ? [0.23, 1, 0.32, 1] : [0.25, 0.1, 0.25, 1],
+          },
+        }}
       >
-        {isSuccess ? (
-          <CircleCheckFilledIcon aria-hidden="true" className="size-5 shrink-0 text-success" />
-        ) : (
-          <TriangleAlertFilledIcon
-            aria-hidden="true"
-            className={cn("size-5 shrink-0", toast.variant === "warning" ? "text-warning" : "text-destructive")}
-          />
-        )}
-        <div className="min-w-0">
-          <p className="whitespace-pre-line font-medium text-sm leading-5">{toast.title}</p>
-          {toast.description ? (
-            <p className="whitespace-pre-line text-sm leading-5 opacity-80">{toast.description}</p>
-          ) : null}
-        </div>
+        <motion.div
+          className="pointer-events-auto flex touch-pan-x select-none items-center gap-2 rounded-3xl border border-transparent bg-toast px-4 py-2.5 text-toast-foreground shadow-(--shadow-toast)"
+          drag="y"
+          dragConstraints={{ bottom: 0, top: 0 }}
+          dragElastic={{ bottom: 0.5, top: 0 }}
+          dragMomentum={false}
+          onDragEnd={(_event, info) => {
+            if (shouldDismissToast(info.offset.y, info.velocity.y)) dismiss();
+          }}
+        >
+          {isSuccess ? (
+            <CircleCheckFilledIcon aria-hidden="true" className="size-5 shrink-0 self-start text-success" />
+          ) : (
+            <TriangleAlertFilledIcon
+              aria-hidden="true"
+              className={cn(
+                "size-5 shrink-0 self-start",
+                toast.variant === "warning" ? "text-warning" : "text-destructive",
+              )}
+            />
+          )}
+          <div className="min-w-0">
+            <p className="whitespace-pre-line font-medium text-sm leading-5">{toast.title}</p>
+            {toast.description ? (
+              <p className="whitespace-pre-line text-sm leading-5 opacity-80">{toast.description}</p>
+            ) : null}
+          </div>
+        </motion.div>
       </motion.section>
     </div>
   );

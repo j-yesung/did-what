@@ -8,6 +8,11 @@ export type Toast = {
 type ToastListener = (toast: Toast) => void;
 
 const listeners = new Set<ToastListener>();
+const SWIPE_DISTANCE = 48;
+const SWIPE_VELOCITY = 500;
+
+export const shouldDismissToast = (offsetY: number, velocityY: number) =>
+  offsetY >= SWIPE_DISTANCE || velocityY >= SWIPE_VELOCITY;
 
 export const showToast = (toast: Toast) => {
   for (const listener of listeners) listener(toast);
