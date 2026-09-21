@@ -1,2 +1,2 @@
 export { deleteRecord } from "./api/delete-record";
-export { DeleteRecordDrawer } from "./ui/delete-record-drawer";
+export { DeleteRecordConfirm } from "./ui/delete-record-confirm";

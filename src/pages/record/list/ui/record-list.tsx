@@ -12,10 +12,10 @@ import {
   hasRecordFilters,
   RecordCard,
   type RecordFilters,
+  type RecordSummary,
   RecordTimeline,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
-import { DeleteRecordDrawer } from "@/features/record/delete-record";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
@@ -24,6 +24,7 @@ import { LoadMoreButton } from "@/shared/ui/load-more-button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { useRecordListQuery } from "../model/use-record-list-query";
+import { RecordActionSheet } from "./record-action-sheet";
 
 type RecordListProps = {
   filters: RecordFilters;
@@ -32,9 +33,9 @@ type RecordListProps = {
 export function RecordList({ filters }: RecordListProps) {
   const queryClient = useQueryClient();
   const recordsQuery = useRecordListQuery(filters);
-  // 시트는 계속 띄워 두고 open만 여닫는다. 닫히는 동안 제목이 사라지지 않고 여는 전환도 그대로 탄다.
-  const [deleteTarget, setDeleteTarget] = useState<{ activity: string; id: string } | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  // 시트는 계속 띄워 두고 open만 여닫는다. 닫히는 동안 내용이 사라지지 않고 여는 전환도 그대로 탄다.
+  const [actionTarget, setActionTarget] = useState<RecordSummary | null>(null);
+  const [actionOpen, setActionOpen] = useState(false);
 
   const prefetchComments = (recordId: string) => {
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
@@ -98,8 +99,8 @@ export function RecordList({ filters }: RecordListProps) {
               isLast={index === records.length - 1}
               onDetailPrefetch={prefetchComments}
               onLongPress={() => {
-                setDeleteTarget({ activity: record.activity, id: record.id });
-                setDeleteOpen(true);
+                setActionTarget(record);
+                setActionOpen(true);
               }}
               record={record}
               startsDate={startsDate}
@@ -114,12 +115,7 @@ export function RecordList({ filters }: RecordListProps) {
           onClick={() => recordsQuery.fetchNextPage()}
         />
       ) : null}
-      <DeleteRecordDrawer
-        activity={deleteTarget?.activity ?? ""}
-        onOpenChange={setDeleteOpen}
-        open={deleteOpen}
-        recordId={deleteTarget?.id ?? ""}
-      />
+      <RecordActionSheet onOpenChange={setActionOpen} open={actionOpen} record={actionTarget} />
     </RecordTimeline>
   );
 }
