@@ -1,17 +1,10 @@
 import { CaretRightIcon } from "@phosphor-icons/react";
 
 import { getNotificationHref, type NotificationItem } from "@/entities/notification";
+import { formatCommentTime } from "@/entities/record-comment";
 import { cn } from "@/shared/lib/utils";
 import { ListRow } from "@/shared/ui/list-row";
 import { PressLink } from "@/shared/ui/press-link";
-
-const NOTIFICATION_TIME = new Intl.DateTimeFormat("ko-KR", {
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  month: "short",
-  timeZone: "Asia/Seoul",
-});
 
 type NotificationRowProps = {
   notification: NotificationItem;
@@ -53,8 +46,8 @@ export function NotificationRow({ notification, onOpen, pending }: NotificationR
             {notification.record_title}
           </span>
           <span className="flex items-center gap-2 text-muted-foreground text-xs">
-            <time dateTime={notification.created_at}>
-              {NOTIFICATION_TIME.format(new Date(notification.created_at))}
+            <time dateTime={notification.created_at} suppressHydrationWarning>
+              {formatCommentTime(notification.created_at)}
             </time>
             {deleted ? <span>삭제된 기록이에요</span> : null}
             {!deleted && commentDeleted ? <span>삭제된 댓글이에요</span> : null}
