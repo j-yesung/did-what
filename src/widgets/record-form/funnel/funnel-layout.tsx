@@ -2,10 +2,8 @@
 
 import { type ReactNode, useEffect, useRef } from "react";
 
-import { CaretLeftIcon } from "@phosphor-icons/react";
-
 import { cn } from "@/shared/lib/utils";
-import { IconButton } from "@/shared/ui/icon-button";
+import { BackButton } from "@/shared/ui/back-button";
 
 import { getRecordCreateStepIndex, RECORD_CREATE_STEPS, type RecordCreateStep } from "./create-record-funnel.model";
 
@@ -42,14 +40,8 @@ export function RecordFunnelLayout({ backDisabled, children, footer, onBack, ste
   return (
     <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] bg-background">
       <header className="border-b bg-background px-5 pt-[calc(10px+env(safe-area-inset-top))] pb-4">
-        <div className="grid min-h-11 grid-cols-[44px_1fr_44px] items-center">
-          <IconButton
-            aria-label="이전으로"
-            disabled={backDisabled}
-            icon={CaretLeftIcon}
-            iconSize={28}
-            onClick={onBack}
-          />
+        <div className="grid min-h-(--toolbar-height) grid-cols-[var(--toolbar-height)_1fr_var(--toolbar-height)] items-center">
+          <BackButton aria-label="이전으로" disabled={backDisabled} onClick={onBack} />
           <h1 className="text-center font-bold text-lg tracking-[-0.03em]">기록 남기기</h1>
           <span aria-hidden="true" />
         </div>
