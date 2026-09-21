@@ -332,6 +332,11 @@
     @apply font-sans;
   }
 
+  /* 지도 홈은 스크롤할 내용이 없다. 고무줄 반동까지 막아 화면이 붙박이처럼 고정되게 한다. */
+  html:has([data-screen="map"]) {
+    overscroll-behavior-y: none;
+  }
+
   body {
     /**
      * 화면 뼈대(PageShell)가 쓰는 단위와 같아야 한다.

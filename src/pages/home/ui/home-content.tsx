@@ -36,7 +36,7 @@ export function HomeContent() {
 
   return (
     <>
-      <section className="grid min-h-0 flex-1 place-items-center px-1.5 py-1" aria-label="대한민국 활동 지도">
+      <section className="relative min-h-0 flex-1" aria-label="대한민국 활동 지도" data-screen="map">
         <RegionActivityMap records={records} />
       </section>
 
