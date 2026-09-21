@@ -12,8 +12,8 @@ import {
   getRecordWeatherLabel,
   normalizeRecordCategory,
   normalizeRecordWeather,
-  recordPlacesQueryOptions,
   type RecordSummary,
+  recordPlacesQueryOptions,
   recordSummaryQueryKey,
   WeatherIcon,
 } from "@/entities/record";
@@ -61,7 +61,7 @@ function RecordDayCreateButton({ date }: { date: string }) {
 
   return (
     <PressScale className="pointer-events-auto inline-flex">
-      <RecordCreateButton href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} />
+      <RecordCreateButton className="size-14" href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} />
     </PressScale>
   );
 }

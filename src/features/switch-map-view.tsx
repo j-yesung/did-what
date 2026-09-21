@@ -15,11 +15,16 @@ export function MapViewToggle() {
     <PressScale className="pointer-events-auto inline-flex">
       <LiquidGlassButton
         aria-label={showRegions ? "지역" : "지도"}
+        className="[&_svg]:size-7"
         nativeButton={false}
         render={<PressLink href={showRegions ? "/regions" : "/"} prefetch />}
         shape="circle"
       >
-        {showRegions ? <SquaresFourIcon data-icon="inline-start" /> : <MapPinAreaIcon data-icon="inline-start" />}
+        {showRegions ? (
+          <SquaresFourIcon data-icon="inline-start" weight="regular" />
+        ) : (
+          <MapPinAreaIcon data-icon="inline-start" weight="regular" />
+        )}
       </LiquidGlassButton>
     </PressScale>
   );

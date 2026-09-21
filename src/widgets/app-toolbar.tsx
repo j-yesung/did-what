@@ -25,7 +25,7 @@ export function AppToolbar({ memberId }: { memberId: string }) {
           className="app-toolbar liquid-glass-control pointer-events-auto ml-auto flex items-center gap-0.5 rounded-full p-0.5"
           role="group"
         >
-          <RecordCreateButton className="size-11" surface="group" />
+          <RecordCreateButton className="size-12 [&_svg]:size-6" surface="group" />
           <NotificationBell memberId={memberId} />
         </PressScale>
       </div>

@@ -19,6 +19,7 @@ export function RecordViewToggle() {
     <PressScale className="pointer-events-auto inline-flex">
       <LiquidGlassButton
         aria-label={calendar ? "달력" : "목록"}
+        className="[&_svg]:size-7"
         nativeButton={false}
         render={
           <PressLink
@@ -29,7 +30,11 @@ export function RecordViewToggle() {
         }
         shape="circle"
       >
-        {calendar ? <CalendarDotsIcon data-icon="inline-start" /> : <ListBulletsIcon data-icon="inline-start" />}
+        {calendar ? (
+          <CalendarDotsIcon data-icon="inline-start" weight="regular" />
+        ) : (
+          <ListBulletsIcon data-icon="inline-start" weight="regular" />
+        )}
       </LiquidGlassButton>
     </PressScale>
   );

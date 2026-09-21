@@ -141,7 +141,7 @@
   --nav-clearance: calc(var(--nav-height) + var(--nav-bottom-offset) + var(--nav-content-gap));
 
   /* 상단 툴바 버튼의 지름. 지도 화면의 상단 여백이 같은 값을 본다. */
-  --toolbar-height: 54px;
+  --toolbar-height: 56px;
 
   /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
   --map-empty: var(--grey-200);

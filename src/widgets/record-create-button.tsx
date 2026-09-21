@@ -15,7 +15,6 @@ type RecordCreateButtonProps = {
   surface?: LiquidGlassButtonProps["surface"];
 };
 
-/** 글자 유무는 모양만 정한다. 바탕과 크기는 놓이는 자리가 정하므로 부르는 쪽이 넘긴다. */
 export function RecordCreateButton({
   children,
   className,
@@ -34,7 +33,7 @@ export function RecordCreateButton({
       shape={labeled ? "pill" : "circle"}
       surface={surface}
     >
-      {children ?? <NotePencilIcon data-icon="inline-start" />}
+      {children ?? <NotePencilIcon data-icon="inline-start" weight="regular" />}
     </LiquidGlassButton>
   );
 }

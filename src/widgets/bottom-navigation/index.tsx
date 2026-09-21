@@ -2,7 +2,7 @@
 
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 
-import { Gear, type Icon, MapPin, MapPinArea, PencilSimple } from "@phosphor-icons/react";
+import { GearIcon, type Icon, MapPinAreaIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 
 import { readRecordView } from "@/features/record/switch-record-view";
@@ -19,10 +19,10 @@ type Tab = {
 };
 
 const TABS: readonly Tab[] = [
-  { href: "/", icon: MapPinArea, label: "지도", paths: ["/", "/regions"] },
-  { href: "/records", icon: PencilSimple, label: "기록" },
-  { href: "/places", icon: MapPin, label: "장소" },
-  { href: "/settings", icon: Gear, label: "설정" },
+  { href: "/", icon: MapPinAreaIcon, label: "지도", paths: ["/", "/regions"] },
+  { href: "/records", icon: NotepadIcon, label: "기록" },
+  { href: "/places", icon: MapPinIcon, label: "장소" },
+  { href: "/settings", icon: GearIcon, label: "설정" },
 ];
 
 export function BottomNavigation() {
