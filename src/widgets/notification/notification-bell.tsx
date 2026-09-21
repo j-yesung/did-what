@@ -4,6 +4,8 @@ import { BellIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { unreadNotificationCountQueryOptions } from "@/entities/notification";
+import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
 import { IconButton } from "@/shared/ui/icon-button";
 import { PressLink } from "@/shared/ui/press-link";
 
@@ -20,7 +22,7 @@ export function NotificationBell({ memberId }: NotificationBellProps) {
   return (
     <IconButton
       aria-label={accessibilityLabel}
-      className="size-12 rounded-full text-foreground"
+      className={cn("size-12 rounded-full text-foreground", ICON_WEIGHT_MEDIUM)}
       icon={BellIcon}
       iconSize={24}
       iconWeight="regular"

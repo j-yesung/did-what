@@ -62,3 +62,12 @@ export const PRESS_SURFACE = [
 
 /** 키보드 포커스 표시. 마우스·터치에는 나타나지 않는다. */
 export const FOCUS_RING = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+
+/**
+ * regular와 bold 사이의 아이콘 굵기.
+ *
+ * Phosphor는 thin·light·regular·bold·fill 다섯 단계뿐이고 regular(16)에서 bold(24)로 한 번에 뛴다.
+ * 그 사이가 필요해서 regular 도형에 가는 선을 덧대 두께만 더한다. 값은 256 viewBox 기준이다.
+ * 모서리를 둥글게 이어야 연필 끝처럼 뾰족한 곳에 가시가 생기지 않는다.
+ */
+export const ICON_WEIGHT_MEDIUM = "[&_svg]:stroke-current [&_svg]:[stroke-width:5] [&_svg]:[stroke-linejoin:round]";

@@ -3,6 +3,8 @@
 import { CalendarDotsIcon, ListBulletsIcon } from "@phosphor-icons/react";
 import { useSearchParams } from "next/navigation";
 
+import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { PressLink } from "@/shared/ui/press-link";
 import { PressScale } from "@/shared/ui/press-scale";
@@ -19,7 +21,7 @@ export function RecordViewToggle() {
     <PressScale className="pointer-events-auto inline-flex">
       <LiquidGlassButton
         aria-label={calendar ? "달력" : "목록"}
-        className="[&_svg]:size-7"
+        className={cn("[&_svg]:size-6.75", ICON_WEIGHT_MEDIUM)}
         nativeButton={false}
         render={
           <PressLink
