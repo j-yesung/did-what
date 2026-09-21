@@ -1,8 +1,8 @@
 "use client";
 
-import { type MouseEvent, useRef } from "react";
+import { type MouseEvent, useRef, useState } from "react";
 
-import { CaretRightIcon } from "@phosphor-icons/react";
+import { CaretRightIcon, TrashIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ import {
   WeatherIcon,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
+import { DeleteRecordConfirm } from "@/features/record/delete-record";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { useScrollRestoration } from "@/shared/lib/navigation/use-scroll-restoration";
 import { cn } from "@/shared/lib/utils";
@@ -25,6 +26,7 @@ import { buttonVariants } from "@/shared/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { IconButton } from "@/shared/ui/icon-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 import { PressScale } from "@/shared/ui/press-scale";
@@ -67,11 +69,37 @@ function RecordDayCreateButton({ date }: { date: string }) {
   );
 }
 
+function RecordDeleteButton({
+  className,
+  onClick,
+  record,
+}: {
+  className?: string;
+  onClick: () => void;
+  record: RecordSummary;
+}) {
+  return (
+    <PressScale className="pointer-events-auto inline-flex">
+      <LiquidGlassButton
+        aria-label={`${record.activity} 삭제`}
+        className={cn("size-10 shrink-0 text-destructive [&_svg]:size-5", className)}
+        onClick={onClick}
+        shape="circle"
+      >
+        <TrashIcon aria-hidden="true" weight="bold" />
+      </LiquidGlassButton>
+    </PressScale>
+  );
+}
+
 export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, records }: RecordDayDrawerProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RecordSummary | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const multipleRecords = Boolean(records && records.length > 1);
+  const singleRecord = records?.length === 1 ? records[0] : null;
 
   useScrollRestoration(scrollRef, open);
 
@@ -86,6 +114,11 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(record.id));
   };
 
+  const openDeleteConfirm = (record: RecordSummary) => {
+    setDeleteTarget(record);
+    setDeleteOpen(true);
+  };
+
   return (
     <Drawer onOpenChange={onOpenChange} open={open} showSwipeHandle>
       <DrawerContent className="data-[swipe-axis=y]:max-h-[70dvh]">
@@ -98,7 +131,16 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
               <p className="mt-0.5 text-muted-foreground text-sm tabular-nums">기록 {records?.length}개</p>
             ) : null}
           </div>
-          {date ? <RecordDayCreateButton date={date} /> : null}
+          <div className="flex shrink-0 items-center gap-2">
+            {date ? <RecordDayCreateButton date={date} /> : null}
+            {singleRecord ? (
+              <RecordDeleteButton
+                className="size-14 [&_svg]:size-6"
+                onClick={() => openDeleteConfirm(singleRecord)}
+                record={singleRecord}
+              />
+            ) : null}
+          </div>
         </DrawerHeader>
 
         <div
@@ -182,49 +224,54 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
                     return (
                       <li key={record.id}>
                         {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
-                        <PressLink
-                          className={cn(
-                            buttonVariants({ variant: "ghost" }),
-                            "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
-                          )}
-                          href={href}
-                          onClick={() => cacheRecordSummary(record)}
-                          onPointerDown={(event) => {
-                            if (event.button === 0) prefetchDetail(record);
-                          }}
-                          prefetch={false}
-                        >
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate font-semibold text-base leading-5">{record.activity}</span>
-                            <span className="mt-1 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
-                              {period ? (
-                                <>
-                                  <span className="shrink-0 tabular-nums">{period}</span>
-                                  <span className="shrink-0" aria-hidden="true">
-                                    ·
-                                  </span>
-                                </>
-                              ) : null}
-                              {region ? (
-                                <>
-                                  <span className="truncate">{region}</span>
-                                  <span className="shrink-0" aria-hidden="true">
-                                    ·
-                                  </span>
-                                </>
-                              ) : null}
-                              <span className="inline-flex shrink-0 items-center gap-1">
-                                <WeatherIcon weather={weather} className="size-4" aria-hidden="true" />
-                                {getRecordWeatherLabel(weather)}
+                        <div className="flex items-center gap-2">
+                          <PressLink
+                            className={cn(
+                              buttonVariants({ variant: "ghost" }),
+                              "h-15 min-w-0 flex-1 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
+                            )}
+                            href={href}
+                            onClick={() => cacheRecordSummary(record)}
+                            onPointerDown={(event) => {
+                              if (event.button === 0) prefetchDetail(record);
+                            }}
+                            prefetch={false}
+                          >
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate font-semibold text-base leading-5">
+                                {record.activity}
                               </span>
-                              <span className="shrink-0" aria-hidden="true">
-                                ·
+                              <span className="mt-1 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
+                                {period ? (
+                                  <>
+                                    <span className="shrink-0 tabular-nums">{period}</span>
+                                    <span className="shrink-0" aria-hidden="true">
+                                      ·
+                                    </span>
+                                  </>
+                                ) : null}
+                                {region ? (
+                                  <>
+                                    <span className="truncate">{region}</span>
+                                    <span className="shrink-0" aria-hidden="true">
+                                      ·
+                                    </span>
+                                  </>
+                                ) : null}
+                                <span className="inline-flex shrink-0 items-center gap-1">
+                                  <WeatherIcon weather={weather} className="size-4" aria-hidden="true" />
+                                  {getRecordWeatherLabel(weather)}
+                                </span>
+                                <span className="shrink-0" aria-hidden="true">
+                                  ·
+                                </span>
+                                <span className="shrink-0">{category}</span>
                               </span>
-                              <span className="shrink-0">{category}</span>
                             </span>
-                          </span>
-                          <CaretRightIcon className="ml-2 shrink-0" size={20} aria-hidden="true" />
-                        </PressLink>
+                            <CaretRightIcon className="ml-2 shrink-0" size={20} aria-hidden="true" />
+                          </PressLink>
+                          <RecordDeleteButton onClick={() => openDeleteConfirm(record)} record={record} />
+                        </div>
                       </li>
                     );
                   })}
@@ -246,6 +293,15 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
           )}
         </div>
       </DrawerContent>
+      <DeleteRecordConfirm
+        activity={deleteTarget?.activity ?? ""}
+        onClose={() => setDeleteOpen(false)}
+        onDeleted={() => {
+          if (records?.length === 1) onOpenChange(false);
+        }}
+        open={deleteOpen}
+        recordId={deleteTarget?.id ?? ""}
+      />
     </Drawer>
   );
 }
