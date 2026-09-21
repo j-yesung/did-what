@@ -21,7 +21,7 @@ import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
-import { showNotice } from "@/shared/lib/notice";
+import { showToast } from "@/shared/lib/toast";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -76,7 +76,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
     if (!fromNotification || !recordMissing || redirectedMissingRecord.current) return;
 
     redirectedMissingRecord.current = true;
-    showNotice({ title: "기록이 삭제됐어요", variant: "warning" });
+    showToast({ title: "기록이 삭제됐어요", variant: "warning" });
     if (seededNotificationHistory.current) router.back();
     else router.replace("/records");
   }, [fromNotification, recordMissing, router]);

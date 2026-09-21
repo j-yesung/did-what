@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { BookmarkXIcon } from "@animateicons/react/lucide";
 import { TrashIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
@@ -27,7 +26,6 @@ export function DeletePlaceButton({ name, placeId, recordCount }: DeletePlaceBut
 
   const remove = useActionMutation(() => deletePlace(placeId), {
     error: "장소를 삭제하지 못했어요",
-    icon: BookmarkXIcon,
     invalidate: [placesQueryOptions.queryKey, RECORD_DETAILS_QUERY_KEY],
     onSuccess: () => router.replace("/places"),
     success: "장소를 삭제했어요",

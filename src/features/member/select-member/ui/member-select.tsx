@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 
-import { UserRoundIcon } from "@animateicons/react/lucide";
 import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 
 import { type AccountMember, getMemberAvatarTone, getMemberInitial } from "@/entities/member";
-import { showNotice } from "@/shared/lib/notice";
 import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
+import { showToast } from "@/shared/lib/toast";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
@@ -41,7 +40,7 @@ export function MemberSelect({ currentMemberId, destination, members }: MemberSe
 
       const member = members.find(({ id }) => id === memberId);
       if (member) {
-        showNotice({ icon: UserRoundIcon, title: `${member.name}님으로 전환했어요`, variant: "success" });
+        showToast({ title: `${member.name}님으로 전환했어요`, variant: "success" });
       }
     },
   });

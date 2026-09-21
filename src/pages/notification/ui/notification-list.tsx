@@ -15,8 +15,8 @@ import {
 } from "@/entities/notification";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
 import { readNotification } from "@/features/notification/read-notification";
-import { showNotice } from "@/shared/lib/notice";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
+import { showToast } from "@/shared/lib/toast";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader } from "@/shared/ui/layouts/page-header";
 import { PageShell } from "@/shared/ui/layouts/page-shell";
@@ -41,25 +41,25 @@ export function NotificationList({ memberId }: NotificationListProps) {
     mutationFn: (notification: NotificationItem) => runServerAction(() => readNotification(notification.id)),
     onSuccess: async (result, notification) => {
       if (result?.status === "error") {
-        showNotice({ description: result.message, title: "알림을 열지 못했어요", variant: "warning" });
+        showToast({ description: result.message, title: "알림을 열지 못했어요", variant: "warning" });
         return;
       }
       await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
       const href = getNotificationHref(notification);
       if (href) router.push(href);
     },
-    onError: () => showNotice({ title: "알림을 열지 못했어요", variant: "error" }),
+    onError: () => showToast({ title: "알림을 열지 못했어요", variant: "error" }),
   });
   const readAll = useMutation({
     mutationFn: () => runServerAction(readAllNotifications),
     onSuccess: async (result) => {
       if (result?.status === "error") {
-        showNotice({ description: result.message, title: "모두 읽지 못했어요", variant: "warning" });
+        showToast({ description: result.message, title: "모두 읽지 못했어요", variant: "warning" });
         return;
       }
       await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
     },
-    onError: () => showNotice({ title: "모두 읽지 못했어요", variant: "error" }),
+    onError: () => showToast({ title: "모두 읽지 못했어요", variant: "error" }),
   });
 
   const openNotification = (notification: NotificationItem) => {

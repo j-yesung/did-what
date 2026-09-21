@@ -95,9 +95,11 @@
   --text-on-danger: var(--grey-0);
   --text-on-light: var(--grey-900);
   --text-on-dark: var(--grey-0);
+  --fill-toast: var(--grey-600);
+  --text-on-toast: var(--grey-0);
 
   --border-default: var(--grey-200);
-  --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.08);
+  --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.08);
   --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.18), 0 0 20px rgb(0 0 0 / 0.1);
   --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.05);
   --shadow-drawer: 0 -2px 24px rgb(0 0 0 / 0.1);
@@ -180,6 +182,8 @@
   --color-map-level-3: var(--map-level-3);
   --color-map-level-4: var(--map-level-4);
   --color-surface: var(--surface);
+  --color-toast: var(--fill-toast);
+  --color-toast-foreground: var(--text-on-toast);
   --color-pressed: var(--fill-pressed);
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -247,7 +251,7 @@
   --text-success: var(--green-400);
   --text-info: var(--blue-400);
   --border-default: var(--grey-800);
-  --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.28);
+  --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.28);
   --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
   --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
   --shadow-drawer: 0 -2px 24px rgb(0 0 0 / 0.36);
@@ -291,7 +295,7 @@
     --text-success: var(--green-400);
     --text-info: var(--blue-400);
     --border-default: var(--grey-800);
-    --shadow-notice: 0 4px 16px rgb(0 0 0 / 0.28);
+    --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.28);
     --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
     --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
     --shadow-drawer: 0 -2px 24px rgb(0 0 0 / 0.36);

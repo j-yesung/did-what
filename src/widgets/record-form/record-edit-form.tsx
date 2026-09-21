@@ -3,7 +3,6 @@
 import type { SubmitEvent } from "react";
 import { useEffect, useRef } from "react";
 
-import { PencilIcon } from "@animateicons/react/lucide";
 import { useQuery } from "@tanstack/react-query";
 
 import { placesQueryOptions } from "@/entities/place";
@@ -50,7 +49,6 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
 
   const save = useActionMutation(action, {
     error: "기록을 수정하지 못했어요",
-    icon: PencilIcon,
     invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
     success: "기록을 수정했어요",
     onSuccess: () => {

@@ -2,7 +2,6 @@
 
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { MapPinCheckIcon } from "@animateicons/react/lucide";
 import { useQuery } from "@tanstack/react-query";
 import { useFunnel } from "@use-funnel/browser";
 
@@ -114,7 +113,6 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
 
   const save = useActionMutation(action, {
     error: "기록을 저장하지 못했어요",
-    icon: MapPinCheckIcon,
     invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey, NOTIFICATIONS_QUERY_KEY],
     success: "함께한 순간을 기록했어요",
     onSuccess: () => navigation.finish(savedTo),

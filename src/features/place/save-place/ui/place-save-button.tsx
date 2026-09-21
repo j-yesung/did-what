@@ -24,7 +24,6 @@ export function PlaceSaveButton({ placeId, placeName, saved }: PlaceSaveButtonPr
 
   const toggle = useActionMutation((nextSaved: boolean) => setPlaceSaved(placeId, nextSaved), {
     error: "장소 저장 상태를 변경하지 못했어요",
-    icon: BookmarkIcon,
     invalidate: [placesQueryOptions.queryKey, RECORD_DETAILS_QUERY_KEY],
   });
 
