@@ -2,7 +2,7 @@
 
 import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { type NoticeIcon, showNotice } from "@/shared/lib/notice";
+import { showToast } from "@/shared/lib/toast";
 
 import { runServerAction } from "./run-server-action";
 
@@ -10,7 +10,6 @@ type ActionResult = { message?: string; status?: "idle" | "error" | "success" };
 
 type ActionMutationOptions<TResult> = {
   error: string;
-  icon: NoticeIcon;
   invalidate?: readonly QueryKey[];
   success?: string;
   onSuccess?: (result: TResult | undefined) => void;
@@ -25,7 +24,7 @@ type ActionMutationOptions<TResult> = {
  */
 export const useActionMutation = <TResult extends ActionResult, TArgs = void>(
   action: (args: TArgs) => Promise<TResult>,
-  { error, icon, invalidate = [], success, onFail, onSuccess }: ActionMutationOptions<TResult>,
+  { error, invalidate = [], success, onFail, onSuccess }: ActionMutationOptions<TResult>,
 ) => {
   const queryClient = useQueryClient();
 
@@ -33,16 +32,16 @@ export const useActionMutation = <TResult extends ActionResult, TArgs = void>(
     mutationFn: (args: TArgs) => runServerAction(() => action(args)),
     onSuccess: async (result) => {
       if (result?.status === "error") {
-        if (result.message) showNotice({ description: result.message, title: error, variant: "warning" });
+        if (result.message) showToast({ description: result.message, title: error, variant: "warning" });
         onFail?.(result);
         return;
       }
 
       const title = success ?? result?.message;
-      if (title) showNotice({ icon, title, variant: "success" });
+      if (title) showToast({ title, variant: "success" });
       await Promise.all(invalidate.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
       onSuccess?.(result);
     },
-    onError: () => showNotice({ title: error, variant: "error" }),
+    onError: () => showToast({ title: error, variant: "error" }),
   });
 };

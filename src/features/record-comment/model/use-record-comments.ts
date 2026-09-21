@@ -13,7 +13,7 @@ import {
   recordCommentListQueryOptions,
   reduceOptimisticComments,
 } from "@/entities/record-comment";
-import { showNotice } from "@/shared/lib/notice";
+import { showToast } from "@/shared/lib/toast";
 
 import { createComment, deleteComment } from "../api/comment-actions";
 
@@ -114,13 +114,13 @@ export const useRecordComments = ({ member, recordId }: UseRecordCommentsProps) 
           const result = await createComment({ body, commentId, expectedMemberId: member.id, recordId });
           if (result.status === "error" || !result.comment) {
             setDraft((current) => current || body);
-            showNotice({ description: result.message, title: "댓글을 남기지 못했어요", variant: "warning" });
+            showToast({ description: result.message, title: "댓글을 남기지 못했어요", variant: "warning" });
             return;
           }
           commitCache({ comment: result.comment, type: "create" });
         } catch {
           setDraft((current) => current || body);
-          showNotice({ title: "댓글을 남기지 못했어요", variant: "error" });
+          showToast({ title: "댓글을 남기지 못했어요", variant: "error" });
         } finally {
           submittingRef.current = false;
         }
@@ -133,13 +133,13 @@ export const useRecordComments = ({ member, recordId }: UseRecordCommentsProps) 
       try {
         const result = await deleteComment({ commentId: comment.id, expectedMemberId: member.id, recordId });
         if (result.status === "error" || !result.commentId) {
-          showNotice({ description: result.message, title: "댓글을 삭제하지 못했어요", variant: "warning" });
+          showToast({ description: result.message, title: "댓글을 삭제하지 못했어요", variant: "warning" });
           void commentsQuery.refetch();
           return;
         }
         commitCache({ id: result.commentId, type: "delete" });
       } catch {
-        showNotice({ title: "댓글을 삭제하지 못했어요", variant: "error" });
+        showToast({ title: "댓글을 삭제하지 못했어요", variant: "error" });
       }
     });
   };
