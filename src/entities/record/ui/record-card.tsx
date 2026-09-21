@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { useLongPress } from "@/shared/lib/use-long-press";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -19,6 +20,8 @@ import { WeatherIcon } from "./weather-icon";
 type RecordCardProps = {
   isLast: boolean;
   onDetailPrefetch?: (recordId: string) => void;
+  /** 꾹 눌렀을 때. 넘기지 않으면 꾹 누름을 듣지 않는다. */
+  onLongPress?: () => void;
   record: RecordSummary;
   startsDate: boolean;
 };
@@ -30,8 +33,9 @@ const formatMonthDay = (date: string) => {
   return `${Number(month)}.${Number(day)}`;
 };
 
-export function RecordCard({ isLast, onDetailPrefetch, record, startsDate }: RecordCardProps) {
+export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, startsDate }: RecordCardProps) {
   const router = useRouter();
+  const longPress = useLongPress(onLongPress);
   const queryClient = useQueryClient();
   const category = normalizeRecordCategory(record.category);
   const normalizedWeather = normalizeRecordWeather(record.weather);
@@ -73,9 +77,11 @@ export function RecordCard({ isLast, onDetailPrefetch, record, startsDate }: Rec
         nativeButton={false}
         render={
           <PressLink
+            {...longPress}
             href={href}
             onClick={cacheRecordSummary}
             onPointerDown={(event) => {
+              longPress.onPointerDown?.(event);
               if (event.button !== 0) return;
               cacheRecordSummary();
               router.prefetch(href);

@@ -17,7 +17,6 @@ import {
   recordSummaryQueryKey,
 } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
-import { DeleteRecordButton } from "@/features/record/delete-record";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
@@ -90,16 +89,13 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
         <PageHeader
           action={
             !recordMissing && record ? (
-              <div className="flex items-center gap-2">
-                <IconButton
-                  aria-label="기록 수정"
-                  icon={NotePencilIcon}
-                  iconSize={28}
-                  nativeButton={false}
-                  render={<PressLink href={`/records/${record.id}/edit`} />}
-                />
-                <DeleteRecordButton activity={record.activity} recordId={record.id} />
-              </div>
+              <IconButton
+                aria-label="기록 수정"
+                icon={NotePencilIcon}
+                iconSize={28}
+                nativeButton={false}
+                render={<PressLink href={`/records/${record.id}/edit`} />}
+              />
             ) : undefined
           }
           back="/records"

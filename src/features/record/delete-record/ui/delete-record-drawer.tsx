@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import type { ReactElement } from "react";
 
 import { Trash2Icon } from "@animateicons/react/lucide";
-import { TrashIcon } from "@phosphor-icons/react";
 
 import { placesQueryOptions } from "@/entities/place";
 import { RECORDS_QUERY_KEY } from "@/entities/record";
 import { RECORD_COMMENTS_QUERY_KEY } from "@/entities/record-comment";
-import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import {
@@ -21,39 +19,41 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/shared/ui/drawer";
-import { IconButton } from "@/shared/ui/icon-button";
 
 import { deleteRecord } from "../api/delete-record";
 
-type DeleteRecordButtonProps = {
+type DeleteRecordDrawerProps = {
   activity: string;
+  onDeleted?: () => void;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
   recordId: string;
+  /** 버튼으로 여는 경우에만 넘긴다. 꾹 눌러 여는 목록에서는 여는 요소가 따로 없다. */
+  trigger?: ReactElement;
 };
 
-export function DeleteRecordButton({ activity, recordId }: DeleteRecordButtonProps) {
-  const [open, setOpen] = useState(false);
-  const goBackTo = useGoBack();
-
+export function DeleteRecordDrawer({
+  activity,
+  onDeleted,
+  onOpenChange,
+  open,
+  recordId,
+  trigger,
+}: DeleteRecordDrawerProps) {
   const remove = useActionMutation(() => deleteRecord(recordId), {
     error: "기록을 삭제하지 못했어요",
     icon: Trash2Icon,
     invalidate: [RECORDS_QUERY_KEY, RECORD_COMMENTS_QUERY_KEY, placesQueryOptions.queryKey],
     success: "기록을 삭제했어요",
-    onSuccess: () => goBackTo("/records"),
+    onSuccess: () => {
+      onOpenChange(false);
+      onDeleted?.();
+    },
   });
 
   return (
-    <Drawer onOpenChange={setOpen} open={open} showSwipeHandle>
-      <DrawerTrigger
-        render={
-          <IconButton
-            aria-label="기록 삭제"
-            className="text-destructive active:bg-destructive/10"
-            icon={TrashIcon}
-            iconStrokeWidth={2}
-          />
-        }
-      />
+    <Drawer onOpenChange={onOpenChange} open={open} showSwipeHandle>
+      {trigger ? <DrawerTrigger render={trigger} /> : null}
       <DrawerContent className="[--drawer-height:auto]">
         <DrawerHeader className="gap-2 px-5 pt-6 text-left group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-bold text-xl leading-7">{`“${activity}” 기록을 삭제할까요?`}</DrawerTitle>
