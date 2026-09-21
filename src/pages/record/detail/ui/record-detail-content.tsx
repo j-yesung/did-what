@@ -19,17 +19,12 @@ import {
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 import { showNotice } from "@/shared/lib/notice";
-import { cn } from "@/shared/lib/utils";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { PressLink } from "@/shared/ui/press-link";
-import { PressScale } from "@/shared/ui/press-scale";
 
 type RecordDetailContentProps = {
   member: { id: string; name: string };
@@ -89,24 +84,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   return (
     <OverscrollBack fallbackHref="/records">
       <PageShell>
-        <PageHeader
-          action={
-            !recordMissing && record ? (
-              <PressScale className="pointer-events-auto inline-flex">
-                <LiquidGlassButton
-                  aria-label="기록 수정"
-                  className={cn("[&_svg]:size-6.75", ICON_WEIGHT_MEDIUM)}
-                  nativeButton={false}
-                  render={<PressLink href={`/records/${record.id}/edit`} />}
-                  shape="circle"
-                >
-                  <NotePencilIcon data-icon="inline-start" weight="regular" />
-                </LiquidGlassButton>
-              </PressScale>
-            ) : undefined
-          }
-          back="/records"
-        />
+        <PageHeader back="/records" />
 
         {recordMissing && !fromNotification ? (
           <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 찾을 수 없어요" />

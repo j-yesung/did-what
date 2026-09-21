@@ -9,10 +9,13 @@ import { RecordCreateButton } from "@/widgets/record-create-button";
 
 const TOOLBAR_ENTRY_PATHS = new Set(["/", "/regions", "/records", "/places", "/settings"]);
 
+/** 기록 상세. 작성(/records/new)과 수정(/records/{id}/edit)은 한 가지 일만 하는 화면이라 뺀다. */
+const RECORD_DETAIL_PATH = /^\/records\/(?!new$)[^/]+$/;
+
 export function AppToolbar({ memberId }: { memberId: string }) {
   const pathname = usePathname() ?? "";
 
-  if (!TOOLBAR_ENTRY_PATHS.has(pathname)) return null;
+  if (!TOOLBAR_ENTRY_PATHS.has(pathname) && !RECORD_DETAIL_PATH.test(pathname)) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
