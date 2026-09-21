@@ -51,8 +51,27 @@ const verifyRegion = async (code: string, name: string) => {
   );
 };
 
-const verifyKakaoPlace = async (reference: Extract<RecordPlaceReference, { kind: "kakao" }>) => {
-  const result = await searchKakaoPlaces(reference.query, reference.page, reference.scope);
+type KakaoSearches = Map<string, ReturnType<typeof searchKakaoPlaces>>;
+
+/**
+ * 검색어·페이지·검색 범위가 같은 항목은 같은 검색 결과에서 고른 것이라 한 번만 검색한다.
+ * 요청 수가 장소 수가 아니라 검색 그룹 수에 비례한다.
+ */
+const searchOnce = (reference: Extract<RecordPlaceReference, { kind: "kakao" }>, searches: KakaoSearches) => {
+  const key = `${reference.page}|${reference.scope?.latitude ?? ""}|${reference.scope?.longitude ?? ""}|${reference.query}`;
+  const cached = searches.get(key);
+  if (cached) return cached;
+
+  const search = searchKakaoPlaces(reference.query, reference.page, reference.scope);
+  searches.set(key, search);
+  return search;
+};
+
+const verifyKakaoPlace = async (
+  reference: Extract<RecordPlaceReference, { kind: "kakao" }>,
+  searches: KakaoSearches,
+) => {
+  const result = await searchOnce(reference, searches);
   const place = result.places?.find((item) => item.id === reference.providerPlaceId);
   if (!place) return null;
 
@@ -68,6 +87,7 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
     (reference): reference is Extract<RecordPlaceReference, { kind: "kakao" }> => reference.kind === "kakao",
   );
 
+  const searches: KakaoSearches = new Map();
   const [existingResult, verifiedKakaoPlaces] = await Promise.all([
     existingReferences.length
       ? supabase
@@ -79,7 +99,7 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
             existingReferences.map((reference) => reference.placeId),
           )
       : Promise.resolve({ data: [], error: null }),
-    Promise.all(kakaoReferences.map(verifyKakaoPlace)),
+    Promise.all(kakaoReferences.map((reference) => verifyKakaoPlace(reference, searches))),
   ]);
 
   if (
