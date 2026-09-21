@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 
 import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import {
   hasRecordFilters,
   RecordCard,
   type RecordFilters,
+  type RecordSummary,
   RecordTimeline,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
@@ -23,6 +24,7 @@ import { LoadMoreButton } from "@/shared/ui/load-more-button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { useRecordListQuery } from "../model/use-record-list-query";
+import { RecordActionSheet } from "./record-action-sheet";
 
 type RecordListProps = {
   filters: RecordFilters;
@@ -31,6 +33,9 @@ type RecordListProps = {
 export function RecordList({ filters }: RecordListProps) {
   const queryClient = useQueryClient();
   const recordsQuery = useRecordListQuery(filters);
+  // 시트는 계속 띄워 두고 open만 여닫는다. 닫히는 동안 내용이 사라지지 않고 여는 전환도 그대로 탄다.
+  const [actionTarget, setActionTarget] = useState<RecordSummary | null>(null);
+  const [actionOpen, setActionOpen] = useState(false);
 
   const prefetchComments = (recordId: string) => {
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
@@ -39,7 +44,14 @@ export function RecordList({ filters }: RecordListProps) {
   if (recordsQuery.isPending) return null;
 
   if (recordsQuery.isError) {
-    return <LoadErrorAlert icon={<NotePencilIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />;
+    return (
+      <LoadErrorAlert
+        icon={<NotePencilIcon aria-hidden="true" />}
+        onRetry={() => void recordsQuery.refetch()}
+        retrying={recordsQuery.isFetching}
+        title="기록을 불러오지 못했어요"
+      />
+    );
   }
 
   const records = recordsQuery.data.pages.flatMap((page) => page.records);
@@ -86,6 +98,10 @@ export function RecordList({ filters }: RecordListProps) {
             <RecordCard
               isLast={index === records.length - 1}
               onDetailPrefetch={prefetchComments}
+              onLongPress={() => {
+                setActionTarget(record);
+                setActionOpen(true);
+              }}
               record={record}
               startsDate={startsDate}
             />
@@ -99,6 +115,7 @@ export function RecordList({ filters }: RecordListProps) {
           onClick={() => recordsQuery.fetchNextPage()}
         />
       ) : null}
+      <RecordActionSheet onOpenChange={setActionOpen} open={actionOpen} record={actionTarget} />
     </RecordTimeline>
   );
 }

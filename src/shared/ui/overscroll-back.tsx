@@ -2,8 +2,10 @@
 
 import type { ReactNode } from "react";
 
+import { CircleChevronLeftIcon } from "@animateicons/react/lucide";
 import { CaretDownIcon } from "@phosphor-icons/react";
 
+import { OVERSCROLL_BACK_NAVIGATION_DELAY } from "@/shared/lib/navigation/overscroll-back/overscroll-back";
 import { useOverscrollBack } from "@/shared/lib/navigation/overscroll-back/use-overscroll-back";
 
 type OverscrollBackProps = {
@@ -12,7 +14,8 @@ type OverscrollBackProps = {
 };
 
 export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) {
-  const { containerRef, iconRef, indicatorRef, progressRingRef, touchHandlers } = useOverscrollBack(fallbackHref);
+  const { completeIconRef, containerRef, iconRef, indicatorRef, progressRingRef, touchHandlers } =
+    useOverscrollBack(fallbackHref);
 
   return (
     <>
@@ -54,9 +57,16 @@ export function OverscrollBack({ children, fallbackHref }: OverscrollBackProps) 
               style={{ opacity: 0, transform: "rotate(90deg)" }}
             />
           </svg>
-          <div className="relative" ref={iconRef}>
+          <div className="relative group-data-[ready=true]/overscroll-back:invisible" ref={iconRef}>
             <CaretDownIcon className="size-6" />
           </div>
+          <CircleChevronLeftIcon
+            className="invisible absolute group-data-[ready=true]/overscroll-back:visible"
+            duration={OVERSCROLL_BACK_NAVIGATION_DELAY / 1000}
+            isAnimated={false}
+            ref={completeIconRef}
+            size={28}
+          />
         </div>
       </div>
     </>

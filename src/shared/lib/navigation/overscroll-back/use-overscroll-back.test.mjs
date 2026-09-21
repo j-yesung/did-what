@@ -6,10 +6,11 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 
-test("단계별 인디케이터와 추가 당김을 지원하고 손을 뗀 뒤에만 이동한다", (t) => {
+test("단계별 인디케이터와 추가 당김을 지원하고 손을 뗀 뒤 완료 애니메이션과 함께 이동한다", (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
   let cleanup;
   let reducedMotion = false;
+  let animations = 0;
   let nextAnimationFrame = 0;
   const animationFrames = new Map();
   const destinations = [];
@@ -48,6 +49,7 @@ test("단계별 인디케이터와 추가 당김을 지원하고 손을 뗀 뒤�
   hook.indicatorRef.current = element();
   hook.iconRef.current = element();
   hook.progressRingRef.current = element();
+  hook.completeIconRef.current = { startAnimation: () => animations++, stopAnimation() {} };
   const touch = (y) => ({ touches: [{ clientX: 100, clientY: y }] });
   const { onTouchStart, onTouchMove: moveTouch, onTouchCancel } = hook.touchHandlers;
   const flushAnimationFrame = () => {
@@ -76,10 +78,13 @@ test("단계별 인디케이터와 추가 당김을 지원하고 손을 뗀 뒤�
   onTouchEnd();
   t.mock.timers.tick(1000);
   assert.equal(destinations.length, 0);
+  assert.equal(animations, 0);
 
   onTouchStart(touch(500));
   onTouchMove(touch(320));
   assert.equal(hook.indicatorRef.current.dataset.ready, "true");
+  // 100%에 닿는 순간이 아니라 손을 뗄 때 재생해야 대기 시간과 애니메이션이 맞아떨어진다.
+  assert.equal(animations, 0);
   t.mock.timers.tick(2000);
   assert.equal(destinations.length, 0);
   const completedPosition = hook.indicatorRef.current.style.transform;
@@ -91,6 +96,7 @@ test("단계별 인디케이터와 추가 당김을 지원하고 손을 뗀 뒤�
   assert.equal(hook.progressRingRef.current.style.strokeDashoffset, "0");
   assert.equal(hook.iconRef.current.style.transform, "rotate(90deg)");
   onTouchEnd();
+  assert.equal(animations, 1);
   onTouchEnd();
   t.mock.timers.tick(progress.OVERSCROLL_BACK_NAVIGATION_DELAY - 1);
   assert.equal(destinations.length, 0);
@@ -150,6 +156,7 @@ test("단계별 인디케이터와 추가 당김을 지원하고 손을 뗀 뒤�
   assert.equal(hook.iconRef.current.style.transform, "rotate(0deg)");
   onTouchMove(touch(320));
   onTouchEnd();
+  assert.equal(animations, 3);
   t.mock.timers.tick(1000);
   assert.equal(destinations.length, 3);
 

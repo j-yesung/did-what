@@ -36,7 +36,7 @@ export function RegionActivityMap({ records }: { records: RecordLocation[] }) {
 
   return (
     <svg
-      className="h-full w-full overflow-visible [shape-rendering:geometricPrecision]"
+      className="absolute inset-0 size-full overflow-visible px-1.5 py-1 [shape-rendering:geometricPrecision]"
       viewBox={`0 0 ${map.width} ${map.height}`}
       role="img"
       aria-labelledby="korea-map-title korea-map-description"

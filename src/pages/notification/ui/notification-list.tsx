@@ -94,7 +94,12 @@ export function NotificationList({ memberId }: NotificationListProps) {
       />
 
       {listQuery.isPending ? null : listQuery.isError && !listQuery.data ? (
-        <LoadErrorAlert icon={<WarningCircleIcon aria-hidden="true" />} title="알림을 불러오지 못했어요" />
+        <LoadErrorAlert
+          icon={<WarningCircleIcon aria-hidden="true" />}
+          onRetry={() => void listQuery.refetch()}
+          retrying={listQuery.isFetching}
+          title="알림을 불러오지 못했어요"
+        />
       ) : notifications.length === 0 ? (
         <Empty className="border-0 py-12">
           <EmptyHeader className="gap-1">

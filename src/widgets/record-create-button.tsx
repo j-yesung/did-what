@@ -2,8 +2,9 @@
 
 import type { ComponentProps, ReactNode } from "react";
 
-import { NotePencilIcon } from "@phosphor-icons/react";
-
+import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
+import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton, type LiquidGlassButtonProps } from "@/shared/ui/liquid-glass-button";
 import { PressLink } from "@/shared/ui/press-link";
 
@@ -27,13 +28,13 @@ export function RecordCreateButton({
   return (
     <LiquidGlassButton
       aria-label={labeled ? undefined : "기록 남기기"}
-      className={className}
+      className={cn(ICON_WEIGHT_MEDIUM, className)}
       nativeButton={false}
       render={<PressLink href={href} onClick={onClick} prefetch />}
       shape={labeled ? "pill" : "circle"}
       surface={surface}
     >
-      {children ?? <NotePencilIcon data-icon="inline-start" weight="regular" />}
+      {children ?? <NotePencilRoundedIcon data-icon="inline-start" />}
     </LiquidGlassButton>
   );
 }

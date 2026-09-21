@@ -3,9 +3,9 @@
 import { useState } from "react";
 
 import { SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react";
-import { format, parseISO } from "date-fns";
 
 import type { RecordSort } from "@/entities/record";
+import { formatRecordDate } from "@/shared/lib/date/format-date";
 import { Button } from "@/shared/ui/button";
 import { DateInput } from "@/shared/ui/date-input";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
@@ -23,14 +23,10 @@ type RecordPeriodFilterProps = RecordPeriod & {
   sort: RecordSort;
 };
 
-const formatDate = (value: string) => {
-  return format(parseISO(value), "yyyy-MM-dd");
-};
-
 const getPeriodLabel = ({ from, to }: RecordPeriod) => {
-  if (from && to) return from === to ? formatDate(from) : `${formatDate(from)} ~ ${formatDate(to)}`;
-  if (from) return `${formatDate(from)}부터`;
-  if (to) return `${formatDate(to)}까지`;
+  if (from && to) return from === to ? formatRecordDate(from) : `${formatRecordDate(from)} ~ ${formatRecordDate(to)}`;
+  if (from) return `${formatRecordDate(from)}부터`;
+  if (to) return `${formatRecordDate(to)}까지`;
   return "전체 기간";
 };
 
@@ -113,6 +109,7 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
                   <DateInput
                     className={draftRange.from ? "[&>span]:pr-9" : undefined}
                     id="filter-start-date"
+                    placeholder="처음부터"
                     onChange={(event) => {
                       const value = event.target.value;
                       setDraftRange((current) => ({
@@ -143,6 +140,7 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
                   <DateInput
                     className={draftRange.to ? "[&>span]:pr-9" : undefined}
                     id="filter-end-date"
+                    placeholder="마지막까지"
                     min={draftRange.from || undefined}
                     onChange={(event) => setDraftRange((current) => ({ ...current, to: event.target.value }))}
                     value={draftRange.to}

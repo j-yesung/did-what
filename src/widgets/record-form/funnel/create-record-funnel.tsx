@@ -190,7 +190,15 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
         );
       }
 
-      if (placesQuery.isError) return <LoadErrorAlert title="선택지를 불러오지 못했어요" />;
+      if (placesQuery.isError) {
+        return (
+          <LoadErrorAlert
+            onRetry={() => void placesQuery.refetch()}
+            retrying={placesQuery.isFetching}
+            title="선택지를 불러오지 못했어요"
+          />
+        );
+      }
 
       return (
         <FieldGroup className="gap-10">

@@ -97,7 +97,13 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
   }
 
   if (placesQuery.isError) {
-    return <LoadErrorAlert title="선택지를 불러오지 못했어요" />;
+    return (
+      <LoadErrorAlert
+        onRetry={() => void placesQuery.refetch()}
+        retrying={placesQuery.isFetching}
+        title="선택지를 불러오지 못했어요"
+      />
+    );
   }
 
   const savedPlaces = placesQuery.data;

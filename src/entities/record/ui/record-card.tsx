@@ -5,12 +5,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { useLongPress } from "@/shared/lib/use-long-press";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
+import { getRecordCategoryLabel, normalizeRecordCategory, RECORD_CATEGORY_FILL } from "../model/category";
 import type { RecordSummary } from "../model/types";
 import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
 import { WeatherIcon } from "./weather-icon";
@@ -18,27 +20,27 @@ import { WeatherIcon } from "./weather-icon";
 type RecordCardProps = {
   isLast: boolean;
   onDetailPrefetch?: (recordId: string) => void;
+  /** 꾹 눌렀을 때. 넘기지 않으면 꾹 누름을 듣지 않는다. */
+  onLongPress?: () => void;
   record: RecordSummary;
   startsDate: boolean;
 };
 
 const WEEKDAY = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", weekday: "short" });
 
-const formatMonthDay = (date: string) => {
-  const [, month, day] = date.split("-");
-  return `${Number(month)}.${Number(day)}`;
-};
-
-export function RecordCard({ isLast, onDetailPrefetch, record, startsDate }: RecordCardProps) {
+export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, startsDate }: RecordCardProps) {
   const router = useRouter();
+  const longPress = useLongPress(onLongPress);
   const queryClient = useQueryClient();
+  const category = normalizeRecordCategory(record.category);
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
   const href = `/records/${record.id}`;
   const commentCount = record.record_comments?.[0]?.count ?? 0;
+  // 하루짜리는 왼쪽 날짜 칸이 이미 말해 준다. 여러 날에 걸친 기록만 기간을 따로 적는다.
   const period =
     record.recorded_until && record.recorded_until !== record.recorded_at
-      ? `${formatMonthDay(record.recorded_at)}–${formatMonthDay(record.recorded_until)}`
+      ? formatRecordPeriod(record.recorded_at, record.recorded_until)
       : null;
 
   const cacheRecordSummary = () => queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
@@ -71,9 +73,11 @@ export function RecordCard({ isLast, onDetailPrefetch, record, startsDate }: Rec
         nativeButton={false}
         render={
           <PressLink
+            {...longPress}
             href={href}
             onClick={cacheRecordSummary}
             onPointerDown={(event) => {
+              longPress.onPointerDown?.(event);
               if (event.button !== 0) return;
               cacheRecordSummary();
               router.prefetch(href);
@@ -91,15 +95,9 @@ export function RecordCard({ isLast, onDetailPrefetch, record, startsDate }: Rec
             <CaretRightIcon className="shrink-0 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
           </h3>
           <span className="mt-1.5 flex min-w-0 items-center justify-between gap-2 text-muted-foreground text-xs">
-            <span className="flex min-w-0 items-center gap-1.5">
-              {period ? (
-                <>
-                  <span className="shrink-0 tabular-nums">{period}</span>
-                  <span className="shrink-0" aria-hidden="true">
-                    ·
-                  </span>
-                </>
-              ) : null}
+            <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+              {/* 긴 기간 표기는 지역·배지와 한 줄에 못 들어간다. 줄을 통째로 차지해 뒤가 밀리지 않게 한다. */}
+              {period ? <span className="w-full shrink-0 tabular-nums">{period}</span> : null}
               {record.region_label ? (
                 <>
                   <span className="truncate">{record.region_label}</span>
@@ -108,6 +106,16 @@ export function RecordCard({ isLast, onDetailPrefetch, record, startsDate }: Rec
                   </span>
                 </>
               ) : null}
+              {category === "uncategorized" ? null : (
+                <Badge
+                  className={cn(
+                    "rounded-full px-1.5 py-0.5 font-medium text-foreground",
+                    RECORD_CATEGORY_FILL[category],
+                  )}
+                >
+                  {getRecordCategoryLabel(category)}
+                </Badge>
+              )}
               <Badge className="gap-1 rounded-full px-1.5 py-0.5 font-medium" tone="neutral">
                 <WeatherIcon weather={normalizedWeather} className="size-3.5" aria-hidden="true" />
                 {weatherLabel}

@@ -17,17 +17,14 @@ import {
   recordSummaryQueryKey,
 } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
-import { DeleteRecordButton } from "@/features/record/delete-record";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 import { showNotice } from "@/shared/lib/notice";
-import { IconButton } from "@/shared/ui/icon-button";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { PressLink } from "@/shared/ui/press-link";
 
 type RecordDetailContentProps = {
   member: { id: string; name: string };
@@ -87,29 +84,15 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   return (
     <OverscrollBack fallbackHref="/records">
       <PageShell>
-        <PageHeader
-          action={
-            !recordMissing && record ? (
-              <div className="flex items-center gap-2">
-                <IconButton
-                  aria-label="기록 수정"
-                  icon={NotePencilIcon}
-                  iconSize={28}
-                  nativeButton={false}
-                  render={<PressLink href={`/records/${record.id}/edit`} />}
-                />
-                <DeleteRecordButton activity={record.activity} recordId={record.id} />
-              </div>
-            ) : undefined
-          }
-          back="/records"
-        />
+        <PageHeader back="/records" />
 
         {recordMissing && !fromNotification ? (
           <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 찾을 수 없어요" />
         ) : hasError ? (
           <LoadErrorAlert
             icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />}
+            onRetry={() => void recordQuery.refetch()}
+            retrying={recordQuery.isFetching}
             title="기록을 불러오지 못했어요"
           />
         ) : record ? (
@@ -131,7 +114,11 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
               </section>
 
               {placesError ? (
-                <LoadErrorAlert title="방문 장소 정보를 불러오지 못했어요" />
+                <LoadErrorAlert
+                  onRetry={() => void recordPlacesQuery.refetch()}
+                  retrying={recordPlacesQuery.isFetching}
+                  title="방문 장소 정보를 불러오지 못했어요"
+                />
               ) : placeCount > 0 ? (
                 <PageSection aria-labelledby="record-places-title">
                   <h2 className="mb-3 font-semibold text-base" id="record-places-title">

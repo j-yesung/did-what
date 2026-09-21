@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import { requireMember } from "@/entities/member/server";
 import { type RecordFieldErrors, readRecordInput, validateRecordInput } from "@/entities/record";
@@ -42,17 +43,19 @@ export const createRecord = async (formData: FormData): Promise<CreateRecordStat
     return { message: "기록을 저장하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
-  try {
-    await sendRecordPush({
-      ownerId: user.id,
-      recordId,
-      senderMemberId: member.id,
-      senderName: member.name,
-      supabase,
-    });
-  } catch {
-    // 알림은 부가 기능이라 저장 결과를 바꾸지 않는다.
-  }
+  after(async () => {
+    try {
+      await sendRecordPush({
+        ownerId: user.id,
+        recordId,
+        senderMemberId: member.id,
+        senderName: member.name,
+        supabase,
+      });
+    } catch {
+      // 알림은 부가 기능이라 저장 결과를 바꾸지 않는다.
+    }
+  });
 
   revalidatePath("/");
   revalidatePath("/records");

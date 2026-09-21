@@ -1,9 +1,13 @@
+import { formatRecordDate } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Input, type InputProps } from "@/shared/ui/input";
 
-type DateInputProps = Omit<InputProps, "actionButton" | "containerClassName" | "type">;
+type DateInputProps = Omit<InputProps, "actionButton" | "containerClassName" | "type"> & {
+  /** 값이 없을 때 자리에 둘 글. 비어 있다는 게 무슨 뜻인지는 쓰는 쪽이 안다. */
+  placeholder?: string;
+};
 
-function DateInput({ className, disabled, onClick, value, ...props }: DateInputProps) {
+function DateInput({ className, disabled, onClick, placeholder = "날짜 선택", value, ...props }: DateInputProps) {
   const dateValue = typeof value === "string" ? value : "";
   const isInvalid = props["aria-invalid"] === true || props["aria-invalid"] === "true";
 
@@ -20,9 +24,12 @@ function DateInput({ className, disabled, onClick, value, ...props }: DateInputP
     >
       <span
         aria-hidden="true"
-        className="pointer-events-none flex h-full items-center px-2.5 py-1 text-base md:text-sm"
+        className={cn(
+          "pointer-events-none flex h-full items-center px-2.5 py-1 text-base md:text-sm",
+          !dateValue && "text-muted-foreground",
+        )}
       >
-        {dateValue || "YYYY-MM-DD"}
+        {dateValue ? formatRecordDate(dateValue) : placeholder}
       </span>
       <Input
         {...props}

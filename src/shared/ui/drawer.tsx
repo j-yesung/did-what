@@ -73,12 +73,20 @@ function DrawerClose({ ...props }: DrawerPrimitive.Close.Props) {
   return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />;
 }
 
+/**
+ * 뒤를 가리되 색은 입히지 않는다. 바깥 탭으로 닫기와 뒤쪽 조작 차단은 그대로 두고 어둡게만 하지 않는다.
+ * iOS 홈 화면 앱에서 노치 띠는 웹 뷰포트가 아니라 theme-color가 칠하고 그 전환은 시스템이 쥐고 있어서,
+ * 뒤를 어둡게 하면 띠만 한 박자 늦게 따라온다. 대신 시트에 그림자를 줘서 층이 구분되게 했다.
+ *
+ * 위치는 fixed로 둔다. shadcn 원본은 iOS에서 absolute로 바꾸는데, 이 앱은 문서 자체가 스크롤돼서
+ * 스크롤을 내린 뒤 시트를 열면 음영이 문서 맨 위에 그대로 남는다.
+ */
 function DrawerOverlay({ className, ...props }: DrawerPrimitive.Backdrop.Props) {
   return (
     <DrawerPrimitive.Backdrop
       data-slot="drawer-overlay"
       className={cn(
-        "fixed inset-0 z-50 min-h-dvh select-none bg-black/40 opacity-[max(var(--drawer-overlay-min-opacity,0),calc(1-var(--drawer-swipe-progress)))] transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0 supports-[-webkit-touch-callout:none]:absolute motion-reduce:transition-none data-snap-points:[--drawer-overlay-min-opacity:0.5]",
+        "fixed inset-0 z-50 min-h-dvh select-none bg-transparent opacity-[max(var(--drawer-overlay-min-opacity,0),calc(1-var(--drawer-swipe-progress)))] transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0 motion-reduce:transition-none data-snap-points:[--drawer-overlay-min-opacity:0.5]",
         className,
       )}
       {...props}
@@ -118,7 +126,7 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
           data-snap-points={hasSnapPoints ? "" : undefined}
           className={cn(
             // Base.
-            "group/drawer-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 m-(--drawer-inset,0px) flex h-(--drawer-content-height) max-h-(--drawer-content-max-height,none) min-h-0 w-(--drawer-content-width,auto) select-none flex-col bg-popover text-popover-foreground text-sm outline-none transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] data-[swipe-direction=down]:rounded-3xl data-[swipe-direction=up]:rounded-3xl data-[swipe-direction=left]:rounded-r-xl data-[swipe-direction=right]:rounded-l-xl data-[swipe-direction=down]:border data-[swipe-direction=up]:border data-[swipe-direction=left]:border-r data-[swipe-direction=right]:border-l motion-reduce:transition-none",
+            "group/drawer-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 m-(--drawer-inset,0px) flex h-(--drawer-content-height) max-h-(--drawer-content-max-height,none) min-h-0 w-(--drawer-content-width,auto) select-none flex-col bg-popover text-popover-foreground text-sm shadow-(--shadow-drawer) outline-none transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] data-[swipe-direction=down]:rounded-3xl data-[swipe-direction=up]:rounded-3xl data-[swipe-direction=left]:rounded-r-xl data-[swipe-direction=right]:rounded-l-xl data-[swipe-direction=down]:border data-[swipe-direction=up]:border data-[swipe-direction=left]:border-r data-[swipe-direction=right]:border-l motion-reduce:transition-none",
             // Nested.
             "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95",
             // Bleed.

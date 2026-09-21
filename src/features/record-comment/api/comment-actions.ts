@@ -1,5 +1,7 @@
 "use server";
 
+import { after } from "next/server";
+
 import { requireMember } from "@/entities/member/server";
 import { normalizeCommentBody, type RecordComment } from "@/entities/record-comment";
 import { sendCommentPush } from "@/features/push-notification/server";
@@ -64,18 +66,20 @@ export const createComment = async (input: CreateCommentInput): Promise<CommentA
   };
 
   if (saved.created) {
-    try {
-      await sendCommentPush({
-        commentId: comment.id,
-        ownerId: user.id,
-        recordId: comment.record_id,
-        senderMemberId: member.id,
-        senderName: member.name,
-        supabase,
-      });
-    } catch {
-      // 푸시는 부가 기능이라 발송 실패가 저장된 댓글의 결과를 바꾸지 않는다.
-    }
+    after(async () => {
+      try {
+        await sendCommentPush({
+          commentId: comment.id,
+          ownerId: user.id,
+          recordId: comment.record_id,
+          senderMemberId: member.id,
+          senderName: member.name,
+          supabase,
+        });
+      } catch {
+        // 푸시는 부가 기능이라 발송 실패가 저장된 댓글의 결과를 바꾸지 않는다.
+      }
+    });
   }
 
   return { comment, status: "success" };
