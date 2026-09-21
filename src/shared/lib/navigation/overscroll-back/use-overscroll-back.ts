@@ -144,9 +144,10 @@ export const useOverscrollBack = (fallbackHref: string) => {
     if (indicator.dataset.ready !== ready) indicator.dataset.ready = ready;
     if (container.dataset.dragging !== dragging) container.dataset.dragging = dragging;
     indicator.style.opacity = String(Math.min(progress * 5, 1));
+    // 화면이 올라가며 아래에 생기는 빈 자리 안에 머문다. 같이 올라오면 화면 맨 아래 요소(댓글 입력창)를 가린다.
     indicator.style.transform = reduceMotionRef.current
       ? "translate3d(0, 0, 0)"
-      : `translate3d(0, ${24 - travel}px, 0)`;
+      : `translate3d(0, ${24 - travel / 2}px, 0)`;
     icon.style.transform = `rotate(${reduceMotionRef.current ? (progress === 1 ? 90 : 0) : ringProgress * 90}deg)`;
     progressRing.style.opacity = String(ringProgress > 0 ? 1 : 0);
     progressRing.style.strokeDashoffset = String(1 - ringProgress);
