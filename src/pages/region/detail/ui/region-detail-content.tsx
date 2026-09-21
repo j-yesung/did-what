@@ -57,6 +57,11 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
         {recordsQuery.isError || locationsQuery.isError ? (
           <LoadErrorAlert
             icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
+            onRetry={() => {
+              if (recordsQuery.isError) void recordsQuery.refetch();
+              if (locationsQuery.isError) void locationsQuery.refetch();
+            }}
+            retrying={recordsQuery.isFetching || locationsQuery.isFetching}
             title="지역 발자취를 불러오지 못했어요"
           />
         ) : (

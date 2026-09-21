@@ -21,7 +21,13 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
   const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
 
   if (placesQuery.isError) {
-    return <LoadErrorAlert title="저장한 장소를 불러오지 못했어요" />;
+    return (
+      <LoadErrorAlert
+        onRetry={() => void placesQuery.refetch()}
+        retrying={placesQuery.isFetching}
+        title="저장한 장소를 불러오지 못했어요"
+      />
+    );
   }
 
   const places = placesQuery.data;

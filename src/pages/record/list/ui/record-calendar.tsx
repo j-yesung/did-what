@@ -409,7 +409,12 @@ export function RecordCalendar() {
       </header>
 
       {isError ? (
-        <LoadErrorAlert icon={<NotePencilIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />
+        <LoadErrorAlert
+          icon={<NotePencilIcon aria-hidden="true" />}
+          onRetry={() => void recordsQuery.refetch()}
+          retrying={recordsQuery.isFetching}
+          title="기록을 불러오지 못했어요"
+        />
       ) : null}
 
       <div className="flex flex-1 touch-pan-y overflow-hidden" ref={viewportRef}>
@@ -457,6 +462,7 @@ export function RecordCalendar() {
         date={selectedDate}
         isError={isError}
         onOpenChange={handleDrawerOpenChange}
+        onRetry={() => void recordsQuery.refetch()}
         open={open}
         records={selectedRecords}
       />

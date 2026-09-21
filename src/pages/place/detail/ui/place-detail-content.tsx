@@ -52,6 +52,15 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
         {isPlacePending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
           <LoadErrorAlert
             icon={<MapPinIcon strokeWidth={2} aria-hidden="true" />}
+            onRetry={
+              placeQuery.isError || recordsQuery.isError
+                ? () => {
+                    if (placeQuery.isError) void placeQuery.refetch();
+                    if (recordsQuery.isError) void recordsQuery.refetch();
+                  }
+                : undefined
+            }
+            retrying={placeQuery.isFetching || recordsQuery.isFetching}
             title="장소의 기록을 불러오지 못했어요"
           />
         ) : (

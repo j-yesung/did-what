@@ -39,7 +39,14 @@ export function RecordList({ filters }: RecordListProps) {
   if (recordsQuery.isPending) return null;
 
   if (recordsQuery.isError) {
-    return <LoadErrorAlert icon={<NotePencilIcon aria-hidden="true" />} title="기록을 불러오지 못했어요" />;
+    return (
+      <LoadErrorAlert
+        icon={<NotePencilIcon aria-hidden="true" />}
+        onRetry={() => void recordsQuery.refetch()}
+        retrying={recordsQuery.isFetching}
+        title="기록을 불러오지 못했어요"
+      />
+    );
   }
 
   const records = recordsQuery.data.pages.flatMap((page) => page.records);

@@ -110,6 +110,8 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
         ) : hasError ? (
           <LoadErrorAlert
             icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />}
+            onRetry={() => void recordQuery.refetch()}
+            retrying={recordQuery.isFetching}
             title="기록을 불러오지 못했어요"
           />
         ) : record ? (
@@ -131,7 +133,11 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
               </section>
 
               {placesError ? (
-                <LoadErrorAlert title="방문 장소 정보를 불러오지 못했어요" />
+                <LoadErrorAlert
+                  onRetry={() => void recordPlacesQuery.refetch()}
+                  retrying={recordPlacesQuery.isFetching}
+                  title="방문 장소 정보를 불러오지 못했어요"
+                />
               ) : placeCount > 0 ? (
                 <PageSection aria-labelledby="record-places-title">
                   <h2 className="mb-3 font-semibold text-base" id="record-places-title">

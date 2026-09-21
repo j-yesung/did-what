@@ -43,6 +43,8 @@ export function HomeContent() {
       {recordsQuery.isError ? (
         <LoadErrorAlert
           icon={<MapPinAreaIcon strokeWidth={2} aria-hidden="true" />}
+          onRetry={() => void recordsQuery.refetch()}
+          retrying={recordsQuery.isFetching}
           title="발자취를 불러오지 못했어요"
         />
       ) : records.length > 0 ? null : (

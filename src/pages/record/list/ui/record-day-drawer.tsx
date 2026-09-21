@@ -40,6 +40,7 @@ type RecordDayDrawerProps = {
   date: string | null;
   isError: boolean;
   onOpenChange: (open: boolean) => void;
+  onRetry: () => void;
   open: boolean;
   records: readonly RecordSummary[] | undefined;
 };
@@ -66,7 +67,7 @@ function RecordDayCreateButton({ date }: { date: string }) {
   );
 }
 
-export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: RecordDayDrawerProps) {
+export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, records }: RecordDayDrawerProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -237,7 +238,7 @@ export function RecordDayDrawer({ date, isError, onOpenChange, open, records }: 
               </Empty>
             )
           ) : isError ? (
-            <LoadErrorAlert title="기록을 불러오지 못했어요" />
+            <LoadErrorAlert onRetry={onRetry} title="기록을 불러오지 못했어요" />
           ) : (
             <div className="flex justify-center py-10 text-muted-foreground">
               <Spinner />
