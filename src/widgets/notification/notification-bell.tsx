@@ -20,11 +20,13 @@ export function NotificationBell({ memberId }: NotificationBellProps) {
   return (
     <IconButton
       aria-label={accessibilityLabel}
-      className="rounded-full text-foreground"
+      className="size-12 rounded-full text-foreground"
       icon={BellIcon}
-      iconSize={22}
+      iconSize={24}
+      iconWeight="regular"
       nativeButton={false}
       render={<PressLink href="/notifications" prefetch />}
+      size="lg"
       variant="clear"
     />
   );
