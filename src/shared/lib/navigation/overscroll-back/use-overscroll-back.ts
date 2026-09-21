@@ -2,12 +2,15 @@
 
 import { type TouchEvent, useEffect, useRef } from "react";
 
+import type { CircleChevronLeftIconHandle } from "@animateicons/react/lucide";
+
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useScrollRestoration } from "@/shared/lib/navigation/use-scroll-restoration";
 
 import {
   getOverscrollBackDistance,
   isAtScrollEnd,
+  OVERSCROLL_BACK_LIFT_RELEASE_DELAY,
   OVERSCROLL_BACK_NAVIGATION_DELAY,
   OVERSCROLL_BACK_THRESHOLD,
 } from "./overscroll-back";
@@ -34,6 +37,7 @@ export const useOverscrollBack = (fallbackHref: string) => {
   const indicatorRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLDivElement>(null);
   const progressRingRef = useRef<SVGCircleElement>(null);
+  const completeIconRef = useRef<CircleChevronLeftIconHandle>(null);
   const visualStartRef = useRef<SwipeStart | null>(null);
   const distanceRef = useRef(0);
   const touchStartRef = useRef<SwipeStart | null>(null);
@@ -66,6 +70,7 @@ export const useOverscrollBack = (fallbackHref: string) => {
     visualFrameRef.current = null;
     if (navigationTimerRef.current !== null) clearTimeout(navigationTimerRef.current);
     navigationTimerRef.current = null;
+    completeIconRef.current?.stopAnimation();
 
     if (indicator) {
       indicator.dataset.dragging = "false";
@@ -80,6 +85,7 @@ export const useOverscrollBack = (fallbackHref: string) => {
       progressRing.style.transform = "rotate(90deg)";
     }
     if (containerRef.current) {
+      containerRef.current.style.overscrollBehaviorY = "";
       containerRef.current.dataset.dragging = "false";
       containerRef.current.style.transform = "translate3d(0, 0, 0)";
       containerRef.current.style.willChange = "auto";
@@ -96,10 +102,15 @@ export const useOverscrollBack = (fallbackHref: string) => {
 
     if (navigationTimerRef.current !== null) clearTimeout(navigationTimerRef.current);
     navigationTimerRef.current = null;
+    container.style.transition = "";
 
     const touch = event.touches[0];
     const scrollY = Math.max(0, container.scrollTop);
     const ready = readyRef.current;
+    // 끝에서 당기는 구간은 우리가 직접 그린다. 네이티브 고무줄 반동이 겹치면 손을 뗄 때 되돌아오는 움직임이 남는다.
+    if (isAtScrollEnd(container.scrollHeight, container.clientHeight, scrollY)) {
+      container.style.overscrollBehaviorY = "none";
+    }
     touchStartRef.current = {
       scrollDistanceToEnd: ready ? 0 : Math.max(0, container.scrollHeight - container.clientHeight - scrollY),
       scrollY,
@@ -170,6 +181,7 @@ export const useOverscrollBack = (fallbackHref: string) => {
       readyRef.current = true;
     } else if (readyRef.current) {
       readyRef.current = false;
+      completeIconRef.current?.stopAnimation();
     }
   };
 
@@ -181,14 +193,29 @@ export const useOverscrollBack = (fallbackHref: string) => {
       return;
     }
 
+    // 완료 아이콘이 도는 동안 화면은 당긴 자리에 멈춰 있는다. data-dragging이 아직 true라 전환 없이 그대로 선다.
+    if (!reduceMotionRef.current) completeIconRef.current?.startAnimation();
+
     navigationTimerRef.current = setTimeout(() => {
+      const container = containerRef.current;
+      // 제자리로 돌아가는 움직임이 남으면 화면이 바뀌는 동안 다시 아래로 스크롤되는 것처럼 보인다.
+      const liftedTransform = container?.style.transform;
       // 이탈 확인에서 계속 작성을 선택해도 다음 스와이프를 받을 수 있게 한다.
       resetSwipe();
+      if (container && liftedTransform) {
+        container.style.transition = "none";
+        container.style.transform = liftedTransform;
+        // 화면이 그대로 남은 경우를 위한 해제. 뒤로가기가 늦어도 스크롤처럼 보이지 않게 전환 없이 되돌린다.
+        navigationTimerRef.current = setTimeout(() => {
+          container.style.transform = "translate3d(0, 0, 0)";
+        }, OVERSCROLL_BACK_LIFT_RELEASE_DELAY);
+      }
       goBackTo(fallbackHref);
     }, OVERSCROLL_BACK_NAVIGATION_DELAY);
   };
 
   return {
+    completeIconRef,
     containerRef,
     iconRef,
     indicatorRef,
