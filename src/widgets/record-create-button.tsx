@@ -2,8 +2,7 @@
 
 import type { ComponentProps, ReactNode } from "react";
 
-import { NotePencilIcon } from "@phosphor-icons/react";
-
+import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton, type LiquidGlassButtonProps } from "@/shared/ui/liquid-glass-button";
@@ -35,7 +34,7 @@ export function RecordCreateButton({
       shape={labeled ? "pill" : "circle"}
       surface={surface}
     >
-      {children ?? <NotePencilIcon data-icon="inline-start" weight="regular" />}
+      {children ?? <NotePencilRoundedIcon data-icon="inline-start" />}
     </LiquidGlassButton>
   );
 }
