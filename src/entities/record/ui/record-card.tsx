@@ -11,6 +11,7 @@ import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
+import { getRecordCategoryLabel, normalizeRecordCategory, RECORD_CATEGORY_FILL } from "../model/category";
 import type { RecordSummary } from "../model/types";
 import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
 import { WeatherIcon } from "./weather-icon";
@@ -32,6 +33,7 @@ const formatMonthDay = (date: string) => {
 export function RecordCard({ isLast, onDetailPrefetch, record, startsDate }: RecordCardProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const category = normalizeRecordCategory(record.category);
   const normalizedWeather = normalizeRecordWeather(record.weather);
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
   const href = `/records/${record.id}`;
@@ -108,6 +110,16 @@ export function RecordCard({ isLast, onDetailPrefetch, record, startsDate }: Rec
                   </span>
                 </>
               ) : null}
+              {category === "uncategorized" ? null : (
+                <Badge
+                  className={cn(
+                    "rounded-full px-1.5 py-0.5 font-medium text-foreground",
+                    RECORD_CATEGORY_FILL[category],
+                  )}
+                >
+                  {getRecordCategoryLabel(category)}
+                </Badge>
+              )}
               <Badge className="gap-1 rounded-full px-1.5 py-0.5 font-medium" tone="neutral">
                 <WeatherIcon weather={normalizedWeather} className="size-3.5" aria-hidden="true" />
                 {weatherLabel}
