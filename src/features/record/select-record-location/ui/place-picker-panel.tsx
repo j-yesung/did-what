@@ -150,7 +150,6 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, region, selectedKey
                   checkboxDisabled={selectionLimitReached}
                   disabled={disabled}
                   key={place.id}
-                  label="Kakao 장소 검색 결과"
                   name={place.name}
                   onSelect={() => selectPlace(place)}
                   selected={selected}

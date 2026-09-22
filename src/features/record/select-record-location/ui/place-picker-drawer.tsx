@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-import { PlusIcon } from "@phosphor-icons/react";
-
 import { Button } from "@/shared/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger, DrawerVirtualKeyboardProvider } from "@/shared/ui/drawer";
 
@@ -38,7 +36,7 @@ export function PlacePickerDrawer({
         disabled={disabled}
         render={<Button disabled={disabled} size="large" type="button" variant="neutral" />}
       >
-        <PlusIcon aria-hidden="true" data-icon="inline-start" strokeWidth={2} />새 장소 검색
+        새 장소 검색
       </DrawerTrigger>
       <DrawerVirtualKeyboardProvider>
         <DrawerContent className="[--drawer-height:var(--drawer-content-max-height)]">

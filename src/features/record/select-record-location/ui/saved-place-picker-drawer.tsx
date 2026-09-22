@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-import { BookmarkIcon } from "@phosphor-icons/react";
-
 import type { PlaceOption } from "@/entities/place";
 import { Button } from "@/shared/ui/button";
 import {
@@ -93,7 +91,7 @@ export function SavedPlacePickerDrawer({
         disabled={disabled}
         render={<Button disabled={disabled} fullWidth size="large" type="button" variant="neutral" />}
       >
-        <BookmarkIcon aria-hidden="true" data-icon="inline-start" />내 장소에서 추가
+        내 장소에서 추가
       </DrawerTrigger>
       <DrawerVirtualKeyboardProvider>
         <DrawerContent className="[--drawer-height:var(--drawer-content-max-height)]">

@@ -11,7 +11,7 @@ type SelectablePlaceCardProps = {
   address: string;
   checkboxDisabled: boolean;
   disabled: boolean;
-  label: string;
+  label?: string;
   name: string;
   onSelect: () => void;
   selected: boolean;
@@ -60,7 +60,7 @@ export function SelectablePlaceCard({
       >
         <CardHeader className="min-w-0 grid-cols-[minmax(0,1fr)_auto]">
           <CardTitle className="min-w-0 truncate">{name}</CardTitle>
-          <CardDescription>{label}</CardDescription>
+          {label ? <CardDescription>{label}</CardDescription> : null}
           <CardAction>
             {added ? (
               <Badge>추가됨</Badge>
