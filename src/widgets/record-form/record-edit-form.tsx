@@ -35,7 +35,7 @@ type RecordEditFormProps = {
     places: RecordLocationPlace[];
     recordedAt: string;
     recordedUntil: string | null;
-    region: RecordLocationRegion;
+    regions: RecordLocationRegion[];
     weather: RecordWeather;
   };
   returnTo: string;
@@ -138,10 +138,10 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
 
           <RecordLocationFields
             initialPlaces={initialValues.places}
-            initialRegion={initialValues.region}
+            initialRegions={initialValues.regions}
             onValueChange={markDirty}
             placeError={fieldErrors?.places}
-            regionError={fieldErrors?.regionCode}
+            regionError={fieldErrors?.regions}
             savedPlaces={savedPlaces}
           />
 

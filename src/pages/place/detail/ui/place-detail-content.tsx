@@ -14,12 +14,14 @@ import {
   RecordTimeline,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
-import { DeletePlaceButton } from "@/features/place/delete-place/ui/delete-place-button";
+import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
 import { formatDate } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
+import { buttonVariants } from "@/shared/ui/button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
+import { PressLink } from "@/shared/ui/press-link";
 
 type PlaceDetailContentProps = {
   placeId: string;
@@ -41,8 +43,6 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
     .map(({ record }) => record)
     .toSorted((a, b) => b.recorded_at.localeCompare(a.recorded_at));
   const isPlacePending = !place && !placeQuery.isError && (placesQuery.isPending || placeQuery.isPending);
-  const cachedRecordCount = cachedPlace?.record_places[0]?.count ?? 0;
-  const recordCount = recordsQuery.data ? records.length : cachedRecordCount;
 
   return (
     <OverscrollBack fallbackHref="/places">
@@ -66,18 +66,20 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
         ) : (
           <>
             <section aria-labelledby="place-title" className="px-1 py-2">
-              <div className="flex items-start gap-3">
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-balance font-bold text-2xl tracking-[-0.035em]" id="place-title">
-                    {place.name}
-                  </h1>
-                  <p className="mt-1 text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
-                  <p className="mt-2 text-muted-foreground text-xs">
-                    {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
-                  </p>
-                </div>
-                <DeletePlaceButton name={place.name} placeId={place.id} recordCount={recordCount} />
-              </div>
+              <h1 className="text-balance font-bold text-2xl tracking-[-0.035em]" id="place-title">
+                {place.name}
+              </h1>
+              <p className="mt-1 text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
+              <p className="mt-2 text-muted-foreground text-xs">
+                {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
+              </p>
+              <PressLink
+                className={cn(buttonVariants({ fullWidth: true, size: "xlarge" }), "mt-5")}
+                href={`/records/new?placeId=${place.id}`}
+              >
+                <NotePencilRoundedIcon aria-hidden="true" className="size-6" data-icon="inline-start" />
+                이곳에서 기록하기
+              </PressLink>
             </section>
 
             {recordsQuery.isPending ? null : records.length ? (

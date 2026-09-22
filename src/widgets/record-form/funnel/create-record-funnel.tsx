@@ -49,6 +49,10 @@ const FUNNEL_ID = "record-create";
 
 type RecordCreateFunnelProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
+  defaultLocation?: {
+    place: RecordLocationPlace;
+    region: RecordLocationRegion;
+  };
   defaultRecordedAt: string;
   returnTo: string;
   savedTo: string;
@@ -81,7 +85,13 @@ export function RecordCreateFunnel(props: RecordCreateFunnelProps) {
   return <RecordCreateFunnelClient {...props} />;
 }
 
-function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo }: RecordCreateFunnelProps) {
+function RecordCreateFunnelClient({
+  action,
+  defaultLocation,
+  defaultRecordedAt,
+  returnTo,
+  savedTo,
+}: RecordCreateFunnelProps) {
   const initial = useMemo(
     () => ({
       context: {
@@ -89,15 +99,15 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
         category: DEFAULT_RECORD_CATEGORY,
         dirty: false,
         memo: "",
-        places: [],
+        places: defaultLocation ? [defaultLocation.place] : [],
         recordedAt: defaultRecordedAt,
         recordedUntil: defaultRecordedAt,
-        region: null,
+        regions: [],
         weather: DEFAULT_RECORD_WEATHER,
       } satisfies RecordCreateContext,
       step: "when" as const,
     }),
-    [defaultRecordedAt],
+    [defaultLocation, defaultRecordedAt],
   );
   const funnel = useFunnel<RecordCreateStepMap>({ id: FUNNEL_ID, initial });
   const [draft, setDraft] = useState<RecordCreateContext>(() => funnel.context);
@@ -202,12 +212,12 @@ function RecordCreateFunnelClient({ action, defaultRecordedAt, returnTo, savedTo
         <FieldGroup className="gap-10">
           <RecordLocationFields
             initialPlaces={draft.places}
-            initialRegion={draft.region ?? undefined}
-            onValueChange={(region: RecordLocationRegion | null, places: RecordLocationPlace[]) =>
-              updateContext({ places, region })
+            initialRegions={draft.regions}
+            onValueChange={(regions: RecordLocationRegion[], places: RecordLocationPlace[]) =>
+              updateContext({ places, regions })
             }
             placeError={fieldErrors.places}
-            regionError={fieldErrors.regionCode}
+            regionError={fieldErrors.regions}
             savedPlaces={placesQuery.data}
           />
         </FieldGroup>

@@ -11,9 +11,9 @@ import {
 import { RECORD_DETAIL_COLUMNS, RECORD_LOCATION_COLUMNS } from "./record-columns";
 
 const RECORD_PAGE_COLUMNS =
-  "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name, record_places(count), record_comments(count)";
+  "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name, record_regions(region_label), record_places(count), record_comments(count)";
 const REGION_RECORD_COLUMNS =
-  "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code";
+  "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, record_regions(region_label)";
 
 export type RecordRegionFilter = {
   administrativeCodes: readonly string[];
@@ -91,7 +91,9 @@ export const fetchRecordsInPeriod = async (period: Pick<RecordFilters, "from" | 
 export const fetchRecordPlaces = async (recordId: string) => {
   const { data, error } = await createClient()
     .from("records")
-    .select("id, record_places(place:places(id, name, address, saved_at))")
+    .select(
+      "id, record_regions(region_code, region_label, region_name), record_places(place:places(id, name, address, saved_at))",
+    )
     .eq("id", recordId)
     .maybeSingle();
 
@@ -99,12 +101,25 @@ export const fetchRecordPlaces = async (recordId: string) => {
   return data;
 };
 
+/**
+ * 시·도에 속한 기록을 record_regions 기준으로 찾는다.
+ * 기록 ID를 먼저 모아 한 번 더 조회하는 이유는, 기록 정렬은 records의 칼럼으로만 할 수 있어서다.
+ */
+// ponytail: 기록 ID를 통째로 in()에 넣는다. 한 시·도의 기록이 수천 개가 되면 페이지 단위 조회로 바꾼다.
 export const fetchRegionRecords = async (region: RecordRegionFilter) => {
+  const supabase = createClient();
   const regionFilter = region.administrativeCodes.map((code) => `region_code.like.${code}*`).join(",");
-  const { data, error } = await createClient()
+  const { data: links, error: linkError } = await supabase.from("record_regions").select("record_id").or(regionFilter);
+
+  if (linkError) throw linkError;
+
+  const recordIds = [...new Set(links.map(({ record_id: recordId }) => recordId))];
+  if (recordIds.length === 0) return [];
+
+  const { data, error } = await supabase
     .from("records")
     .select(REGION_RECORD_COLUMNS)
-    .or(regionFilter)
+    .in("id", recordIds)
     .order("recorded_at", { ascending: false })
     .order("created_at", { ascending: false })
     .order("id", { ascending: false });

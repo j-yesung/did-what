@@ -19,6 +19,7 @@ export {
   RECORD_CATEGORY_OPTIONS,
   type RecordCategory,
 } from "./model/category";
+export { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";
 export {
   buildRecordsHref,
   hasRecordFilters,
@@ -31,9 +32,12 @@ export {
   type RecordFieldErrors,
   type RecordInput,
   type RecordPlaceReference,
+  type RecordRegionReference,
   readRecordInput,
   validateRecordInput,
 } from "./model/record-form";
+export { type RecordRegionLocationRow, toRegionLocations } from "./model/record-locations";
+export { formatRecordRegionLabels, type RecordRegionLabelSource } from "./model/record-region";
 export { formatRecordTimelineMonth, getRecordTimelineItemState } from "./model/record-timeline";
 export type { RecordFormState, RecordSummary } from "./model/types";
 export {

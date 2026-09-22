@@ -3,6 +3,7 @@ import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 import { isRecordCategory, type RecordCategory } from "./category";
+import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./limits";
 import { isRecordWeather, type RecordWeather } from "./weather";
 
 export type RecordPlaceReference =
@@ -17,19 +18,21 @@ export type RecordPlaceReference =
       scope: KakaoSearchScope | null;
     };
 
+/** 사용자가 직접 고른 방문 지역. 좌표는 서버가 다시 조회하므로 보내지 않는다. */
+export type RecordRegionReference = {
+  code: string;
+  label: string;
+  name: string;
+};
+
 export type RecordFieldErrors = Partial<
-  Record<
-    "recordedAt" | "recordedUntil" | "regionCode" | "places" | "weather" | "activity" | "memo" | "category",
-    string
-  >
+  Record<"recordedAt" | "recordedUntil" | "regions" | "places" | "weather" | "activity" | "memo" | "category", string>
 >;
 
 export type RecordInput = {
   recordedAt: string;
   recordedUntil?: string;
-  regionCode: string;
-  regionLabel: string;
-  regionName: string;
+  regions: RecordRegionReference[];
   places: RecordPlaceReference[];
   weather: RecordWeather;
   activity: string;
@@ -40,9 +43,7 @@ export type RecordInput = {
 type RecordInputValues = {
   recordedAt: string;
   recordedUntil: string;
-  regionCode: string;
-  regionLabel: string;
-  regionName: string;
+  regions: string;
   places: string;
   weather: string;
   activity: string;
@@ -58,16 +59,13 @@ export const readRecordInput = (formData: FormData): RecordInputValues => {
     places: String(formData.get("places") ?? "[]"),
     recordedAt: String(formData.get("recordedAt") ?? ""),
     recordedUntil: String(formData.get("recordedUntil") ?? ""),
-    regionCode: String(formData.get("regionCode") ?? ""),
-    regionLabel: String(formData.get("regionLabel") ?? ""),
-    regionName: String(formData.get("regionName") ?? ""),
+    regions: String(formData.get("regions") ?? "[]"),
     weather: String(formData.get("weather") ?? ""),
   };
 };
 
 const REGION_CODE_PATTERN = /^\d{10}$/;
 const KAKAO_PLACE_ID_PATTERN = /^\d{1,100}$/;
-const MAX_VISITED_PLACES = 10;
 
 /** 지역을 고르기 전에 검색했다면 기준점이 없다. 없는 경우와 형태가 깨진 경우를 구분해야 해서 실패는 false로 돌려준다. */
 const parseScope = (value: unknown): KakaoSearchScope | null | false => {
@@ -147,12 +145,47 @@ const parsePlaces = (value: string): RecordPlaceReference[] | null => {
   }
 };
 
+/** 같은 지역은 한 기록에 한 번만 담는다. 먼저 고른 쪽의 이름표를 남긴다. */
+const parseRegions = (value: string): RecordRegionReference[] | null => {
+  try {
+    const parsed: unknown = JSON.parse(value || "[]");
+    if (!Array.isArray(parsed) || parsed.length > MAX_VISITED_REGIONS) return null;
+
+    const regions = new Map<string, RecordRegionReference>();
+    for (const item of parsed) {
+      if (!item || typeof item !== "object" || !("code" in item) || !("label" in item) || !("name" in item)) {
+        return null;
+      }
+
+      const { code, label, name } = item as { code: unknown; label: unknown; name: unknown };
+      if (typeof code !== "string" || typeof label !== "string" || typeof name !== "string") return null;
+
+      const trimmedLabel = label.trim();
+      const trimmedName = name.trim();
+      if (
+        !REGION_CODE_PATTERN.test(code) ||
+        trimmedLabel.length < 1 ||
+        trimmedLabel.length > 100 ||
+        trimmedName.length < 1 ||
+        trimmedName.length > 200
+      ) {
+        return null;
+      }
+
+      if (!regions.has(code)) regions.set(code, { code, label: trimmedLabel, name: trimmedName });
+    }
+
+    return [...regions.values()];
+  } catch {
+    return null;
+  }
+};
+
 export const validateRecordInput = (
   values: RecordInputValues,
 ): { data: RecordInput; fieldErrors?: never } | { data?: never; fieldErrors: RecordFieldErrors } => {
   const fieldErrors: RecordFieldErrors = {};
-  const regionLabel = values.regionLabel.trim();
-  const regionName = values.regionName.trim();
+  const regions = parseRegions(values.regions);
   const places = parsePlaces(values.places);
   const activity = values.activity.trim();
   const memo = values.memo.trim();
@@ -165,14 +198,11 @@ export const validateRecordInput = (
     fieldErrors.recordedUntil = "종료일은 시작일과 같거나 이후여야 해요.";
   }
 
-  if (
-    !REGION_CODE_PATTERN.test(values.regionCode) ||
-    regionLabel.length < 1 ||
-    regionLabel.length > 100 ||
-    regionName.length < 1 ||
-    regionName.length > 200
-  ) {
-    fieldErrors.regionCode = "목록에서 지역을 선택해 주세요.";
+  if (!regions) {
+    fieldErrors.regions = `방문 지역은 ${MAX_VISITED_REGIONS}곳까지 선택할 수 있어요.`;
+  } else if (regions.length === 0 && (!places || places.length === 0)) {
+    // 장소를 고르면 그 지역이 서버에서 따라 붙으므로 지역을 직접 고르지 않아도 된다.
+    fieldErrors.regions = "방문 지역을 1곳 이상 선택해 주세요.";
   }
 
   if (!places) {
@@ -197,6 +227,7 @@ export const validateRecordInput = (
 
   if (
     Object.keys(fieldErrors).length > 0 ||
+    !regions ||
     !places ||
     !isRecordWeather(values.weather) ||
     !isRecordCategory(values.category)
@@ -210,9 +241,7 @@ export const validateRecordInput = (
       ...(values.recordedUntil && values.recordedUntil !== values.recordedAt
         ? { recordedUntil: values.recordedUntil }
         : {}),
-      regionCode: values.regionCode,
-      regionLabel,
-      regionName,
+      regions,
       places,
       weather: values.weather,
       activity,

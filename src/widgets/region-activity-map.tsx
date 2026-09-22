@@ -45,7 +45,7 @@ export function RegionActivityMap({ records }: { records: RecordLocation[] }) {
       <title id="korea-map-title">대한민국 발자취 지도</title>
       <desc id="korea-map-description">
         {records.length > 0
-          ? `대한민국을 작은 정사각형 셀로 표현하고 방문 기록 ${records.length}개를 색상 농도로 표시한 지도`
+          ? `대한민국을 작은 정사각형 셀로 표현하고 방문 지역 ${records.length}곳을 색상 농도로 표시한 지도`
           : "대한민국을 작은 정사각형 셀로 표현한, 아직 표시할 방문 기록이 없는 지도"}
       </desc>
       <MapCells cells={map.cells} />

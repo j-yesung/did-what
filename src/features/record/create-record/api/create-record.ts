@@ -32,11 +32,7 @@ export const createRecord = async (formData: FormData): Promise<CreateRecordStat
     p_places: selections.places,
     p_recorded_at: result.data.recordedAt,
     p_recorded_until: result.data.recordedUntil ?? null,
-    p_region_code: selections.region.code,
-    p_region_label: result.data.regionLabel,
-    p_region_latitude: selections.region.latitude,
-    p_region_longitude: selections.region.longitude,
-    p_region_name: selections.region.fullName,
+    p_regions: selections.regions,
     p_weather: result.data.weather,
   });
   if (error || !recordId) {

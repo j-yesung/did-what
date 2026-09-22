@@ -86,7 +86,7 @@ function DrawerOverlay({ className, ...props }: DrawerPrimitive.Backdrop.Props) 
     <DrawerPrimitive.Backdrop
       data-slot="drawer-overlay"
       className={cn(
-        "fixed inset-0 z-50 min-h-dvh select-none bg-transparent opacity-[max(var(--drawer-overlay-min-opacity,0),calc(1-var(--drawer-swipe-progress)))] transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0 motion-reduce:transition-none data-snap-points:[--drawer-overlay-min-opacity:0.5]",
+        "fixed inset-0 z-50 min-h-dvh select-none bg-background/20 opacity-[max(var(--drawer-overlay-min-opacity,0),calc(1-var(--drawer-swipe-progress)))] backdrop-blur-[2px] transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-swiping:duration-0 motion-reduce:transition-none data-snap-points:[--drawer-overlay-min-opacity:0.5]",
         className,
       )}
       {...props}
@@ -136,7 +136,7 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
             // Stack.
             "[--bleed:3rem] [--peek:1rem] [--stack-height:var(--drawer-frontmost-height,var(--drawer-height,0px))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-scale-base:max(0,calc(1-(var(--nested-drawers)*var(--stack-step))))] [--stack-scale:clamp(0,calc(var(--stack-scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--stack-shrink:calc(1-var(--stack-scale))] [--stack-step:0.05]",
             // Transitions.
-            "data-ending-style:transform-(--closed-transform) data-starting-style:transform-(--closed-transform) data-ending-style:data-nested-drawer-swiping:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-ending-style:opacity-[0.9999] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-nested-drawer-swiping:duration-0 data-swiping:duration-0",
+            "data-ending-style:transform-(--closed-transform) data-starting-style:transform-(--closed-transform) data-ending-style:data-nested-drawer-swiping:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-ending-style:opacity-[0.9999] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-nested-drawer-swiping:duration-0 data-swiping:duration-0",
             // Axis: y. 하단과 좌우에 여백을 둔다. 닫힘 애니메이션이 이미 --drawer-inset을 계산에 넣고 있다.
             // 폭에서 좌우 여백만큼 빼야 넘치지 않고, 남는 자리를 auto 마진이 나눠 가지며 가운데로 모인다.
             "data-[swipe-axis=y]:[--drawer-bleed-background:transparent] data-[swipe-axis=y]:[--drawer-inline-inset:--spacing(2)] data-[swipe-axis=y]:[--drawer-inset:--spacing(6)]",

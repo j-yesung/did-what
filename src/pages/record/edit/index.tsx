@@ -58,23 +58,39 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
               activity: record.activity,
               category: normalizeRecordCategory(record.category),
               memo: record.memo ?? "",
-              places: record.record_places.map(({ place }) => ({
-                address: place.address,
-                key: `existing:${place.id}`,
-                name: place.name,
-                reference: { kind: "existing" as const, placeId: place.id, save: false },
-              })),
+              places: record.record_places.map(({ place }) => {
+                const fullName = place.region_name ?? "";
+                const name = fullName.split(" ").pop() ?? fullName;
+
+                return {
+                  address: place.address,
+                  key: `existing:${place.id}`,
+                  name: place.name,
+                  reference: { kind: "existing" as const, placeId: place.id, save: false },
+                  region: {
+                    code: place.region_code,
+                    fullName,
+                    label: name,
+                    latitude: place.latitude,
+                    longitude: place.longitude,
+                    name,
+                  },
+                };
+              }),
               recordedAt: record.recorded_at,
               recordedUntil: record.recorded_until,
               weather: normalizeRecordWeather(record.weather),
-              region: {
-                code: record.region_code,
-                fullName: record.region_name,
-                label: record.region_label,
-                latitude: record.region_latitude,
-                longitude: record.region_longitude,
-                name: record.region_name.split(" ").pop() ?? record.region_name,
-              },
+              // 장소에서 따라온 지역은 장소가 다시 데려오므로, 직접 고른 지역만 되살린다.
+              regions: record.record_regions
+                .filter(({ selected_directly: selectedDirectly }) => selectedDirectly)
+                .map((region) => ({
+                  code: region.region_code,
+                  fullName: region.region_name,
+                  label: region.region_label,
+                  latitude: region.region_latitude,
+                  longitude: region.region_longitude,
+                  name: region.region_name.split(" ").pop() ?? region.region_name,
+                })),
             }}
             returnTo={`/records/${recordId}`}
             savedTo={`/records/${recordId}`}
