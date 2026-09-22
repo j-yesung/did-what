@@ -22,6 +22,7 @@ import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 import { showToast } from "@/shared/lib/toast";
+import { Badge } from "@/shared/ui/badge";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -52,6 +53,8 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
     enabled: hasCachedSummary,
   });
   const record = recordQuery.data ?? cachedSummary;
+  // 목록 캐시에는 지역 이름표만 들어 있어 상세를 받기 전에는 칩 대신 대표 지역을 보여준다.
+  const regions = recordQuery.data?.record_regions ?? recordPlacesQuery.data?.record_regions ?? [];
   const recordPlaces = recordQuery.data?.record_places ?? recordPlacesQuery.data?.record_places;
   const hasError = !hasCachedSummary && recordQuery.isError;
   const placesError = hasCachedSummary && recordPlacesQuery.isError;
@@ -108,9 +111,21 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
                 <p className="mt-2 text-muted-foreground text-sm">
                   {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))} · ${getRecordCategoryLabel(normalizeRecordCategory(record.category))}`}
                 </p>
-                <p className="mt-1 text-muted-foreground text-sm">
-                  {[record.region_label, record.region_name].filter(Boolean).join(" / ") || "지역 정보 없음"}
-                </p>
+                {regions.length ? (
+                  <ul aria-label="방문 지역" className="mt-2 flex flex-wrap gap-1.5">
+                    {regions.map((region) => (
+                      <li key={region.region_code}>
+                        <Badge className="rounded-full px-2 py-1 font-medium" tone="neutral" title={region.region_name}>
+                          {region.region_label}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-muted-foreground text-sm">
+                    {[record.region_label, record.region_name].filter(Boolean).join(" / ") || "지역 정보 없음"}
+                  </p>
+                )}
               </section>
 
               {placesError ? (

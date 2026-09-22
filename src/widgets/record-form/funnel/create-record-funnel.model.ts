@@ -1,5 +1,7 @@
 import type { RecordCategory, RecordFieldErrors, RecordWeather } from "@/entities/record";
+import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
 import type { RecordLocationPlace, RecordLocationRegion } from "@/features/record/select-record-location";
+import { toVisitedRegions } from "@/features/record/select-record-location/model/location-picker";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 
 export const RECORD_CREATE_STEPS = ["when", "where", "what"] as const;
@@ -14,7 +16,7 @@ export type RecordCreateContext = {
   places: RecordLocationPlace[];
   recordedAt: string;
   recordedUntil: string;
-  region: RecordLocationRegion | null;
+  regions: RecordLocationRegion[];
   weather: RecordWeather;
 };
 
@@ -35,8 +37,14 @@ export const validateRecordCreateStep = (step: RecordCreateStep, context: Record
   }
 
   if (step === "where") {
-    if (!context.region) fieldErrors.regionCode = "목록에서 지역을 선택해 주세요.";
-    if (context.places.length > 10) fieldErrors.places = "방문 장소는 10곳까지 선택할 수 있어요.";
+    const visitedRegions = toVisitedRegions(context.regions, context.places);
+    if (visitedRegions.length === 0) fieldErrors.regions = "방문 지역을 1곳 이상 선택해 주세요.";
+    if (visitedRegions.length > MAX_VISITED_REGIONS) {
+      fieldErrors.regions = `방문 지역은 ${MAX_VISITED_REGIONS}곳까지 선택할 수 있어요.`;
+    }
+    if (context.places.length > MAX_VISITED_PLACES) {
+      fieldErrors.places = `방문 장소는 ${MAX_VISITED_PLACES}곳까지 선택할 수 있어요.`;
+    }
   }
 
   if (step === "what") {
@@ -52,7 +60,7 @@ export const validateRecordCreateStep = (step: RecordCreateStep, context: Record
 
 export const getRecordCreateErrorStep = (fieldErrors: RecordFieldErrors): RecordCreateStep | null => {
   if (fieldErrors.recordedAt || fieldErrors.recordedUntil || fieldErrors.weather) return "when";
-  if (fieldErrors.regionCode || fieldErrors.places) return "where";
+  if (fieldErrors.regions || fieldErrors.places) return "where";
   if (fieldErrors.activity || fieldErrors.memo || fieldErrors.category) return "what";
   return null;
 };
@@ -66,9 +74,10 @@ export const toRecordCreateFormData = (context: RecordCreateContext) => {
   formData.set("places", JSON.stringify(context.places.map((place) => place.reference)));
   formData.set("recordedAt", context.recordedAt);
   formData.set("recordedUntil", context.recordedUntil);
-  formData.set("regionCode", context.region?.code ?? "");
-  formData.set("regionLabel", context.region?.label ?? "");
-  formData.set("regionName", context.region?.fullName ?? "");
+  formData.set(
+    "regions",
+    JSON.stringify(context.regions.map(({ code, fullName, label }) => ({ code, label, name: fullName }))),
+  );
   formData.set("weather", context.weather);
 
   return formData;

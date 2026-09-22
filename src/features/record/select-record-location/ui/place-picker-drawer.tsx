@@ -8,16 +8,11 @@ import { Drawer, DrawerContent, DrawerTrigger, DrawerVirtualKeyboardProvider } f
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import { PlacePickerPanel } from "./place-picker-panel";
 
-type PlacePickerSelection = {
-  place: RecordLocationPlace;
-  region: RecordLocationRegion;
-};
-
 type PlacePickerDrawerProps = {
   disabled?: boolean;
   maxSelectionCount: number;
-  onAdd: (selections: PlacePickerSelection[]) => void;
-  region: RecordLocationRegion | null;
+  onAdd: (places: RecordLocationPlace[]) => void;
+  regions: RecordLocationRegion[];
   selectedKeys: Set<string>;
 };
 
@@ -25,7 +20,7 @@ export function PlacePickerDrawer({
   disabled,
   maxSelectionCount,
   onAdd,
-  region,
+  regions,
   selectedKeys,
 }: PlacePickerDrawerProps) {
   const [open, setOpen] = useState(false);
@@ -43,11 +38,11 @@ export function PlacePickerDrawer({
           <PlacePickerPanel
             key={String(open)}
             maxSelectionCount={maxSelectionCount}
-            onAdd={(selections) => {
-              onAdd(selections);
+            onAdd={(places) => {
+              onAdd(places);
               setOpen(false);
             }}
-            region={region}
+            regions={regions}
             selectedKeys={selectedKeys}
           />
         </DrawerContent>

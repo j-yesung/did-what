@@ -19,23 +19,26 @@ import { SelectablePlaceCard } from "./selectable-place-card";
 
 type PlacePickerPanelProps = {
   maxSelectionCount: number;
-  onAdd: (selections: Array<{ place: RecordLocationPlace; region: RecordLocationRegion }>) => void;
-  region: RecordLocationRegion | null;
+  onAdd: (places: RecordLocationPlace[]) => void;
+  regions: RecordLocationRegion[];
   selectedKeys: Set<string>;
 };
 
-export function PlacePickerPanel({ maxSelectionCount, onAdd, region, selectedKeys }: PlacePickerPanelProps) {
+/** 좌표 없이 전국에서 찾는 칩. 지역 칩과 같은 목록에 들어가므로 코드 자리를 하나 비워 둔다. */
+const NATIONWIDE_CODE = "";
+
+export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKeys }: PlacePickerPanelProps) {
   const [selectionError, setSelectionError] = useState<string>();
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState("");
-  const [selectedPlaces, setSelectedPlaces] = useState<
-    Map<string, { place: RecordLocationPlace; region: RecordLocationRegion }>
-  >(() => new Map());
+  const [scopeCode, setScopeCode] = useState(regions[0]?.code ?? NATIONWIDE_CODE);
+  const [selectedPlaces, setSelectedPlaces] = useState<Map<string, RecordLocationPlace>>(() => new Map());
   const selectedPlaceKeys = useMemo(() => new Set(selectedPlaces.keys()), [selectedPlaces]);
   const [optimisticSelectedKeys, selectOptimistically] = useOptimistic(selectedPlaceKeys, (current, key: string) =>
     new Set(current).add(key),
   );
-  const search = usePlaceSearch({ latitude: region?.latitude, longitude: region?.longitude, page: 1, query });
+  const scope = regions.find((region) => region.code === scopeCode);
+  const search = usePlaceSearch({ latitude: scope?.latitude, longitude: scope?.longitude, page: 1, query });
 
   const resolve = useMutation({ mutationFn: resolveRecordPlace });
 
@@ -74,7 +77,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, region, selectedKey
         setSelectedPlaces((current) => {
           if (current.size >= maxSelectionCount || selectedKeys.has(result.place.key)) return current;
           const next = new Map(current);
-          next.set(result.place.key, result);
+          next.set(result.place.key, result.place);
           return next;
         });
       } catch {
@@ -103,11 +106,30 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, region, selectedKey
       <DrawerHeader>
         <DrawerTitle>방문 장소 찾기</DrawerTitle>
         <DrawerDescription>
-          {region ? `${region.name} 주변에서 방문한 곳을 찾아보세요.` : "첫 장소를 고르면 해당 지역이 자동 선택돼요."}
+          {scope ? `${scope.label} 주변을 먼저 보여줘요.` : "다른 지역의 장소를 고르면 그 지역도 함께 담겨요."}
         </DrawerDescription>
       </DrawerHeader>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 pb-0">
+        {regions.length ? (
+          <ul aria-label="검색 기준 지역" className="flex flex-wrap gap-1.5">
+            {[...regions, { code: NATIONWIDE_CODE, label: "전국" }].map((region) => (
+              <li key={region.code || "nationwide"}>
+                <Button
+                  aria-pressed={region.code === scopeCode}
+                  className="rounded-lg"
+                  onClick={() => setScopeCode(region.code)}
+                  size="small"
+                  type="button"
+                  variant={region.code === scopeCode ? "fill" : "outline"}
+                >
+                  {region.label}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
         <form aria-label="방문 장소 검색" onSubmit={handleSearch} role="search">
           <SearchField
             aria-label="방문 장소 이름"

@@ -23,7 +23,7 @@ type SavedPlacePickerDrawerProps = {
   disabled?: boolean;
   maxSelectionCount: number;
   onAdd: (places: RecordLocationPlace[]) => void;
-  region: RecordLocationRegion | null;
+  regions: RecordLocationRegion[];
   savedPlaces: PlaceOption[];
   selectedKeys: Set<string>;
 };
@@ -32,7 +32,7 @@ export function SavedPlacePickerDrawer({
   disabled,
   maxSelectionCount,
   onAdd,
-  region,
+  regions,
   savedPlaces,
   selectedKeys,
 }: SavedPlacePickerDrawerProps) {
@@ -41,8 +41,11 @@ export function SavedPlacePickerDrawer({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
 
   const normalizedQuery = query.trim().toLocaleLowerCase("ko-KR");
-  const inRegion = (place: PlaceOption) => region && place.region_code.slice(0, 5) === region.code.slice(0, 5);
+  const inRegion = (place: PlaceOption) =>
+    regions.some((region) => place.region_code.slice(0, 5) === region.code.slice(0, 5));
   const filteredPlaces = [...savedPlaces]
+    // 지역명이 없는 옛 장소는 방문 지역을 정할 수 없어 목록에서 뺀다.
+    .filter((place) => Boolean(place.region_name))
     .sort((a, b) => Number(inRegion(b)) - Number(inRegion(a)))
     .filter((place) => {
       if (!normalizedQuery) return true;
@@ -70,15 +73,26 @@ export function SavedPlacePickerDrawer({
 
   const addSelectedPlaces = () => {
     const places = savedPlaces
-      .filter((place) => selectedIds.has(place.id))
-      .map(
-        (place): RecordLocationPlace => ({
+      .filter((place) => selectedIds.has(place.id) && place.region_name)
+      .map((place): RecordLocationPlace => {
+        const fullName = place.region_name ?? "";
+        const name = fullName.split(" ").pop() ?? fullName;
+
+        return {
           address: place.address,
           key: `existing:${place.id}`,
           name: place.name,
           reference: { kind: "existing", placeId: place.id, save: false },
-        }),
-      );
+          region: {
+            code: place.region_code,
+            fullName,
+            label: name,
+            latitude: place.latitude,
+            longitude: place.longitude,
+            name,
+          },
+        };
+      });
     onAdd(places);
     setOpen(false);
     setQuery("");

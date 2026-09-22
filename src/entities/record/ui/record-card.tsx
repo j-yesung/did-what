@@ -13,6 +13,7 @@ import { PressLink } from "@/shared/ui/press-link";
 
 import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
 import { getRecordCategoryLabel, normalizeRecordCategory, RECORD_CATEGORY_FILL } from "../model/category";
+import { formatRecordRegionLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
 import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
 import { WeatherIcon } from "./weather-icon";
@@ -37,6 +38,7 @@ export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, star
   const weatherLabel = getRecordWeatherLabel(normalizedWeather);
   const href = `/records/${record.id}`;
   const commentCount = record.record_comments?.[0]?.count ?? 0;
+  const regionLabels = formatRecordRegionLabels(record);
   // 하루짜리는 왼쪽 날짜 칸이 이미 말해 준다. 여러 날에 걸친 기록만 기간을 따로 적는다.
   const period =
     record.recorded_until && record.recorded_until !== record.recorded_at
@@ -98,9 +100,9 @@ export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, star
             <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
               {/* 긴 기간 표기는 지역·배지와 한 줄에 못 들어간다. 줄을 통째로 차지해 뒤가 밀리지 않게 한다. */}
               {period ? <span className="w-full shrink-0 tabular-nums">{period}</span> : null}
-              {record.region_label ? (
+              {regionLabels ? (
                 <>
-                  <span className="truncate">{record.region_label}</span>
+                  <span className="truncate">{regionLabels}</span>
                   <span className="shrink-0" aria-hidden="true">
                     ·
                   </span>

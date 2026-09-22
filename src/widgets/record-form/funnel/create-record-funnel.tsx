@@ -102,7 +102,7 @@ function RecordCreateFunnelClient({
         places: defaultLocation ? [defaultLocation.place] : [],
         recordedAt: defaultRecordedAt,
         recordedUntil: defaultRecordedAt,
-        region: defaultLocation?.region ?? null,
+        regions: [],
         weather: DEFAULT_RECORD_WEATHER,
       } satisfies RecordCreateContext,
       step: "when" as const,
@@ -212,12 +212,12 @@ function RecordCreateFunnelClient({
         <FieldGroup className="gap-10">
           <RecordLocationFields
             initialPlaces={draft.places}
-            initialRegion={draft.region ?? undefined}
-            onValueChange={(region: RecordLocationRegion | null, places: RecordLocationPlace[]) =>
-              updateContext({ places, region })
+            initialRegions={draft.regions}
+            onValueChange={(regions: RecordLocationRegion[], places: RecordLocationPlace[]) =>
+              updateContext({ places, regions })
             }
             placeError={fieldErrors.places}
-            regionError={fieldErrors.regionCode}
+            regionError={fieldErrors.regions}
             savedPlaces={placesQuery.data}
           />
         </FieldGroup>

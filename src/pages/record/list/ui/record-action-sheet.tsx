@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import {
+  formatRecordRegionLabels,
   getRecordCategoryLabel,
   getRecordWeatherLabel,
   normalizeRecordCategory,
@@ -66,7 +67,7 @@ export function RecordActionSheet({ onOpenChange, open, record }: RecordActionSh
             <DrawerDescription className="text-left text-sm leading-5" render={<div />}>
               {record ? (
                 <>
-                  {[formatRecordPeriod(record.recorded_at, record.recorded_until), record.region_label]
+                  {[formatRecordPeriod(record.recorded_at, record.recorded_until), formatRecordRegionLabels(record)]
                     .filter(Boolean)
                     .join(" · ")}
                   <RecordBadges record={record} />

@@ -8,6 +8,7 @@ import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
 import {
+  formatRecordRegionLabels,
   getRecordCategoryLabel,
   getRecordWeatherLabel,
   normalizeRecordCategory,
@@ -154,7 +155,7 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
             records.length > 0 ? (
               records.length === 1 ? (
                 records.map((record) => {
-                  const region = [record.region_label, record.region_name].filter(Boolean).join(" / ");
+                  const region = formatRecordRegionLabels(record);
                   const weather = normalizeRecordWeather(record.weather);
                   const category = getRecordCategoryLabel(normalizeRecordCategory(record.category));
 
@@ -212,7 +213,7 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
               ) : (
                 <ul>
                   {records.map((record, index) => {
-                    const region = [record.region_label, record.region_name].filter(Boolean).join(" / ");
+                    const region = formatRecordRegionLabels(record);
                     const weather = normalizeRecordWeather(record.weather);
                     const category = getRecordCategoryLabel(normalizeRecordCategory(record.category));
                     const period =

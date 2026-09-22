@@ -1,6 +1,6 @@
 "use server";
 
-import type { RecordInput, RecordPlaceReference } from "@/entities/record";
+import { MAX_VISITED_REGIONS, type RecordInput, type RecordPlaceReference } from "@/entities/record";
 import { getRegionCode } from "@/entities/region";
 import type { KakaoSearchScope } from "@/shared/api/kakao-local";
 import {
@@ -18,6 +18,24 @@ import { isUuid } from "@/shared/lib/validation/is-uuid";
 import type { ResolveRecordPlaceResult } from "../model/location-picker";
 
 type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
+
+type ExistingPlaceRow = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  region_code: string;
+  region_name: string | null;
+  saved_at: string | null;
+};
+
+type RecordRegionValue = {
+  code: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+  name: string;
+  selected_directly: boolean;
+};
 
 const LEGACY_INTEGRATED_REGION_PREFIXES = new Set(["29", "46"]);
 
@@ -65,22 +83,24 @@ export const resolveSavedRecordLocation = async (placeId: string): Promise<Resol
 
   if (error || !place?.region_name) return null;
   const regionName = place.region_name.split(" ").pop() ?? place.region_name;
+  const region = {
+    code: place.region_code,
+    fullName: place.region_name,
+    label: regionName,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    name: regionName,
+  };
 
   return {
     place: {
       address: place.address,
       key: `existing:${place.id}`,
       name: place.name,
-      reference: { kind: "existing", placeId: place.id, save: false },
+      reference: { kind: "existing" as const, placeId: place.id, save: false },
+      region,
     },
-    region: {
-      code: place.region_code,
-      fullName: place.region_name,
-      label: regionName,
-      latitude: place.latitude,
-      longitude: place.longitude,
-      name: regionName,
-    },
+    region,
   };
 };
 
@@ -125,13 +145,13 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
     existingReferences.length
       ? supabase
           .from("places")
-          .select("id, saved_at")
+          .select("id, saved_at, latitude, longitude, region_code, region_name")
           .eq("owner_id", ownerId)
           .in(
             "id",
             existingReferences.map((reference) => reference.placeId),
           )
-      : Promise.resolve({ data: [], error: null }),
+      : Promise.resolve({ data: [] as ExistingPlaceRow[], error: null }),
     Promise.all(kakaoReferences.map((reference) => verifyKakaoPlace(reference, searches))),
   ]);
 
@@ -145,33 +165,80 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
 
   const kakaoPlaces = verifiedKakaoPlaces.filter((place): place is NonNullable<typeof place> => place !== null);
 
-  return [
-    ...existingReferences.map((reference) => ({
-      kind: "existing" as const,
-      place_id: reference.placeId,
-      save: reference.save,
-    })),
-    ...kakaoPlaces.map((verified) => ({
-      address: verified.place.address,
-      kind: "kakao" as const,
-      latitude: verified.place.latitude,
-      longitude: verified.place.longitude,
-      name: verified.place.name,
-      provider_place_id: verified.place.id,
-      region_code: verified.region.code,
-      region_name: verified.region.fullName,
-      save: verified.reference.save,
-    })),
-  ];
+  return {
+    places: [
+      ...existingReferences.map((reference) => ({
+        kind: "existing" as const,
+        place_id: reference.placeId,
+        save: reference.save,
+      })),
+      ...kakaoPlaces.map((verified) => ({
+        address: verified.place.address,
+        kind: "kakao" as const,
+        latitude: verified.place.latitude,
+        longitude: verified.place.longitude,
+        name: verified.place.name,
+        provider_place_id: verified.place.id,
+        region_code: verified.region.code,
+        region_name: verified.region.fullName,
+        save: verified.reference.save,
+      })),
+    ],
+    /**
+     * 장소에서 따라오는 지역. 저장한 장소는 좌표를 그대로 지역 좌표로 쓴다.
+     * 지역 중심점을 다시 조회해 봐야 지도 셀은 같은 곳을 가리키고, 외부 호출만 늘어난다.
+     */
+    regions: [
+      ...existingResult.data.flatMap((place) =>
+        place.region_name
+          ? [
+              {
+                code: place.region_code,
+                label: place.region_name.split(" ").pop() ?? place.region_name,
+                latitude: place.latitude,
+                longitude: place.longitude,
+                name: place.region_name,
+              },
+            ]
+          : [],
+      ),
+      ...kakaoPlaces.map((verified) => ({
+        code: verified.region.code,
+        label: verified.region.name,
+        latitude: verified.region.latitude,
+        longitude: verified.region.longitude,
+        name: verified.region.fullName,
+      })),
+    ],
+  };
 };
 
 export const validateRecordSelections = async (data: RecordInput, ownerId: string, supabase: SupabaseClient) => {
-  const region = await verifyRegion(data.regionCode, data.regionName);
-  if (!region) return null;
+  const [verifiedRegions, verifiedPlaces] = await Promise.all([
+    Promise.all(data.regions.map((region) => verifyRegion(region.code, region.name))),
+    verifyRecordPlaces(data.places, ownerId, supabase),
+  ]);
+  if (!verifiedPlaces || verifiedRegions.some((region) => !region)) return null;
 
-  const places = await verifyRecordPlaces(data.places, ownerId, supabase);
-  if (!places) return null;
-  return { places, region };
+  // 사용자가 고른 지역이 먼저다. 첫 지역이 기록의 대표 지역이 되고, 같은 지역은 한 번만 저장한다.
+  const regions = new Map<string, RecordRegionValue>();
+  verifiedRegions.forEach((region, index) => {
+    if (!region || regions.has(region.code)) return;
+    regions.set(region.code, {
+      code: region.code,
+      label: data.regions[index].label,
+      latitude: region.latitude,
+      longitude: region.longitude,
+      name: region.fullName,
+      selected_directly: true,
+    });
+  });
+  for (const region of verifiedPlaces.regions) {
+    if (!regions.has(region.code)) regions.set(region.code, { ...region, selected_directly: false });
+  }
+
+  if (regions.size < 1 || regions.size > MAX_VISITED_REGIONS) return null;
+  return { places: verifiedPlaces.places, regions: [...regions.values()] };
 };
 
 export const resolveRecordPlace = async (input: {
@@ -193,20 +260,23 @@ export const resolveRecordPlace = async (input: {
   const region = await resolveKakaoRegion(place.longitude, place.latitude);
   if (!region) return { error: "장소의 지역을 확인하지 못했어요." };
 
+  const placeRegion = { ...region, label: region.name };
+
   return {
     place: {
       address: place.address,
       key: `kakao:${place.id}`,
       name: place.name,
       reference: {
-        kind: "kakao",
+        kind: "kakao" as const,
         page: normalizeKakaoPage(input.page),
         providerPlaceId: place.id,
         query: queryResult.query,
         save: false,
         scope,
       },
+      region: placeRegion,
     },
-    region: { ...region, label: region.name },
+    region: placeRegion,
   };
 };

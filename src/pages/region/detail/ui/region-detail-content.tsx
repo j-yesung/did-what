@@ -13,6 +13,7 @@ import {
   RecordTimeline,
   recordLocationsQueryOptions,
   regionRecordsQueryOptions,
+  toRegionLocations,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { createRegionActivityMaps, type Region, RegionMiniMap } from "@/entities/region";
@@ -31,18 +32,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
   const prefetchComments = (recordId: string) =>
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   const recordsQuery = useQuery(regionRecordsQueryOptions(region));
-  const recordLocations = useMemo(
-    () =>
-      (locationsQuery.data ?? []).map(
-        ({ id, region_code: administrativeCode, region_latitude: latitude, region_longitude: longitude }) => ({
-          administrativeCode,
-          id,
-          latitude,
-          longitude,
-        }),
-      ),
-    [locationsQuery.data],
-  );
+  const recordLocations = useMemo(() => toRegionLocations(locationsQuery.data ?? []), [locationsQuery.data]);
   const regionMap = useMemo(
     () => createRegionActivityMaps(recordLocations).find(({ code }) => code === region.code),
     [recordLocations, region.code],
