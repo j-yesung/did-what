@@ -13,6 +13,7 @@ import {
   validateKakaoQuery,
 } from "@/shared/api/kakao-local/server";
 import { requireUser } from "@/shared/api/supabase/require-user";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 import type { ResolveRecordPlaceResult } from "../model/location-picker";
 
@@ -49,6 +50,38 @@ const verifyRegion = async (code: string, name: string) => {
       );
     }) ?? null
   );
+};
+
+export const resolveSavedRecordLocation = async (placeId: string): Promise<ResolveRecordPlaceResult | null> => {
+  if (!isUuid(placeId)) return null;
+
+  const { supabase, user } = await requireUser();
+  const { data: place, error } = await supabase
+    .from("places")
+    .select("id, name, address, latitude, longitude, region_code, region_name")
+    .eq("id", placeId)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  if (error || !place?.region_name) return null;
+  const regionName = place.region_name.split(" ").pop() ?? place.region_name;
+
+  return {
+    place: {
+      address: place.address,
+      key: `existing:${place.id}`,
+      name: place.name,
+      reference: { kind: "existing", placeId: place.id, save: false },
+    },
+    region: {
+      code: place.region_code,
+      fullName: place.region_name,
+      label: regionName,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      name: regionName,
+    },
+  };
 };
 
 type KakaoSearches = Map<string, ReturnType<typeof searchKakaoPlaces>>;
