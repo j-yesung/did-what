@@ -5,6 +5,7 @@ const {
   createRegionActivityMaps,
   filterRecordsByRegion,
   getActivityLevel,
+  getKoreaMapPosition,
   getRegion,
   getRegionCode,
   getRegionProgressLabel,
@@ -14,6 +15,17 @@ const {
 assert.deepEqual([0, 1, 2, 4, 7].map(getActivityLevel), [0, 1, 2, 3, 4]);
 
 const emptyMap = createKoreaMap([]);
+for (const cell of emptyMap.cells) {
+  const position = getKoreaMapPosition(cell);
+  assert.ok(position);
+  assert.ok(Math.abs(position.x - (cell.x + 2.2)) < 1e-8, "경도를 해당 셀의 중심으로 변환합니다.");
+  assert.ok(Math.abs(position.y - (cell.y + 2.2)) < 1e-8, "위도를 해당 셀의 중심으로 변환합니다.");
+}
+assert.equal(getKoreaMapPosition({ latitude: 35.68, longitude: 139.69 }), null);
+assert.equal(getKoreaMapPosition({ latitude: 34.2, longitude: 129.3 }), null, "대마도는 지도 범위에서 제외합니다.");
+assert.equal(getKoreaMapPosition({ latitude: 36, longitude: 125.5 }), null, "서해는 지도 범위에서 제외합니다.");
+assert.equal(getKoreaMapPosition({ latitude: Number.NaN, longitude: 127 }), null);
+assert.equal(getKoreaMapPosition({ latitude: 37, longitude: Number.POSITIVE_INFINITY }), null);
 assert.equal(
   emptyMap.cells.every((cell) => cell.count === 0),
   true,

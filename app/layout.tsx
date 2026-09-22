@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   other: { "apple-mobile-web-app-capable": "yes" },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "뭐했지",
   },
 };

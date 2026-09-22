@@ -9,7 +9,7 @@ import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/recor
 import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { RegionActivityMap } from "@/widgets/region-activity-map";
+import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activity-map";
 
 export function HomeContent() {
   const recordsQuery = useQuery(recordLocationsQueryOptions);
@@ -28,7 +28,11 @@ export function HomeContent() {
 
   return (
     <>
-      <section className="relative min-h-0 flex-1" aria-label="대한민국 활동 지도" data-screen="map">
+      <section
+        className="relative -mx-5 -mt-[calc(44px+env(safe-area-inset-top)+var(--toolbar-height))] -mb-(--nav-clearance) min-h-0 flex-1"
+        aria-label="대한민국 활동 지도"
+        data-screen="map"
+      >
         <RegionActivityMap records={records} />
       </section>
 

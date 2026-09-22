@@ -1,6 +1,7 @@
 export {
   createKoreaMap,
   createRegionActivityMaps,
+  getKoreaMapPosition,
   getRegion,
   getRegionCode,
   getRegionProgressLabel,
