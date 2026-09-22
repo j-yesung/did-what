@@ -11,10 +11,12 @@ import {
   getRecordWeatherLabel,
   normalizeRecordCategory,
   normalizeRecordWeather,
+  RECORD_CATEGORY_FILL,
   type RecordSummary,
   recordDetailQueryOptions,
   recordPlacesQueryOptions,
   recordSummaryQueryKey,
+  WeatherIcon,
 } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { RecordComments } from "@/features/record-comment";
@@ -22,6 +24,7 @@ import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 import { showToast } from "@/shared/lib/toast";
+import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -53,8 +56,13 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
     enabled: hasCachedSummary,
   });
   const record = recordQuery.data ?? cachedSummary;
-  // 목록 캐시에는 지역 이름표만 들어 있어 상세를 받기 전에는 칩 대신 대표 지역을 보여준다.
+  // 목록 캐시에는 지역 이름표만 들어 있어 상세를 받기 전에는 대표 지역만 보여준다.
   const regions = recordQuery.data?.record_regions ?? recordPlacesQuery.data?.record_regions ?? [];
+  const regionText = regions.length
+    ? regions.map(({ region_label: label }) => label).join(" · ")
+    : (record?.region_label ?? "");
+  const category = normalizeRecordCategory(record?.category ?? "");
+  const weather = normalizeRecordWeather(record?.weather ?? "");
   const recordPlaces = recordQuery.data?.record_places ?? recordPlacesQuery.data?.record_places;
   const hasError = !hasCachedSummary && recordQuery.isError;
   const placesError = hasCachedSummary && recordPlacesQuery.isError;
@@ -109,23 +117,26 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
                   {record.activity}
                 </h1>
                 <p className="mt-2 text-muted-foreground text-sm">
-                  {`${formatRecordPeriod(record.recorded_at, record.recorded_until)} · ${getRecordWeatherLabel(normalizeRecordWeather(record.weather))} · ${getRecordCategoryLabel(normalizeRecordCategory(record.category))}`}
+                  {[formatRecordPeriod(record.recorded_at, record.recorded_until), regionText]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
-                {regions.length ? (
-                  <ul aria-label="방문 지역" className="mt-2 flex flex-wrap gap-1.5">
-                    {regions.map((region) => (
-                      <li key={region.region_code}>
-                        <Badge className="rounded-full px-2 py-1 font-medium" tone="neutral" title={region.region_name}>
-                          {region.region_label}
-                        </Badge>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-1 text-muted-foreground text-sm">
-                    {[record.region_label, record.region_name].filter(Boolean).join(" / ") || "지역 정보 없음"}
-                  </p>
-                )}
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                  {category === "uncategorized" ? null : (
+                    <Badge
+                      className={cn(
+                        "rounded-full px-2 py-1 font-medium text-foreground",
+                        RECORD_CATEGORY_FILL[category],
+                      )}
+                    >
+                      {getRecordCategoryLabel(category)}
+                    </Badge>
+                  )}
+                  <Badge className="gap-1 rounded-full px-2 py-1 font-medium" tone="neutral">
+                    <WeatherIcon weather={weather} className="size-3.5" aria-hidden="true" />
+                    {getRecordWeatherLabel(weather)}
+                  </Badge>
+                </div>
               </section>
 
               {placesError ? (
