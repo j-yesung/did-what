@@ -1,5 +1,5 @@
 import type { PlaceOption } from "@/entities/place";
-import type { RecordPlaceReference } from "@/entities/record";
+import type { RecordPlaceReference, RecordRegionLocationRow } from "@/entities/record";
 import type { KakaoRegion } from "@/shared/api/kakao-local";
 
 export type RecordLocationRegion = KakaoRegion & { label: string };
@@ -37,17 +37,6 @@ export const toExistingRecordLocationPlace = (place: Omit<PlaceOption, "saved_at
   };
 };
 
-/** 기록에서 지역만 뽑아 쓸 때의 최소 형태. records 쿼리가 돌려주는 행의 일부다. */
-export type RecordRegionRow = {
-  record_regions: {
-    region_code: string;
-    region_label: string;
-    region_latitude: number;
-    region_longitude: number;
-    region_name: string;
-  }[];
-};
-
 /** 지역 칩에 몇 개까지 보여줄지. 한 줄이나 두 줄에 들어가는 선. */
 const RECENT_REGION_LIMIT = 6;
 
@@ -57,7 +46,10 @@ const RECENT_REGION_LIMIT = 6;
  * records 쿼리가 이미 recorded_at 내림차순으로 정렬해 주므로 여기서 다시 정렬하지 않는다.
  * 짧은 이름(name)은 전체 이름의 마지막 마디에서 얻는다. "서울 마포구 망원동" → "망원동".
  */
-export const toRecentRegions = (records: RecordRegionRow[], limit = RECENT_REGION_LIMIT): RecordLocationRegion[] => {
+export const toRecentRegions = (
+  records: readonly Pick<RecordRegionLocationRow, "record_regions">[],
+  limit = RECENT_REGION_LIMIT,
+): RecordLocationRegion[] => {
   const seen = new Set<string>();
   const regions: RecordLocationRegion[] = [];
 

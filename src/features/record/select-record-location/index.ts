@@ -1,12 +1,3 @@
-export type {
-  RecordLocationPlace,
-  RecordLocationRegion,
-  ResolveRecordPlaceResult,
-} from "./model/location-picker";
-export {
-  toExistingRecordLocationPlace,
-  toRecentRegions,
-  toShortRegionName,
-  toVisitedRegions,
-} from "./model/location-picker";
+export type { RecordLocationPlace, RecordLocationRegion } from "./model/location-picker";
+export { toExistingRecordLocationPlace, toShortRegionName } from "./model/location-picker";
 export { RecordLocationFields } from "./ui/record-location-fields";
