@@ -94,7 +94,7 @@ export function BottomNavigation() {
               <Button
                 aria-label={label}
                 aria-current={active ? "page" : undefined}
-                className="h-full rounded-full px-0 transition-colors duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:text-muted-foreground data-[active=true]:text-foreground"
+                className="h-full rounded-full px-0 transition-colors duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:text-muted-foreground data-[active=true]:text-foreground [&>span]:flex-col [&>span]:gap-0.5"
                 data-active={active}
                 fullWidth
                 nativeButton={false}
@@ -123,7 +123,10 @@ export function BottomNavigation() {
                 }
                 variant="ghost"
               >
-                <TabIcon aria-hidden="true" className="size-5.5" weight={active ? "fill" : "regular"} />
+                <TabIcon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
+                <span aria-hidden="true" className="text-[11px] leading-none">
+                  {label}
+                </span>
               </Button>
             </li>
           );
