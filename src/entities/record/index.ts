@@ -49,6 +49,7 @@ export {
   type RecordWeather,
 } from "./model/weather";
 export { EmptyRecords } from "./ui/empty-records";
+export { RecordBadges } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RecordTimeline } from "./ui/record-timeline";
 export { WeatherIcon } from "./ui/weather-icon";
