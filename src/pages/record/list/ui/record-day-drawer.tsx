@@ -13,6 +13,7 @@ import {
   getRecordWeatherLabel,
   normalizeRecordCategory,
   normalizeRecordWeather,
+  RecordCreateButton,
   type RecordSummary,
   recordPlacesQueryOptions,
   recordSummaryQueryKey,
@@ -32,7 +33,6 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 import { Spinner } from "@/shared/ui/spinner";
-import { RecordCreateButton } from "@/widgets/record-create-button";
 
 import { getCalendarHref } from "../model/record-calendar";
 
