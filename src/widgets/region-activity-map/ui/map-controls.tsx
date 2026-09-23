@@ -3,7 +3,6 @@ import { ArrowsInSimpleIcon, GpsFixIcon } from "@phosphor-icons/react";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton, type LiquidGlassButtonProps } from "@/shared/ui/liquid-glass-button";
-import { PressScale } from "@/shared/ui/press-scale";
 import type { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 import type { useMapViewport } from "@/widgets/region-activity-map/model/use-map-viewport";
 
@@ -16,11 +15,7 @@ type MapControlButtonProps = Omit<LiquidGlassButtonProps, "aria-label" | "shape"
 
 /** 지도 위 원형 유리 버튼. 이름을 보조기기용 이름과 툴팁에 함께 쓴다. */
 function MapControlButton({ label, ...props }: MapControlButtonProps) {
-  return (
-    <PressScale className="has-disabled:pointer-events-none">
-      <LiquidGlassButton aria-label={label} shape="circle" title={label} {...props} />
-    </PressScale>
-  );
+  return <LiquidGlassButton aria-label={label} shape="circle" title={label} {...props} />;
 }
 
 export function MapControls({ viewport, currentLocation }: MapControlsProps) {
