@@ -1,3 +1,4 @@
+import type { PlaceOption } from "@/entities/place";
 import type { RecordPlaceReference } from "@/entities/record";
 import type { KakaoRegion } from "@/shared/api/kakao-local";
 
@@ -10,6 +11,30 @@ export type RecordLocationPlace = {
   reference: RecordPlaceReference;
   /** 장소가 속한 지역. 장소를 담으면 이 지역도 방문 지역에 따라 들어간다. */
   region: RecordLocationRegion;
+};
+
+/** "서울 마포구 망원동"에서 "망원동"처럼 전체 지역명의 마지막 마디. */
+export const toShortRegionName = (fullName: string) => fullName.split(" ").at(-1) ?? fullName;
+
+/** 이미 있는 장소를 작성 화면의 방문 장소로 바꾼다. 장소의 지역이 그대로 방문 지역이 된다. */
+export const toExistingRecordLocationPlace = (place: Omit<PlaceOption, "saved_at">): RecordLocationPlace => {
+  const fullName = place.region_name ?? "";
+  const name = toShortRegionName(fullName);
+
+  return {
+    address: place.address,
+    key: `existing:${place.id}`,
+    name: place.name,
+    reference: { kind: "existing", placeId: place.id, save: false },
+    region: {
+      code: place.region_code,
+      fullName,
+      label: name,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      name,
+    },
+  };
 };
 
 /** 기록에서 지역만 뽑아 쓸 때의 최소 형태. records 쿼리가 돌려주는 행의 일부다. */
@@ -47,7 +72,7 @@ export const toRecentRegions = (records: RecordRegionRow[], limit = RECENT_REGIO
         label: region.region_label,
         latitude: region.region_latitude,
         longitude: region.region_longitude,
-        name: region.region_name.split(" ").pop() ?? region.region_name,
+        name: toShortRegionName(region.region_name),
       });
 
       if (regions.length >= limit) return regions;

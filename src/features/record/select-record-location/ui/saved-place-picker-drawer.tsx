@@ -16,7 +16,11 @@ import {
 } from "@/shared/ui/drawer";
 import { SearchField } from "@/shared/ui/search-field";
 
-import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
+import {
+  type RecordLocationPlace,
+  type RecordLocationRegion,
+  toExistingRecordLocationPlace,
+} from "../model/location-picker";
 import { SelectablePlaceCard } from "./selectable-place-card";
 
 type SavedPlacePickerDrawerProps = {
@@ -74,25 +78,7 @@ export function SavedPlacePickerDrawer({
   const addSelectedPlaces = () => {
     const places = savedPlaces
       .filter((place) => selectedIds.has(place.id) && place.region_name)
-      .map((place): RecordLocationPlace => {
-        const fullName = place.region_name ?? "";
-        const name = fullName.split(" ").pop() ?? fullName;
-
-        return {
-          address: place.address,
-          key: `existing:${place.id}`,
-          name: place.name,
-          reference: { kind: "existing", placeId: place.id, save: false },
-          region: {
-            code: place.region_code,
-            fullName,
-            label: name,
-            latitude: place.latitude,
-            longitude: place.longitude,
-            name,
-          },
-        };
-      });
+      .map((place) => toExistingRecordLocationPlace(place));
     onAdd(places);
     setOpen(false);
     setQuery("");

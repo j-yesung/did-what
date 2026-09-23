@@ -15,7 +15,12 @@ import {
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-import type { RecordLocationPlace, ResolveRecordPlaceResult } from "../model/location-picker";
+import {
+  type RecordLocationPlace,
+  type ResolveRecordPlaceResult,
+  toExistingRecordLocationPlace,
+  toShortRegionName,
+} from "../model/location-picker";
 
 type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
 
@@ -82,23 +87,7 @@ export const resolveSavedRecordLocation = async (placeId: string): Promise<Recor
     .maybeSingle();
 
   if (error || !place?.region_name) return null;
-  const regionName = place.region_name.split(" ").pop() ?? place.region_name;
-  const region = {
-    code: place.region_code,
-    fullName: place.region_name,
-    label: regionName,
-    latitude: place.latitude,
-    longitude: place.longitude,
-    name: regionName,
-  };
-
-  return {
-    address: place.address,
-    key: `existing:${place.id}`,
-    name: place.name,
-    reference: { kind: "existing", placeId: place.id, save: false },
-    region,
-  };
+  return toExistingRecordLocationPlace(place);
 };
 
 type KakaoSearches = Map<string, ReturnType<typeof searchKakaoPlaces>>;
@@ -209,7 +198,7 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
         ? [
             {
               code: place.region_code,
-              label: place.region_name.split(" ").pop() ?? place.region_name,
+              label: toShortRegionName(place.region_name),
               latitude: place.latitude,
               longitude: place.longitude,
               name: place.region_name,
