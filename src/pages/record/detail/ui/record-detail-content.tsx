@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import {
+  formatRecordRegionLabels,
   getRecordCategoryLabel,
   getRecordWeatherLabel,
   normalizeRecordCategory,
@@ -56,11 +57,16 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
     enabled: hasCachedSummary,
   });
   const record = recordQuery.data ?? cachedSummary;
-  // 목록 캐시에는 지역 이름표만 들어 있어 상세를 받기 전에는 대표 지역만 보여준다.
-  const regions = recordQuery.data?.record_regions ?? recordPlacesQuery.data?.record_regions ?? [];
-  const regionText = regions.length
-    ? regions.map(({ region_label: label }) => label).join(" · ")
-    : (record?.region_label ?? "");
+  // 상세 응답이 오기 전에는 목록에서 넘겨받은 요약의 방문 지역으로 먼저 그린다.
+  const regionText = formatRecordRegionLabels(
+    {
+      record_regions:
+        recordQuery.data?.record_regions ?? recordPlacesQuery.data?.record_regions ?? cachedSummary?.record_regions,
+      region_code: record?.region_code,
+      region_label: record?.region_label,
+    },
+    Number.POSITIVE_INFINITY,
+  );
   const category = normalizeRecordCategory(record?.category ?? "");
   const weather = normalizeRecordWeather(record?.weather ?? "");
   const recordPlaces = recordQuery.data?.record_places ?? recordPlacesQuery.data?.record_places;

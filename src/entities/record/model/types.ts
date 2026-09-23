@@ -10,7 +10,9 @@ export type RecordSummary = {
   // 상세 화면이 방문 장소를 받기 전에 그 자리를 잡아 두는 데 쓴다.
   record_places?: { count: number }[];
   record_comments?: { count: number }[];
-  record_regions?: { region_label: string }[];
+  record_regions?: { region_code: string; region_label: string }[];
+  // 대표 지역. 방문 지역을 보여줄 때 이 지역을 맨 앞에 둔다.
+  region_code?: string;
   region_label?: string;
   region_name?: string;
   weather: string;

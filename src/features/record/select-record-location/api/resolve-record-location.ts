@@ -164,6 +164,8 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
   }
 
   const kakaoPlaces = verifiedKakaoPlaces.filter((place): place is NonNullable<typeof place> => place !== null);
+  const existingPlaces = new Map(existingResult.data.map((place) => [place.id, place]));
+  const kakaoPlacesByReference = new Map(kakaoPlaces.map((verified) => [verified.reference, verified]));
 
   return {
     places: [
@@ -185,31 +187,39 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
       })),
     ],
     /**
-     * 장소에서 따라오는 지역. 저장한 장소는 좌표를 그대로 지역 좌표로 쓴다.
-     * 지역 중심점을 다시 조회해 봐야 지도 셀은 같은 곳을 가리키고, 외부 호출만 늘어난다.
+     * 장소에서 따라오는 지역. 화면에 담은 장소 순서를 따라야 첫 지역, 곧 대표 지역이 화면과 같아진다.
+     * 저장한 장소는 좌표를 그대로 지역 좌표로 쓴다. 지역 중심점을 다시 조회해 봐야 지도 셀은 같은 곳을 가리키고,
+     * 외부 호출만 늘어난다.
      */
-    regions: [
-      ...existingResult.data.flatMap((place) =>
-        place.region_name
+    regions: references.flatMap((reference) => {
+      if (reference.kind === "kakao") {
+        const verified = kakaoPlacesByReference.get(reference);
+        return verified
           ? [
               {
-                code: place.region_code,
-                label: place.region_name.split(" ").pop() ?? place.region_name,
-                latitude: place.latitude,
-                longitude: place.longitude,
-                name: place.region_name,
+                code: verified.region.code,
+                label: verified.region.name,
+                latitude: verified.region.latitude,
+                longitude: verified.region.longitude,
+                name: verified.region.fullName,
               },
             ]
-          : [],
-      ),
-      ...kakaoPlaces.map((verified) => ({
-        code: verified.region.code,
-        label: verified.region.name,
-        latitude: verified.region.latitude,
-        longitude: verified.region.longitude,
-        name: verified.region.fullName,
-      })),
-    ],
+          : [];
+      }
+
+      const place = existingPlaces.get(reference.placeId);
+      return place?.region_name
+        ? [
+            {
+              code: place.region_code,
+              label: place.region_name.split(" ").pop() ?? place.region_name,
+              latitude: place.latitude,
+              longitude: place.longitude,
+              name: place.region_name,
+            },
+          ]
+        : [];
+    }),
   };
 };
 
