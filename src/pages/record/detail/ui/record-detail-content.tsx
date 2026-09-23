@@ -17,8 +17,6 @@ import {
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
-import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 import { showToast } from "@/shared/lib/toast";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -32,7 +30,6 @@ type RecordDetailContentProps = {
 export function RecordDetailContent({ member, recordId }: RecordDetailContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const seededNotificationHistory = useRef(false);
   const redirectedMissingRecord = useRef(false);
   const queryClient = useQueryClient();
   const fromNotification = searchParams?.get("from") === "notification";
@@ -69,24 +66,11 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
     : recordQuery.isSuccess && !recordQuery.data;
 
   useEffect(() => {
-    if (!fromNotification || canGoBack()) return;
-
-    const detailHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    const state = window.history.state;
-    window.history.replaceState(state, "", "/");
-    window.history.pushState({ ...state, [HOME_HISTORY_GUARD]: true }, "", "/");
-    window.history.pushState(state, "", "/records");
-    window.history.pushState(state, "", detailHref);
-    seededNotificationHistory.current = true;
-  }, [fromNotification]);
-
-  useEffect(() => {
     if (!fromNotification || !recordMissing || redirectedMissingRecord.current) return;
 
     redirectedMissingRecord.current = true;
     showToast({ title: "기록이 삭제됐어요", variant: "warning" });
-    if (seededNotificationHistory.current) router.back();
-    else router.replace("/records");
+    router.replace("/records");
   }, [fromNotification, recordMissing, router]);
 
   return (

@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { MapPinAreaIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/record";
-import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activity-map";
@@ -14,17 +13,6 @@ import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activ
 export function HomeContent() {
   const recordsQuery = useQuery(recordLocationsQueryOptions);
   const records = useMemo(() => toRegionLocations(recordsQuery.data ?? []), [recordsQuery.data]);
-
-  useEffect(() => {
-    if (!window.history.state?.[HOME_HISTORY_GUARD]) return;
-
-    const onPopState = () => {
-      if (!window.history.state?.[HOME_HISTORY_GUARD]) window.history.forward();
-    };
-
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, []);
 
   return (
     <>
