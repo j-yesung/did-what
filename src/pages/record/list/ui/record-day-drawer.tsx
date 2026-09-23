@@ -198,7 +198,13 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
                         <span className="shrink-0">{category}</span>
                       </p>
                       {record.memo ? (
-                        <p className="mt-3 whitespace-pre-wrap text-foreground leading-relaxed">{record.memo}</p>
+                        <div className="mt-3 flex flex-col gap-1.5 text-sm leading-relaxed">
+                          {record.memo.split("\n").map((line, index) => (
+                            <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
+                              {line}
+                            </p>
+                          ))}
+                        </div>
                       ) : null}
                     </article>
                   );
