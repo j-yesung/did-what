@@ -21,7 +21,7 @@ export function MapControls({ viewport, currentLocation }: MapControlsProps) {
   return (
     <div
       className={cn(
-        "absolute top-[calc(var(--page-top)+var(--toolbar-height)+32px)] right-2 flex flex-col items-center gap-3",
+        "absolute top-[calc(var(--page-top)+var(--toolbar-height)+32px)] right-5 flex flex-col items-center gap-3",
         ICON_WEIGHT_MEDIUM,
       )}
       role="group"
