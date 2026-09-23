@@ -3,11 +3,12 @@ import "server-only";
 import { cache } from "react";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import type { Database } from "@/shared/api/supabase/database.types";
 import { requireUser } from "@/shared/api/supabase/require-user";
+import { RETURN_TO_HEADER, withReturnTo } from "@/shared/lib/navigation/return-to";
 
 import type { AccountMember } from "../model/types";
 
@@ -49,7 +50,7 @@ export const requireMember = cache(async () => {
   const memberId = await getCurrentMemberId();
   const member = members.find((candidate) => candidate.id === memberId && candidate.is_active);
 
-  if (!member) redirect("/members/select");
+  if (!member) redirect(withReturnTo("/members/select", (await headers()).get(RETURN_TO_HEADER)));
 
   return { member, members, supabase, user };
 });

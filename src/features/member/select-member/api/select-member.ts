@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { RedirectType, redirect } from "next/navigation";
 
 import { setCurrentMember } from "@/entities/member/server";
 import { reassignPushSubscription } from "@/features/push-notification/server";
 import { requireUser } from "@/shared/api/supabase/require-user";
+import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 type SelectMemberInput = {
@@ -42,5 +43,5 @@ export const selectMember = async (input: SelectMemberInput): Promise<SelectMemb
 
   await setCurrentMember(member.id);
   revalidatePath("/", "layout");
-  redirect(input.destination === "/settings" ? "/settings" : "/");
+  redirect(toSafeReturnTo(input.destination), RedirectType.replace);
 };

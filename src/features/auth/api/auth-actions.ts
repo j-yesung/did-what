@@ -1,10 +1,11 @@
 "use server";
 
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { RedirectType, redirect } from "next/navigation";
 
 import { ensureProfile } from "@/entities/profile";
 import { createClient } from "@/shared/api/supabase/server";
+import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 
 import { getLoginErrorMessage, getSignupErrorMessage } from "../model/auth-error-message";
 import type { AuthActionState } from "../model/auth-form";
@@ -29,7 +30,8 @@ export const login = async (formData: FormData): Promise<AuthActionState> => {
     return { message: "프로필을 준비하지 못했습니다.\n다시 시도해 주세요.", status: "error" };
   }
 
-  redirect("/");
+  // 로그인 화면이 뒤로가기에 다시 나오지 않도록 replace로 이동한다.
+  redirect(toSafeReturnTo(formData.get("returnTo")), RedirectType.replace);
 };
 
 export const logout = async () => {
