@@ -17,7 +17,7 @@ export function HomeContent() {
   return (
     <>
       <section
-        className="relative -mx-5 -mt-[calc(44px+env(safe-area-inset-top)+var(--toolbar-height))] -mb-(--nav-clearance) min-h-0 flex-1"
+        className="relative -mx-5 -mt-[calc(var(--page-top)+var(--toolbar-height)+var(--page-gap))] -mb-(--nav-clearance) min-h-0 flex-1"
         aria-label="대한민국 활동 지도"
         data-screen="map"
       >

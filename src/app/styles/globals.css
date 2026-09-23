@@ -146,6 +146,10 @@
   /* 상단 툴바 버튼의 지름. 지도 화면의 상단 여백이 같은 값을 본다. */
   --toolbar-height: 52px;
 
+  /* 화면 위 여백과 블록 사이 간격. 툴바가 같은 높이에 뜨고, 지도 화면은 이 값들을 더해 노치까지 끌어올린다. */
+  --page-top: calc(24px + env(safe-area-inset-top));
+  --page-gap: 20px;
+
   /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
   --map-empty: var(--grey-200);
   --map-level-1: var(--blue-200);

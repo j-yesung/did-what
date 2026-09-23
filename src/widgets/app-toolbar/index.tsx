@@ -19,7 +19,7 @@ export function AppToolbar({ memberId }: { memberId: string }) {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
-      <div className="mx-auto flex w-full max-w-(--app-width) items-start px-5 pt-[calc(24px+env(safe-area-inset-top))]">
+      <div className="mx-auto flex w-full max-w-(--app-width) items-start px-5 pt-(--page-top)">
         <ToolbarViewToggle pathname={pathname} />
 
         <PressScale
