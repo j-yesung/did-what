@@ -101,7 +101,7 @@ export const getActivityLevel = (count: number): ActivityLevel => {
   return 0;
 };
 
-export const isRegionCode = (value: string): value is RegionCode => {
+const isRegionCode = (value: string): value is RegionCode => {
   return REGION_CODES.has(value);
 };
 

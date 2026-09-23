@@ -19,7 +19,7 @@ export type RecordPlaceReference =
     };
 
 /** 사용자가 직접 고른 방문 지역. 좌표는 서버가 다시 조회하므로 보내지 않는다. */
-export type RecordRegionReference = {
+type RecordRegionReference = {
   code: string;
   label: string;
   name: string;

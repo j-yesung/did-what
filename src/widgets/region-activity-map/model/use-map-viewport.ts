@@ -15,7 +15,7 @@ type PinchGesture = {
 export const MAX_MAP_ZOOM = 4;
 export const INITIAL_MAP_VIEW: MapView = { zoom: 1, x: 0, y: 0 };
 
-export const constrainMapView = (map: MapSize, next: MapView): MapView => ({
+const constrainMapView = (map: MapSize, next: MapView): MapView => ({
   ...next,
   x: Math.max(0, Math.min(map.width - map.width / next.zoom, next.x)),
   y: Math.max(0, Math.min(map.height - map.height / next.zoom, next.y)),

@@ -1,15 +1,8 @@
 import "server-only";
 
-export { parseKakaoSearchResponse, searchKakaoPlaces } from "./places.ts";
+export { searchKakaoPlaces } from "./places.ts";
+export { resolveKakaoRegion, searchKakaoRegions } from "./regions.ts";
 export {
-  getRelatedRegionQueries,
-  parseKakaoCoordinateRegionResponse,
-  parseKakaoRegionSearchResponse,
-  resolveKakaoRegion,
-  searchKakaoRegions,
-} from "./regions.ts";
-export {
-  KAKAO_SEARCH_MAX_PAGE,
   normalizeKakaoPage,
   normalizeKakaoScope,
   validateKakaoPlaceId,

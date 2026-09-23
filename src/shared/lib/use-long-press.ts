@@ -6,7 +6,7 @@ const LONG_PRESS_MS = 300;
 
 const MOVE_THRESHOLD = 10;
 
-export const swallowNextClick = () => {
+const swallowNextClick = () => {
   const stop = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();

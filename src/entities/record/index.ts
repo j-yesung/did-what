@@ -32,7 +32,6 @@ export {
   type RecordFieldErrors,
   type RecordInput,
   type RecordPlaceReference,
-  type RecordRegionReference,
   readRecordInput,
   validateRecordInput,
 } from "./model/record-form";
