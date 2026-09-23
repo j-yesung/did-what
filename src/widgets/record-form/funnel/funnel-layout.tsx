@@ -5,7 +5,7 @@ import { type ReactNode, useEffect, useRef } from "react";
 import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 
-import { getRecordCreateStepIndex, RECORD_CREATE_STEPS, type RecordCreateStep } from "./create-record-funnel.model";
+import { getRecordCreateStepIndex, RECORD_CREATE_STEPS, type RecordCreateStep } from "../model/create-record-funnel";
 
 const STEP_COPY: Record<RecordCreateStep, { description: string; title: string }> = {
   when: { description: "날짜와 그날의 날씨를 알려주세요.", title: "언제였나요?" },

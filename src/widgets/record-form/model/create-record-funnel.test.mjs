@@ -1,4 +1,5 @@
-import { getRecordCreateErrorStep, validateRecordCreateStep } from "./create-record-funnel.model.ts";
+import { getRecordCreateErrorStep, validateRecordCreateStep } from "@/widgets/record-form/model/create-record-funnel";
+
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
