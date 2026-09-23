@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { NotepadIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -56,7 +57,18 @@ function SavedPlaceListItem({ onDetailPrefetch, onLongPress, place }: SavedPlace
       >
         <ListRowTexts
           className="[&>span:first-child]:font-bold [&>span:first-child]:text-base"
-          description={recordCount > 0 ? `${regionLabel} · 기록 ${recordCount}` : regionLabel}
+          description={
+            <span className="flex items-center justify-between gap-2">
+              <span className="truncate">{regionLabel}</span>
+              {recordCount > 0 ? (
+                <span className="inline-flex shrink-0 items-center gap-0.5 tabular-nums">
+                  <NotepadIcon className="size-4" aria-hidden="true" />
+                  <span className="sr-only">기록</span>
+                  {recordCount}
+                </span>
+              ) : null}
+            </span>
+          }
           title={place.name}
         />
       </ListRow>
