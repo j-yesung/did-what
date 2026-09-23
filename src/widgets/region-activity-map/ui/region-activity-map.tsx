@@ -53,16 +53,22 @@ export function RegionActivityMap({ records }: { records: RecordLocation[] }) {
         {...viewport.svgProps}
       >
         <title id="korea-map-title">대한민국 발자취 지도</title>
+        {/* JSX는 줄바꿈으로 나눈 글과 표현식을 공백 없이 잇는다. 문장끼리 붙지 않게 직접 띄운다. */}
         <desc id="korea-map-description">
-          {records.length > 0
-            ? `대한민국을 작은 정사각형 셀로 표현하고 방문 지역 ${records.length}곳을 색상 농도로 표시한 지도.`
-            : "대한민국을 작은 정사각형 셀로 표현한, 아직 표시할 방문 기록이 없는 지도."}
-          두 손가락으로 확대하거나 축소하고, 확대된 지도는 한 손가락으로 이동할 수 있어요.
-          {currentLocation.position ? "현재 위치가 원형 점으로 표시되어 있어요." : ""}
+          {[
+            // records는 기록마다 방문 지역 하나씩 찍은 점이라 지역 수가 아니라 발자취 수다.
+            records.length > 0
+              ? `대한민국을 작은 정사각형 셀로 표현하고 발자취 ${records.length}개를 색상 농도로 표시한 지도.`
+              : "대한민국을 작은 정사각형 셀로 표현한, 아직 표시할 방문 기록이 없는 지도.",
+            "두 손가락으로 확대하거나 축소하고, 확대된 지도는 한 손가락으로 이동할 수 있어요.",
+            currentLocation.position ? "현재 위치가 원형 점으로 표시되어 있어요." : null,
+          ]
+            .filter(Boolean)
+            .join(" ")}
         </desc>
         <MapCells cells={map.cells} />
         {currentLocation.position ? (
-          <g aria-label="현재 위치">
+          <>
             <circle
               cx={currentLocation.position.x}
               cy={currentLocation.position.y}
@@ -76,7 +82,7 @@ export function RegionActivityMap({ records }: { records: RecordLocation[] }) {
               className="fill-primary stroke-background"
               strokeWidth={2 / viewport.zoom}
             />
-          </g>
+          </>
         ) : null}
       </svg>
       <MapControls viewport={viewport} currentLocation={currentLocation} />
