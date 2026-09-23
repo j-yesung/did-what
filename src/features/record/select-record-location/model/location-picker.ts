@@ -70,4 +70,4 @@ export const toVisitedRegions = (
   return [...visited.values()];
 };
 
-export type ResolveRecordPlaceResult = { error: string } | { place: RecordLocationPlace; region: RecordLocationRegion };
+export type ResolveRecordPlaceResult = { error: string } | { place: RecordLocationPlace };

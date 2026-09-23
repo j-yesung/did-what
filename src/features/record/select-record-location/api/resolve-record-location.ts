@@ -15,7 +15,7 @@ import {
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-import type { ResolveRecordPlaceResult } from "../model/location-picker";
+import type { RecordLocationPlace, ResolveRecordPlaceResult } from "../model/location-picker";
 
 type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
 
@@ -70,7 +70,7 @@ const verifyRegion = async (code: string, name: string) => {
   );
 };
 
-export const resolveSavedRecordLocation = async (placeId: string): Promise<ResolveRecordPlaceResult | null> => {
+export const resolveSavedRecordLocation = async (placeId: string): Promise<RecordLocationPlace | null> => {
   if (!isUuid(placeId)) return null;
 
   const { supabase, user } = await requireUser();
@@ -93,13 +93,10 @@ export const resolveSavedRecordLocation = async (placeId: string): Promise<Resol
   };
 
   return {
-    place: {
-      address: place.address,
-      key: `existing:${place.id}`,
-      name: place.name,
-      reference: { kind: "existing" as const, placeId: place.id, save: false },
-      region,
-    },
+    address: place.address,
+    key: `existing:${place.id}`,
+    name: place.name,
+    reference: { kind: "existing", placeId: place.id, save: false },
     region,
   };
 };
@@ -270,8 +267,6 @@ export const resolveRecordPlace = async (input: {
   const region = await resolveKakaoRegion(place.longitude, place.latitude);
   if (!region) return { error: "장소의 지역을 확인하지 못했어요." };
 
-  const placeRegion = { ...region, label: region.name };
-
   return {
     place: {
       address: place.address,
@@ -285,8 +280,7 @@ export const resolveRecordPlace = async (input: {
         save: false,
         scope,
       },
-      region: placeRegion,
+      region: { ...region, label: region.name },
     },
-    region: placeRegion,
   };
 };

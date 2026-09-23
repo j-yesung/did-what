@@ -15,14 +15,14 @@ export async function RecordNewPage({ searchParams }: RecordNewPageProps) {
   const defaultRecordedAt = typeof date === "string" && isIsoDate(date) ? date : today;
   const calendarHref = defaultRecordedAt === date ? `/records?view=calendar&month=${date.slice(0, 7)}` : "/records";
   const placeId = typeof rawPlaceId === "string" && isUuid(rawPlaceId) ? rawPlaceId : null;
-  const defaultLocation = placeId ? await resolveSavedRecordLocation(placeId) : null;
-  const returnHref = defaultLocation ? `/places/${placeId}` : calendarHref;
+  const defaultPlace = placeId ? await resolveSavedRecordLocation(placeId) : null;
+  const returnHref = defaultPlace ? `/places/${placeId}` : calendarHref;
 
   return (
     <PageShell className="h-dvh min-h-0 gap-0 overflow-hidden px-0 pt-0 pb-0">
       <RecordCreateFunnel
         action={createRecord}
-        defaultLocation={defaultLocation && "place" in defaultLocation ? defaultLocation : undefined}
+        defaultPlace={defaultPlace ?? undefined}
         defaultRecordedAt={defaultRecordedAt}
         returnTo={returnHref}
         savedTo={returnHref}
