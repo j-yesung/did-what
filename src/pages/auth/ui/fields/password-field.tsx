@@ -29,7 +29,6 @@ export function PasswordField({ error, isSignup }: PasswordFieldProps) {
             aria-label={visible ? "비밀번호 숨기기" : "비밀번호 표시"}
             icon={visible ? EyeSlashIcon : EyeIcon}
             iconSize={18}
-            iconStrokeWidth={2}
             onClick={() => setVisible((current) => !current)}
             onMouseDown={(event) => event.preventDefault()}
             size="sm"

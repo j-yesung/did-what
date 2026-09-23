@@ -38,7 +38,6 @@ export function CommentRow({ comment, currentMemberId, onDelete }: CommentRowPro
                   className="before:absolute before:-inset-2 before:content-['']"
                   disabled={comment.pending}
                   icon={XIcon}
-                  iconStrokeWidth={2}
                   onClick={() => setDeleteOpen(true)}
                   size="sm"
                 />

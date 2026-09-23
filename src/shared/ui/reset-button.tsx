@@ -16,7 +16,6 @@ export function ResetButton({ "aria-label": ariaLabel = "초기화", className, 
       aria-label={ariaLabel}
       className={className}
       icon={ArrowCounterClockwiseIcon}
-      iconStrokeWidth={3}
       onClick={onReset}
       size="sm"
       type="button"

@@ -53,7 +53,7 @@ export function MemberSelect({ currentMemberId, destination, members }: MemberSe
       <div className="flex flex-1 flex-col justify-center gap-8 py-4">
         {select.data?.message || select.isError ? (
           <Alert variant="destructive">
-            <WarningCircleIcon aria-hidden="true" strokeWidth={2} />
+            <WarningCircleIcon aria-hidden="true" />
             <AlertTitle>변경하지 못했어요</AlertTitle>
             <AlertDescription className="whitespace-pre-line">
               {select.data?.message ?? "사용자를 변경하지 못했습니다.\n잠시 후 다시 시도해 주세요."}

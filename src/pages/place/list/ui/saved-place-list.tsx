@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { DotsThreeVerticalIcon } from "@phosphor-icons/react";
+import { NotepadIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -13,8 +13,8 @@ import {
   placesQueryOptions,
   type SavedPlaceRow,
 } from "@/entities/place";
+import { useLongPress } from "@/shared/lib/use-long-press";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
-import { IconButton } from "@/shared/ui/icon-button";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
@@ -23,11 +23,12 @@ import { PlaceActionSheet } from "./place-action-sheet";
 
 type SavedPlaceListItemProps = {
   onDetailPrefetch: (place: SavedPlaceRow) => void;
-  onOpenActions: () => void;
+  onLongPress: () => void;
   place: SavedPlaceRow;
 };
 
-function SavedPlaceListItem({ onDetailPrefetch, onOpenActions, place }: SavedPlaceListItemProps) {
+function SavedPlaceListItem({ onDetailPrefetch, onLongPress, place }: SavedPlaceListItemProps) {
+  const longPress = useLongPress(onLongPress);
   const queryClient = useQueryClient();
   const href = `/places/${place.id}`;
   const cachePlace = () => queryClient.setQueryData(placeQueryKey(place.id), place);
@@ -35,16 +36,18 @@ function SavedPlaceListItem({ onDetailPrefetch, onOpenActions, place }: SavedPla
   const regionLabel = getPlaceRegionLabel(place.region_name, place.address);
 
   return (
-    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 py-1">
+    <div className="py-1">
       <ListRow
-        className="h-full w-auto min-w-0 px-3 py-2.5"
+        className="px-3 py-2.5"
         aria-label={`${place.name} 상세 보기`}
         nativeButton={false}
         render={
           <PressLink
+            {...longPress}
             href={href}
             onClick={cachePlace}
             onPointerDown={(event) => {
+              longPress.onPointerDown?.(event);
               if (event.button !== 0) return;
               onDetailPrefetch(place);
             }}
@@ -53,18 +56,22 @@ function SavedPlaceListItem({ onDetailPrefetch, onOpenActions, place }: SavedPla
         }
       >
         <ListRowTexts
-          className="[&>span:first-child]:text-base"
-          description={recordCount > 0 ? `${regionLabel} · 기록 ${recordCount}` : regionLabel}
+          className="[&>span:first-child]:font-bold [&>span:first-child]:text-base"
+          description={
+            <span className="flex items-center justify-between gap-2">
+              <span className="truncate">{regionLabel}</span>
+              {recordCount > 0 ? (
+                <span className="inline-flex shrink-0 items-center gap-0.5 tabular-nums">
+                  <NotepadIcon className="size-4" aria-hidden="true" />
+                  <span className="sr-only">기록</span>
+                  {recordCount}
+                </span>
+              ) : null}
+            </span>
+          }
           title={place.name}
         />
       </ListRow>
-      <IconButton
-        className="mr-1"
-        aria-label={`${place.name} 메뉴 열기`}
-        icon={DotsThreeVerticalIcon}
-        iconWeight="bold"
-        onClick={onOpenActions}
-      />
     </div>
   );
 }
@@ -114,7 +121,7 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
           <SavedPlaceListItem
             key={place.id}
             onDetailPrefetch={prefetchDetail}
-            onOpenActions={() => {
+            onLongPress={() => {
               setActionTarget(place);
               setActionOpen(true);
             }}

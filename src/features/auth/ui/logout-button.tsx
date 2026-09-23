@@ -29,7 +29,7 @@ export function LogoutButton() {
         size="large"
         onClick={() => setOpen(true)}
       >
-        <SignOutIcon aria-hidden="true" data-icon="inline-start" strokeWidth={2} />
+        <SignOutIcon aria-hidden="true" data-icon="inline-start" />
         로그아웃
       </Button>
       <ConfirmDialog

@@ -13,7 +13,6 @@ type MapControlsProps = {
 
 type MapControlButtonProps = Omit<LiquidGlassButtonProps, "aria-label" | "shape" | "title"> & { label: string };
 
-/** 지도 위 원형 유리 버튼. 이름을 보조기기용 이름과 툴팁에 함께 쓴다. */
 function MapControlButton({ label, ...props }: MapControlButtonProps) {
   return <LiquidGlassButton aria-label={label} shape="circle" title={label} {...props} />;
 }
@@ -22,7 +21,7 @@ export function MapControls({ viewport, currentLocation }: MapControlsProps) {
   return (
     <div
       className={cn(
-        "absolute top-[calc(56px+env(safe-area-inset-top)+var(--toolbar-height))] right-2 flex flex-col items-center gap-3",
+        "absolute top-[calc(var(--page-top)+var(--toolbar-height)+32px)] right-2 flex flex-col items-center gap-3",
         ICON_WEIGHT_MEDIUM,
       )}
       role="group"

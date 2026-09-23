@@ -30,7 +30,6 @@ type IconButtonProps = Omit<ComponentProps<typeof Button>, "aria-label" | "child
   "aria-label": string;
   icon: Icon;
   iconSize?: number;
-  iconStrokeWidth?: number;
   iconWeight?: IconWeight;
   size?: IconButtonSize;
   variant?: IconButtonVariant;
@@ -41,7 +40,6 @@ function IconButton({
   className,
   icon: Icon,
   iconSize,
-  iconStrokeWidth,
   iconWeight,
   size = "default",
   variant = "clear",
@@ -61,7 +59,6 @@ function IconButton({
       <Icon
         aria-hidden="true"
         size={resolvedIconSize}
-        strokeWidth={iconStrokeWidth}
         style={{ height: resolvedIconSize, width: resolvedIconSize }}
         weight={iconWeight}
       />

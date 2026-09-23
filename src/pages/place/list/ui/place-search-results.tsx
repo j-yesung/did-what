@@ -106,7 +106,11 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
                     }
                     type="button"
                   >
-                    <ListRowTexts description={place.address ?? "주소 정보 없음"} title={place.name} />
+                    <ListRowTexts
+                      className="[&>span:first-child]:font-bold"
+                      description={place.address ?? "주소 정보 없음"}
+                      title={place.name}
+                    />
                   </ListRow>
                 </li>
               );

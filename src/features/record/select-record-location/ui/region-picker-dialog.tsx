@@ -26,7 +26,7 @@ export function RegionPickerDialog({ disabled, onSelect, ...ariaProps }: RegionP
         disabled={disabled}
         render={<Button {...ariaProps} disabled={disabled} fullWidth size="large" type="button" variant="neutral" />}
       >
-        <PlusIcon aria-hidden="true" className="size-4" strokeWidth={2} />
+        <PlusIcon aria-hidden="true" className="size-4" />
         지역 추가
       </DrawerTrigger>
       <DrawerVirtualKeyboardProvider>

@@ -127,7 +127,6 @@ export function RecordLocationFields({
                     aria-label={`${region.label} 방문 지역에서 제거`}
                     icon={XIcon}
                     iconSize={14}
-                    iconStrokeWidth={2}
                     onClick={() => requestRemoveRegion(region)}
                     size="sm"
                     type="button"
@@ -169,7 +168,6 @@ export function RecordLocationFields({
                     aria-label={`${place.name} 방문 장소에서 제거`}
                     icon={XIcon}
                     iconSize={18}
-                    iconStrokeWidth={2}
                     onClick={() => removePlace(place.key)}
                     type="button"
                   />

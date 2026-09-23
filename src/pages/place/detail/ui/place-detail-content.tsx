@@ -51,7 +51,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
 
         {isPlacePending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
           <LoadErrorAlert
-            icon={<MapPinIcon strokeWidth={2} aria-hidden="true" />}
+            icon={<MapPinIcon aria-hidden="true" />}
             onRetry={
               placeQuery.isError || recordsQuery.isError
                 ? () => {

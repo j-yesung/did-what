@@ -48,7 +48,7 @@ export function MemberSetupForm() {
       <FieldGroup className="gap-7">
         {submit.data?.message || submit.isError ? (
           <Alert variant="destructive">
-            <WarningCircleIcon aria-hidden="true" strokeWidth={2} />
+            <WarningCircleIcon aria-hidden="true" />
             <AlertTitle>확인해 주세요</AlertTitle>
             <AlertDescription className="whitespace-pre-line">
               {submit.data?.message ?? "구성원을 등록하지 못했습니다.\n잠시 후 다시 시도해 주세요."}

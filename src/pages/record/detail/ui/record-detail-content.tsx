@@ -79,10 +79,10 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
         <PageHeader back="/records" />
 
         {recordMissing && !fromNotification ? (
-          <LoadErrorAlert icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />} title="기록을 찾을 수 없어요" />
+          <LoadErrorAlert icon={<NotePencilIcon aria-hidden="true" />} title="기록을 찾을 수 없어요" />
         ) : hasError ? (
           <LoadErrorAlert
-            icon={<NotePencilIcon strokeWidth={2} aria-hidden="true" />}
+            icon={<NotePencilIcon aria-hidden="true" />}
             onRetry={() => void recordQuery.refetch()}
             retrying={recordQuery.isFetching}
             title="기록을 불러오지 못했어요"

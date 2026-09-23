@@ -56,7 +56,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
               className="flex items-center gap-1.5 px-0.5 font-[650] text-muted-foreground text-xs"
               id="recent-region-quick-pick"
             >
-              <ClockCounterClockwiseIcon strokeWidth={2} className="size-3.5 text-foreground" aria-hidden="true" />
+              <ClockCounterClockwiseIcon className="size-3.5 text-foreground" aria-hidden="true" />
               최근 간 지역
             </h3>
             <ul className="flex flex-wrap gap-1.5">
@@ -92,7 +92,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
 
         {search.isError ? (
           <Alert variant="destructive">
-            <WarningCircleIcon strokeWidth={2} aria-hidden="true" />
+            <WarningCircleIcon aria-hidden="true" />
             <AlertDescription>{getErrorMessage(search.error)}</AlertDescription>
           </Alert>
         ) : null}

@@ -61,15 +61,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            render={
-              <IconButton
-                aria-label="닫기"
-                className="absolute top-2 right-2"
-                icon={XIcon}
-                iconStrokeWidth={2}
-                size="sm"
-              />
-            }
+            render={<IconButton aria-label="닫기" className="absolute top-2 right-2" icon={XIcon} size="sm" />}
           />
         )}
       </DialogPrimitive.Popup>
