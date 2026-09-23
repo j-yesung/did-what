@@ -53,7 +53,7 @@ function SavedPlaceListItem({ onDetailPrefetch, onOpenActions, place }: SavedPla
         }
       >
         <ListRowTexts
-          className="[&>span:first-child]:text-base"
+          className="[&>span:first-child]:font-bold [&>span:first-child]:text-base"
           description={recordCount > 0 ? `${regionLabel} · 기록 ${recordCount}` : regionLabel}
           title={place.name}
         />
