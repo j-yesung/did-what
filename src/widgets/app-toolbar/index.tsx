@@ -2,10 +2,10 @@
 
 import { usePathname } from "next/navigation";
 
+import { RecordCreateButton } from "@/entities/record";
 import { PressScale } from "@/shared/ui/press-scale";
+import { NotificationBell } from "@/widgets/app-toolbar/notification-bell";
 import { ToolbarViewToggle } from "@/widgets/app-toolbar/toolbar-view-toggle";
-import { NotificationBell } from "@/widgets/notification/notification-bell";
-import { RecordCreateButton } from "@/widgets/record-create-button";
 
 const TOOLBAR_ENTRY_PATHS = new Set(["/", "/regions", "/records", "/places", "/settings"]);
 

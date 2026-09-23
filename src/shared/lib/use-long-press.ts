@@ -6,7 +6,7 @@ const LONG_PRESS_MS = 300;
 
 const MOVE_THRESHOLD = 10;
 
-export const swallowNextClick = () => {
+const swallowNextClick = () => {
   const stop = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
@@ -21,7 +21,6 @@ export const swallowNextClick = () => {
  * 요소를 꾹 눌렀을 때 한 번 호출한다. 돌려받은 핸들러를 요소에 그대로 펼쳐 넣는다.
  *
  * 링크 위에서도 쓸 수 있도록 눌림이 끝난 뒤 따라오는 click을 막는다.
- * 눌림 표시(data-press)는 PressListener가 따로 처리하므로 여기서는 건드리지 않는다.
  */
 export const useLongPress = (onLongPress?: () => void) => {
   const timer = useRef<number | null>(null);

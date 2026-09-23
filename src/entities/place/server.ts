@@ -1,3 +1,3 @@
 import "server-only";
 
-export { findPlace, getSavedPlaces } from "./api/server-queries";
+export { getSavedPlaces } from "./api/server-queries";

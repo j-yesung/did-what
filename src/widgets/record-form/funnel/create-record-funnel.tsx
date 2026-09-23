@@ -41,7 +41,7 @@ import {
   type RecordCreateStepMap,
   toRecordCreateFormData,
   validateRecordCreateStep,
-} from "./create-record-funnel.model";
+} from "../model/create-record-funnel";
 import { RecordFunnelLayout } from "./funnel-layout";
 import { useRecordCreateNavigation } from "./use-record-create-navigation";
 

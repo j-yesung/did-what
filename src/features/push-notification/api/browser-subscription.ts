@@ -11,7 +11,7 @@ export const pushEndpointQueryOptions = queryOptions({
   queryFn: getPushEndpoint,
 });
 
-export type PushKeys = {
+type PushKeys = {
   auth: string;
   endpoint: string;
   p256dh: string;
@@ -44,20 +44,6 @@ export const isPushSupported = () => {
     "Notification" in window &&
     Boolean(VAPID_PUBLIC_KEY)
   );
-};
-
-/** 이미 구독된 기기의 정보만 읽는다. 서비스 워커를 새로 등록하지 않는다. */
-export const getCurrentPushKeys = async (): Promise<PushKeys | null> => {
-  if (!isPushSupported()) return null;
-
-  const registration = await navigator.serviceWorker.getRegistration();
-  const subscription = await registration?.pushManager.getSubscription();
-  if (!subscription) return null;
-
-  const { auth, p256dh } = subscription.toJSON().keys ?? {};
-  if (!auth || !p256dh) return null;
-
-  return { auth, endpoint: subscription.endpoint, p256dh };
 };
 
 /** 권한 요청은 사용자 제스처 안에서만 뜨므로 버튼 클릭에서 곧장 부른다. */

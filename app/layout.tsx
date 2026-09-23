@@ -6,7 +6,6 @@ import localFont from "next/font/local";
 import { getTheme } from "@/features/switch-theme/server";
 import { QueryProvider } from "@/shared/lib/react-query/query-provider";
 import { cn } from "@/shared/lib/utils";
-import { PressListener } from "@/shared/ui/press-listener";
 import { PreventForwardSwipe } from "@/shared/ui/prevent-forward-swipe";
 import { ToastProvider } from "@/shared/ui/toast-provider";
 
@@ -94,7 +93,6 @@ export default async function Layout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <QueryProvider>{children}</QueryProvider>
-        <PressListener />
         <PreventForwardSwipe />
         <ToastProvider />
       </body>
