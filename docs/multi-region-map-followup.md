@@ -23,12 +23,6 @@
 
 ## 2. 필요해질 때 할 것
 
-### 액션 시트 공용 컴포넌트 분리
-
-- 위치: [place-action-sheet.tsx](../src/pages/place/list/ui/place-action-sheet.tsx), [record-action-sheet.tsx](../src/pages/record/list/ui/record-action-sheet.tsx)
-- 현상: 두 액션 시트는 드로어 구조, 헤더 스타일, 버튼 배치가 같다. 시트를 여는 목록의 상태 관리(`actionTarget`, `actionOpen`)도 같다.
-- 조치: 세 번째 액션 시트가 생기면 `shared/ui/action-sheet.tsx`로 공통 구조를 빼고 제목·설명·버튼만 넘긴다.
-
 ### 지도 화면의 레이아웃 숫자
 
 - 위치: [home-content.tsx](../src/pages/home/ui/home-content.tsx), [map-controls.tsx](../src/widgets/region-activity-map/ui/map-controls.tsx), [(map)/layout.tsx](../app/%28app%29/%28map%29/layout.tsx)
