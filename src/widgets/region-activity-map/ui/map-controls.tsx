@@ -1,4 +1,4 @@
-import { ArrowsInSimpleIcon, CrosshairIcon } from "@phosphor-icons/react";
+import { ArrowsInSimpleIcon, GpsFixIcon } from "@phosphor-icons/react";
 
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
@@ -30,7 +30,7 @@ export function MapControls({ viewport, currentLocation }: MapControlsProps) {
           disabled={currentLocation.isPending}
           onClick={currentLocation.locate}
         >
-          <CrosshairIcon aria-hidden="true" weight="regular" />
+          <GpsFixIcon aria-hidden="true" weight="regular" />
         </LiquidGlassButton>
       </PressScale>
       <PressScale className="has-disabled:pointer-events-none">
