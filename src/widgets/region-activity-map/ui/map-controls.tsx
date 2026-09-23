@@ -1,9 +1,8 @@
-import { ArrowsInSimpleIcon, CrosshairIcon } from "@phosphor-icons/react";
+import { ArrowsInSimpleIcon, GpsFixIcon } from "@phosphor-icons/react";
 
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
-import { PressScale } from "@/shared/ui/press-scale";
+import { LiquidGlassButton, type LiquidGlassButtonProps } from "@/shared/ui/liquid-glass-button";
 import type { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 import type { useMapViewport } from "@/widgets/region-activity-map/model/use-map-viewport";
 
@@ -11,6 +10,13 @@ type MapControlsProps = {
   viewport: Pick<ReturnType<typeof useMapViewport>, "canZoomOut" | "reset">;
   currentLocation: ReturnType<typeof useCurrentMapLocation>;
 };
+
+type MapControlButtonProps = Omit<LiquidGlassButtonProps, "aria-label" | "shape" | "title"> & { label: string };
+
+/** 지도 위 원형 유리 버튼. 이름을 보조기기용 이름과 툴팁에 함께 쓴다. */
+function MapControlButton({ label, ...props }: MapControlButtonProps) {
+  return <LiquidGlassButton aria-label={label} shape="circle" title={label} {...props} />;
+}
 
 export function MapControls({ viewport, currentLocation }: MapControlsProps) {
   return (
@@ -22,28 +28,12 @@ export function MapControls({ viewport, currentLocation }: MapControlsProps) {
       role="group"
       aria-label="지도 조작"
     >
-      <PressScale className="has-disabled:pointer-events-none">
-        <LiquidGlassButton
-          aria-label="현재 위치로 이동"
-          title="현재 위치로 이동"
-          shape="circle"
-          disabled={currentLocation.isPending}
-          onClick={currentLocation.locate}
-        >
-          <CrosshairIcon aria-hidden="true" weight="regular" />
-        </LiquidGlassButton>
-      </PressScale>
-      <PressScale className="has-disabled:pointer-events-none">
-        <LiquidGlassButton
-          aria-label="전체 지도로 복귀"
-          title="전체 지도로 복귀"
-          shape="circle"
-          disabled={!viewport.canZoomOut}
-          onClick={viewport.reset}
-        >
-          <ArrowsInSimpleIcon aria-hidden="true" weight="regular" />
-        </LiquidGlassButton>
-      </PressScale>
+      <MapControlButton disabled={currentLocation.isPending} label="현재 위치로 이동" onClick={currentLocation.locate}>
+        <GpsFixIcon aria-hidden="true" />
+      </MapControlButton>
+      <MapControlButton disabled={!viewport.canZoomOut} label="전체 지도로 복귀" onClick={viewport.reset}>
+        <ArrowsInSimpleIcon aria-hidden="true" />
+      </MapControlButton>
       <span className="sr-only" role="status">
         {currentLocation.isPending
           ? "현재 위치를 확인하고 있어요."

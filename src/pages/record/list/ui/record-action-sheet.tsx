@@ -2,20 +2,9 @@
 
 import { useState } from "react";
 
-import {
-  formatRecordRegionLabels,
-  getRecordCategoryLabel,
-  getRecordWeatherLabel,
-  normalizeRecordCategory,
-  normalizeRecordWeather,
-  RECORD_CATEGORY_FILL,
-  type RecordSummary,
-  WeatherIcon,
-} from "@/entities/record";
+import { formatRecordRegionLabels, RecordBadges, type RecordSummary } from "@/entities/record";
 import { DeleteRecordConfirm } from "@/features/record/delete-record";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { PressLink } from "@/shared/ui/press-link";
@@ -26,26 +15,6 @@ type RecordActionSheetProps = {
   /** 닫히는 동안에도 내용이 남아 있어야 해서 닫은 뒤에도 비우지 않는다. */
   record: RecordSummary | null;
 };
-
-/** 카드와 같은 배지를 쓴다. 목록에서 보던 것과 같은 표시여야 무엇을 고른 건지 바로 이어진다. */
-function RecordBadges({ record }: { record: RecordSummary }) {
-  const category = normalizeRecordCategory(record.category);
-  const weather = normalizeRecordWeather(record.weather);
-
-  return (
-    <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
-      {category === "uncategorized" ? null : (
-        <Badge className={cn("rounded-full px-1.5 py-0.5 font-medium text-foreground", RECORD_CATEGORY_FILL[category])}>
-          {getRecordCategoryLabel(category)}
-        </Badge>
-      )}
-      <Badge className="gap-1 rounded-full px-1.5 py-0.5 font-medium" tone="neutral">
-        <WeatherIcon className="size-3.5" weather={weather} aria-hidden="true" />
-        {getRecordWeatherLabel(weather)}
-      </Badge>
-    </span>
-  );
-}
 
 /**
  * 목록에서 기록을 꾹 눌렀을 때 여는 동작 시트.
@@ -70,7 +39,9 @@ export function RecordActionSheet({ onOpenChange, open, record }: RecordActionSh
                   {[formatRecordPeriod(record.recorded_at, record.recorded_until), formatRecordRegionLabels(record)]
                     .filter(Boolean)
                     .join(" · ")}
-                  <RecordBadges record={record} />
+                  <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                    <RecordBadges record={record} />
+                  </span>
                 </>
               ) : null}
             </DrawerDescription>

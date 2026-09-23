@@ -311,18 +311,14 @@ const KOREA_MAP_BOUNDS = getBounds(BOUNDARIES.map(({ geometry }) => geometry));
 const REGION_MAP_GRIDS = new Map(REGIONS.map(({ code }) => [code, generateRegionCells(code)]));
 
 export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation, "latitude" | "longitude">) => {
-  const { minLongitude, maxLongitude, minLatitude, maxLatitude } = KOREA_MAP_BOUNDS;
   if (
     !Number.isFinite(latitude) ||
     !Number.isFinite(longitude) ||
-    longitude < minLongitude ||
-    longitude > maxLongitude ||
-    latitude < minLatitude ||
-    latitude > maxLatitude ||
     !BOUNDARIES.some(({ geometry }) => containsPoint(geometry, [longitude, latitude]))
   )
     return null;
 
+  const { minLongitude, maxLongitude, maxLatitude } = KOREA_MAP_BOUNDS;
   const step = ((maxLongitude - minLongitude) * LONGITUDE_SCALE) / GRID_COLUMNS;
   // 셀의 지리 좌표는 중심이며, SVG 사각형 사이의 여백 절반을 보정한다.
   return {

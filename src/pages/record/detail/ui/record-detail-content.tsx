@@ -7,25 +7,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import {
-  getRecordCategoryLabel,
-  getRecordWeatherLabel,
-  normalizeRecordCategory,
-  normalizeRecordWeather,
-  RECORD_CATEGORY_FILL,
+  formatRecordRegionLabels,
+  RecordBadges,
   type RecordSummary,
   recordDetailQueryOptions,
   recordPlacesQueryOptions,
   recordSummaryQueryKey,
-  WeatherIcon,
 } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
-import { HOME_HISTORY_GUARD } from "@/shared/lib/navigation/home-history-guard";
-import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 import { showToast } from "@/shared/lib/toast";
-import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -38,7 +30,6 @@ type RecordDetailContentProps = {
 export function RecordDetailContent({ member, recordId }: RecordDetailContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const seededNotificationHistory = useRef(false);
   const redirectedMissingRecord = useRef(false);
   const queryClient = useQueryClient();
   const fromNotification = searchParams?.get("from") === "notification";
@@ -56,13 +47,16 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
     enabled: hasCachedSummary,
   });
   const record = recordQuery.data ?? cachedSummary;
-  // 목록 캐시에는 지역 이름표만 들어 있어 상세를 받기 전에는 대표 지역만 보여준다.
-  const regions = recordQuery.data?.record_regions ?? recordPlacesQuery.data?.record_regions ?? [];
-  const regionText = regions.length
-    ? regions.map(({ region_label: label }) => label).join(" · ")
-    : (record?.region_label ?? "");
-  const category = normalizeRecordCategory(record?.category ?? "");
-  const weather = normalizeRecordWeather(record?.weather ?? "");
+  // 상세 응답이 오기 전에는 목록에서 넘겨받은 요약의 방문 지역으로 먼저 그린다.
+  const regionText = formatRecordRegionLabels(
+    {
+      record_regions:
+        recordQuery.data?.record_regions ?? recordPlacesQuery.data?.record_regions ?? cachedSummary?.record_regions,
+      region_code: record?.region_code,
+      region_label: record?.region_label,
+    },
+    Number.POSITIVE_INFINITY,
+  );
   const recordPlaces = recordQuery.data?.record_places ?? recordPlacesQuery.data?.record_places;
   const hasError = !hasCachedSummary && recordQuery.isError;
   const placesError = hasCachedSummary && recordPlacesQuery.isError;
@@ -72,24 +66,11 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
     : recordQuery.isSuccess && !recordQuery.data;
 
   useEffect(() => {
-    if (!fromNotification || canGoBack()) return;
-
-    const detailHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    const state = window.history.state;
-    window.history.replaceState(state, "", "/");
-    window.history.pushState({ ...state, [HOME_HISTORY_GUARD]: true }, "", "/");
-    window.history.pushState(state, "", "/records");
-    window.history.pushState(state, "", detailHref);
-    seededNotificationHistory.current = true;
-  }, [fromNotification]);
-
-  useEffect(() => {
     if (!fromNotification || !recordMissing || redirectedMissingRecord.current) return;
 
     redirectedMissingRecord.current = true;
     showToast({ title: "기록이 삭제됐어요", variant: "warning" });
-    if (seededNotificationHistory.current) router.back();
-    else router.replace("/records");
+    router.replace("/records");
   }, [fromNotification, recordMissing, router]);
 
   return (
@@ -122,20 +103,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
                     .join(" · ")}
                 </p>
                 <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                  {category === "uncategorized" ? null : (
-                    <Badge
-                      className={cn(
-                        "rounded-full px-2 py-1 font-medium text-foreground",
-                        RECORD_CATEGORY_FILL[category],
-                      )}
-                    >
-                      {getRecordCategoryLabel(category)}
-                    </Badge>
-                  )}
-                  <Badge className="gap-1 rounded-full px-2 py-1 font-medium" tone="neutral">
-                    <WeatherIcon weather={weather} className="size-3.5" aria-hidden="true" />
-                    {getRecordWeatherLabel(weather)}
-                  </Badge>
+                  <RecordBadges className="px-2 py-1" record={record} />
                 </div>
               </section>
 

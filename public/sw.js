@@ -29,11 +29,14 @@ self.addEventListener("notificationclick", (event) => {
       const windows = await self.clients.matchAll({ includeUncontrolled: true, type: "window" });
       const opened = windows.find((client) => "focus" in client);
 
-      /* 이미 앱이 떠 있으면 그 창을 재사용한다. navigate는 iOS에서 없을 수 있어 실패해도 무시한다. */
+      /* 이미 앱이 떠 있으면 그 창을 재사용한다. 포커스나 이동이 실패하면(iOS처럼 navigate가 없으면 포함) 새 창으로 연다. */
       if (opened) {
-        await opened.focus();
-        await opened.navigate?.(url).catch(() => {});
-        return;
+        try {
+          await opened.focus();
+          if (await opened.navigate?.(url)) return;
+        } catch {
+          // 아래에서 새 창으로 연다.
+        }
       }
 
       await self.clients.openWindow(url);

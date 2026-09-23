@@ -30,7 +30,13 @@ const AUTH_MODE_CONFIG = {
   },
 } as const;
 
-export function AuthForm({ mode }: { mode: "login" | "signup" }) {
+type AuthFormProps = {
+  mode: "login" | "signup";
+  /** 로그인 뒤 돌아갈 주소. 로그인 화면으로 보낸 쪽이 쿼리로 넘긴다. */
+  returnTo?: string;
+};
+
+export function AuthForm({ mode, returnTo }: AuthFormProps) {
   const isSignup = mode === "signup";
   const config = AUTH_MODE_CONFIG[mode];
 
@@ -68,6 +74,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
                   </Alert>
                 ) : null}
 
+                {returnTo ? <input name="returnTo" type="hidden" value={returnTo} /> : null}
                 <EmailField error={state.fieldErrors?.email} />
                 <PasswordField error={state.fieldErrors?.password} isSignup={isSignup} />
                 {isSignup ? <PasswordConfirmField error={state.fieldErrors?.passwordConfirm} /> : null}

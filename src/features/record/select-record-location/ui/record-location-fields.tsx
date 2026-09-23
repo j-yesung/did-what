@@ -6,6 +6,7 @@ import { XIcon } from "@phosphor-icons/react";
 
 import type { PlaceOption } from "@/entities/place";
 import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record";
+import { showToast } from "@/shared/lib/toast";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
@@ -60,8 +61,15 @@ export function RecordLocationFields({
     if (!nextAdditions.length) return;
 
     const nextPlaces = [...places, ...nextAdditions];
-    // 장소가 데려오는 지역까지 더해도 상한을 넘지 않아야 한다.
-    if (toVisitedRegions(regions, nextPlaces).length > MAX_VISITED_REGIONS) return;
+    // 장소가 데려오는 지역까지 더해도 상한을 넘지 않아야 한다. 드로어는 이미 닫히므로 이유를 알린다.
+    if (toVisitedRegions(regions, nextPlaces).length > MAX_VISITED_REGIONS) {
+      showToast({
+        description: "장소를 담으면 그 장소의 지역도 함께 담겨요.",
+        title: `방문 지역은 ${MAX_VISITED_REGIONS}곳까지 담을 수 있어요.`,
+        variant: "warning",
+      });
+      return;
+    }
 
     apply(regions, nextPlaces);
   };

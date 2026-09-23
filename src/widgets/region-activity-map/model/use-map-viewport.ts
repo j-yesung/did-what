@@ -68,19 +68,13 @@ export const useMapViewport = (map: MapSize) => {
   const width = map.width / view.zoom;
   const height = map.height / view.zoom;
 
-  const panBy = (dx: number, dy: number) => {
-    setView((previous) => {
-      const next = constrainMapView(map, { ...previous, x: previous.x + dx, y: previous.y + dy });
-      viewRef.current = next;
-      return next;
-    });
-  };
-
-  const focusOn = (position: { x: number; y: number }) => {
-    const next = focusMapView(map, position);
+  // 포인터 처리기는 다음 렌더를 기다리지 않고 방금 바꾼 시점을 읽어야 해서 ref도 함께 바꾼다.
+  const commit = (next: MapView) => {
     viewRef.current = next;
     setView(next);
   };
+
+  const focusOn = (position: MapPosition) => commit(focusMapView(map, position));
 
   const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -95,9 +89,10 @@ export const useMapViewport = (map: MapSize) => {
       const center = getCenter(points);
       const startDistance = getDistance(points);
       if (startDistance === 0) return;
+      const inverseMatrix = matrix.inverse();
       pinch.current = {
-        anchor: toMapPosition(center, matrix.inverse()),
-        inverseMatrix: matrix.inverse(),
+        anchor: toMapPosition(center, inverseMatrix),
+        inverseMatrix,
         startDistance,
         startView: viewRef.current,
       };
@@ -114,15 +109,15 @@ export const useMapViewport = (map: MapSize) => {
 
     if (pointers.current.size >= 2 && pinch.current) {
       const points = [...pointers.current.values()].slice(0, 2);
-      const next = pinchMapView(
-        map,
-        pinch.current.startView,
-        pinch.current.anchor,
-        toMapPosition(getCenter(points), pinch.current.inverseMatrix),
-        getDistance(points) / pinch.current.startDistance,
+      commit(
+        pinchMapView(
+          map,
+          pinch.current.startView,
+          pinch.current.anchor,
+          toMapPosition(getCenter(points), pinch.current.inverseMatrix),
+          getDistance(points) / pinch.current.startDistance,
+        ),
       );
-      viewRef.current = next;
-      setView(next);
       return;
     }
 
@@ -133,7 +128,8 @@ export const useMapViewport = (map: MapSize) => {
     const dx = (event.clientX - previous.clientX) / matrix.a;
     const dy = (event.clientY - previous.clientY) / matrix.d;
     drag.current = { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY };
-    panBy(-dx, -dy);
+    const current = viewRef.current;
+    commit(constrainMapView(map, { ...current, x: current.x - dx, y: current.y - dy }));
   };
 
   const endPointer = (event: PointerEvent<SVGSVGElement>) => {
@@ -144,10 +140,7 @@ export const useMapViewport = (map: MapSize) => {
     drag.current = remainingPointer ? { pointerId: remainingPointer[0], ...remainingPointer[1] } : null;
   };
 
-  const reset = () => {
-    viewRef.current = INITIAL_MAP_VIEW;
-    setView(INITIAL_MAP_VIEW);
-  };
+  const reset = () => commit(INITIAL_MAP_VIEW);
 
   return {
     zoom: view.zoom,

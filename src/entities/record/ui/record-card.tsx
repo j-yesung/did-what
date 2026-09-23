@@ -7,16 +7,13 @@ import { useRouter } from "next/navigation";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { useLongPress } from "@/shared/lib/use-long-press";
 import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
-import { getRecordCategoryLabel, normalizeRecordCategory, RECORD_CATEGORY_FILL } from "../model/category";
 import { formatRecordRegionLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
-import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
-import { WeatherIcon } from "./weather-icon";
+import { RecordBadges } from "./record-badges";
 
 type RecordCardProps = {
   isLast: boolean;
@@ -33,9 +30,6 @@ export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, star
   const router = useRouter();
   const longPress = useLongPress(onLongPress);
   const queryClient = useQueryClient();
-  const category = normalizeRecordCategory(record.category);
-  const normalizedWeather = normalizeRecordWeather(record.weather);
-  const weatherLabel = getRecordWeatherLabel(normalizedWeather);
   const href = `/records/${record.id}`;
   const commentCount = record.record_comments?.[0]?.count ?? 0;
   const regionLabels = formatRecordRegionLabels(record);
@@ -108,20 +102,7 @@ export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, star
                   </span>
                 </>
               ) : null}
-              {category === "uncategorized" ? null : (
-                <Badge
-                  className={cn(
-                    "rounded-full px-1.5 py-0.5 font-medium text-foreground",
-                    RECORD_CATEGORY_FILL[category],
-                  )}
-                >
-                  {getRecordCategoryLabel(category)}
-                </Badge>
-              )}
-              <Badge className="gap-1 rounded-full px-1.5 py-0.5 font-medium" tone="neutral">
-                <WeatherIcon weather={normalizedWeather} className="size-3.5" aria-hidden="true" />
-                {weatherLabel}
-              </Badge>
+              <RecordBadges record={record} />
             </span>
             {commentCount > 0 ? (
               <span className="inline-flex shrink-0 items-center gap-0.5 tabular-nums">

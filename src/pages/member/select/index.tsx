@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getAccountMembers, getCurrentMemberId } from "@/entities/member/server";
 import { MemberSelect } from "@/features/member/select-member";
 import { requireUser } from "@/shared/api/supabase/require-user";
+import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { ListHeader } from "@/shared/ui/list-header";
 
@@ -16,7 +17,7 @@ export async function MemberSelectPage({ searchParams }: MemberSelectPageProps) 
   if (!members.length) redirect("/members/setup");
 
   const currentMemberId = await getCurrentMemberId();
-  const destination = returnTo === "/settings" ? "/settings" : "/";
+  const destination = toSafeReturnTo(returnTo);
 
   return (
     <PageShell className="gap-8">

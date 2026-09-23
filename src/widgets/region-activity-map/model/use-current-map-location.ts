@@ -32,9 +32,9 @@ export const useCurrentMapLocation = (onLocate: (position: MapPosition) => void)
         setIsPending(false);
         showToast({
           title:
-            error.code === 1
+            error.code === error.PERMISSION_DENIED
               ? "현재 위치를 보려면 브라우저 설정에서 위치 권한을 허용해 주세요."
-              : error.code === 3
+              : error.code === error.TIMEOUT
                 ? "위치를 확인하는 데 시간이 오래 걸려요. 다시 시도해 주세요."
                 : "현재 위치를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.",
           variant: "warning",

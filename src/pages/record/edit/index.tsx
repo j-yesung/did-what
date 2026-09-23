@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 
-import { normalizeRecordCategory, normalizeRecordWeather } from "@/entities/record";
+import { normalizeRecordCategory, normalizeRecordWeather, sortPrimaryRegionFirst } from "@/entities/record";
 import { getRecord } from "@/entities/record/server";
 import { updateRecord } from "@/features/record/edit-record/api/update-record";
+import { toExistingRecordLocationPlace, toShortRegionName } from "@/features/record/select-record-location";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
@@ -58,30 +59,20 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
               activity: record.activity,
               category: normalizeRecordCategory(record.category),
               memo: record.memo ?? "",
-              places: record.record_places.map(({ place }) => {
-                const fullName = place.region_name ?? "";
-                const name = fullName.split(" ").pop() ?? fullName;
-
-                return {
-                  address: place.address,
-                  key: `existing:${place.id}`,
-                  name: place.name,
-                  reference: { kind: "existing" as const, placeId: place.id, save: false },
-                  region: {
-                    code: place.region_code,
-                    fullName,
-                    label: name,
-                    latitude: place.latitude,
-                    longitude: place.longitude,
-                    name,
-                  },
-                };
-              }),
+              /**
+               * 저장하면 첫 방문 지역이 대표 지역이 된다. 지금 대표 지역의 장소와 지역을 앞에 둬야
+               * 지역을 건드리지 않고 저장했을 때 대표 지역이 바뀌지 않는다.
+               */
+              places: sortPrimaryRegionFirst(
+                record.record_places,
+                record.region_code,
+                ({ place }) => place.region_code,
+              ).map(({ place }) => toExistingRecordLocationPlace(place)),
               recordedAt: record.recorded_at,
               recordedUntil: record.recorded_until,
               weather: normalizeRecordWeather(record.weather),
               // 장소에서 따라온 지역은 장소가 다시 데려오므로, 직접 고른 지역만 되살린다.
-              regions: record.record_regions
+              regions: sortPrimaryRegionFirst(record.record_regions, record.region_code, (region) => region.region_code)
                 .filter(({ selected_directly: selectedDirectly }) => selectedDirectly)
                 .map((region) => ({
                   code: region.region_code,
@@ -89,7 +80,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
                   label: region.region_label,
                   latitude: region.region_latitude,
                   longitude: region.region_longitude,
-                  name: region.region_name.split(" ").pop() ?? region.region_name,
+                  name: toShortRegionName(region.region_name),
                 })),
             }}
             returnTo={`/records/${recordId}`}

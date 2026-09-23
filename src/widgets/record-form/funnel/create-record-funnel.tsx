@@ -49,10 +49,8 @@ const FUNNEL_ID = "record-create";
 
 type RecordCreateFunnelProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
-  defaultLocation?: {
-    place: RecordLocationPlace;
-    region: RecordLocationRegion;
-  };
+  /** 장소 상세에서 시작하면 그 장소를 미리 담는다. 지역은 장소가 데려온다. */
+  defaultPlace?: RecordLocationPlace;
   defaultRecordedAt: string;
   returnTo: string;
   savedTo: string;
@@ -87,7 +85,7 @@ export function RecordCreateFunnel(props: RecordCreateFunnelProps) {
 
 function RecordCreateFunnelClient({
   action,
-  defaultLocation,
+  defaultPlace,
   defaultRecordedAt,
   returnTo,
   savedTo,
@@ -99,7 +97,7 @@ function RecordCreateFunnelClient({
         category: DEFAULT_RECORD_CATEGORY,
         dirty: false,
         memo: "",
-        places: defaultLocation ? [defaultLocation.place] : [],
+        places: defaultPlace ? [defaultPlace] : [],
         recordedAt: defaultRecordedAt,
         recordedUntil: defaultRecordedAt,
         regions: [],
@@ -107,7 +105,7 @@ function RecordCreateFunnelClient({
       } satisfies RecordCreateContext,
       step: "when" as const,
     }),
-    [defaultLocation, defaultRecordedAt],
+    [defaultPlace, defaultRecordedAt],
   );
   const funnel = useFunnel<RecordCreateStepMap>({ id: FUNNEL_ID, initial });
   const [draft, setDraft] = useState<RecordCreateContext>(() => funnel.context);

@@ -30,7 +30,6 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
-import { PressScale } from "@/shared/ui/press-scale";
 import { Separator } from "@/shared/ui/separator";
 import { Spinner } from "@/shared/ui/spinner";
 import { RecordCreateButton } from "@/widgets/record-create-button";
@@ -63,11 +62,7 @@ function RecordDayCreateButton({ date }: { date: string }) {
     window.history.replaceState(window.history.state, "", getCalendarHref(date.slice(0, 7)));
   };
 
-  return (
-    <PressScale className="pointer-events-auto inline-flex">
-      <RecordCreateButton className="size-14" href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} />
-    </PressScale>
-  );
+  return <RecordCreateButton className="size-14" href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} />;
 }
 
 function RecordDeleteButton({
@@ -80,16 +75,14 @@ function RecordDeleteButton({
   record: RecordSummary;
 }) {
   return (
-    <PressScale className="pointer-events-auto inline-flex">
-      <LiquidGlassButton
-        aria-label={`${record.activity} 삭제`}
-        className={cn("size-10 shrink-0 text-destructive [&_svg]:size-5", className)}
-        onClick={onClick}
-        shape="circle"
-      >
-        <TrashIcon aria-hidden="true" weight="bold" />
-      </LiquidGlassButton>
-    </PressScale>
+    <LiquidGlassButton
+      aria-label={`${record.activity} 삭제`}
+      className={cn("size-10 shrink-0 text-destructive [&_svg]:size-5", className)}
+      onClick={onClick}
+      shape="circle"
+    >
+      <TrashIcon aria-hidden="true" weight="bold" />
+    </LiquidGlassButton>
   );
 }
 
