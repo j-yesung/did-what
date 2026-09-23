@@ -17,7 +17,7 @@ import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
 import { formatDate } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
-import { buttonVariants } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -73,13 +73,16 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
               <p className="mt-2 text-muted-foreground text-xs">
                 {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
               </p>
-              <PressLink
-                className={cn(buttonVariants({ fullWidth: true, size: "xlarge" }), "mt-5")}
-                href={`/records/new?placeId=${place.id}`}
+              <Button
+                className="mt-5"
+                fullWidth
+                nativeButton={false}
+                render={<PressLink href={`/records/new?placeId=${place.id}`} />}
+                size="xlarge"
               >
                 <NotePencilRoundedIcon aria-hidden="true" className="size-6" data-icon="inline-start" />
                 이곳에서 기록하기
-              </PressLink>
+              </Button>
             </section>
 
             {recordsQuery.isPending ? null : records.length ? (
@@ -97,7 +100,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                   return (
                     <Fragment key={record.id}>
                       {startsMonth ? (
-                        <p className={cn("px-1 pb-2 font-bold text-lg tracking-[-0.025em]", index > 0 && "mt-6")}>
+                        <p className={cn("px-1 pb-2 font-bold text-lg tracking-tight", index > 0 && "mt-6")}>
                           {formatRecordTimelineMonth(record.recorded_at)}
                         </p>
                       ) : null}

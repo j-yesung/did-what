@@ -45,12 +45,6 @@
 
 ## 3. 코드 전체 규칙으로 따로 정할 것
 
-### 링크 버튼 방식 통일
-
-- 위치: [place-detail-content.tsx](../src/pages/place/detail/ui/place-detail-content.tsx), [place-action-sheet.tsx](../src/pages/place/list/ui/place-action-sheet.tsx)
-- 현상: 장소 상세는 `PressLink`에 `buttonVariants` 클래스를 입히고, 장소 액션 시트는 `Button`의 `render`로 `PressLink`를 넣는다. 코드베이스 전체에도 두 방식이 섞여 있다.
-- 조치: 한 방식으로 정하고 [convention.md](./convention.md)에 적는다.
-
 ### 아이콘의 `strokeWidth` 속성
 
 - 위치: `PlusIcon`, `XIcon` 등 Phosphor 아이콘에 `strokeWidth={2}`를 넘기는 곳
