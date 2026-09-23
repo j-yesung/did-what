@@ -46,7 +46,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
 
         {recordsQuery.isError || locationsQuery.isError ? (
           <LoadErrorAlert
-            icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
+            icon={<MapTrifoldIcon aria-hidden="true" />}
             onRetry={() => {
               if (recordsQuery.isError) void recordsQuery.refetch();
               if (locationsQuery.isError) void locationsQuery.refetch();
@@ -82,7 +82,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
               <RecordTimeline aria-labelledby="region-records-title" className="gap-0">
                 <div className="mb-2 flex items-center justify-between gap-3 px-1">
                   <h2 className="flex items-center gap-2 font-bold" id="region-records-title">
-                    <NotePencilIcon strokeWidth={2} className="size-5 text-foreground" aria-hidden="true" />
+                    <NotePencilIcon className="size-5 text-foreground" aria-hidden="true" />
                     <span>이 지역의 기록</span>
                   </h2>
                   <p className="text-muted-foreground text-xs">{records.length}개</p>

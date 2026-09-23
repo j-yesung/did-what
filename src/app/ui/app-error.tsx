@@ -13,7 +13,7 @@ export function AppError({ reset }: { error: Error & { digest?: string }; reset:
       <Empty>
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <WarningCircleIcon strokeWidth={2} aria-hidden="true" />
+            <WarningCircleIcon aria-hidden="true" />
           </EmptyMedia>
           <EmptyTitle>화면을 불러오지 못했어요</EmptyTitle>
           <EmptyDescription>잠시 후 다시 시도하거나 지도로 돌아가 주세요.</EmptyDescription>

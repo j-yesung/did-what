@@ -27,7 +27,7 @@ export function RegionsContent() {
 
       {recordsQuery.isError ? (
         <LoadErrorAlert
-          icon={<MapTrifoldIcon strokeWidth={2} aria-hidden="true" />}
+          icon={<MapTrifoldIcon aria-hidden="true" />}
           onRetry={() => void recordsQuery.refetch()}
           retrying={recordsQuery.isFetching}
           title="지역별 발자취를 불러오지 못했어요"

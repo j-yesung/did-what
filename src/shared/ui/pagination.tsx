@@ -58,7 +58,7 @@ function PaginationPrevious({
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
   return (
     <PaginationLink aria-label="이전 페이지" size="small" className={cn("pl-1.5!", className)} {...props}>
-      <CaretLeftIcon strokeWidth={2} data-icon="inline-start" />
+      <CaretLeftIcon data-icon="inline-start" />
       <span className="hidden sm:block">{text}</span>
     </PaginationLink>
   );
@@ -72,7 +72,7 @@ function PaginationNext({
   return (
     <PaginationLink aria-label="다음 페이지" size="small" className={cn("pr-1.5!", className)} {...props}>
       <span className="hidden sm:block">{text}</span>
-      <CaretRightIcon strokeWidth={2} data-icon="inline-end" />
+      <CaretRightIcon data-icon="inline-end" />
     </PaginationLink>
   );
 }
@@ -85,7 +85,7 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
       className={cn("flex size-8 items-center justify-center [&_svg:not([class*='size-'])]:size-4", className)}
       {...props}
     >
-      <DotsThreeOutlineIcon strokeWidth={2} />
+      <DotsThreeOutlineIcon />
       <span className="sr-only">더 많은 페이지</span>
     </span>
   );

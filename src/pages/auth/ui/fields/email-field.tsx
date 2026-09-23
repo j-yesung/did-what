@@ -35,7 +35,6 @@ export function EmailField({ error }: EmailFieldProps) {
               aria-label="이메일 지우기"
               icon={XCircleIcon}
               iconSize={18}
-              iconStrokeWidth={2}
               iconWeight="fill"
               onClick={() => {
                 if (emailInputRef.current) {

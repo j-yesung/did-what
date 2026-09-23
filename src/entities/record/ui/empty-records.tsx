@@ -16,7 +16,7 @@ export function EmptyRecords({ description, title }: EmptyRecordsProps) {
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <NotePencilIcon strokeWidth={2} aria-hidden="true" />
+          <NotePencilIcon aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>{title}</EmptyTitle>
         {description && <EmptyDescription>{description}</EmptyDescription>}

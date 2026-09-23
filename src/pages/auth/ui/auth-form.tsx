@@ -65,9 +65,9 @@ export function AuthForm({ mode, returnTo }: AuthFormProps) {
                 {state.message ? (
                   <Alert variant={state.status === "error" ? "destructive" : "default"}>
                     {state.status === "error" ? (
-                      <WarningCircleIcon strokeWidth={2} aria-hidden="true" />
+                      <WarningCircleIcon aria-hidden="true" />
                     ) : (
-                      <EnvelopeSimpleOpenIcon strokeWidth={2} aria-hidden="true" />
+                      <EnvelopeSimpleOpenIcon aria-hidden="true" />
                     )}
                     <AlertTitle>{state.status === "error" ? "확인해 주세요" : "메일을 확인해 주세요"}</AlertTitle>
                     <AlertDescription>{state.message}</AlertDescription>

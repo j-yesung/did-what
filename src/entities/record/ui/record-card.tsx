@@ -88,7 +88,7 @@ export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, star
         <span className="min-w-0">
           <h3 className="flex min-w-0 items-center justify-between gap-2 font-bold text-base leading-snug tracking-[-0.02em]">
             <span className="line-clamp-2 min-w-0 flex-1">{record.activity}</span>
-            <CaretRightIcon className="shrink-0 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
+            <CaretRightIcon className="shrink-0 text-muted-foreground" aria-hidden="true" />
           </h3>
           <span className="mt-1.5 flex min-w-0 items-center justify-between gap-2 text-muted-foreground text-xs">
             <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">

@@ -20,7 +20,7 @@ type LoadErrorAlertProps = {
 export function LoadErrorAlert({ icon, onRetry, retrying, title }: LoadErrorAlertProps) {
   return (
     <Alert className="has-data-[slot=alert-action]:pr-24" variant="destructive">
-      {icon ?? <WarningCircleIcon strokeWidth={2} aria-hidden="true" />}
+      {icon ?? <WarningCircleIcon aria-hidden="true" />}
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>
         {onRetry ? "연결을 확인하고 다시 시도해 주세요." : "잠시 후 다시 시도해 주세요."}

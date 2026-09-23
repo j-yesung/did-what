@@ -40,7 +40,6 @@ function SearchField({
       <MagnifyingGlassIcon
         aria-hidden="true"
         className="pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 text-muted-foreground"
-        strokeWidth={2}
       />
       <Input
         {...props}
@@ -62,7 +61,6 @@ function SearchField({
           className="absolute top-1/2 right-2 -translate-y-1/2"
           icon={XCircleIcon}
           iconSize={18}
-          iconStrokeWidth={2}
           iconWeight="fill"
           onClick={() => {
             onValueChange("");

@@ -147,7 +147,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
 
         {search.isError || selectionError ? (
           <Alert variant="destructive">
-            <WarningCircleIcon strokeWidth={2} aria-hidden="true" />
+            <WarningCircleIcon aria-hidden="true" />
             <AlertDescription>{selectionError ?? getErrorMessage(search.error)}</AlertDescription>
           </Alert>
         ) : null}

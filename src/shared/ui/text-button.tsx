@@ -48,7 +48,7 @@ function TextButton({ children, className, size, tone, variant = "clear", ...pro
       {...props}
     >
       {children}
-      {variant === "arrow" ? <CaretRightIcon strokeWidth={2} aria-hidden="true" /> : null}
+      {variant === "arrow" ? <CaretRightIcon aria-hidden="true" /> : null}
     </ButtonPrimitive>
   );
 }
