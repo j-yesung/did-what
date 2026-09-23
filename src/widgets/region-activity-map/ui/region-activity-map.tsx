@@ -73,7 +73,7 @@ export function RegionActivityMap({ records }: { records: RecordLocation[] }) {
               cx={currentLocation.position.x}
               cy={currentLocation.position.y}
               r={10 / viewport.zoom}
-              className="fill-primary/15"
+              className="map-location-pulse fill-primary/20"
             />
             <circle
               cx={currentLocation.position.x}

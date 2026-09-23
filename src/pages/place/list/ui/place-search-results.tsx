@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 
 import { type PlaceSearchResult, placesQueryOptions, type SavedPlaceRow, searchPlaces } from "@/entities/place";
@@ -27,6 +28,8 @@ type PlaceSearchResultsProps = {
 
 export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceSearchResultsProps) {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
+  const hiddenTransform = reduceMotion ? "translateY(0)" : "translateY(12px)";
 
   const savedPlacesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
   const resultsQuery = useInfiniteQuery({
@@ -135,20 +138,33 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
         />
       ) : null}
 
-      {hasSelectedPlaces ? (
-        <div className="fixed inset-x-0 bottom-(--nav-clearance) z-10 mx-auto w-full max-w-(--app-width) px-4">
-          <PlaceSearchSaveButton
-            onSaved={(savedPlaceIds) =>
-              setSelectedPlaces((current) => {
-                const next = new Map(current);
-                for (const placeId of savedPlaceIds) next.delete(placeId);
-                return next;
-              })
-            }
-            selections={[...selectedPlaces.values()].map(({ page, placeId, query }) => ({ page, placeId, query }))}
-          />
-        </div>
-      ) : null}
+      <AnimatePresence initial={false}>
+        {hasSelectedPlaces ? (
+          <motion.div
+            animate={{ opacity: 1, transform: "translateY(0)" }}
+            className="fixed inset-x-0 bottom-(--nav-clearance) z-10 mx-auto w-full max-w-(--app-width) px-4"
+            exit={{
+              opacity: 0,
+              pointerEvents: "none",
+              transform: hiddenTransform,
+              transition: { duration: reduceMotion ? 0.1 : 0.14, ease: [0.23, 1, 0.32, 1] },
+            }}
+            initial={{ opacity: 0, transform: hiddenTransform }}
+            transition={{ duration: reduceMotion ? 0.1 : 0.18, ease: [0.23, 1, 0.32, 1] }}
+          >
+            <PlaceSearchSaveButton
+              onSaved={(savedPlaceIds) =>
+                setSelectedPlaces((current) => {
+                  const next = new Map(current);
+                  for (const placeId of savedPlaceIds) next.delete(placeId);
+                  return next;
+                })
+              }
+              selections={[...selectedPlaces.values()].map(({ page, placeId, query }) => ({ page, placeId, query }))}
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </section>
   );
 }
