@@ -7,7 +7,7 @@ import type { useCurrentMapLocation } from "@/widgets/region-activity-map/model/
 import type { useMapViewport } from "@/widgets/region-activity-map/model/use-map-viewport";
 
 type MapControlsProps = {
-  viewport: Pick<ReturnType<typeof useMapViewport>, "canZoomOut" | "reset">;
+  viewport: Pick<ReturnType<typeof useMapViewport>, "canReset" | "reset">;
   currentLocation: ReturnType<typeof useCurrentMapLocation>;
 };
 
@@ -30,7 +30,7 @@ export function MapControls({ viewport, currentLocation }: MapControlsProps) {
       <MapControlButton disabled={currentLocation.isPending} label="현재 위치로 이동" onClick={currentLocation.locate}>
         <GpsFixIcon aria-hidden="true" />
       </MapControlButton>
-      <MapControlButton disabled={!viewport.canZoomOut} label="전체 지도로 복귀" onClick={viewport.reset}>
+      <MapControlButton disabled={!viewport.canReset} label="처음 지도로 복귀" onClick={viewport.reset}>
         <ArrowsInSimpleIcon aria-hidden="true" />
       </MapControlButton>
       <span className="sr-only" role="status">
