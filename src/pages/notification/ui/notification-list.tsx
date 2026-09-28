@@ -74,6 +74,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
 
   return (
     <PageShell className="gap-6">
+      <h1 className="sr-only">알림</h1>
       <PageHeader
         action={
           unreadCount > 0 ? (
@@ -90,7 +91,6 @@ export function NotificationList({ memberId }: NotificationListProps) {
           ) : undefined
         }
         back="/"
-        title="알림"
       />
 
       {listQuery.isPending ? null : listQuery.isError && !listQuery.data ? (

@@ -36,7 +36,8 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
   return (
     <OverscrollBack fallbackHref={`/records/${recordId}`}>
       <PageShell className="block">
-        <PageHeader back={`/records/${recordId}`} title="기록 수정" />
+        <h1 className="sr-only">기록 수정</h1>
+        <PageHeader back={`/records/${recordId}`} />
 
         <section className="px-1 pt-5.5 pb-5" aria-labelledby="record-edit-title">
           <h2
