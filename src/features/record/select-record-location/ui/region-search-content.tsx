@@ -9,8 +9,8 @@ import { recordLocationsQueryOptions } from "@/entities/record";
 import { useRegionSearch } from "@/entities/region";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
-import { DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { SearchField } from "@/shared/ui/search-field";
 
 import type { RecordLocationRegion } from "../model/location-picker";
@@ -43,11 +43,11 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
   };
 
   return (
-    <DrawerContent className="[--drawer-height:var(--drawer-content-max-height)]">
-      <DrawerHeader>
-        <DrawerTitle>어느 지역에 갔나요?</DrawerTitle>
-        <DrawerDescription>익숙한 지역명을 직접 입력해 보세요.</DrawerDescription>
-      </DrawerHeader>
+    <BottomSheet.Content className="[--drawer-height:var(--drawer-content-max-height)]">
+      <BottomSheet.Header>
+        <BottomSheet.Title>어느 지역에 갔나요?</BottomSheet.Title>
+        <BottomSheet.Description>익숙한 지역명을 직접 입력해 보세요.</BottomSheet.Description>
+      </BottomSheet.Header>
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
         {recentRegions.length ? (
@@ -123,6 +123,6 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
           </ul>
         ) : null}
       </div>
-    </DrawerContent>
+    </BottomSheet.Content>
   );
 }

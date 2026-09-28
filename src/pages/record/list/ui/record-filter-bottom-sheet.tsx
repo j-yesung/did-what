@@ -6,9 +6,9 @@ import { SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react";
 
 import type { RecordSort } from "@/entities/record";
 import { formatRecordDate } from "@/shared/lib/date/format-date";
+import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { DateInput } from "@/shared/ui/date-input";
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { IconButton } from "@/shared/ui/icon-button";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
@@ -30,7 +30,7 @@ const getPeriodLabel = ({ from, to }: RecordPeriod) => {
   return "전체 기간";
 };
 
-export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilterProps) {
+export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPeriodFilterProps) {
   const [open, setOpen] = useState(false);
   const [draftRange, setDraftRange] = useState<RecordPeriod>({ from, to });
   const [draftSort, setDraftSort] = useState(sort);
@@ -62,8 +62,8 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
   };
 
   return (
-    <Drawer onOpenChange={handleOpenChange} open={open} showSwipeHandle>
-      <DrawerTrigger
+    <BottomSheet onOpenChange={handleOpenChange} open={open} showSwipeHandle>
+      <BottomSheet.Trigger
         render={
           <IconButton
             aria-label={`기록 필터, 기간 ${getPeriodLabel(period)}, 정렬 ${sort === "recent" ? "최신순" : "오래된순"}`}
@@ -76,10 +76,10 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
         }
       />
 
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle className="text-left font-bold text-xl leading-7">기록 필터</DrawerTitle>
-        </DrawerHeader>
+      <BottomSheet.Content>
+        <BottomSheet.Header className="text-left">
+          <BottomSheet.Title className="text-left font-bold text-xl leading-7">기록 필터</BottomSheet.Title>
+        </BottomSheet.Header>
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4">
           <section aria-labelledby="record-sort-title">
@@ -162,7 +162,7 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
           </section>
         </div>
 
-        <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+        <BottomSheet.Footer className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
           {hasFilters ? (
             <Button onClick={handleClear} size="large" type="button" variant="neutral">
               필터 초기화
@@ -177,8 +177,8 @@ export function RecordFilterDrawer({ from, onApply, sort, to }: RecordPeriodFilt
           >
             적용
           </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        </BottomSheet.Footer>
+      </BottomSheet.Content>
+    </BottomSheet>
   );
 }

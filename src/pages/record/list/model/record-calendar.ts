@@ -16,9 +16,6 @@ export type CalendarDayAction = "clear" | "create" | "open" | "wait";
 
 const MONTH_PATTERN = /^[1-9]\d{3}-(0[1-9]|1[0-2])$/;
 const KST_OFFSET = 9 * 60 * 60 * 1000;
-const SWIPE_HYSTERESIS = 10;
-const SWIPE_DISTANCE = 48;
-const SWIPE_VELOCITY = 500;
 
 // 서버 렌더링과 브라우저가 같은 날을 그리도록 기기 시간대 대신 한국 시간(서머타임 없음)으로 정한다.
 export const getToday = (now = new Date()) => {
@@ -41,12 +38,6 @@ export const getCalendarHref = (month: string, date?: string | null) => {
 
 export const shiftMonth = (month: string, amount: number) => {
   return format(addMonths(parseISO(`${month}-01`), amount), "yyyy-MM");
-};
-
-export const getCalendarSwipeMonthShift = (offsetX: number, velocityX: number) => {
-  if (Math.abs(offsetX) < SWIPE_HYSTERESIS) return 0;
-  if (Math.abs(offsetX) < SWIPE_DISTANCE && Math.abs(velocityX) < SWIPE_VELOCITY) return 0;
-  return offsetX < 0 ? 1 : -1;
 };
 
 // 달력은 월 첫 주 일요일부터 6주(42일)를 고정으로 보여준다.

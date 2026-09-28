@@ -5,6 +5,7 @@ export {
   recordDetailQueryOptions,
   recordListQueryOptions,
   recordLocationsQueryOptions,
+  recordMonthBoundsQueryOptions,
   recordPlacesQueryOptions,
   recordSummaryQueryKey,
   regionRecordsQueryOptions,

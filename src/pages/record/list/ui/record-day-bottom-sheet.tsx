@@ -24,8 +24,8 @@ import { DeleteRecordConfirm } from "@/features/record/delete-record";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { useScrollRestoration } from "@/shared/lib/navigation/use-scroll-restoration";
 import { cn } from "@/shared/lib/utils";
+import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { buttonVariants } from "@/shared/ui/button";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { IconButton } from "@/shared/ui/icon-button";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
@@ -38,7 +38,7 @@ import { getCalendarHref } from "../model/record-calendar";
 
 const DAY_TITLE = new Intl.DateTimeFormat("ko-KR", { day: "numeric", month: "long", weekday: "long" });
 
-type RecordDayDrawerProps = {
+type RecordDayBottomSheetProps = {
   date: string | null;
   isError: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,7 +48,7 @@ type RecordDayDrawerProps = {
 };
 
 function RecordDayCreateButton({ date }: { date: string }) {
-  const closeDrawerOnReturn = (event: MouseEvent<HTMLAnchorElement>) => {
+  const closeBottomSheetOnReturn = (event: MouseEvent<HTMLAnchorElement>) => {
     if (
       event.defaultPrevented ||
       event.button !== 0 ||
@@ -62,7 +62,9 @@ function RecordDayCreateButton({ date }: { date: string }) {
     window.history.replaceState(window.history.state, "", getCalendarHref(date.slice(0, 7)));
   };
 
-  return <RecordCreateButton className="size-14" href={`/records/new?date=${date}`} onClick={closeDrawerOnReturn} />;
+  return (
+    <RecordCreateButton className="size-14" href={`/records/new?date=${date}`} onClick={closeBottomSheetOnReturn} />
+  );
 }
 
 function RecordDeleteButton({
@@ -86,7 +88,14 @@ function RecordDeleteButton({
   );
 }
 
-export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, records }: RecordDayDrawerProps) {
+export function RecordDayBottomSheet({
+  date,
+  isError,
+  onOpenChange,
+  onRetry,
+  open,
+  records,
+}: RecordDayBottomSheetProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -114,13 +123,13 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
   };
 
   return (
-    <Drawer onOpenChange={onOpenChange} open={open} showSwipeHandle>
-      <DrawerContent className="data-[swipe-axis=y]:max-h-[70dvh]">
-        <DrawerHeader className="flex-row items-center justify-between gap-3 px-5 text-left group-data-[swipe-axis=y]/drawer-popup:text-left">
+    <BottomSheet onOpenChange={onOpenChange} open={open} showSwipeHandle>
+      <BottomSheet.Content className="data-[swipe-axis=y]:max-h-[70dvh]">
+        <BottomSheet.Header className="flex-row items-center justify-between gap-3 px-5 text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
           <div className="min-w-0">
-            <DrawerTitle className="truncate font-bold text-xl leading-7">
+            <BottomSheet.Title className="truncate font-bold text-xl leading-7">
               {date ? DAY_TITLE.format(parseISO(date)) : null}
-            </DrawerTitle>
+            </BottomSheet.Title>
             {multipleRecords ? (
               <p className="mt-0.5 text-muted-foreground text-sm tabular-nums">기록 {records?.length}개</p>
             ) : null}
@@ -135,7 +144,7 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
               />
             ) : null}
           </div>
-        </DrawerHeader>
+        </BottomSheet.Header>
 
         <div
           className={cn(
@@ -292,7 +301,7 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
             </div>
           )}
         </div>
-      </DrawerContent>
+      </BottomSheet.Content>
       <DeleteRecordConfirm
         activity={deleteTarget?.activity ?? ""}
         onClose={() => setDeleteOpen(false)}
@@ -302,6 +311,6 @@ export function RecordDayDrawer({ date, isError, onOpenChange, onRetry, open, re
         open={deleteOpen}
         recordId={deleteTarget?.id ?? ""}
       />
-    </Drawer>
+    </BottomSheet>
   );
 }

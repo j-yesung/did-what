@@ -18,7 +18,7 @@ export function CalendarRecordCreateButton({ date }: CalendarRecordCreateButtonP
   const hiddenTransform = shouldReduceMotion ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)";
 
   return (
-    <div aria-live="polite" className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
+    <div aria-live="polite" className="pointer-events-none absolute inset-x-0 bottom-26 z-10 flex justify-center px-4">
       <AnimatePresence initial={false}>
         {date ? (
           <motion.div

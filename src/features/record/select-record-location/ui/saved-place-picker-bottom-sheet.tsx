@@ -3,17 +3,8 @@
 import { useState } from "react";
 
 import type { PlaceOption } from "@/entities/place";
+import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-  DrawerVirtualKeyboardProvider,
-} from "@/shared/ui/drawer";
 import { SearchField } from "@/shared/ui/search-field";
 
 import {
@@ -23,7 +14,7 @@ import {
 } from "../model/location-picker";
 import { SelectablePlaceCard } from "./selectable-place-card";
 
-type SavedPlacePickerDrawerProps = {
+type SavedPlacePickerBottomSheetProps = {
   disabled?: boolean;
   maxSelectionCount: number;
   onAdd: (places: RecordLocationPlace[]) => void;
@@ -32,14 +23,14 @@ type SavedPlacePickerDrawerProps = {
   selectedKeys: Set<string>;
 };
 
-export function SavedPlacePickerDrawer({
+export function SavedPlacePickerBottomSheet({
   disabled,
   maxSelectionCount,
   onAdd,
   regions,
   savedPlaces,
   selectedKeys,
-}: SavedPlacePickerDrawerProps) {
+}: SavedPlacePickerBottomSheetProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
@@ -86,19 +77,21 @@ export function SavedPlacePickerDrawer({
   };
 
   return (
-    <Drawer onOpenChange={handleOpenChange} open={open} showSwipeHandle>
-      <DrawerTrigger
+    <BottomSheet onOpenChange={handleOpenChange} open={open} showSwipeHandle>
+      <BottomSheet.Trigger
         disabled={disabled}
         render={<Button disabled={disabled} fullWidth size="large" type="button" variant="neutral" />}
       >
         내 장소에서 추가
-      </DrawerTrigger>
-      <DrawerVirtualKeyboardProvider>
-        <DrawerContent className="[--drawer-height:var(--drawer-content-max-height)]">
-          <DrawerHeader>
-            <DrawerTitle>내 장소에서 추가</DrawerTitle>
-            <DrawerDescription>기록에 추가할 장소를 최대 {maxSelectionCount}곳까지 선택하세요.</DrawerDescription>
-          </DrawerHeader>
+      </BottomSheet.Trigger>
+      <BottomSheet.VirtualKeyboardProvider>
+        <BottomSheet.Content className="[--drawer-height:var(--drawer-content-max-height)]">
+          <BottomSheet.Header>
+            <BottomSheet.Title>내 장소에서 추가</BottomSheet.Title>
+            <BottomSheet.Description>
+              기록에 추가할 장소를 최대 {maxSelectionCount}곳까지 선택하세요.
+            </BottomSheet.Description>
+          </BottomSheet.Header>
 
           <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 pb-0">
             <SearchField
@@ -140,13 +133,13 @@ export function SavedPlacePickerDrawer({
             )}
           </div>
 
-          <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+          <BottomSheet.Footer className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
             <Button disabled={selectedIds.size === 0} fullWidth onClick={addSelectedPlaces} size="large" type="button">
               {selectedIds.size > 0 ? `${selectedIds.size}곳 추가` : "장소 선택"}
             </Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </DrawerVirtualKeyboardProvider>
-    </Drawer>
+          </BottomSheet.Footer>
+        </BottomSheet.Content>
+      </BottomSheet.VirtualKeyboardProvider>
+    </BottomSheet>
   );
 }
