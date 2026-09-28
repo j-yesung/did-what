@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
+import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
-import { Drawer, DrawerContent, DrawerTrigger, DrawerVirtualKeyboardProvider } from "@/shared/ui/drawer";
 
 import type { RecordLocationPlace, RecordLocationRegion } from "../model/location-picker";
 import { PlacePickerPanel } from "./place-picker-panel";
 
-type PlacePickerDrawerProps = {
+type PlacePickerBottomSheetProps = {
   disabled?: boolean;
   maxSelectionCount: number;
   onAdd: (places: RecordLocationPlace[]) => void;
@@ -16,25 +16,25 @@ type PlacePickerDrawerProps = {
   selectedKeys: Set<string>;
 };
 
-export function PlacePickerDrawer({
+export function PlacePickerBottomSheet({
   disabled,
   maxSelectionCount,
   onAdd,
   regions,
   selectedKeys,
-}: PlacePickerDrawerProps) {
+}: PlacePickerBottomSheetProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <Drawer onOpenChange={setOpen} open={open} showSwipeHandle>
-      <DrawerTrigger
+    <BottomSheet onOpenChange={setOpen} open={open} showSwipeHandle>
+      <BottomSheet.Trigger
         disabled={disabled}
         render={<Button disabled={disabled} size="large" type="button" variant="neutral" />}
       >
         새 장소 검색
-      </DrawerTrigger>
-      <DrawerVirtualKeyboardProvider>
-        <DrawerContent className="[--drawer-height:var(--drawer-content-max-height)]">
+      </BottomSheet.Trigger>
+      <BottomSheet.VirtualKeyboardProvider>
+        <BottomSheet.Content className="[--drawer-height:var(--drawer-content-max-height)]">
           <PlacePickerPanel
             key={String(open)}
             maxSelectionCount={maxSelectionCount}
@@ -45,8 +45,8 @@ export function PlacePickerDrawer({
             regions={regions}
             selectedKeys={selectedKeys}
           />
-        </DrawerContent>
-      </DrawerVirtualKeyboardProvider>
-    </Drawer>
+        </BottomSheet.Content>
+      </BottomSheet.VirtualKeyboardProvider>
+    </BottomSheet>
   );
 }

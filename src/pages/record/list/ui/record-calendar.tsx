@@ -55,7 +55,7 @@ import {
   shiftMonth,
 } from "../model/record-calendar";
 import { CalendarRecordCreateButton } from "./calendar-record-create-button";
-import { RecordDayDrawer } from "./record-day-drawer";
+import { RecordDayBottomSheet } from "./record-day-bottom-sheet";
 
 // 칸 높이를 재기 전(서버 렌더링 포함)에 쓰는 제목 줄 수
 const DEFAULT_TITLE_LINES = 2;
@@ -378,7 +378,7 @@ export function RecordCalendar() {
     replaceCalendarHref(month, records.length > 0 ? pendingDate : null);
   }, [getDayRecords, month, pendingDate]);
 
-  const handleDrawerOpenChange = (nextOpen: boolean) => {
+  const handleBottomSheetOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) return;
     setSelectedDate(null);
@@ -454,10 +454,10 @@ export function RecordCalendar() {
 
       <CalendarRecordCreateButton date={createDate} />
 
-      <RecordDayDrawer
+      <RecordDayBottomSheet
         date={selectedDate}
         isError={isError}
-        onOpenChange={handleDrawerOpenChange}
+        onOpenChange={handleBottomSheetOpenChange}
         onRetry={() => void recordsQuery.refetch()}
         open={open}
         records={selectedRecords}

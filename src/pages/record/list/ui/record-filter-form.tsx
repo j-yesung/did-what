@@ -11,7 +11,7 @@ import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { SearchField } from "@/shared/ui/search-field";
 
-import { RecordFilterDrawer } from "./record-filter-drawer";
+import { RecordFilterBottomSheet } from "./record-filter-bottom-sheet";
 
 type RecordFilterFormProps = {
   filters: RecordFilters;
@@ -77,7 +77,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         <input name="to" type="hidden" value={filters.to} />
         <input name="sort" type="hidden" value={filters.sort} />
 
-        <RecordFilterDrawer from={filters.from} onApply={handleFilterApply} sort={filters.sort} to={filters.to} />
+        <RecordFilterBottomSheet from={filters.from} onApply={handleFilterApply} sort={filters.sort} to={filters.to} />
       </div>
 
       {filters.from || filters.to || filters.sort !== "recent" ? (

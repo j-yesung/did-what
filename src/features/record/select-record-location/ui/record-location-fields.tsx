@@ -13,9 +13,9 @@ import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@
 import { IconButton } from "@/shared/ui/icon-button";
 
 import { type RecordLocationPlace, type RecordLocationRegion, toVisitedRegions } from "../model/location-picker";
-import { PlacePickerDrawer } from "./place-picker-drawer";
+import { PlacePickerBottomSheet } from "./place-picker-bottom-sheet";
 import { RegionPickerDialog } from "./region-picker-dialog";
-import { SavedPlacePickerDrawer } from "./saved-place-picker-drawer";
+import { SavedPlacePickerBottomSheet } from "./saved-place-picker-bottom-sheet";
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
@@ -178,7 +178,7 @@ export function RecordLocationFields({
         ) : null}
 
         <div className="grid grid-cols-2 gap-2">
-          <SavedPlacePickerDrawer
+          <SavedPlacePickerBottomSheet
             disabled={savedPlaces.length === 0 || places.length >= MAX_VISITED_PLACES}
             maxSelectionCount={MAX_VISITED_PLACES - places.length}
             onAdd={addPlaces}
@@ -186,7 +186,7 @@ export function RecordLocationFields({
             savedPlaces={savedPlaces}
             selectedKeys={selectedKeys}
           />
-          <PlacePickerDrawer
+          <PlacePickerBottomSheet
             disabled={places.length >= MAX_VISITED_PLACES}
             maxSelectionCount={MAX_VISITED_PLACES - places.length}
             onAdd={addPlaces}

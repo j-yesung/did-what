@@ -9,8 +9,8 @@ import { usePlaceSearch } from "@/entities/place";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
-import { DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
 import { SearchField } from "@/shared/ui/search-field";
 
 import { resolveRecordPlace } from "../api/resolve-record-location";
@@ -103,12 +103,12 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
 
   return (
     <>
-      <DrawerHeader>
-        <DrawerTitle>방문 장소 찾기</DrawerTitle>
-        <DrawerDescription>
+      <BottomSheet.Header>
+        <BottomSheet.Title>방문 장소 찾기</BottomSheet.Title>
+        <BottomSheet.Description>
           {scope ? `${scope.label} 주변을 먼저 보여줘요.` : "다른 지역의 장소를 고르면 그 지역도 함께 담겨요."}
-        </DrawerDescription>
-      </DrawerHeader>
+        </BottomSheet.Description>
+      </BottomSheet.Header>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 pb-0">
         {regions.length ? (
@@ -182,7 +182,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
         ) : null}
       </div>
 
-      <DrawerFooter className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+      <BottomSheet.Footer className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
         <Button
           aria-busy={resolve.isPending || undefined}
           disabled={optimisticSelectedKeys.size === 0}
@@ -196,7 +196,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
         >
           {optimisticSelectedKeys.size > 0 ? `${optimisticSelectedKeys.size}곳 추가` : "장소 선택"}
         </Button>
-      </DrawerFooter>
+      </BottomSheet.Footer>
     </>
   );
 }
