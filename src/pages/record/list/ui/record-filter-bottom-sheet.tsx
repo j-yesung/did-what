@@ -77,9 +77,7 @@ export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPerio
       />
 
       <BottomSheet.Content>
-        <BottomSheet.Header className="text-left">
-          <BottomSheet.Title className="text-left font-bold text-xl leading-7">기록 필터</BottomSheet.Title>
-        </BottomSheet.Header>
+        <BottomSheet.Title className="sr-only">기록 필터</BottomSheet.Title>
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-4">
           <section aria-labelledby="record-sort-title">

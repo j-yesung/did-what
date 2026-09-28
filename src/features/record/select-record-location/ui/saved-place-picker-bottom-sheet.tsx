@@ -87,7 +87,7 @@ export function SavedPlacePickerBottomSheet({
       <BottomSheet.VirtualKeyboardProvider>
         <BottomSheet.Content className="[--drawer-height:var(--drawer-content-max-height)]">
           <BottomSheet.Header>
-            <BottomSheet.Title>내 장소에서 추가</BottomSheet.Title>
+            <BottomSheet.Title className="sr-only">내 장소에서 추가</BottomSheet.Title>
             <BottomSheet.Description>
               기록에 추가할 장소를 최대 {maxSelectionCount}곳까지 선택하세요.
             </BottomSheet.Description>

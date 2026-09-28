@@ -104,7 +104,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
   return (
     <>
       <BottomSheet.Header>
-        <BottomSheet.Title>방문 장소 찾기</BottomSheet.Title>
+        <BottomSheet.Title className="sr-only">방문 장소 찾기</BottomSheet.Title>
         <BottomSheet.Description>
           {scope ? `${scope.label} 주변을 먼저 보여줘요.` : "다른 지역의 장소를 고르면 그 지역도 함께 담겨요."}
         </BottomSheet.Description>

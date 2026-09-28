@@ -45,7 +45,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
   return (
     <BottomSheet.Content className="[--drawer-height:var(--drawer-content-max-height)]">
       <BottomSheet.Header>
-        <BottomSheet.Title>어느 지역에 갔나요?</BottomSheet.Title>
+        <BottomSheet.Title className="sr-only">어느 지역에 갔나요?</BottomSheet.Title>
         <BottomSheet.Description>익숙한 지역명을 직접 입력해 보세요.</BottomSheet.Description>
       </BottomSheet.Header>
 
