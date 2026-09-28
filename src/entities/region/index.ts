@@ -1,11 +1,13 @@
 export {
   createKoreaMap,
   createRegionActivityMaps,
+  getKoreaMapFrame,
   getKoreaMapPosition,
   getRegion,
   getRegionCode,
   getRegionProgressLabel,
   KOREA_MAP_CELL_STYLE,
+  KOREA_MAP_REGION_PATHS,
   type KoreaMapCell,
   type RecordLocation,
   type Region,

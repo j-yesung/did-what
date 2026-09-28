@@ -5,10 +5,12 @@ const {
   createRegionActivityMaps,
   filterRecordsByRegion,
   getActivityLevel,
+  getKoreaMapFrame,
   getKoreaMapPosition,
   getRegion,
   getRegionCode,
   getRegionProgressLabel,
+  KOREA_MAP_REGION_PATHS,
   REGIONS,
 } = await import("./korea-map.ts");
 
@@ -143,5 +145,22 @@ assert.ok(
 );
 assert.equal(map.cells.filter((cell) => cell.count > 0).length, 2);
 assert.equal(map.cells.find((cell) => cell.count === 7)?.level, 4);
+
+// 먼 섬은 첫 화면 틀(본토와 제주) 안으로 옮겨 그리고, 섬 위의 기록과 칸도 함께 옮긴다.
+const homeFrame = getKoreaMapFrame({ east: 129.7, north: 38.7, south: 33.1, west: 126 });
+const isInside = ({ x, y }) =>
+  x >= homeFrame.x && x <= homeFrame.x + homeFrame.width && y >= homeFrame.y && y <= homeFrame.y + homeFrame.height;
+assert.ok(isInside(getKoreaMapPosition({ latitude: 37.5, longitude: 130.87 })), "울릉도");
+assert.ok(isInside(getKoreaMapPosition({ latitude: 37.96, longitude: 124.68 })), "백령도");
+assert.ok(
+  emptyMap.cells
+    .filter((cell) => cell.longitude > 130.5 || cell.longitude < 125)
+    .every((cell) => isInside({ x: cell.x + 2.2, y: cell.y + 2.2 })),
+  "두 섬의 칸도 틀 안으로 옮긴다.",
+);
+assert.ok(
+  KOREA_MAP_REGION_PATHS.some(({ code, key }) => code === "KR-28" && key === "KR-41:KR-28"),
+  "경기로 잘못 든 백령도는 인천으로 연다.",
+);
 
 process.stdout.write(`${map.cells.length} cells, ${map.columns} × ${map.rows} grid\n`);

@@ -1,18 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
-
 import { MapPinAreaIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
-import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/record";
+import { recordLocationsQueryOptions } from "@/entities/record";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activity-map";
 
+// 불러오는 동안 매 렌더마다 새 빈 배열을 넘기면 지도가 점과 배지를 계속 다시 계산한다.
+const EMPTY_RECORDS: [] = [];
+
 export function HomeContent() {
   const recordsQuery = useQuery(recordLocationsQueryOptions);
-  const records = useMemo(() => toRegionLocations(recordsQuery.data ?? []), [recordsQuery.data]);
+  const records = recordsQuery.data ?? EMPTY_RECORDS;
 
   return (
     <>

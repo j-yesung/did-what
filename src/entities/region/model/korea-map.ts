@@ -306,9 +306,64 @@ const mapRecordsToCells = (cells: KoreaMapCell[], records: RecordLocation[]) => 
   });
 };
 
-const KOREA_MAP_GRID = generateCells(GRID_COLUMNS);
 const KOREA_MAP_BOUNDS = getBounds(BOUNDARIES.map(({ geometry }) => geometry));
 const REGION_MAP_GRIDS = new Map(REGIONS.map(({ code }) => [code, generateRegionCells(code)]));
+
+const projectPosition = ([longitude, latitude]: Position) => {
+  const { minLongitude, maxLongitude, maxLatitude } = KOREA_MAP_BOUNDS;
+  const step = ((maxLongitude - minLongitude) * LONGITUDE_SCALE) / GRID_COLUMNS;
+  // 셀의 지리 좌표는 중심이며, SVG 사각형 사이의 여백 절반을 보정한다.
+  return {
+    x: (((longitude - minLongitude) * LONGITUDE_SCALE) / step) * CELL_PITCH - CELL_GAP / 2,
+    y: ((maxLatitude - latitude) / step) * CELL_PITCH - CELL_GAP / 2,
+  };
+};
+
+/**
+ * 본토에서 먼 섬은 첫 화면 틀 안의 빈 바다로 당겨 그린다. 흔히 쓰는 울릉도 박스처럼 실제 자리가 아니다.
+ * 백령도·대청도는 경계 데이터에 경기로 들어 있지만 실제로는 인천 옹진군이라 누르면 인천으로 연다.
+ */
+const ISLAND_INSETS: {
+  east: number;
+  latitudeShift: number;
+  longitudeShift: number;
+  north: number;
+  regionCode?: RegionCode;
+  south: number;
+  west: number;
+}[] = [
+  { east: 131, latitudeShift: 0, longitudeShift: -1.35, north: 37.6, south: 37.4, west: 130.7 },
+  {
+    east: 124.85,
+    latitudeShift: 0.2,
+    longitudeShift: 1.55,
+    north: 38.05,
+    regionCode: "KR-28",
+    south: 37.75,
+    west: 124.5,
+  },
+];
+
+const findIslandInset = ([longitude, latitude]: Position) =>
+  ISLAND_INSETS.find(
+    ({ east, north, south, west }) => longitude >= west && longitude <= east && latitude >= south && latitude <= north,
+  );
+
+// 지도에 그릴 자리. 옮긴 섬 안의 좌표는 섬과 함께 옮긴다.
+const projectDisplayPosition = (position: Position) => {
+  const inset = findIslandInset(position);
+  return projectPosition(inset ? [position[0] + inset.longitudeShift, position[1] + inset.latitudeShift] : position);
+};
+
+const KOREA_MAP_GRID: KoreaMapGrid = (() => {
+  const grid = generateCells(GRID_COLUMNS);
+  const cells = grid.cells.map((cell) => {
+    if (!findIslandInset([cell.longitude, cell.latitude])) return cell;
+    const { x, y } = projectDisplayPosition([cell.longitude, cell.latitude]);
+    return { ...cell, x: x - CELL_SIZE / 2, y: y - CELL_SIZE / 2 };
+  });
+  return { ...grid, cells };
+})();
 
 export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation, "latitude" | "longitude">) => {
   if (
@@ -318,14 +373,50 @@ export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation
   )
     return null;
 
-  const { minLongitude, maxLongitude, maxLatitude } = KOREA_MAP_BOUNDS;
-  const step = ((maxLongitude - minLongitude) * LONGITUDE_SCALE) / GRID_COLUMNS;
-  // 셀의 지리 좌표는 중심이며, SVG 사각형 사이의 여백 절반을 보정한다.
-  return {
-    x: (((longitude - minLongitude) * LONGITUDE_SCALE) / step) * CELL_PITCH - CELL_GAP / 2,
-    y: ((maxLatitude - latitude) / step) * CELL_PITCH - CELL_GAP / 2,
-  };
+  return projectDisplayPosition([longitude, latitude]);
 };
+
+// 바다 위 모서리도 지도 좌표로 옮겨야 해서 육지 검사 없이 투영한다. 첫 화면에 담을 틀을 잡을 때 쓴다.
+export const getKoreaMapFrame = ({
+  east,
+  north,
+  south,
+  west,
+}: {
+  east: number;
+  north: number;
+  south: number;
+  west: number;
+}) => {
+  const topLeft = projectPosition([west, north]);
+  const bottomRight = projectPosition([east, south]);
+  return { x: topLeft.x, y: topLeft.y, width: bottomRight.x - topLeft.x, height: bottomRight.y - topLeft.y };
+};
+
+// 셀 지도와 같은 좌표계로 시·도 경계를 그려 셀 대신 실제 지도 모양 위에 기록을 겹칠 수 있게 한다.
+// 옮긴 섬은 지역 코드를 바로잡을 수 있게 따로 묶는다.
+export const KOREA_MAP_REGION_PATHS = BOUNDARIES.flatMap(({ geometry, properties }) => {
+  const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+  const paths = new Map<string, string>();
+
+  for (const polygon of polygons) {
+    const code = findIslandInset(polygon[0][0])?.regionCode ?? properties.shapeISO;
+    const path = polygon
+      .map(
+        (ring) =>
+          `M${ring
+            .map((position) => {
+              const { x, y } = projectDisplayPosition(position);
+              return `${x.toFixed(1)},${y.toFixed(1)}`;
+            })
+            .join("L")}Z`,
+      )
+      .join("");
+    paths.set(code, (paths.get(code) ?? "") + path);
+  }
+
+  return [...paths].map(([code, path]) => ({ code, key: `${properties.shapeISO}:${code}`, path }));
+});
 
 export const createKoreaMap = (records: RecordLocation[]): KoreaMapGrid => {
   return { ...KOREA_MAP_GRID, cells: mapRecordsToCells(KOREA_MAP_GRID.cells, records) };
