@@ -93,7 +93,7 @@ export function SavedPlacePickerBottomSheet({
             </BottomSheet.Description>
           </BottomSheet.Header>
 
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 pb-0">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-5 pt-4 pb-0">
             <SearchField
               aria-label="저장한 장소 검색"
               maxLength={100}
@@ -133,7 +133,7 @@ export function SavedPlacePickerBottomSheet({
             )}
           </div>
 
-          <BottomSheet.Footer className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+          <BottomSheet.Footer>
             <Button disabled={selectedIds.size === 0} fullWidth onClick={addSelectedPlaces} size="large" type="button">
               {selectedIds.size > 0 ? `${selectedIds.size}곳 추가` : "장소 선택"}
             </Button>

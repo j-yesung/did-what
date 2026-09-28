@@ -110,7 +110,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
         </BottomSheet.Description>
       </BottomSheet.Header>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 pb-0">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-5 pt-4 pb-0">
         {regions.length ? (
           <ul aria-label="검색 기준 지역" className="flex flex-wrap gap-1.5">
             {[...regions, { code: NATIONWIDE_CODE, label: "전국" }].map((region) => (
@@ -182,7 +182,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
         ) : null}
       </div>
 
-      <BottomSheet.Footer className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+      <BottomSheet.Footer>
         <Button
           aria-busy={resolve.isPending || undefined}
           disabled={optimisticSelectedKeys.size === 0}

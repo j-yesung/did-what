@@ -81,7 +81,7 @@ export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPerio
           <BottomSheet.Title className="text-left font-bold text-xl leading-7">기록 필터</BottomSheet.Title>
         </BottomSheet.Header>
 
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-4">
           <section aria-labelledby="record-sort-title">
             <h3 className="mb-2 font-semibold text-base" id="record-sort-title">
               정렬
@@ -162,7 +162,7 @@ export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPerio
           </section>
         </div>
 
-        <BottomSheet.Footer className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+        <BottomSheet.Footer>
           {hasFilters ? (
             <Button onClick={handleClear} size="large" type="button" variant="neutral">
               필터 초기화

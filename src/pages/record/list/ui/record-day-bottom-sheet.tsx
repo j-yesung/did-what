@@ -125,7 +125,7 @@ export function RecordDayBottomSheet({
   return (
     <BottomSheet onOpenChange={onOpenChange} open={open} showSwipeHandle>
       <BottomSheet.Content className="data-[swipe-axis=y]:max-h-[70dvh]">
-        <BottomSheet.Header className="flex-row items-center justify-between gap-3 px-5 text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
+        <BottomSheet.Header className="flex-row items-center justify-between gap-3 text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
           <div className="min-w-0">
             <BottomSheet.Title className="truncate font-bold text-xl leading-7">
               {date ? DAY_TITLE.format(parseISO(date)) : null}

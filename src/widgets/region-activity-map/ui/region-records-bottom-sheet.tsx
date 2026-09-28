@@ -15,10 +15,6 @@ import { Separator } from "@/shared/ui/separator";
 
 import { getSubregionName, type MapRecord } from "../model/record-map-points";
 
-// 공용 시트는 화면에서 띄워 두지만, 지도 위 시트는 양옆과 하단에 붙여 지도의 일부처럼 보이게 한다.
-const ATTACHED_SHEET_CLASS_NAME =
-  "data-[swipe-axis=y]:max-h-[75dvh] data-[swipe-axis=y]:[--drawer-bleed-background:var(--color-popover)] data-[swipe-axis=y]:[--drawer-inline-inset:0px] data-[swipe-axis=y]:[--drawer-inset:0px] data-[swipe-direction=down]:rounded-t-3xl data-[swipe-direction=down]:rounded-b-none data-[swipe-direction=down]:border-x-0 data-[swipe-direction=down]:border-b-0";
-
 type RegionRecordsBottomSheetProps = {
   onOpenChange: (open: boolean) => void;
   open: boolean;
@@ -66,8 +62,8 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
 
   return (
     <BottomSheet onOpenChange={onOpenChange} open={open} showSwipeHandle>
-      <BottomSheet.Content className={ATTACHED_SHEET_CLASS_NAME}>
-        <BottomSheet.Header className="px-5 text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
+      <BottomSheet.Content>
+        <BottomSheet.Header className="text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
           <BottomSheet.Title className="truncate font-bold text-xl leading-7">{region?.name}</BottomSheet.Title>
           <p className="text-muted-foreground text-sm tabular-nums">기록 {regionRecords.length}개</p>
         </BottomSheet.Header>
@@ -143,7 +139,7 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
         </div>
 
         {region ? (
-          <BottomSheet.Footer className="px-5 pt-3 pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+          <BottomSheet.Footer className="pt-3">
             <Button fullWidth nativeButton={false} render={<PressLink href={`/regions/${region.code}`} />} size="large">
               {region.name} 기록 전체 보기
             </Button>

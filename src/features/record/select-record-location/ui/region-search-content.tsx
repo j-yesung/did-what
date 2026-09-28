@@ -49,7 +49,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
         <BottomSheet.Description>익숙한 지역명을 직접 입력해 보세요.</BottomSheet.Description>
       </BottomSheet.Header>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 px-5 pt-4 pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
         {recentRegions.length ? (
           <section aria-labelledby="recent-region-quick-pick" className="flex flex-col gap-2">
             <h3
