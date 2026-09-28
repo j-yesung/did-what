@@ -44,6 +44,31 @@ export const fetchRecordLocations = async () => {
   return data;
 };
 
+export const fetchRecordMonthBounds = async () => {
+  const client = createClient();
+  const [first, last, lastEnd] = await Promise.all([
+    client.from("records").select("recorded_at").order("recorded_at", { ascending: true }).limit(1).maybeSingle(),
+    client.from("records").select("recorded_at").order("recorded_at", { ascending: false }).limit(1).maybeSingle(),
+    client
+      .from("records")
+      .select("recorded_until")
+      .not("recorded_until", "is", null)
+      .order("recorded_until", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  if (first.error) throw first.error;
+  if (last.error) throw last.error;
+  if (lastEnd.error) throw lastEnd.error;
+
+  const lastDate = [last.data?.recorded_at, lastEnd.data?.recorded_until]
+    .filter((date): date is string => Boolean(date))
+    .sort()
+    .at(-1);
+  return { firstMonth: first.data?.recorded_at.slice(0, 7) ?? null, lastMonth: lastDate?.slice(0, 7) ?? null };
+};
+
 export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCursor | null) => {
   const ascending = filters.sort === "oldest";
   const period = getRecordPeriodFilter(filters);

@@ -7,6 +7,7 @@ import type { RecordCursor } from "../model/record-page";
 import {
   fetchRecord,
   fetchRecordLocations,
+  fetchRecordMonthBounds,
   fetchRecordPage,
   fetchRecordPlaces,
   fetchRecordsInPeriod,
@@ -41,6 +42,12 @@ export const recordLocationsQueryOptions = queryOptions({
   ...MAIN_QUERY_OPTIONS,
   queryKey: [...RECORDS_QUERY_KEY, "locations"],
   queryFn: fetchRecordLocations,
+});
+
+export const recordMonthBoundsQueryOptions = queryOptions({
+  ...MAIN_QUERY_OPTIONS,
+  queryKey: [...RECORDS_QUERY_KEY, "month-bounds"],
+  queryFn: fetchRecordMonthBounds,
 });
 
 export const recordListQueryOptions = (filters: RecordFilters) => {
