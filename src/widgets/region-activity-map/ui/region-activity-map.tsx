@@ -203,18 +203,28 @@ export function RegionActivityMap({
             .filter(Boolean)
             .join(" ")}
         </desc>
-        <g aria-hidden="true">
+        <g>
           {KOREA_MAP_REGION_PATHS.map(({ code, key, path }) => (
             <path
-              className="fill-map-empty stroke-background"
+              aria-label={`${getRegion(code)?.name ?? "지역"} 기록 보기`}
+              className="fill-map-empty stroke-background focus-visible:stroke-primary"
               d={path}
               data-region-code={code}
               key={key}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                openRegion(getRegion(code));
+              }}
+              role="button"
               strokeLinejoin="round"
               strokeWidth={1}
+              tabIndex={0}
               vectorEffect="non-scaling-stroke"
             />
           ))}
+        </g>
+        <g aria-hidden="true">
           {dots.map((dot) => {
             const level = dot.level as keyof typeof KOREA_MAP_DOT_RADIUS;
             return (

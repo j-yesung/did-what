@@ -2,7 +2,6 @@ import { createClient } from "@/shared/api/supabase/client";
 
 import type { RecordFilters } from "../model/record-filters";
 import {
-  compareRecordsByRecent,
   getRecordCursor,
   getRecordCursorFilter,
   getRecordPeriodFilter,
@@ -13,14 +12,6 @@ import { RECORD_DETAIL_COLUMNS, RECORD_LOCATION_COLUMNS } from "./record-columns
 
 const RECORD_PAGE_COLUMNS =
   "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name, record_regions(region_code, region_label), record_places(count), record_comments(count)";
-const REGION_RECORD_COLUMNS =
-  "record:records!inner(id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, record_regions(region_code, region_label))";
-
-export type RecordRegionFilter = {
-  administrativeCodes: readonly string[];
-  code: string;
-};
-
 export const fetchRecord = async (recordId: string) => {
   const { data, error } = await createClient()
     .from("records")
@@ -125,20 +116,4 @@ export const fetchRecordPlaces = async (recordId: string) => {
 
   if (error) throw error;
   return data;
-};
-
-/**
- * 시·도에 속한 기록을 record_regions에 기록을 붙여 한 번에 가져온다.
- * 한 기록이 같은 시·도의 여러 지역에 걸치면 연결 행이 여럿이라 기록 ID로 한 번만 남기고 여기서 정렬한다.
- * 기록 ID를 모아 in()으로 다시 조회하면 ID가 수백 개만 넘어도 요청 주소가 너무 길어져 실패한다.
- */
-// ponytail: 연결 행은 Supabase 기본 상한인 1000행까지만 온다. 한 시·도의 기록이 그만큼 쌓이면 페이지 단위 조회로 바꾼다.
-export const fetchRegionRecords = async (region: RecordRegionFilter) => {
-  const regionFilter = region.administrativeCodes.map((code) => `region_code.like.${code}*`).join(",");
-  const { data, error } = await createClient().from("record_regions").select(REGION_RECORD_COLUMNS).or(regionFilter);
-
-  if (error) throw error;
-
-  const records = new Map(data.map(({ record }) => [record.id, record]));
-  return [...records.values()].sort(compareRecordsByRecent);
 };

@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
-import { recordDetailQueryOptions, regionRecordsQueryOptions, toRegionLocations } from "@/entities/record";
+import { recordDetailQueryOptions, toRegionLocations } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { createRegionActivityMaps, getRegionCode, type Region, RegionMiniMap } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
@@ -165,10 +165,6 @@ export function RegionRecordsBottomSheet({
     void queryClient.prefetchQuery(recordDetailQueryOptions(recordId));
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   };
-  const prefetchRegion = (target: Region) => {
-    router.prefetch(`/regions/${target.code}`);
-    void queryClient.prefetchQuery(regionRecordsQueryOptions(target));
-  };
   const visibleRecords = selectedSubregion
     ? regionRecords.filter(({ subregions }) => subregions.includes(selectedSubregion))
     : regionRecords;
@@ -317,30 +313,11 @@ export function RegionRecordsBottomSheet({
                 )}
               </div>
 
-              {/* 기록이 없는 지역에서 '전체 보기'는 빈 화면을 한 번 더 거칠 뿐이라, 기록 남기기를 주 버튼으로 둔다. */}
+              {/* 기록이 없는 지역에서는 바로 첫 기록을 남길 수 있게 한다. */}
               {region && regionRecords.length === 0 ? (
                 <BottomSheet.Footer className="pt-3">
                   <Button fullWidth nativeButton={false} render={<PressLink href="/records/new" />} size="xlarge">
                     기록 남기기
-                  </Button>
-                </BottomSheet.Footer>
-              ) : region ? (
-                <BottomSheet.Footer className="pt-3">
-                  <Button
-                    fullWidth
-                    nativeButton={false}
-                    render={
-                      <PressLink
-                        href={`/regions/${region.code}`}
-                        onPointerDown={(event) => {
-                          if (event.button === 0) prefetchRegion(region);
-                        }}
-                        prefetch={false}
-                      />
-                    }
-                    size="xlarge"
-                  >
-                    {region.name} 기록 전체 보기
                   </Button>
                 </BottomSheet.Footer>
               ) : null}
