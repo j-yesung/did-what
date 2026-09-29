@@ -71,7 +71,7 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
         {subregionCounts.length > 0 ? (
           <div
             aria-label="시·군·구"
-            className="flex shrink-0 gap-2 overflow-x-auto px-5 pt-3 pb-1 [scrollbar-width:none]"
+            className="scrollbar-none flex shrink-0 gap-2 overflow-x-auto px-5 pt-3 pb-1"
             role="group"
           >
             {chips.map(([name, label, count]) => (
@@ -140,7 +140,12 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
 
         {region ? (
           <BottomSheet.Footer className="pt-3">
-            <Button fullWidth nativeButton={false} render={<PressLink href={`/regions/${region.code}`} />} size="large">
+            <Button
+              fullWidth
+              nativeButton={false}
+              render={<PressLink href={`/regions/${region.code}`} />}
+              size="xlarge"
+            >
               {region.name} 기록 전체 보기
             </Button>
           </BottomSheet.Footer>
