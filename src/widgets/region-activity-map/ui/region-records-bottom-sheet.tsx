@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,17 +21,23 @@ import { getSubregionName, type MapRecord } from "../model/record-map-points";
 
 type RegionRecordsBottomSheetProps = {
   onOpenChange: (open: boolean) => void;
+  onSubregionChange: (subregion: string | null) => void;
   open: boolean;
   records: readonly MapRecord[];
   region: Region | null;
+  subregion: string | null;
 };
 
-export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }: RegionRecordsBottomSheetProps) {
+export function RegionRecordsBottomSheet({
+  onOpenChange,
+  onSubregionChange,
+  open,
+  records,
+  region,
+  subregion,
+}: RegionRecordsBottomSheetProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  // 다른 시·도를 열면 이전 시·도에서 고른 시·군·구는 무시한다.
-  const [subregionFilter, setSubregionFilter] = useState<{ regionCode: string; name: string } | null>(null);
-  const selectedSubregion = region && subregionFilter?.regionCode === region.code ? subregionFilter.name : null;
   const regionRecords = useMemo(
     () =>
       region
@@ -55,6 +61,8 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
     }
     return [...counts].sort(([, first], [, second]) => second - first);
   }, [regionRecords]);
+  // 주소로 되살린 칩이 지금 기록에 없는 이름이면 전체로 본다.
+  const selectedSubregion = subregionCounts.some(([name]) => name === subregion) ? subregion : null;
 
   // 누르는 순간 다음 화면 데이터를 받기 시작해, 넘어갔을 때 빈 화면이 잠깐 보이지 않게 한다.
   const prefetchRecord = (recordId: string) => {
@@ -99,7 +107,7 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
                   activeChip === name && "bg-primary font-semibold text-primary-foreground",
                 )}
                 key={label}
-                onClick={() => setSubregionFilter(name && region ? { name, regionCode: region.code } : null)}
+                onClick={() => onSubregionChange(name)}
                 type="button"
               >
                 {label} {count}

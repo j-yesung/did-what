@@ -1,6 +1,8 @@
 "use client";
 
-import { type MouseEvent, type PointerEvent, useMemo, useRef, useState } from "react";
+import { type MouseEvent, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+
+import { useSearchParams } from "next/navigation";
 
 import {
   createKoreaMap,
@@ -14,6 +16,7 @@ import {
   type Region,
 } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
+import { readMapUrlState, toMapSearch } from "@/widgets/region-activity-map/model/map-url-state";
 import {
   BADGE_FONT_SIZE,
   type MapRecord,
@@ -40,6 +43,8 @@ const TAP_SLOP = 8;
 const HOME_FRAME = getKoreaMapFrame({ east: 129.7, north: 38.7, south: 33.1, west: 126 });
 // 첫 화면에서 이만큼 확대하기 전까지는 전국을 보는 중으로 보고 배지 수를 줄인다.
 const OVERVIEW_ZOOM_RATIO = 1.5;
+// 핀치하는 동안 매 프레임 주소를 바꾸지 않도록 움직임이 멈춘 뒤에 쓴다. iOS는 짧은 시간에 너무 자주 바꾸면 막는다.
+const URL_WRITE_DELAY = 250;
 
 // 배지가 경계보다 위에 그려져 먼저 잡힌다. 배지 안의 글자를 눌러도 배지 묶음의 지역 코드를 찾는다.
 const findRegionAt = (clientX: number, clientY: number) => {
@@ -50,14 +55,21 @@ const findRegionAt = (clientX: number, clientY: number) => {
 };
 
 export function RegionActivityMap({ records }: { records: readonly MapRecord[] }) {
+  const searchParams = useSearchParams();
+  // 기록을 보고 돌아오면 주소에 남겨 둔 시트·칩·확대 상태로 이어서 보여준다. 달력의 ?date=와 같은 방식이다.
+  const [initialUrlState] = useState(() => {
+    const state = readMapUrlState(searchParams);
+    return { ...state, region: state.region ? (getRegion(state.region) ?? null) : null };
+  });
   const pressRef = useRef<{ x: number; y: number } | null>(null);
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
-  const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState<Region | null>(initialUrlState.region);
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(initialUrlState.region !== null);
+  const [subregion, setSubregion] = useState(initialUrlState.subregion);
   const [pressedBadge, setPressedBadge] = useState<string | null>(null);
   const points = useMemo(() => toRecordMapPoints(records), [records]);
   const map = useMemo(() => createKoreaMap(points), [points]);
   const dots = useMemo(() => map.cells.filter((cell) => cell.level > 0), [map]);
-  const viewport = useMapViewport(map, HOME_FRAME);
+  const viewport = useMapViewport(map, HOME_FRAME, initialUrlState.view);
   const currentLocation = useCurrentMapLocation(viewport.focusOn);
   const dotScale = 1 / Math.sqrt(viewport.zoom);
   const regionCounts = useMemo(() => {
@@ -82,8 +94,24 @@ export function RegionActivityMap({ records }: { records: readonly MapRecord[] }
     [regionCounts, viewport.unitsPerPixel, viewport.zoom, viewport.homeZoom],
   );
 
+  const urlRegion = bottomSheetOpen ? (selectedRegion?.code ?? null) : null;
+  const urlSubregion = urlRegion ? subregion : null;
+  const urlView = viewport.view;
+
+  // 떠나는 순간에 쓰면 이미 바뀐 다음 화면 주소를 덮을 수 있어, 화면을 떠나면 예약한 쓰기를 취소한다.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const search = toMapSearch(window.location.search, { region: urlRegion, subregion: urlSubregion, view: urlView });
+      if (search === window.location.search) return;
+      window.history.replaceState(window.history.state, "", `${window.location.pathname}${search}`);
+    }, URL_WRITE_DELAY);
+    return () => window.clearTimeout(timer);
+  }, [urlRegion, urlSubregion, urlView]);
+
   const openRegion = (region: Region | undefined) => {
     if (!region) return;
+    // 다른 시·도를 열면 이전 시·도에서 고른 시·군·구는 버린다.
+    if (region.code !== selectedRegion?.code) setSubregion(null);
     setSelectedRegion(region);
     setBottomSheetOpen(true);
   };
@@ -243,9 +271,11 @@ export function RegionActivityMap({ records }: { records: readonly MapRecord[] }
       <MapControls viewport={viewport} currentLocation={currentLocation} />
       <RegionRecordsBottomSheet
         onOpenChange={setBottomSheetOpen}
+        onSubregionChange={setSubregion}
         open={bottomSheetOpen}
         records={records}
         region={selectedRegion}
+        subregion={subregion}
       />
     </>
   );

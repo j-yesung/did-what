@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 
 type MapSize = { width: number; height: number };
 type MapFrame = MapSize & { x: number; y: number };
-type MapView = { zoom: number; x: number; y: number };
+export type MapView = { zoom: number; x: number; y: number };
 type MapSpace = MapSize & { aspect: number; maxZoom: number };
 type PointerPosition = { clientX: number; clientY: number };
 type MapPosition = { x: number; y: number };
@@ -95,11 +95,16 @@ const toMapPosition = (point: PointerPosition, matrix: DOMMatrix): MapPosition =
   return { x: position.x, y: position.y };
 };
 
-export const useMapViewport = (map: MapSize, frame: MapFrame) => {
+// initialView는 주소에 남겨 둔 지난 화면이다. 배율과 위치가 지도 밖이면 안으로 들인다.
+export const useMapViewport = (map: MapSize, frame: MapFrame, initialView?: MapView | null) => {
   const space = getMapSpace(map, frame);
   const home = getHomeMapView(space, frame);
   // null은 첫 화면이다. 화면 크기나 틀이 바뀌어도 첫 화면은 새 틀을 따라간다.
-  const [view, setView] = useState<MapView | null>(null);
+  const [view, setView] = useState<MapView | null>(() =>
+    initialView
+      ? constrainMapView(space, { ...initialView, zoom: Math.max(1, Math.min(space.maxZoom, initialView.zoom)) })
+      : null,
+  );
   const viewRef = useRef(view);
   const drag = useRef<{ pointerId: number; clientX: number; clientY: number } | null>(null);
   const pinch = useRef<PinchGesture | null>(null);
@@ -191,6 +196,7 @@ export const useMapViewport = (map: MapSize, frame: MapFrame) => {
     homeZoom: home.zoom,
     unitsPerPixel,
     canReset: view !== null,
+    view,
     reset,
     focusOn,
     svgProps: {
