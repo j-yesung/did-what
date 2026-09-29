@@ -65,7 +65,7 @@ const buttonVariants = cva(
       {
         color: "primary",
         variant: "weak",
-        class: "bg-primary/10 text-primary aria-expanded:bg-primary/15",
+        class: "bg-primary/10 text-accent-text aria-expanded:bg-primary/15",
       },
       {
         color: "danger",

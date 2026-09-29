@@ -27,7 +27,7 @@ export function CommentRow({ comment, currentMemberId, onDelete }: CommentRowPro
             <header className="flex min-h-7 min-w-0 items-center justify-between gap-2">
               <p className="min-w-0 truncate font-semibold text-sm">
                 {comment.author.name}
-                {mine ? <span className="ml-1 font-medium text-primary text-xs">나</span> : null}
+                {mine ? <span className="ml-1 font-medium text-accent-text text-xs">나</span> : null}
                 <span className="ml-2 font-normal text-muted-foreground text-xs">
                   <time dateTime={comment.created_at}>{formatCommentTime(comment.created_at)}</time>
                 </span>
@@ -35,7 +35,6 @@ export function CommentRow({ comment, currentMemberId, onDelete }: CommentRowPro
               {mine ? (
                 <IconButton
                   aria-label={`${comment.author.name} 댓글 삭제`}
-                  className="before:absolute before:-inset-2 before:content-['']"
                   disabled={comment.pending}
                   icon={XIcon}
                   onClick={() => setDeleteOpen(true)}

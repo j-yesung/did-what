@@ -109,7 +109,7 @@ export function MemberSelect({ currentMemberId, destination, members }: MemberSe
                   >
                     {member.name}
                   </span>
-                  {selected ? <span className="text-primary text-xs">현재 사용 중</span> : null}
+                  {selected ? <span className="text-accent-text text-xs">현재 사용 중</span> : null}
                 </span>
               </li>
             );

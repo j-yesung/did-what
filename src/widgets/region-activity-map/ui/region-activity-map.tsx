@@ -263,7 +263,7 @@ export function RegionActivityMap({ records }: { records: readonly MapRecord[] }
               y={top + height / 2}
             >
               {`${label} `}
-              <tspan className="fill-primary">{count}</tspan>
+              <tspan className="fill-accent-text">{count}</tspan>
             </text>
           </g>
         ))}

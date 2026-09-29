@@ -26,7 +26,7 @@ const textButtonVariants = cva(
       tone: {
         default: "text-foreground",
         muted: "text-muted-foreground",
-        brand: "text-primary",
+        brand: "text-accent-text",
         danger: "text-destructive",
       },
     },

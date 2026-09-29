@@ -85,7 +85,7 @@ function BottomSheetSwipeHandle({ className, ...props }: React.ComponentProps<"d
       data-slot="bottom-sheet-swipe-handle"
       aria-hidden="true"
       className={cn(
-        "relative z-10 flex h-3 w-full shrink-0 cursor-grab items-end justify-center transition-opacity duration-200 after:block after:h-1 after:w-24 after:shrink-0 after:rounded-full after:bg-muted active:cursor-grabbing group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100",
+        "relative z-10 flex h-3 w-full shrink-0 cursor-grab items-end justify-center transition-opacity duration-200 after:block after:h-1 after:w-24 after:shrink-0 after:rounded-full after:bg-muted-foreground/30 active:cursor-grabbing group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100",
         className,
       )}
       {...props}
