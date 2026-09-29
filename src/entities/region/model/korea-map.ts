@@ -68,6 +68,7 @@ export type KoreaMapGrid = {
 export type RegionActivityMap = Region & {
   cells: KoreaMapCell[];
   height: number;
+  path: string;
   totalCount: number;
   visitedCount: number;
   width: number;
@@ -86,6 +87,9 @@ const REGION_CODE_ALIASES = new Map<string, RegionCode>([
   ["KR-29", "KR-12"],
   ["KR-46", "KR-12"],
 ]);
+
+// 기록 점 반지름(지도 단위). 농도가 짙을수록 크게 그려 홈 지도와 지역 지도가 같은 모양으로 보인다.
+export const KOREA_MAP_DOT_RADIUS = { 1: 1.9, 2: 2.6, 3: 3.3, 4: 4 } as const;
 
 export const KOREA_MAP_CELL_STYLE = {
   size: CELL_SIZE,
@@ -156,6 +160,19 @@ const containsPoint = (geometry: Geometry, point: Position) => {
   return polygons.some((polygon) => isPointInPolygon(point, polygon));
 };
 
+const toPathData = (polygon: PolygonCoordinates, project: (position: Position) => { x: number; y: number }) =>
+  polygon
+    .map(
+      (ring) =>
+        `M${ring
+          .map((position) => {
+            const { x, y } = project(position);
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+          })
+          .join("L")}Z`,
+    )
+    .join("");
+
 const getBoundaryRegionCode = (value: string): RegionCode | null => {
   const canonicalCode = REGION_CODE_ALIASES.get(value) ?? value;
   return isRegionCode(canonicalCode) ? canonicalCode : null;
@@ -221,21 +238,51 @@ const generateCells = (columns: number): KoreaMapGrid => {
   };
 };
 
-const generateRegionCells = (regionCode: RegionCode): KoreaMapGrid => {
-  const geometries = BOUNDARIES.filter(
+/**
+ * 가장 큰 땅에서 멀리 떨어진 작은 섬은 지역 지도 틀에서 뺀다. 울릉도나 경계 데이터에 경기로 잘못 든 백령도·연평도까지
+ * 틀에 넣으면 본토가 한쪽으로 쪼그라든다. 그 섬의 기록은 가장 가까운 칸에 모인다.
+ */
+const REGION_ISLAND_MARGIN = 0.3;
+
+const getMainlandPolygons = (geometries: Geometry[]) => {
+  const polygons = geometries.flatMap((geometry) =>
+    geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates,
+  );
+  const boundsOf = (polygon: PolygonCoordinates) => getBounds([{ type: "Polygon", coordinates: polygon }]);
+  const area = ({ maxLatitude, maxLongitude, minLatitude, minLongitude }: ReturnType<typeof boundsOf>) =>
+    (maxLongitude - minLongitude) * (maxLatitude - minLatitude);
+  const main = polygons.map(boundsOf).reduce((largest, bounds) => (area(bounds) > area(largest) ? bounds : largest));
+
+  return polygons.filter((polygon) => {
+    const bounds = boundsOf(polygon);
+    return (
+      bounds.maxLongitude >= main.minLongitude - REGION_ISLAND_MARGIN &&
+      bounds.minLongitude <= main.maxLongitude + REGION_ISLAND_MARGIN &&
+      bounds.maxLatitude >= main.minLatitude - REGION_ISLAND_MARGIN &&
+      bounds.minLatitude <= main.maxLatitude + REGION_ISLAND_MARGIN
+    );
+  });
+};
+
+// 지역 지도는 지역 윤곽이 딱 맞는 틀을 쓴다. 칸은 기록을 모으는 격자로만 쓰고, 화면에는 윤곽과 기록 점을 그린다.
+const generateRegionCells = (regionCode: RegionCode): KoreaMapGrid & { path: string } => {
+  const regionGeometries = BOUNDARIES.filter(
     ({ properties }) => getBoundaryRegionCode(properties.shapeISO) === regionCode,
   ).map(({ geometry }) => geometry);
-  if (geometries.length === 0) return { cells: [], columns: 0, height: 0, rows: 0, width: 0 };
+  if (regionGeometries.length === 0) return { cells: [], columns: 0, height: 0, path: "", rows: 0, width: 0 };
+  const polygons = getMainlandPolygons(regionGeometries);
+  const geometries: Geometry[] = [{ type: "MultiPolygon", coordinates: polygons }];
 
   const bounds = getBounds(geometries);
   const minimumCellCount = getRegion(regionCode)?.subdivisionCount ?? 1;
+  const projectedWidth = (bounds.maxLongitude - bounds.minLongitude) * LONGITUDE_SCALE;
   let cells: KoreaMapCell[] = [];
   let columns = REGION_GRID_MIN_COLUMNS;
   let rows = 0;
+  let projectedStep = 0;
 
   while (true) {
-    const projectedWidth = (bounds.maxLongitude - bounds.minLongitude) * LONGITUDE_SCALE;
-    const projectedStep = projectedWidth / columns;
+    projectedStep = projectedWidth / columns;
     rows = Math.ceil((bounds.maxLatitude - bounds.minLatitude) / projectedStep);
     cells = [];
 
@@ -253,8 +300,9 @@ const generateRegionCells = (regionCode: RegionCode): KoreaMapGrid => {
           level: 0,
           longitude,
           regionCode,
-          x: column * CELL_PITCH,
-          y: row * CELL_PITCH,
+          // 칸 가운데가 윤곽 좌표와 같은 자리에 오도록 칸 사이 여백 절반만큼 민다.
+          x: column * CELL_PITCH + CELL_GAP / 2,
+          y: row * CELL_PITCH + CELL_GAP / 2,
         });
       }
     }
@@ -263,17 +311,19 @@ const generateRegionCells = (regionCode: RegionCode): KoreaMapGrid => {
     columns += 1;
   }
 
-  const minX = Math.min(...cells.map(({ x }) => x));
-  const minY = Math.min(...cells.map(({ y }) => y));
-  const maxX = Math.max(...cells.map(({ x }) => x));
-  const maxY = Math.max(...cells.map(({ y }) => y));
+  const project = ([longitude, latitude]: Position) => ({
+    x: (((longitude - bounds.minLongitude) * LONGITUDE_SCALE) / projectedStep) * CELL_PITCH,
+    y: ((bounds.maxLatitude - latitude) / projectedStep) * CELL_PITCH,
+  });
+  const path = polygons.map((polygon) => toPathData(polygon, project)).join("");
 
   return {
-    cells: cells.map((cell) => ({ ...cell, x: cell.x - minX, y: cell.y - minY })),
+    cells,
     columns,
-    height: maxY - minY + CELL_SIZE,
+    height: ((bounds.maxLatitude - bounds.minLatitude) / projectedStep) * CELL_PITCH,
+    path,
     rows,
-    width: maxX - minX + CELL_SIZE,
+    width: columns * CELL_PITCH,
   };
 };
 
@@ -401,18 +451,7 @@ export const KOREA_MAP_REGION_PATHS = BOUNDARIES.flatMap(({ geometry, properties
 
   for (const polygon of polygons) {
     const code = findIslandInset(polygon[0][0])?.regionCode ?? properties.shapeISO;
-    const path = polygon
-      .map(
-        (ring) =>
-          `M${ring
-            .map((position) => {
-              const { x, y } = projectDisplayPosition(position);
-              return `${x.toFixed(1)},${y.toFixed(1)}`;
-            })
-            .join("L")}Z`,
-      )
-      .join("");
-    paths.set(code, (paths.get(code) ?? "") + path);
+    paths.set(code, (paths.get(code) ?? "") + toPathData(polygon, projectDisplayPosition));
   }
 
   return [...paths].map(([code, path]) => ({ code, key: `${properties.shapeISO}:${code}`, path }));
@@ -442,6 +481,7 @@ export const createRegionActivityMaps = (records: RegionRecordLocation[]): Regio
       ...region,
       cells: mapRecordsToCells(grid?.cells ?? [], regionRecords),
       height: grid?.height ?? 0,
+      path: grid?.path ?? "",
       totalCount: region.subdivisionCount,
       visitedCount: Math.min(visitedSubdivisions.size, region.subdivisionCount),
       width: grid?.width ?? 0,

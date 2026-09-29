@@ -73,7 +73,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
                     {regionMap.visitedCount}
                     <span className="ml-1 font-medium text-base text-muted-foreground">/ {regionMap.totalCount}</span>
                   </p>
-                  <p className="mt-2 text-muted-foreground text-sm">기록이 남은 셀을 색으로 표시해요.</p>
+                  <p className="mt-2 text-muted-foreground text-sm">기록이 남은 곳을 점으로 표시해요.</p>
                 </div>
               </section>
             ) : null}

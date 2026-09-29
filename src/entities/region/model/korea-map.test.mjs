@@ -146,6 +146,17 @@ assert.ok(
 assert.equal(map.cells.filter((cell) => cell.count > 0).length, 2);
 assert.equal(map.cells.find((cell) => cell.count === 7)?.level, 4);
 
+// 지역 지도는 윤곽이 딱 맞는 틀에 그리고, 기록 칸 가운데도 모두 그 틀 안에 놓인다.
+for (const regionMap of emptyRegions) {
+  assert.ok(regionMap.path.startsWith("M"), `${regionMap.name} 윤곽`);
+  assert.ok(
+    regionMap.cells.every(
+      ({ x, y }) => x + 2.2 >= 0 && x + 2.2 <= regionMap.width && y + 2.2 >= 0 && y + 2.2 <= regionMap.height,
+    ),
+    `${regionMap.name} 칸이 틀 안에 있다.`,
+  );
+}
+
 // 먼 섬은 첫 화면 틀(본토와 제주) 안으로 옮겨 그리고, 섬 위의 기록과 칸도 함께 옮긴다.
 const homeFrame = getKoreaMapFrame({ east: 129.7, north: 38.7, south: 33.1, west: 126 });
 const isInside = ({ x, y }) =>

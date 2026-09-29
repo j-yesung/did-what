@@ -9,6 +9,7 @@ import {
   getRegion,
   getRegionCode,
   KOREA_MAP_CELL_STYLE,
+  KOREA_MAP_DOT_RADIUS,
   KOREA_MAP_REGION_PATHS,
   type Region,
 } from "@/entities/region";
@@ -33,7 +34,6 @@ const LEVEL_CLASS_NAMES = {
   3: "fill-map-level-3",
   4: "fill-map-level-4",
 } as const;
-const DOT_RADIUS = { 1: 1.9, 2: 2.6, 3: 3.3, 4: 4 } as const;
 const CELL_CENTER = KOREA_MAP_CELL_STYLE.size / 2;
 const TAP_SLOP = 8;
 // 첫 화면은 본토와 제주만 꽉 차게 담는다. 백령도·울릉도는 옆으로 옮기거나 축소하면 보인다.
@@ -158,16 +158,14 @@ export function RegionActivityMap({ records }: { records: readonly MapRecord[] }
             />
           ))}
           {dots.map((dot) => {
-            const level = dot.level as keyof typeof DOT_RADIUS;
+            const level = dot.level as keyof typeof KOREA_MAP_DOT_RADIUS;
             return (
               <circle
-                className={cn("stroke-background", LEVEL_CLASS_NAMES[level])}
+                className={LEVEL_CLASS_NAMES[level]}
                 cx={dot.x + CELL_CENTER}
                 cy={dot.y + CELL_CENTER}
                 key={dot.id}
-                r={DOT_RADIUS[level] * dotScale}
-                strokeWidth={1}
-                vectorEffect="non-scaling-stroke"
+                r={KOREA_MAP_DOT_RADIUS[level] * dotScale}
               />
             );
           })}
