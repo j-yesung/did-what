@@ -1,4 +1,6 @@
 export {
+  fetchNotificationPage,
+  fetchUnreadNotificationCount,
   getNotificationHref,
   NOTIFICATIONS_QUERY_KEY,
   type NotificationItem,

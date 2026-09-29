@@ -1,4 +1,4 @@
-export { RECORD_COMMENTS_QUERY_KEY, recordCommentListQueryOptions } from "./api/queries";
+export { fetchRecordCommentPage, RECORD_COMMENTS_QUERY_KEY, recordCommentListQueryOptions } from "./api/queries";
 export {
   formatCommentTime,
   normalizeCommentBody,

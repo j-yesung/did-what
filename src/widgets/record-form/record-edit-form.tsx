@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { placesQueryOptions } from "@/entities/place";
+import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
 import { RECORDS_QUERY_KEY, type RecordCategory, type RecordFormState, type RecordWeather } from "@/entities/record";
 import {
   RecordLocationFields,
@@ -17,8 +17,6 @@ import { Button } from "@/shared/ui/button";
 import { FieldGroup, FieldSeparator } from "@/shared/ui/field";
 import type { LeaveGuardHandle } from "@/shared/ui/leave-guard";
 import { LeaveGuard } from "@/shared/ui/leave-guard";
-import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { RecordActivityField } from "./field/activity-field";
 import { RecordCategoryField } from "./field/category-field";
@@ -38,13 +36,14 @@ type RecordEditFormProps = {
     regions: RecordLocationRegion[];
     weather: RecordWeather;
   };
+  initialSavedPlaces?: SavedPlaceRow[];
   returnTo: string;
   savedTo: string;
 };
 
-export function RecordEditForm({ action, initialValues, returnTo, savedTo }: RecordEditFormProps) {
+export function RecordEditForm({ action, initialSavedPlaces, initialValues, returnTo, savedTo }: RecordEditFormProps) {
   const guardRef = useRef<LeaveGuardHandle>(null);
-  const placesQuery = useQuery(placesQueryOptions);
+  const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialSavedPlaces });
   const formRef = useRef<HTMLFormElement>(null);
 
   const save = useActionMutation(action, {
@@ -83,28 +82,8 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
     save.mutate(new FormData(event.currentTarget));
   };
 
-  if (placesQuery.isPending) {
-    return (
-      <div className="fixed inset-0 grid place-items-center">
-        <Spinner
-          aria-label="선택지를 불러오는 중"
-          className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
-        />
-      </div>
-    );
-  }
-
-  if (placesQuery.isError) {
-    return (
-      <LoadErrorAlert
-        onRetry={() => void placesQuery.refetch()}
-        retrying={placesQuery.isFetching}
-        title="선택지를 불러오지 못했어요"
-      />
-    );
-  }
-
-  const savedPlaces = placesQuery.data;
+  // 저장한 장소를 아직 못 받았으면 '내 장소에서 추가'만 잠시 꺼 두고 나머지 폼은 그대로 쓴다.
+  const savedPlaces = placesQuery.data ?? [];
 
   return (
     <form

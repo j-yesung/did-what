@@ -3,8 +3,12 @@
 import { useMemo, useState } from "react";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
+import { useRouter } from "next/navigation";
 
+import { recordDetailQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
+import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { getRegionCode, type Region } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -23,6 +27,8 @@ type RegionRecordsBottomSheetProps = {
 };
 
 export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }: RegionRecordsBottomSheetProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   // 다른 시·도를 열면 이전 시·도에서 고른 시·군·구는 무시한다.
   const [subregionFilter, setSubregionFilter] = useState<{ regionCode: string; name: string } | null>(null);
   const selectedSubregion = region && subregionFilter?.regionCode === region.code ? subregionFilter.name : null;
@@ -49,6 +55,17 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
     }
     return [...counts].sort(([, first], [, second]) => second - first);
   }, [regionRecords]);
+
+  // 누르는 순간 다음 화면 데이터를 받기 시작해, 넘어갔을 때 빈 화면이 잠깐 보이지 않게 한다.
+  const prefetchRecord = (recordId: string) => {
+    router.prefetch(`/records/${recordId}`);
+    void queryClient.prefetchQuery(recordDetailQueryOptions(recordId));
+    void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
+  };
+  const prefetchRegion = (target: Region) => {
+    router.prefetch(`/regions/${target.code}`);
+    void queryClient.prefetchQuery(regionRecordsQueryOptions(target));
+  };
   const visibleRecords = selectedSubregion
     ? regionRecords.filter(({ subregions }) => subregions.includes(selectedSubregion))
     : regionRecords;
@@ -114,6 +131,9 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
                       "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
                     )}
                     href={`/records/${record.id}`}
+                    onPointerDown={(event) => {
+                      if (event.button === 0) prefetchRecord(record.id);
+                    }}
                     prefetch={false}
                   >
                     <span className="min-w-0 flex-1">
@@ -143,7 +163,15 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
             <Button
               fullWidth
               nativeButton={false}
-              render={<PressLink href={`/regions/${region.code}`} />}
+              render={
+                <PressLink
+                  href={`/regions/${region.code}`}
+                  onPointerDown={(event) => {
+                    if (event.button === 0) prefetchRegion(region);
+                  }}
+                  prefetch={false}
+                />
+              }
               size="xlarge"
             >
               {region.name} 기록 전체 보기
