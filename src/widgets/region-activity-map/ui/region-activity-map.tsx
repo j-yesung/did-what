@@ -192,7 +192,6 @@ export function RegionActivityMap({
         }}
       >
         <title id="korea-map-title">대한민국 발자취 지도</title>
-        {/* JSX는 줄바꿈으로 나눈 글과 표현식을 공백 없이 잇는다. 문장끼리 붙지 않게 직접 띄운다. */}
         <desc id="korea-map-description">
           {[
             records.length > 0
