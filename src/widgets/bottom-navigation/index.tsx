@@ -1,11 +1,10 @@
 "use client";
 
-import { type MouseEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { GearIcon, type Icon, MapPinAreaIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 
-import { readRecordView } from "@/features/record/switch-record-view";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
@@ -58,10 +57,6 @@ export function BottomNavigation() {
     pressedTabRef.current = null;
     cancelIndicatorMotion(indicatorRef.current);
     setPendingIndex((current) => (current === index ? null : current));
-  };
-
-  const handleRecordViewClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (readRecordView() === "calendar") event.currentTarget.href = "/records?view=calendar";
   };
 
   if (activeIndex === -1) return null;
@@ -118,9 +113,7 @@ export function BottomNavigation() {
                   handleCancelPendingTab(index);
                 }}
                 onPointerCancel={() => handleCancelPendingTab(index)}
-                render={
-                  <PressLink href={href} onClick={href === "/records" ? handleRecordViewClick : undefined} prefetch />
-                }
+                render={<PressLink href={href} prefetch />}
                 variant="ghost"
               >
                 <TabIcon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
