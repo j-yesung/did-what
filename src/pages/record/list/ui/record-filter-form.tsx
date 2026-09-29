@@ -1,6 +1,6 @@
 "use client";
 
-import { type SubmitEvent, useEffect, useState } from "react";
+import { type SubmitEvent, useEffect, useState, useTransition } from "react";
 
 import { XIcon } from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
@@ -28,6 +28,9 @@ const getPeriodChipLabel = ({ from, to }: Pick<RecordFilters, "from" | "to">) =>
 export function RecordFilterForm({ filters }: RecordFilterFormProps) {
   const router = useRouter();
   const [query, setQuery] = useState(filters.query);
+  // 목록을 새로 받는 동안 검색창에 진행 표시를 띄운다.
+  const [navigating, startNavigation] = useTransition();
+  const navigate = (href: string) => startNavigation(() => router.push(href));
 
   useEffect(() => {
     setQuery(filters.query);
@@ -46,11 +49,11 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    router.push(buildRecordsHref(filters, { query }));
+    navigate(buildRecordsHref(filters, { query }));
   };
 
   const handleFilterApply = (nextFilters: Pick<RecordFilters, "from" | "sort" | "to">) => {
-    router.push(buildRecordsHref({ ...filters, query, ...nextFilters }));
+    navigate(buildRecordsHref({ ...filters, query, ...nextFilters }));
   };
 
   const filterChipClassName = cn(
@@ -66,10 +69,15 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         <SearchField
           aria-label="기록 검색"
           className="min-w-0 flex-1"
+          loading={navigating}
           maxLength={100}
           name="q"
+          // 글자만 지우고 결과는 그대로 두면 빈 검색창과 걸러진 목록이 어긋난다.
+          onClear={() => {
+            if (filters.query) navigate(buildRecordsHref(filters, { query: "" }));
+          }}
           onValueChange={setQuery}
-          placeholder="검색어를 입력하세요"
+          placeholder="활동, 메모, 지역으로 검색"
           value={query}
         />
 
