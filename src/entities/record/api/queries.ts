@@ -11,8 +11,6 @@ import {
   fetchRecordPage,
   fetchRecordPlaces,
   fetchRecordsInPeriod,
-  fetchRegionRecords,
-  type RecordRegionFilter,
 } from "./client-queries";
 
 export const RECORDS_QUERY_KEY = ["records"] as const;
@@ -66,13 +64,5 @@ export const recordCalendarQueryOptions = (period: Pick<RecordFilters, "from" | 
     ...MAIN_QUERY_OPTIONS,
     queryKey: [...RECORDS_QUERY_KEY, "calendar", period],
     queryFn: () => fetchRecordsInPeriod(period),
-  });
-};
-
-export const regionRecordsQueryOptions = (region: RecordRegionFilter) => {
-  return queryOptions({
-    ...MAIN_QUERY_OPTIONS,
-    queryKey: [...RECORDS_QUERY_KEY, "region", region.code],
-    queryFn: () => fetchRegionRecords(region),
   });
 };

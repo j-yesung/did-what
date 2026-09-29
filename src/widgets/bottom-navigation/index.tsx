@@ -14,11 +14,10 @@ type Tab = {
   href: string;
   icon: Icon;
   label: string;
-  paths?: readonly string[];
 };
 
 const TABS: readonly Tab[] = [
-  { href: "/", icon: MapPinAreaIcon, label: "지도", paths: ["/", "/regions"] },
+  { href: "/", icon: MapPinAreaIcon, label: "지도" },
   { href: "/records", icon: NotepadIcon, label: "기록" },
   { href: "/places", icon: MapPinIcon, label: "장소" },
   { href: "/settings", icon: GearIcon, label: "설정" },
@@ -26,7 +25,7 @@ const TABS: readonly Tab[] = [
 
 export function BottomNavigation() {
   const pathname = usePathname() ?? "";
-  const activeIndex = TABS.findIndex((tab) => (tab.paths ?? [tab.href]).includes(pathname));
+  const activeIndex = TABS.findIndex((tab) => tab.href === pathname);
 
   const activeIndexRef = useRef(activeIndex);
   const pressedTabRef = useRef<number | null>(null);

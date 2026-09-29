@@ -8,7 +8,6 @@ export {
   recordMonthBoundsQueryOptions,
   recordPlacesQueryOptions,
   recordSummaryQueryKey,
-  regionRecordsQueryOptions,
 } from "./api/queries";
 export {
   DEFAULT_RECORD_CATEGORY,
