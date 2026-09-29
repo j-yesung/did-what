@@ -6,6 +6,7 @@ export {
   getRegion,
   getRegionCode,
   getRegionProgressLabel,
+  getSubdivisionUnit,
   KOREA_MAP_CELL_STYLE,
   KOREA_MAP_DOT_RADIUS,
   KOREA_MAP_REGION_PATHS,

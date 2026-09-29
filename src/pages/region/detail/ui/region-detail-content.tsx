@@ -16,7 +16,7 @@ import {
   toRegionLocations,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
-import { createRegionActivityMaps, type Region, RegionMiniMap } from "@/entities/region";
+import { createRegionActivityMaps, getSubdivisionUnit, type Region, RegionMiniMap } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -68,7 +68,7 @@ export function RegionDetailContent({ region }: RegionDetailContentProps) {
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-muted-foreground text-xs">방문한 하위 지역</p>
+                  <p className="font-bold text-muted-foreground text-xs">다녀온 {getSubdivisionUnit(region.code)}</p>
                   <p className="mt-1 font-bold text-3xl tracking-[-0.045em]">
                     {regionMap.visitedCount}
                     <span className="ml-1 font-medium text-base text-muted-foreground">/ {regionMap.totalCount}</span>

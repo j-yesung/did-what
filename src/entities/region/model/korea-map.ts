@@ -126,13 +126,18 @@ export const filterRecordsByRegion = <T extends { region_code: string }>(
   return records.filter((record) => getRegionCode(record.region_code) === regionCode);
 };
 
+// 무엇을 센 값인지 화면마다 같은 말로 보여준다. 세종은 시·군·구가 없어 읍·면·동을 센다.
+export const getSubdivisionUnit = (regionCode: RegionCode) => (regionCode === "KR-50" ? "읍·면·동" : "시·군·구");
+
 export const getRegionProgressLabel = ({
+  code,
   totalCount,
   visitedCount,
-}: Pick<RegionActivityMap, "totalCount" | "visitedCount">) => {
-  if (visitedCount === 0) return `0 / ${totalCount} · 미기록`;
-  if (visitedCount === totalCount) return `${totalCount} / ${totalCount} · 모두 채움`;
-  return `${visitedCount} / ${totalCount} · ${totalCount - visitedCount}곳 남음`;
+}: Pick<RegionActivityMap, "code" | "totalCount" | "visitedCount">) => {
+  const unit = getSubdivisionUnit(code);
+  if (visitedCount === 0) return `${unit} 0 / ${totalCount} · 미기록`;
+  if (visitedCount === totalCount) return `${unit} ${totalCount} / ${totalCount} · 모두 채움`;
+  return `${unit} ${visitedCount} / ${totalCount} · ${totalCount - visitedCount}곳 남음`;
 };
 
 const isPointInRing = ([x, y]: Position, ring: Position[]) => {

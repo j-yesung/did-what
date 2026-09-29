@@ -1,5 +1,5 @@
 import type { PointerEvent } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type MapSize = { width: number; height: number };
 type MapFrame = MapSize & { x: number; y: number };
@@ -23,6 +23,13 @@ const MAX_ZOOM_FROM_HOME = 4;
  * 재지 않고 정해 두면 첫 화면부터 그대로이고, 기기마다 지도와 같은 비율로 조금 커지거나 작아진다.
  */
 const REFERENCE_VIEW_HEIGHT = 620;
+
+// 복귀·현재 위치 버튼으로 옮길 때만 쓴다. 손가락으로 움직일 때는 바로 따라가야 해서 제스처에는 쓰지 않는다.
+const MOVE_DURATION = 300;
+// 현재 위치는 최대 배율까지 들어가면 어디로 왔는지 맥락을 잃는다. 첫 화면의 두 배쯤에서 멈춘다.
+const FOCUS_ZOOM_FROM_HOME = 2;
+
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
 /**
  * 보이는 영역은 언제나 첫 화면 틀과 같은 비율이다. 세로로 긴 틀이면 세로 화면을 위아래까지 채운다.
@@ -55,13 +62,28 @@ const constrainMapView = (space: MapSpace, next: MapView): MapView => {
 export const getHomeMapView = (space: MapSpace, frame: MapFrame) =>
   constrainMapView(space, { zoom: space.width / frame.width, x: frame.x, y: frame.y });
 
-export const focusMapView = (space: MapSpace, position: MapPosition) => {
-  const view = getViewSize(space, space.maxZoom);
+export const focusMapView = (space: MapSpace, position: MapPosition, zoom = space.maxZoom) => {
+  const view = getViewSize(space, zoom);
   return constrainMapView(space, {
-    zoom: space.maxZoom,
+    zoom,
     x: position.x - view.width / 2,
     y: position.y - view.height / 2,
   });
+};
+
+/**
+ * from에서 to로 t(0~1)만큼 옮긴 화면. 배율은 비율로(로그) 섞어야 확대 속도가 일정하게 느껴지고,
+ * 위치는 화면 가운데를 섞어야 배율이 바뀌는 동안 목표 지점이 옆으로 흔들리지 않는다.
+ */
+export const interpolateMapView = (space: MapSpace, from: MapView, to: MapView, t: number) => {
+  const zoom = Math.exp(Math.log(from.zoom) + (Math.log(to.zoom) - Math.log(from.zoom)) * t);
+  const fromView = getViewSize(space, from.zoom);
+  const toView = getViewSize(space, to.zoom);
+  const view = getViewSize(space, zoom);
+  const centerX = from.x + fromView.width / 2 + (to.x + toView.width / 2 - (from.x + fromView.width / 2)) * t;
+  const centerY = from.y + fromView.height / 2 + (to.y + toView.height / 2 - (from.y + fromView.height / 2)) * t;
+
+  return constrainMapView(space, { zoom, x: centerX - view.width / 2, y: centerY - view.height / 2 });
 };
 
 export const pinchMapView = (
@@ -121,10 +143,52 @@ export const useMapViewport = (map: MapSize, frame: MapFrame, initialView?: MapV
     setView(next);
   };
 
-  const focusOn = (position: MapPosition) => commit(focusMapView(space, position));
+  const animation = useRef<number | null>(null);
+  const stopAnimation = () => {
+    if (animation.current !== null) cancelAnimationFrame(animation.current);
+    animation.current = null;
+  };
+
+  // 옮겨 가는 중에 화면을 떠나면 남은 프레임을 버린다.
+  useEffect(
+    () => () => {
+      if (animation.current !== null) cancelAnimationFrame(animation.current);
+    },
+    [],
+  );
+
+  // null은 첫 화면이다. 끝난 뒤 null로 두어야 복귀 버튼이 꺼진다.
+  const animateTo = (target: MapView | null) => {
+    stopAnimation();
+    const from = viewRef.current ?? home;
+    const to = target ?? home;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      commit(target);
+      return;
+    }
+
+    const startedAt = performance.now();
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / MOVE_DURATION);
+      if (progress === 1) {
+        animation.current = null;
+        commit(target);
+        return;
+      }
+
+      commit(interpolateMapView(space, from, to, easeOutCubic(progress)));
+      animation.current = requestAnimationFrame(step);
+    };
+    animation.current = requestAnimationFrame(step);
+  };
+
+  const focusOn = (position: MapPosition) => animateTo(focusMapView(space, position, home.zoom * FOCUS_ZOOM_FROM_HOME));
 
   const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    // 옮겨 가는 중에 손가락이 닿으면 그 자리에서 멈추고 손가락을 따른다.
+    stopAnimation();
     if (pointers.current.size >= 2) return;
     pointers.current.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -189,7 +253,7 @@ export const useMapViewport = (map: MapSize, frame: MapFrame, initialView?: MapV
     drag.current = remainingPointer ? { pointerId: remainingPointer[0], ...remainingPointer[1] } : null;
   };
 
-  const reset = () => commit(null);
+  const reset = () => animateTo(null);
 
   return {
     zoom: current.zoom,

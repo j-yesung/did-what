@@ -3,6 +3,7 @@ import { ArrowsInSimpleIcon, GpsFixIcon } from "@phosphor-icons/react";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton, type LiquidGlassButtonProps } from "@/shared/ui/liquid-glass-button";
+import { Spinner } from "@/shared/ui/spinner";
 import type { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 import type { useMapViewport } from "@/widgets/region-activity-map/model/use-map-viewport";
 
@@ -27,8 +28,15 @@ export function MapControls({ viewport, currentLocation }: MapControlsProps) {
       role="group"
       aria-label="지도 조작"
     >
-      <MapControlButton disabled={currentLocation.isPending} label="현재 위치로 이동" onClick={currentLocation.locate}>
-        <GpsFixIcon aria-hidden="true" />
+      {/* 위치 확인은 최대 10초가 걸린다. 흐리게만 두면 고장 난 버튼처럼 보여 진행 표시로 바꾼다. */}
+      <MapControlButton
+        aria-busy={currentLocation.isPending || undefined}
+        label="현재 위치로 이동"
+        onClick={() => {
+          if (!currentLocation.isPending) currentLocation.locate();
+        }}
+      >
+        {currentLocation.isPending ? <Spinner aria-hidden="true" /> : <GpsFixIcon aria-hidden="true" />}
       </MapControlButton>
       <MapControlButton disabled={!viewport.canReset} label="처음 지도로 복귀" onClick={viewport.reset}>
         <ArrowsInSimpleIcon aria-hidden="true" />

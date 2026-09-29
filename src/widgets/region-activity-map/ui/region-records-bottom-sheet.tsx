@@ -166,7 +166,14 @@ export function RegionRecordsBottomSheet({
           )}
         </div>
 
-        {region ? (
+        {/* 기록이 없는 지역에서 '전체 보기'는 빈 화면을 한 번 더 거칠 뿐이라, 기록 남기기를 주 버튼으로 둔다. */}
+        {region && regionRecords.length === 0 ? (
+          <BottomSheet.Footer className="pt-3">
+            <Button fullWidth nativeButton={false} render={<PressLink href="/records/new" />} size="xlarge">
+              기록 남기기
+            </Button>
+          </BottomSheet.Footer>
+        ) : region ? (
           <BottomSheet.Footer className="pt-3">
             <Button
               fullWidth
