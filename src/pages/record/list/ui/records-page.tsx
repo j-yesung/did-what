@@ -17,7 +17,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
   const filters = parseRecordFilters(params);
 
   return (
-    <PageShell className={view === "calendar" ? "min-h-dvh gap-4" : "gap-4"} withBottomNavigation>
+    <PageShell className="gap-4" withBottomNavigation>
       <header className="min-h-13">
         <h1 className="sr-only">우리의 기록</h1>
         <RecordViewPreference hasExplicitView={hasExplicitView} view={view} />

@@ -143,6 +143,13 @@
   --nav-content-gap: 16px;
   --nav-clearance: calc(var(--nav-height) + var(--nav-bottom-offset) + var(--nav-content-gap));
 
+  /**
+   * 화면 전체 높이. 상태 표시줄 밑까지 콘텐츠를 올리면 iOS 홈 화면 앱은 svh에서 그 높이를 빼 둔다.
+   * 그대로 쓰면 화면을 채우는 뼈대가 그만큼 짧아져 아래에 빈 띠가 남으니 다시 더한다.
+   * 빼 두지 않는 Safari에서는 상단 안전 영역이 0이라 svh와 같다.
+   */
+  --screen-height: calc(100svh + env(safe-area-inset-top));
+
   /* 상단 툴바 버튼의 지름. 지도 화면의 상단 여백이 같은 값을 본다. */
   --toolbar-height: 52px;
 
@@ -353,7 +360,7 @@
      * 화면 뼈대(PageShell)가 쓰는 단위와 같아야 한다.
      * vh는 툴바가 접힌 높이(lvh)라 svh보다 커서, 콘텐츠가 짧아도 그 차이만큼 스크롤이 생긴다.
      */
-    min-height: 100svh;
+    min-height: var(--screen-height);
     margin: 0;
     background: var(--background);
     color: var(--foreground);

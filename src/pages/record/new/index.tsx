@@ -19,7 +19,7 @@ export async function RecordNewPage({ searchParams }: RecordNewPageProps) {
   const returnHref = defaultPlace ? `/places/${placeId}` : calendarHref;
 
   return (
-    <PageShell className="h-dvh min-h-0 gap-0 overflow-hidden px-0 pt-0 pb-0">
+    <PageShell className="h-(--screen-height) min-h-0 gap-0 overflow-hidden px-0 pt-0 pb-0">
       <RecordCreateFunnel
         action={createRecord}
         defaultPlace={defaultPlace ?? undefined}

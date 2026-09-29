@@ -47,7 +47,7 @@ export function AuthForm({ mode, returnTo }: AuthFormProps) {
   const state = submit.data ?? INITIAL_AUTH_STATE;
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-background px-5 pt-[calc(40px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]">
+    <main className="flex min-h-(--screen-height) items-center justify-center bg-background px-5 pt-[calc(40px+env(safe-area-inset-top))] pb-[calc(40px+env(safe-area-inset-bottom))]">
       <section className="flex w-full max-w-(--app-width) flex-col gap-6" aria-labelledby="auth-title">
         <h1 className="text-center font-bold text-2xl text-foreground tracking-[-0.03em]" id="auth-title">
           뭐했지?
