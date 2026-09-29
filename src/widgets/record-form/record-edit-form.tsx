@@ -1,12 +1,20 @@
 "use client";
 
 import type { SubmitEvent } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { placesQueryOptions } from "@/entities/place";
-import { RECORDS_QUERY_KEY, type RecordCategory, type RecordFormState, type RecordWeather } from "@/entities/record";
+import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
+import {
+  RECORDS_QUERY_KEY,
+  type RecordCategory,
+  type RecordFieldErrors,
+  type RecordFormState,
+  type RecordWeather,
+  readRecordInput,
+  validateRecordInput,
+} from "@/entities/record";
 import {
   RecordLocationFields,
   type RecordLocationPlace,
@@ -17,8 +25,6 @@ import { Button } from "@/shared/ui/button";
 import { FieldGroup, FieldSeparator } from "@/shared/ui/field";
 import type { LeaveGuardHandle } from "@/shared/ui/leave-guard";
 import { LeaveGuard } from "@/shared/ui/leave-guard";
-import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { RecordActivityField } from "./field/activity-field";
 import { RecordCategoryField } from "./field/category-field";
@@ -38,14 +44,18 @@ type RecordEditFormProps = {
     regions: RecordLocationRegion[];
     weather: RecordWeather;
   };
+  initialSavedPlaces?: SavedPlaceRow[];
   returnTo: string;
   savedTo: string;
 };
 
-export function RecordEditForm({ action, initialValues, returnTo, savedTo }: RecordEditFormProps) {
+export function RecordEditForm({ action, initialSavedPlaces, initialValues, returnTo, savedTo }: RecordEditFormProps) {
   const guardRef = useRef<LeaveGuardHandle>(null);
-  const placesQuery = useQuery(placesQueryOptions);
+  const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialSavedPlaces });
   const formRef = useRef<HTMLFormElement>(null);
+  const [clientErrors, setClientErrors] = useState<RecordFieldErrors>();
+  // 오류가 화면에 그려진 다음에 첫 오류 필드로 옮겨야 해서, 실패할 때마다 값을 바꿔 효과를 다시 부른다.
+  const [errorFocusKey, setErrorFocusKey] = useState(0);
 
   const save = useActionMutation(action, {
     error: "기록을 수정하지 못했어요",
@@ -55,12 +65,17 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
       if (formRef.current) formRef.current.dataset.dirty = "false";
       guardRef.current?.finish(savedTo);
     },
-    onFail: () => {
-      formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
-    },
+    onFail: () => setErrorFocusKey((key) => key + 1),
   });
 
-  const fieldErrors = save.data?.fieldErrors;
+  const fieldErrors = clientErrors ?? save.data?.fieldErrors;
+
+  useEffect(() => {
+    if (errorFocusKey === 0) return;
+    const invalid = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
+    invalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    invalid?.focus({ preventScroll: true });
+  }, [errorFocusKey]);
 
   useEffect(() => {
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -76,35 +91,26 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
 
   const markDirty = () => {
     if (formRef.current) formRef.current.dataset.dirty = "true";
+    // 고치기 시작하면 앞서 막았던 오류 표시는 지운다. 작성 과정도 같은 방식이다.
+    if (clientErrors) setClientErrors(undefined);
   };
 
+  // 서버와 같은 검증을 먼저 돌려, 긴 폼 맨 아래에서 눌러도 무엇이 틀렸는지 바로 보여준다.
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    save.mutate(new FormData(event.currentTarget));
+    const formData = new FormData(event.currentTarget);
+    const { fieldErrors: nextErrors } = validateRecordInput(readRecordInput(formData));
+    setClientErrors(nextErrors);
+    if (nextErrors) {
+      setErrorFocusKey((key) => key + 1);
+      return;
+    }
+
+    save.mutate(formData);
   };
 
-  if (placesQuery.isPending) {
-    return (
-      <div className="fixed inset-0 grid place-items-center">
-        <Spinner
-          aria-label="선택지를 불러오는 중"
-          className="motion-safe:fade-in text-muted-foreground motion-safe:animate-in motion-safe:fill-mode-both motion-safe:delay-300"
-        />
-      </div>
-    );
-  }
-
-  if (placesQuery.isError) {
-    return (
-      <LoadErrorAlert
-        onRetry={() => void placesQuery.refetch()}
-        retrying={placesQuery.isFetching}
-        title="선택지를 불러오지 못했어요"
-      />
-    );
-  }
-
-  const savedPlaces = placesQuery.data;
+  // 저장한 장소를 아직 못 받았으면 '내 장소에서 추가'만 잠시 꺼 두고 나머지 폼은 그대로 쓴다.
+  const savedPlaces = placesQuery.data ?? [];
 
   return (
     <form
@@ -112,6 +118,7 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
       className="flex flex-col gap-4"
       data-dirty="false"
       id="record-form"
+      noValidate
       onChange={markDirty}
       onSubmit={handleSubmit}
     >

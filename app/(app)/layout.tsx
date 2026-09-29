@@ -3,6 +3,7 @@ import { type ReactNode, Suspense } from "react";
 import { MainDataPrefetch } from "@/app/providers/main-data-prefetch";
 import { AppLoading } from "@/app/ui/app-loading";
 import { requireMember } from "@/entities/member/server";
+import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
 import { AppToolbar } from "@/widgets/app-toolbar";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 
@@ -24,6 +25,8 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
     <>
       <MainDataPrefetch />
       <AppToolbar memberId={member.id} />
+      {/* 상세 화면의 고정 뒤로가기 버튼이 옮겨 오는 자리. 툴바 다음, 본문보다 앞에서 읽힌다. */}
+      <PageBackSlot />
       {children}
       <BottomNavigation />
     </>

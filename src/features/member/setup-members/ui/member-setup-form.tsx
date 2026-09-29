@@ -97,7 +97,7 @@ export function MemberSetupForm() {
                 aria-checked={selectedId === member.id}
                 className={cn(
                   "min-h-11 justify-between",
-                  selectedId === member.id && "border-primary bg-primary/10 text-primary",
+                  selectedId === member.id && "border-primary bg-primary/10 text-accent-text",
                 )}
                 fullWidth
                 onClick={() => setSelectedId(member.id)}

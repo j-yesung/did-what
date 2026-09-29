@@ -34,20 +34,22 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
         </h2>
       </header>
       <div className="flex flex-col">
+        {/* 오래된 것부터 보여주므로 더 오래된 댓글은 목록 위에서 불러온다. */}
+        {hasNextPage ? (
+          <LoadMoreButton
+            error={isMoreError ? "이전 댓글을 불러오지 못했어요." : undefined}
+            label="이전 댓글 보기"
+            loading={isLoadingMore}
+            onClick={loadMore}
+          />
+        ) : null}
+
         {comments.length > 0 ? (
           <ol aria-label={`댓글 ${comments.length}개`} className="-mx-5">
             {comments.map((comment) => (
               <CommentRow comment={comment} currentMemberId={member.id} key={comment.id} onDelete={removeComment} />
             ))}
           </ol>
-        ) : null}
-
-        {hasNextPage ? (
-          <LoadMoreButton
-            error={isMoreError ? "댓글을 더 불러오지 못했어요." : undefined}
-            loading={isLoadingMore}
-            onClick={loadMore}
-          />
         ) : null}
 
         <CommentCreateForm

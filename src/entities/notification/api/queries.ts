@@ -1,6 +1,8 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { createClient } from "@/shared/api/supabase/client";
+import type { Database } from "@/shared/api/supabase/database.types";
 
 import {
   getNotificationCursorFilter,
@@ -12,8 +14,13 @@ export const NOTIFICATIONS_QUERY_KEY = ["notifications"] as const;
 
 const NOTIFICATION_COLUMNS = "id, event_type, comment_id, sender_name, record_id, record_title, read_at, created_at";
 
-const fetchNotificationPage = async (memberId: string, cursor: NotificationCursor | null) => {
-  let query = createClient()
+// 서버 페이지가 첫 화면에 쓸 목록을 미리 받을 수 있게 클라이언트를 받는다.
+export const fetchNotificationPage = async (
+  client: SupabaseClient<Database>,
+  memberId: string,
+  cursor: NotificationCursor | null,
+) => {
+  let query = client
     .from("notifications")
     .select(NOTIFICATION_COLUMNS)
     .eq("recipient_member_id", memberId)
@@ -46,7 +53,7 @@ export const getNotificationHref = (notification: NotificationItem) => {
 export const notificationListQueryOptions = (memberId: string) => {
   return infiniteQueryOptions({
     queryKey: [...NOTIFICATIONS_QUERY_KEY, memberId, "list"],
-    queryFn: ({ pageParam }) => fetchNotificationPage(memberId, pageParam),
+    queryFn: ({ pageParam }) => fetchNotificationPage(createClient(), memberId, pageParam),
     initialPageParam: null as NotificationCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     refetchOnWindowFocus: true,
@@ -54,19 +61,21 @@ export const notificationListQueryOptions = (memberId: string) => {
   });
 };
 
+export const fetchUnreadNotificationCount = async (client: SupabaseClient<Database>, memberId: string) => {
+  const { count, error } = await client
+    .from("notifications")
+    .select("*", { count: "exact", head: true })
+    .eq("recipient_member_id", memberId)
+    .is("read_at", null);
+
+  if (error) throw error;
+  return count ?? 0;
+};
+
 export const unreadNotificationCountQueryOptions = (memberId: string) => {
   return queryOptions({
     queryKey: [...NOTIFICATIONS_QUERY_KEY, memberId, "unread-count"],
-    queryFn: async () => {
-      const { count, error } = await createClient()
-        .from("notifications")
-        .select("*", { count: "exact", head: true })
-        .eq("recipient_member_id", memberId)
-        .is("read_at", null);
-
-      if (error) throw error;
-      return count ?? 0;
-    },
+    queryFn: () => fetchUnreadNotificationCount(createClient(), memberId),
     refetchOnWindowFocus: true,
     staleTime: 30_000,
   });

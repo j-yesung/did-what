@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useRef } from "react";
 
+import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
 import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 
@@ -24,6 +25,7 @@ type RecordFunnelLayoutProps = {
 export function RecordFunnelLayout({ backDisabled, children, footer, onBack, step }: RecordFunnelLayoutProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const previousStepIndexRef = useRef(getRecordCreateStepIndex(step));
+  const keyboardInset = useKeyboardInset();
 
   const stepIndex = getRecordCreateStepIndex(step);
 
@@ -38,7 +40,11 @@ export function RecordFunnelLayout({ backDisabled, children, footer, onBack, ste
   }, [stepIndex]);
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] bg-background">
+    // 키보드가 올라오면 그만큼 아래를 비워 하단 버튼이 키보드 바로 위에 붙게 한다.
+    <div
+      className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] bg-background"
+      style={keyboardInset > 0 ? { paddingBottom: keyboardInset } : undefined}
+    >
       <header className="border-b bg-background px-5 pt-[calc(10px+env(safe-area-inset-top))] pb-4">
         <div className="grid min-h-(--toolbar-height) grid-cols-[var(--toolbar-height)_1fr_var(--toolbar-height)] items-center">
           <BackButton aria-label="이전으로" disabled={backDisabled} onClick={onBack} />
@@ -81,7 +87,13 @@ export function RecordFunnelLayout({ backDisabled, children, footer, onBack, ste
       </div>
 
       {footer ? (
-        <footer className="border-t bg-background px-5 pt-3 pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+        <footer
+          className={cn(
+            "border-t bg-background px-5 pt-3",
+            // 키보드 위에서는 홈 인디케이터 여백이 필요 없다.
+            keyboardInset > 0 ? "pb-3" : "pb-[max(--spacing(4),env(safe-area-inset-bottom))]",
+          )}
+        >
           {footer}
         </footer>
       ) : null}

@@ -15,7 +15,8 @@ const ICON_BUTTON_VARIANT: Record<IconButtonVariant, string> = {
 };
 
 const ICON_BUTTON_SIZE: Record<IconButtonSize, string> = {
-  sm: "size-7",
+  // 28px는 보이는 크기만 작게 두고, 누를 수 있는 범위는 보이지 않는 영역으로 44px까지 넓힌다.
+  sm: "size-7 before:absolute before:-inset-2 before:content-['']",
   default: "size-11",
   lg: "size-12",
 };

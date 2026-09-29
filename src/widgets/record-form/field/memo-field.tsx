@@ -16,7 +16,7 @@ export function RecordMemoField({ initialMemo = "", memoError }: RecordMemoField
   return (
     <Field data-invalid={Boolean(memoError)}>
       <FieldLabel className="font-semibold text-base" htmlFor="memo">
-        무엇을 했나요? <span className="font-[650] text-[11px] text-muted-foreground">(선택)</span>
+        메모 <span className="font-[650] text-[11px] text-muted-foreground">(선택)</span>
       </FieldLabel>
       <Textarea
         className="min-h-24 resize-none"

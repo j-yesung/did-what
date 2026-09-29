@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { getSavedPlaces } from "@/entities/place/server";
 import { normalizeRecordCategory, normalizeRecordWeather, sortPrimaryRegionFirst } from "@/entities/record";
 import { getRecord } from "@/entities/record/server";
 import { updateRecord } from "@/features/record/edit-record/api/update-record";
@@ -24,7 +25,12 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
 
   const { user } = await requireUser();
 
-  const recordResult = await getRecord(recordId, user.id);
+  // 저장한 장소는 '내 장소에서 추가'에만 쓴다. 폼이 그걸 기다리며 가려지지 않게 함께 받아 넘기고,
+  // 실패하면 화면에서 다시 받는다.
+  const [recordResult, savedPlaces] = await Promise.all([
+    getRecord(recordId, user.id),
+    getSavedPlaces(user.id).catch(() => undefined),
+  ]);
 
   if (!recordResult.data && !recordResult.error) {
     notFound();
@@ -36,7 +42,8 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
   return (
     <OverscrollBack fallbackHref={`/records/${recordId}`}>
       <PageShell className="block">
-        <PageHeader back={`/records/${recordId}`} title="기록 수정" />
+        <h1 className="sr-only">기록 수정</h1>
+        <PageHeader back={`/records/${recordId}`} />
 
         <section className="px-1 pt-5.5 pb-5" aria-labelledby="record-edit-title">
           <h2
@@ -83,6 +90,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
                   name: toShortRegionName(region.region_name),
                 })),
             }}
+            initialSavedPlaces={savedPlaces}
             returnTo={`/records/${recordId}`}
             savedTo={`/records/${recordId}`}
           />

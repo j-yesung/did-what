@@ -242,6 +242,7 @@ function RecordCreateFunnelClient({
     <form
       className="contents"
       id="record-form"
+      noValidate
       onChange={(event) => {
         const target = event.target;
         if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;

@@ -1,6 +1,6 @@
 "use client";
 
-import { type SubmitEvent, startTransition, useMemo, useOptimistic, useState } from "react";
+import { type SubmitEvent, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 
 import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
@@ -41,11 +41,24 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
   const search = usePlaceSearch({ latitude: scope?.latitude, longitude: scope?.longitude, page: 1, query });
 
   const resolve = useMutation({ mutationFn: resolveRecordPlace });
+  /**
+   * 장소는 서버에서 하나씩 확인한다. 확인이 끝나 선택 목록에 반영될 때까지를 전환으로 묶어,
+   * 그동안 확인 중인 카드와 잠시 멈춘 카드를 구분해 보여주고 '추가'는 끝난 뒤에 실행한다.
+   */
+  const [resolving, startResolve] = useTransition();
+  const [addQueued, setAddQueued] = useState(false);
+  const resolvingKey = resolving && resolve.variables ? `kakao:${resolve.variables.providerPlaceId}` : null;
+
+  useEffect(() => {
+    if (!addQueued || resolving) return;
+    setAddQueued(false);
+    if (selectedPlaces.size > 0) onAdd([...selectedPlaces.values()]);
+  }, [addQueued, onAdd, resolving, selectedPlaces]);
 
   const selectPlace = (place: KakaoPlace) => {
     const searched = search.data;
     const key = `kakao:${place.id}`;
-    if (!searched || selectedKeys.has(key) || resolve.isPending) return;
+    if (!searched || selectedKeys.has(key) || resolving) return;
 
     if (optimisticSelectedKeys.has(key)) {
       setSelectedPlaces((current) => {
@@ -59,7 +72,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
     if (optimisticSelectedKeys.size >= maxSelectionCount) return;
 
     setSelectionError(undefined);
-    startTransition(async () => {
+    startResolve(async () => {
       selectOptimistically(key);
 
       try {
@@ -104,13 +117,13 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
   return (
     <>
       <BottomSheet.Header>
-        <BottomSheet.Title>방문 장소 찾기</BottomSheet.Title>
+        <BottomSheet.Title className="sr-only">방문 장소 찾기</BottomSheet.Title>
         <BottomSheet.Description>
           {scope ? `${scope.label} 주변을 먼저 보여줘요.` : "다른 지역의 장소를 고르면 그 지역도 함께 담겨요."}
         </BottomSheet.Description>
       </BottomSheet.Header>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 pb-0">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-5 pt-4 pb-0">
         {regions.length ? (
           <ul aria-label="검색 기준 지역" className="flex flex-wrap gap-1.5">
             {[...regions, { code: NATIONWIDE_CODE, label: "전국" }].map((region) => (
@@ -163,7 +176,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
               const added = selectedKeys.has(key);
               const selected = optimisticSelectedKeys.has(key);
               const selectionLimitReached = optimisticSelectedKeys.size >= maxSelectionCount && !selected;
-              const disabled = added || resolve.isPending || selectionLimitReached;
+              const disabled = added || resolving || selectionLimitReached;
 
               return (
                 <SelectablePlaceCard
@@ -174,6 +187,7 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
                   key={place.id}
                   name={place.name}
                   onSelect={() => selectPlace(place)}
+                  resolving={key === resolvingKey}
                   selected={selected}
                 />
               );
@@ -182,13 +196,16 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
         ) : null}
       </div>
 
-      <BottomSheet.Footer className="pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
+      <BottomSheet.Footer>
         <Button
-          aria-busy={resolve.isPending || undefined}
           disabled={optimisticSelectedKeys.size === 0}
           fullWidth
+          loading={addQueued}
           onClick={() => {
-            if (resolve.isPending) return;
+            if (resolving) {
+              setAddQueued(true);
+              return;
+            }
             onAdd([...selectedPlaces.values()]);
           }}
           size="large"

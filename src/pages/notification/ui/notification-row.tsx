@@ -9,16 +9,14 @@ import { PressLink } from "@/shared/ui/press-link";
 type NotificationRowProps = {
   notification: NotificationItem;
   onOpen: (notification: NotificationItem) => void;
-  pending: boolean;
 };
 
-export function NotificationRow({ notification, onOpen, pending }: NotificationRowProps) {
+export function NotificationRow({ notification, onOpen }: NotificationRowProps) {
   const unread = notification.read_at === null;
   const deleted = notification.record_id === null;
   const commentNotification = notification.event_type === "comment_created";
   const commentDeleted = commentNotification && notification.comment_id === null;
-  const href = getNotificationHref(notification) ?? undefined;
-  const link = !unread && href ? <PressLink href={href} /> : undefined;
+  const href = getNotificationHref(notification);
   const message = commentNotification ? "댓글을 남겼어요" : "새 기록을 남겼어요";
 
   return (
@@ -27,11 +25,11 @@ export function NotificationRow({ notification, onOpen, pending }: NotificationR
         deleted ? "삭제된 기록" : "기록 보기"
       }`}
       className="items-start py-4"
-      disabled={deleted || pending}
-      nativeButton={!link}
-      onClick={link ? undefined : () => onOpen(notification)}
-      render={link}
-      type={link ? undefined : "button"}
+      disabled={!href}
+      nativeButton={!href}
+      onClick={() => onOpen(notification)}
+      render={href ? <PressLink href={href} /> : undefined}
+      type={href ? undefined : "button"}
     >
       <span className="flex min-w-0 items-start gap-3">
         <span

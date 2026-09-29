@@ -67,7 +67,12 @@ export function RecordList({ filters }: RecordListProps) {
           <EmptyTitle className="font-semibold text-base">조건에 맞는 기록이 없어요</EmptyTitle>
           <EmptyDescription className="text-sm/normal">검색어나 기간을 조정해 보세요.</EmptyDescription>
         </EmptyHeader>
-        <Button className="text-primary" nativeButton={false} render={<PressLink href="/records" />} variant="ghost">
+        <Button
+          className="text-accent-text"
+          nativeButton={false}
+          render={<PressLink href="/records" />}
+          variant="ghost"
+        >
           전체 기록 보기
         </Button>
       </Empty>

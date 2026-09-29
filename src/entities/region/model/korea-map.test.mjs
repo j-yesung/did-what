@@ -57,7 +57,7 @@ const emptySeoul = emptyRegions.find(({ code }) => code === "KR-11");
 assert.ok(emptySeoul);
 assert.equal(emptySeoul.totalCount, 25);
 assert.ok(emptySeoul.cells.length > emptySeoul.totalCount, "서울 미니 지도는 자치구 수보다 촘촘해야 합니다.");
-assert.equal(getRegionProgressLabel(emptySeoul), `0 / ${emptySeoul.totalCount} · 미기록`);
+assert.equal(getRegionProgressLabel(emptySeoul), `시·군·구 0 / ${emptySeoul.totalCount} · 미기록`);
 
 const emptyIntegratedCity = emptyRegions.find(({ code }) => code === "KR-12");
 assert.ok(emptyIntegratedCity);
@@ -82,10 +82,19 @@ assert.ok(fullSeoul);
 assert.equal(partialSeoul.visitedCount, 1);
 assert.equal(
   getRegionProgressLabel(partialSeoul),
-  `1 / ${partialSeoul.totalCount} · ${partialSeoul.totalCount - 1}곳 남음`,
+  `시·군·구 1 / ${partialSeoul.totalCount} · ${partialSeoul.totalCount - 1}곳 남음`,
 );
 assert.equal(fullSeoul.visitedCount, fullSeoul.totalCount);
-assert.equal(getRegionProgressLabel(fullSeoul), `${fullSeoul.totalCount} / ${fullSeoul.totalCount} · 모두 채움`);
+assert.equal(
+  getRegionProgressLabel(fullSeoul),
+  `시·군·구 ${fullSeoul.totalCount} / ${fullSeoul.totalCount} · 모두 채움`,
+);
+
+assert.equal(
+  getRegionProgressLabel({ code: "KR-50", totalCount: 33, visitedCount: 2 }),
+  "읍·면·동 2 / 33 · 31곳 남음",
+  "세종은 읍·면·동을 센다.",
+);
 
 const sejongRecords = [
   { administrativeCode: "3611011900", id: "sejong-dong", latitude: 36.51, longitude: 127.28 },
@@ -145,6 +154,17 @@ assert.ok(
 );
 assert.equal(map.cells.filter((cell) => cell.count > 0).length, 2);
 assert.equal(map.cells.find((cell) => cell.count === 7)?.level, 4);
+
+// 지역 지도는 윤곽이 딱 맞는 틀에 그리고, 기록 칸 가운데도 모두 그 틀 안에 놓인다.
+for (const regionMap of emptyRegions) {
+  assert.ok(regionMap.path.startsWith("M"), `${regionMap.name} 윤곽`);
+  assert.ok(
+    regionMap.cells.every(
+      ({ x, y }) => x + 2.2 >= 0 && x + 2.2 <= regionMap.width && y + 2.2 >= 0 && y + 2.2 <= regionMap.height,
+    ),
+    `${regionMap.name} 칸이 틀 안에 있다.`,
+  );
+}
 
 // 먼 섬은 첫 화면 틀(본토와 제주) 안으로 옮겨 그리고, 섬 위의 기록과 칸도 함께 옮긴다.
 const homeFrame = getKoreaMapFrame({ east: 129.7, north: 38.7, south: 33.1, west: 126 });

@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
+import { useRouter } from "next/navigation";
 
+import { recordDetailQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
+import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { getRegionCode, type Region } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -15,21 +19,25 @@ import { Separator } from "@/shared/ui/separator";
 
 import { getSubregionName, type MapRecord } from "../model/record-map-points";
 
-// 공용 시트는 화면에서 띄워 두지만, 지도 위 시트는 양옆과 하단에 붙여 지도의 일부처럼 보이게 한다.
-const ATTACHED_SHEET_CLASS_NAME =
-  "data-[swipe-axis=y]:max-h-[75dvh] data-[swipe-axis=y]:[--drawer-bleed-background:var(--color-popover)] data-[swipe-axis=y]:[--drawer-inline-inset:0px] data-[swipe-axis=y]:[--drawer-inset:0px] data-[swipe-direction=down]:rounded-t-3xl data-[swipe-direction=down]:rounded-b-none data-[swipe-direction=down]:border-x-0 data-[swipe-direction=down]:border-b-0";
-
 type RegionRecordsBottomSheetProps = {
   onOpenChange: (open: boolean) => void;
+  onSubregionChange: (subregion: string | null) => void;
   open: boolean;
   records: readonly MapRecord[];
   region: Region | null;
+  subregion: string | null;
 };
 
-export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }: RegionRecordsBottomSheetProps) {
-  // 다른 시·도를 열면 이전 시·도에서 고른 시·군·구는 무시한다.
-  const [subregionFilter, setSubregionFilter] = useState<{ regionCode: string; name: string } | null>(null);
-  const selectedSubregion = region && subregionFilter?.regionCode === region.code ? subregionFilter.name : null;
+export function RegionRecordsBottomSheet({
+  onOpenChange,
+  onSubregionChange,
+  open,
+  records,
+  region,
+  subregion,
+}: RegionRecordsBottomSheetProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const regionRecords = useMemo(
     () =>
       region
@@ -53,6 +61,19 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
     }
     return [...counts].sort(([, first], [, second]) => second - first);
   }, [regionRecords]);
+  // 주소로 되살린 칩이 지금 기록에 없는 이름이면 전체로 본다.
+  const selectedSubregion = subregionCounts.some(([name]) => name === subregion) ? subregion : null;
+
+  // 누르는 순간 다음 화면 데이터를 받기 시작해, 넘어갔을 때 빈 화면이 잠깐 보이지 않게 한다.
+  const prefetchRecord = (recordId: string) => {
+    router.prefetch(`/records/${recordId}`);
+    void queryClient.prefetchQuery(recordDetailQueryOptions(recordId));
+    void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
+  };
+  const prefetchRegion = (target: Region) => {
+    router.prefetch(`/regions/${target.code}`);
+    void queryClient.prefetchQuery(regionRecordsQueryOptions(target));
+  };
   const visibleRecords = selectedSubregion
     ? regionRecords.filter(({ subregions }) => subregions.includes(selectedSubregion))
     : regionRecords;
@@ -66,8 +87,8 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
 
   return (
     <BottomSheet onOpenChange={onOpenChange} open={open} showSwipeHandle>
-      <BottomSheet.Content className={ATTACHED_SHEET_CLASS_NAME}>
-        <BottomSheet.Header className="px-5 text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
+      <BottomSheet.Content>
+        <BottomSheet.Header className="text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
           <BottomSheet.Title className="truncate font-bold text-xl leading-7">{region?.name}</BottomSheet.Title>
           <p className="text-muted-foreground text-sm tabular-nums">기록 {regionRecords.length}개</p>
         </BottomSheet.Header>
@@ -75,7 +96,7 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
         {subregionCounts.length > 0 ? (
           <div
             aria-label="시·군·구"
-            className="flex shrink-0 gap-2 overflow-x-auto px-5 pt-3 pb-1 [scrollbar-width:none]"
+            className="scrollbar-none flex shrink-0 gap-2 overflow-x-auto px-5 pt-3 pb-1"
             role="group"
           >
             {chips.map(([name, label, count]) => (
@@ -86,7 +107,7 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
                   activeChip === name && "bg-primary font-semibold text-primary-foreground",
                 )}
                 key={label}
-                onClick={() => setSubregionFilter(name && region ? { name, regionCode: region.code } : null)}
+                onClick={() => onSubregionChange(name)}
                 type="button"
               >
                 {label} {count}
@@ -118,6 +139,9 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
                       "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
                     )}
                     href={`/records/${record.id}`}
+                    onPointerDown={(event) => {
+                      if (event.button === 0) prefetchRecord(record.id);
+                    }}
                     prefetch={false}
                   >
                     <span className="min-w-0 flex-1">
@@ -142,9 +166,29 @@ export function RegionRecordsBottomSheet({ onOpenChange, open, records, region }
           )}
         </div>
 
-        {region ? (
-          <BottomSheet.Footer className="px-5 pt-3 pb-[max(--spacing(4),env(safe-area-inset-bottom))]">
-            <Button fullWidth nativeButton={false} render={<PressLink href={`/regions/${region.code}`} />} size="large">
+        {/* 기록이 없는 지역에서 '전체 보기'는 빈 화면을 한 번 더 거칠 뿐이라, 기록 남기기를 주 버튼으로 둔다. */}
+        {region && regionRecords.length === 0 ? (
+          <BottomSheet.Footer className="pt-3">
+            <Button fullWidth nativeButton={false} render={<PressLink href="/records/new" />} size="xlarge">
+              기록 남기기
+            </Button>
+          </BottomSheet.Footer>
+        ) : region ? (
+          <BottomSheet.Footer className="pt-3">
+            <Button
+              fullWidth
+              nativeButton={false}
+              render={
+                <PressLink
+                  href={`/regions/${region.code}`}
+                  onPointerDown={(event) => {
+                    if (event.button === 0) prefetchRegion(region);
+                  }}
+                  prefetch={false}
+                />
+              }
+              size="xlarge"
+            >
               {region.name} 기록 전체 보기
             </Button>
           </BottomSheet.Footer>

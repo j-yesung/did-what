@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 
-const { focusMapView, getHomeMapView, getMapSpace, pinchMapView } = await import("./use-map-viewport.ts");
+const { focusMapView, getHomeMapView, getMapSpace, interpolateMapView, pinchMapView } = await import(
+  "./use-map-viewport.ts"
+);
 
 // 폭 400 지도의 가운데 절반을 세로 2배 비율로 담는 첫 화면.
 const map = { height: 800, width: 400 };
@@ -31,3 +33,10 @@ assert.ok(Math.abs(movedPinch.y - 280) < 1e-8);
 // 보이는 영역이 지도보다 긴 축은 가운데에 둔다.
 const wideSpace = getMapSpace({ height: 300, width: 400 }, frame);
 assert.deepEqual(getHomeMapView(wideSpace, frame), { zoom: 2, x: 100, y: -50 });
+
+// 버튼으로 옮길 때의 중간 화면: 끝점은 그대로, 가운데는 배율을 비율로 섞는다.
+const target = focusMapView(space, { x: 200, y: 400 }, 4);
+assert.deepEqual(interpolateMapView(space, home, target, 0), home);
+assert.deepEqual(interpolateMapView(space, home, target, 1), target);
+assert.ok(Math.abs(interpolateMapView(space, home, target, 0.5).zoom - Math.sqrt(2 * 4)) < 1e-9);
+assert.deepEqual(focusMapView(space, { x: 200, y: 400 }, 4), { zoom: 4, x: 150, y: 300 });

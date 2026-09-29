@@ -47,7 +47,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
   return (
     <OverscrollBack fallbackHref="/places">
       <PageShell>
-        <PageHeader back="/places" title="기억의 장소" />
+        <PageHeader back="/places" />
 
         {isPlacePending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
           <LoadErrorAlert

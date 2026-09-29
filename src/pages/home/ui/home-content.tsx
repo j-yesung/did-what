@@ -4,8 +4,10 @@ import { MapPinAreaIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { recordLocationsQueryOptions } from "@/entities/record";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { Button } from "@/shared/ui/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { PressLink } from "@/shared/ui/press-link";
 import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activity-map";
 
 // 불러오는 동안 매 렌더마다 새 빈 배열을 넘기면 지도가 점과 배지를 계속 다시 계산한다.
@@ -41,6 +43,12 @@ export function HomeContent() {
             <EmptyTitle>아직 지도에 남긴 발자취가 없어요</EmptyTitle>
             <EmptyDescription>함께한 오늘의 지역을 첫 발자취로 남겨보세요.</EmptyDescription>
           </EmptyHeader>
+          {/* 안내만 두면 무엇을 눌러야 할지 툴바에서 찾아야 한다. 다음 행동을 바로 옆에 둔다. */}
+          <EmptyContent>
+            <Button nativeButton={false} render={<PressLink href="/records/new" />} size="medium">
+              기록 남기기
+            </Button>
+          </EmptyContent>
         </Empty>
       )}
     </>

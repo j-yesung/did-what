@@ -2,7 +2,6 @@ import { requireMember } from "@/entities/member/server";
 import { getSavedPlaces } from "@/entities/place/server";
 import { searchKakaoPlaces, validateKakaoQuery } from "@/shared/api/kakao-local/server";
 import { PageShell } from "@/shared/ui/layouts";
-import { ListHeader } from "@/shared/ui/list-header";
 
 import { PlaceSearchForm } from "./place-search-form";
 import { PlaceSearchResults } from "./place-search-results";
@@ -30,7 +29,9 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
-      <ListHeader title="장소" />
+      <header className="min-h-13">
+        <h1 className="sr-only">장소</h1>
+      </header>
 
       <PlaceSearchForm query={query} searchError={searchError} />
 

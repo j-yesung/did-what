@@ -1,6 +1,6 @@
 "use client";
 
-import { type SubmitEvent, useEffect, useState } from "react";
+import { type SubmitEvent, useEffect, useState, useTransition } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -18,13 +18,16 @@ export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
   const router = useRouter();
   const [keyword, setKeyword] = useState(query);
   const fieldError = keyword === query ? searchError : undefined;
+  // 서버에서 카카오 검색을 기다리는 동안 눌렸는지 알 수 있게 진행 표시를 띄운다.
+  const [searching, startSearch] = useTransition();
+  const search = (nextKeyword: string) => startSearch(() => navigatePlaceSearch(window, router, nextKeyword));
 
   useEffect(() => setKeyword(query), [query]);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    navigatePlaceSearch(window, router, keyword);
+    search(keyword);
   };
 
   return (
@@ -39,9 +42,10 @@ export function PlaceSearchForm({ query, searchError }: PlaceSearchFormProps) {
             aria-invalid={Boolean(fieldError)}
             autoComplete="off"
             id="place-query"
+            loading={searching}
             maxLength={100}
             name="q"
-            onClear={() => navigatePlaceSearch(window, router, "")}
+            onClear={() => search("")}
             onValueChange={setKeyword}
             placeholder="예: 성수 카페"
             value={keyword}

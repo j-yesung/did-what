@@ -85,7 +85,7 @@ function BottomSheetSwipeHandle({ className, ...props }: React.ComponentProps<"d
       data-slot="bottom-sheet-swipe-handle"
       aria-hidden="true"
       className={cn(
-        "relative z-10 flex h-3 w-full shrink-0 cursor-grab items-end justify-center transition-opacity duration-200 after:block after:h-1 after:w-24 after:shrink-0 after:rounded-full after:bg-muted active:cursor-grabbing group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100",
+        "relative z-10 flex h-3 w-full shrink-0 cursor-grab items-end justify-center transition-opacity duration-200 after:block after:h-1 after:w-24 after:shrink-0 after:rounded-full after:bg-muted-foreground/30 active:cursor-grabbing group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100",
         className,
       )}
       {...props}
@@ -108,20 +108,18 @@ function BottomSheetContent({ className, children, ...props }: BottomSheetPrimit
           data-snap-points={hasSnapPoints ? "" : undefined}
           className={cn(
             // Base.
-            "group/bottom-sheet-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 m-(--drawer-inset,0px) flex h-(--drawer-content-height) max-h-(--drawer-content-max-height,none) min-h-0 w-[calc(100%-2*var(--drawer-inline-inset))] select-none flex-col rounded-3xl border bg-popover text-popover-foreground text-sm shadow-(--shadow-drawer) outline-none transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] motion-reduce:transition-none",
+            "group/bottom-sheet-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 flex h-(--drawer-content-height) max-h-(--drawer-content-max-height) min-h-0 w-full select-none flex-col rounded-t-3xl border border-x-0 border-b-0 bg-popover text-popover-foreground text-sm shadow-(--shadow-drawer) outline-none transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] motion-reduce:transition-none",
             // Nested.
             "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95",
             // Bleed.
             "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-(--bleed) after:bg-(--drawer-bleed-background,var(--color-popover))",
             // Sizing.
-            "[--drawer-content-height:var(--drawer-height,auto)] [--drawer-content-max-height:calc(100dvh-6rem)] data-snap-points:[--drawer-content-height:100dvh]",
+            "[--drawer-content-height:var(--drawer-height,auto)] [--drawer-content-max-height:75dvh] data-snap-points:[--drawer-content-height:100dvh]",
             // Stack.
             "[--bleed:3rem] [--peek:1rem] [--stack-height:var(--drawer-frontmost-height,var(--drawer-height,0px))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-scale-base:max(0,calc(1-(var(--nested-drawers)*var(--stack-step))))] [--stack-scale:clamp(0,calc(var(--stack-scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--stack-shrink:calc(1-var(--stack-scale))] [--stack-step:0.05]",
             // Transitions.
             "data-ending-style:transform-(--closed-transform) data-starting-style:transform-(--closed-transform) data-ending-style:data-nested-drawer-swiping:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-ending-style:opacity-[0.9999] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-nested-drawer-swiping:duration-0 data-swiping:duration-0",
-            // Axis: y. 하단과 좌우에 여백을 둔다. 닫힘 애니메이션이 이미 --drawer-inset을 계산에 넣고 있다.
-            // 폭에서 좌우 여백만큼 빼야 넘치지 않고, 남는 자리를 auto 마진이 나눠 가지며 가운데로 모인다.
-            "[--drawer-bleed-background:transparent] [--drawer-inline-inset:--spacing(2)] [--drawer-inset:--spacing(6)]",
+            "[--drawer-bleed-background:var(--color-popover)] [--drawer-inset:0px]",
             // Axis: y. 넓은 화면에서는 앱 본문 폭 안에서만 열리게 한다.
             "inset-x-0 mx-auto min-[700px]:max-w-(--app-width)",
             "data-nested-drawer-open:h-(--stack-height)",
@@ -149,7 +147,7 @@ function BottomSheetHeader({ className, ...props }: React.ComponentProps<"div">)
     <div
       data-slot="bottom-sheet-header"
       className={cn(
-        "flex shrink-0 flex-col gap-0.5 p-4 pb-0 group-data-[swipe-axis=y]/bottom-sheet-popup:text-center md:gap-0.5 md:text-left",
+        "flex shrink-0 flex-col gap-0.5 px-5 pt-4 pb-0 group-data-[swipe-axis=y]/bottom-sheet-popup:text-center md:gap-0.5 md:text-left",
         className,
       )}
       {...props}
@@ -160,7 +158,10 @@ function BottomSheetFooter({ className, ...props }: React.ComponentProps<"div">)
   return (
     <div
       data-slot="bottom-sheet-footer"
-      className={cn("mt-auto flex shrink-0 flex-col gap-2 p-4 pt-0", className)}
+      className={cn(
+        "mt-auto flex shrink-0 flex-col gap-2 px-5 pt-0 pb-[max(--spacing(4),env(safe-area-inset-bottom))]",
+        className,
+      )}
       {...props}
     />
   );

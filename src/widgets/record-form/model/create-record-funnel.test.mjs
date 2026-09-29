@@ -21,7 +21,7 @@ test("각 단계는 자기 입력만 검증한다", () => {
     regions: "방문 지역을 1곳 이상 선택해 주세요.",
   });
   assert.deepEqual(validateRecordCreateStep("what", context), {
-    activity: "한 일은 1자 이상 120자 이하로 입력해 주세요.",
+    activity: "기록 제목은 1자 이상 120자 이하로 입력해 주세요.",
   });
 });
 

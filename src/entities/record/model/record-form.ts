@@ -214,7 +214,7 @@ export const validateRecordInput = (
   }
 
   if (activity.length < 1 || activity.length > 120) {
-    fieldErrors.activity = "한 일은 1자 이상 120자 이하로 입력해 주세요.";
+    fieldErrors.activity = "기록 제목은 1자 이상 120자 이하로 입력해 주세요.";
   }
 
   if (memo.length > 500) {
