@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 
 import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -18,7 +27,9 @@ import { showToast } from "@/shared/lib/toast";
 import { createComment, deleteComment } from "../api/comment-actions";
 
 type UseRecordCommentsProps = {
+  draft?: string;
   member: { id: string; name: string };
+  onDraftChange?: Dispatch<SetStateAction<string>>;
   recordId: string;
 };
 
@@ -56,8 +67,15 @@ const applyCommentCacheAction = (
   };
 };
 
-export const useRecordComments = ({ member, recordId }: UseRecordCommentsProps) => {
-  const [draft, setDraft] = useState("");
+export const useRecordComments = ({
+  draft: externalDraft,
+  member,
+  onDraftChange,
+  recordId,
+}: UseRecordCommentsProps) => {
+  const [internalDraft, setInternalDraft] = useState("");
+  const draft = externalDraft ?? internalDraft;
+  const setDraft = onDraftChange ?? setInternalDraft;
   const [submittedCommentId, setSubmittedCommentId] = useState<string | null>(null);
   const [isSubmitting, startTransition] = useTransition();
   const submittingRef = useRef(false);

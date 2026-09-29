@@ -13,7 +13,7 @@ import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activ
 // 불러오는 동안 매 렌더마다 새 빈 배열을 넘기면 지도가 점과 배지를 계속 다시 계산한다.
 const EMPTY_RECORDS: [] = [];
 
-export function HomeContent() {
+export function HomeContent({ member }: { member: { id: string; name: string } }) {
   const recordsQuery = useQuery(recordLocationsQueryOptions);
   const records = recordsQuery.data ?? EMPTY_RECORDS;
 
@@ -24,7 +24,7 @@ export function HomeContent() {
         aria-label="대한민국 활동 지도"
         data-screen="map"
       >
-        <RegionActivityMap records={records} />
+        <RegionActivityMap member={member} records={records} />
       </section>
 
       {recordsQuery.isError ? (

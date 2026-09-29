@@ -2,6 +2,7 @@
 
 import { type MouseEvent, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 
+import { useFunnel } from "@use-funnel/browser";
 import { useSearchParams } from "next/navigation";
 
 import {
@@ -45,6 +46,12 @@ const HOME_FRAME = getKoreaMapFrame({ east: 129.7, north: 38.7, south: 33.1, wes
 const OVERVIEW_ZOOM_RATIO = 1.5;
 // 핀치하는 동안 매 프레임 주소를 바꾸지 않도록 움직임이 멈춘 뒤에 쓴다. iOS는 짧은 시간에 너무 자주 바꾸면 막는다.
 const URL_WRITE_DELAY = 250;
+const FUNNEL_ID = "map-record-sheet";
+type MapRecordSheetSteps = {
+  map: { recordId: null };
+  list: { recordId: null };
+  detail: { recordId: string };
+};
 
 // 배지가 경계보다 위에 그려져 먼저 잡힌다. 배지 안의 글자를 눌러도 배지 묶음의 지역 코드를 찾는다.
 const findRegionAt = (clientX: number, clientY: number) => {
@@ -54,7 +61,13 @@ const findRegionAt = (clientX: number, clientY: number) => {
   }
 };
 
-export function RegionActivityMap({ records }: { records: readonly MapRecord[] }) {
+export function RegionActivityMap({
+  member,
+  records,
+}: {
+  member: { id: string; name: string };
+  records: readonly MapRecord[];
+}) {
   const searchParams = useSearchParams();
   // 기록을 보고 돌아오면 주소에 남겨 둔 시트·칩·확대 상태로 이어서 보여준다. 달력의 ?date=와 같은 방식이다.
   const [initialUrlState] = useState(() => {
@@ -63,8 +76,14 @@ export function RegionActivityMap({ records }: { records: readonly MapRecord[] }
   });
   const pressRef = useRef<{ x: number; y: number } | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(initialUrlState.region);
-  const [bottomSheetOpen, setBottomSheetOpen] = useState(initialUrlState.region !== null);
   const [subregion, setSubregion] = useState(initialUrlState.subregion);
+  const [sheetClosing, setSheetClosing] = useState(false);
+  const initialFunnel = useMemo(
+    () => ({ step: initialUrlState.region ? ("list" as const) : ("map" as const), context: { recordId: null } }),
+    [initialUrlState.region],
+  );
+  const funnel = useFunnel<MapRecordSheetSteps>({ id: FUNNEL_ID, initial: initialFunnel, disableCleanup: true });
+  const bottomSheetOpen = funnel.step !== "map" && selectedRegion !== null && !sheetClosing;
   const [pressedBadge, setPressedBadge] = useState<string | null>(null);
   const points = useMemo(() => toRecordMapPoints(records), [records]);
   const map = useMemo(() => createKoreaMap(points), [points]);
@@ -113,7 +132,19 @@ export function RegionActivityMap({ records }: { records: readonly MapRecord[] }
     // 다른 시·도를 열면 이전 시·도에서 고른 시·군·구는 버린다.
     if (region.code !== selectedRegion?.code) setSubregion(null);
     setSelectedRegion(region);
-    setBottomSheetOpen(true);
+    if (funnel.step === "map") {
+      void funnel.history.push("list", { recordId: null });
+      saveMapUrl(region.code, null);
+    }
+  };
+
+  const saveMapUrl = (regionCode: string | null, nextSubregion: string | null) => {
+    const search = toMapSearch(window.location.search, {
+      region: regionCode,
+      subregion: nextSubregion,
+      view: viewport.view,
+    });
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${search}`);
   };
 
   // 뷰포트가 포인터를 svg에 붙잡아 경계에서 click이 오지 않으므로, 누른 자리의 배지나 경계를 직접 찾는다.
@@ -161,7 +192,6 @@ export function RegionActivityMap({ records }: { records: readonly MapRecord[] }
         }}
       >
         <title id="korea-map-title">대한민국 발자취 지도</title>
-        {/* JSX는 줄바꿈으로 나눈 글과 표현식을 공백 없이 잇는다. 문장끼리 붙지 않게 직접 띄운다. */}
         <desc id="korea-map-description">
           {[
             records.length > 0
@@ -270,7 +300,20 @@ export function RegionActivityMap({ records }: { records: readonly MapRecord[] }
       </svg>
       <MapControls viewport={viewport} currentLocation={currentLocation} />
       <RegionRecordsBottomSheet
-        onOpenChange={setBottomSheetOpen}
+        detailRecordId={funnel.step === "detail" ? funnel.context.recordId : null}
+        member={member}
+        onBeforeDetailOpen={() => saveMapUrl(selectedRegion?.code ?? null, subregion)}
+        onCloseComplete={() => {
+          if (!sheetClosing) return;
+          void funnel.history.replace("map", { recordId: null });
+          saveMapUrl(null, null);
+          setSheetClosing(false);
+        }}
+        onDetailBack={() => void funnel.history.back()}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setSheetClosing(true);
+        }}
+        onRecordOpen={(recordId) => void funnel.history.push("detail", { recordId })}
         onSubregionChange={setSubregion}
         open={bottomSheetOpen}
         records={records}

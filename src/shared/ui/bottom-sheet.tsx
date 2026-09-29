@@ -72,7 +72,7 @@ function BottomSheetOverlay({ className, ...props }: BottomSheetPrimitive.Backdr
     <BottomSheetPrimitive.Backdrop
       data-slot="bottom-sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 min-h-dvh select-none bg-background/20 opacity-[max(var(--drawer-overlay-min-opacity,0),calc(1-var(--drawer-swipe-progress)))] backdrop-blur-[2px] transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-swiping:duration-0 motion-reduce:transition-none data-snap-points:[--drawer-overlay-min-opacity:0.5]",
+        "fixed inset-0 z-50 min-h-dvh select-none bg-background/20 opacity-[max(var(--drawer-overlay-min-opacity,0),calc(1-var(--drawer-swipe-progress)))] backdrop-blur-xs transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-swiping:duration-0 motion-reduce:transition-none data-snap-points:[--drawer-overlay-min-opacity:0.5]",
         className,
       )}
       {...props}
@@ -85,14 +85,19 @@ function BottomSheetSwipeHandle({ className, ...props }: React.ComponentProps<"d
       data-slot="bottom-sheet-swipe-handle"
       aria-hidden="true"
       className={cn(
-        "relative z-10 flex h-3 w-full shrink-0 cursor-grab items-end justify-center transition-opacity duration-200 after:block after:h-1 after:w-24 after:shrink-0 after:rounded-full after:bg-muted-foreground/30 active:cursor-grabbing group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100",
+        "relative z-10 flex h-7 w-full shrink-0 cursor-grab touch-none items-end justify-center transition-opacity duration-200 after:block after:h-1 after:w-24 after:shrink-0 after:rounded-full after:bg-muted-foreground/30 active:cursor-grabbing group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100",
         className,
       )}
       {...props}
     />
   );
 }
-function BottomSheetContent({ className, children, ...props }: BottomSheetPrimitive.Popup.Props) {
+function BottomSheetContent({
+  className,
+  children,
+  overlayHandle = false,
+  ...props
+}: BottomSheetPrimitive.Popup.Props & { overlayHandle?: boolean }) {
   const { hasSnapPoints, modal, showSwipeHandle } = useBottomSheet();
   return (
     <BottomSheetPortal data-slot="bottom-sheet-portal">
@@ -128,7 +133,9 @@ function BottomSheetContent({ className, children, ...props }: BottomSheetPrimit
           )}
           {...props}
         >
-          {showSwipeHandle && <BottomSheetSwipeHandle />}
+          {showSwipeHandle && (
+            <BottomSheetSwipeHandle className={overlayHandle ? "absolute inset-x-0 top-0 z-20" : undefined} />
+          )}
           <BottomSheetPrimitive.Content
             data-slot="bottom-sheet-content"
             className={cn(
@@ -142,16 +149,30 @@ function BottomSheetContent({ className, children, ...props }: BottomSheetPrimit
     </BottomSheetPortal>
   );
 }
-function BottomSheetHeader({ className, ...props }: React.ComponentProps<"div">) {
+function BottomSheetHeader({
+  children,
+  className,
+  glass = false,
+  ...props
+}: React.ComponentProps<"div"> & { glass?: boolean }) {
   return (
     <div
       data-slot="bottom-sheet-header"
       className={cn(
         "flex shrink-0 flex-col gap-0.5 px-5 pt-4 pb-0 group-data-[swipe-axis=y]/bottom-sheet-popup:text-center md:gap-0.5 md:text-left",
+        glass && "sticky top-0 z-10",
         className,
       )}
       {...props}
-    />
+    >
+      {glass ? (
+        <span
+          aria-hidden="true"
+          className="mask-[linear-gradient(to_bottom,black_calc(100%-1.5rem),rgb(0_0_0/0.6)_calc(100%-1rem),rgb(0_0_0/0.2)_calc(100%-0.5rem),transparent)] pointer-events-none absolute inset-x-0 top-0 -bottom-6 -z-10 bg-popover/40 backdrop-blur-xs"
+        />
+      ) : null}
+      {children}
+    </div>
   );
 }
 function BottomSheetFooter({ className, ...props }: React.ComponentProps<"div">) {
