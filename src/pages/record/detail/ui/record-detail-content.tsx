@@ -6,6 +6,7 @@ import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
 import {
   formatRecordRegionLabels,
   RecordBadges,
@@ -14,9 +15,11 @@ import {
   recordPlacesQueryOptions,
   recordSummaryQueryKey,
 } from "@/entities/record";
+import { readRecordNotifications } from "@/features/notification/read-record-notifications";
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { RecordComments } from "@/features/record-comment";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -31,6 +34,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectedMissingRecord = useRef(false);
+  const readNotifications = useRef(false);
   const queryClient = useQueryClient();
   const fromNotification = searchParams?.get("from") === "notification";
   const summaryQueryKey = recordSummaryQueryKey(recordId);
@@ -64,6 +68,18 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   const recordMissing = hasCachedSummary
     ? recordPlacesQuery.isSuccess && !recordPlacesQuery.data
     : recordQuery.isSuccess && !recordQuery.data;
+
+  // 푸시와 알림 목록 모두 이 주소로 들어온다. 읽음 처리를 여기 한 곳에서 해서 알림을 연 곳과 상관없이 점이 사라진다.
+  useEffect(() => {
+    if (!fromNotification || readNotifications.current) return;
+
+    readNotifications.current = true;
+    void runServerAction(() => readRecordNotifications(recordId))
+      .then(() => queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY }))
+      .catch(() => {
+        // 읽음 표시는 부가 기능이라 실패해도 기록 보기를 막지 않는다.
+      });
+  }, [fromNotification, queryClient, recordId]);
 
   useEffect(() => {
     if (!fromNotification || !recordMissing || redirectedMissingRecord.current) return;

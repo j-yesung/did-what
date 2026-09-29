@@ -4,17 +4,14 @@ import { Fragment } from "react";
 
 import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 
 import {
-  getNotificationHref,
   NOTIFICATIONS_QUERY_KEY,
   type NotificationItem,
   notificationListQueryOptions,
   unreadNotificationCountQueryOptions,
 } from "@/entities/notification";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
-import { readNotification } from "@/features/notification/read-notification";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
@@ -32,24 +29,11 @@ type NotificationListProps = {
 };
 
 export function NotificationList({ memberId }: NotificationListProps) {
-  const router = useRouter();
   const queryClient = useQueryClient();
-  const listQuery = useInfiniteQuery(notificationListQueryOptions(memberId));
-  const unreadQuery = useQuery(unreadNotificationCountQueryOptions(memberId));
-
-  const readOne = useMutation({
-    mutationFn: (notification: NotificationItem) => runServerAction(() => readNotification(notification.id)),
-    onSuccess: async (result, notification) => {
-      if (result?.status === "error") {
-        showToast({ description: result.message, title: "알림을 열지 못했어요", variant: "warning" });
-        return;
-      }
-      await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
-      const href = getNotificationHref(notification);
-      if (href) router.push(href);
-    },
-    onError: () => showToast({ title: "알림을 열지 못했어요", variant: "error" }),
-  });
+  const listOptions = notificationListQueryOptions(memberId);
+  const unreadOptions = unreadNotificationCountQueryOptions(memberId);
+  const listQuery = useInfiniteQuery(listOptions);
+  const unreadQuery = useQuery(unreadOptions);
   const readAll = useMutation({
     mutationFn: () => runServerAction(readAllNotifications),
     onSuccess: async (result) => {
@@ -62,11 +46,33 @@ export function NotificationList({ memberId }: NotificationListProps) {
     onError: () => showToast({ title: "모두 읽지 못했어요", variant: "error" }),
   });
 
-  const openNotification = (notification: NotificationItem) => {
-    const href = getNotificationHref(notification);
-    if (!href || readOne.isPending || notification.read_at) return;
+  /**
+   * 알림을 누르면 기다리지 않고 바로 기록으로 간다. 읽음 처리는 기록 상세가 서버에 보내고,
+   * 여기서는 돌아왔을 때 바로 읽은 모습이 보이도록 같은 기록의 알림을 캐시에서 먼저 바꾼다.
+   */
+  const markRecordRead = (notification: NotificationItem) => {
+    if (notification.read_at || !notification.record_id) return;
 
-    readOne.mutate(notification);
+    const readAt = new Date().toISOString();
+    let readCount = 0;
+    queryClient.setQueryData(listOptions.queryKey, (data) =>
+      data
+        ? {
+            ...data,
+            pages: data.pages.map((page) => ({
+              ...page,
+              notifications: page.notifications.map((item) => {
+                if (item.read_at || item.record_id !== notification.record_id) return item;
+                readCount += 1;
+                return { ...item, read_at: readAt };
+              }),
+            })),
+          }
+        : data,
+    );
+    queryClient.setQueryData(unreadOptions.queryKey, (count) =>
+      count === undefined ? count : Math.max(0, count - readCount),
+    );
   };
 
   const notifications = listQuery.data?.pages.flatMap((page) => page.notifications) ?? [];
@@ -111,11 +117,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
         <section aria-label={`불러온 알림 ${notifications.length}개`} className="-mx-5">
           {notifications.map((notification, index) => (
             <Fragment key={notification.id}>
-              <NotificationRow
-                notification={notification}
-                onOpen={openNotification}
-                pending={readOne.isPending && readOne.variables?.id === notification.id}
-              />
+              <NotificationRow notification={notification} onOpen={markRecordRead} />
               {index < notifications.length - 1 ? <Separator /> : null}
             </Fragment>
           ))}
