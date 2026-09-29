@@ -1,5 +1,7 @@
 "use client";
 
+import type { Dispatch, SetStateAction } from "react";
+
 import { PageSection } from "@/shared/ui/layouts";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 
@@ -8,11 +10,13 @@ import { CommentCreateForm } from "./comment-create-form";
 import { CommentRow } from "./comment-row";
 
 type RecordCommentsProps = {
+  draft?: string;
   member: { id: string; name: string };
+  onDraftChange?: Dispatch<SetStateAction<string>>;
   recordId: string;
 };
 
-export function RecordComments({ member, recordId }: RecordCommentsProps) {
+export function RecordComments({ draft: initialDraft, member, onDraftChange, recordId }: RecordCommentsProps) {
   const {
     comments,
     draft,
@@ -24,7 +28,7 @@ export function RecordComments({ member, recordId }: RecordCommentsProps) {
     setDraft,
     submitComment,
     submitDisabled,
-  } = useRecordComments({ member, recordId });
+  } = useRecordComments({ draft: initialDraft, member, onDraftChange, recordId });
 
   return (
     <PageSection aria-labelledby="record-comments-title" className="px-5">

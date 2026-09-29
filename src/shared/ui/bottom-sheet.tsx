@@ -6,6 +6,7 @@ import { Drawer as BottomSheetPrimitive } from "@base-ui/react/drawer";
 import { cn } from "@/shared/lib/utils";
 
 type BottomSheetContextProps = {
+  disableContentSwipe: boolean;
   hasSnapPoints: boolean;
   modal: BottomSheetPrimitive.Root.Props["modal"];
   showSwipeHandle: boolean;
@@ -19,17 +20,19 @@ const useBottomSheet = () => {
   return context;
 };
 function BottomSheetRoot({
+  disableContentSwipe = false,
   modal = true,
   showSwipeHandle = false,
   snapPoints,
   ...props
 }: Omit<BottomSheetPrimitive.Root.Props, "swipeDirection"> & {
+  disableContentSwipe?: boolean;
   showSwipeHandle?: boolean;
 }) {
   const hasSnapPoints = snapPoints != null && snapPoints.length > 0;
   const contextValue = React.useMemo(
-    () => ({ hasSnapPoints, modal, showSwipeHandle }),
-    [hasSnapPoints, modal, showSwipeHandle],
+    () => ({ disableContentSwipe, hasSnapPoints, modal, showSwipeHandle }),
+    [disableContentSwipe, hasSnapPoints, modal, showSwipeHandle],
   );
   return (
     <BottomSheetContext.Provider value={contextValue}>
@@ -93,7 +96,7 @@ function BottomSheetSwipeHandle({ className, ...props }: React.ComponentProps<"d
   );
 }
 function BottomSheetContent({ className, children, ...props }: BottomSheetPrimitive.Popup.Props) {
-  const { hasSnapPoints, modal, showSwipeHandle } = useBottomSheet();
+  const { disableContentSwipe, hasSnapPoints, modal, showSwipeHandle } = useBottomSheet();
   return (
     <BottomSheetPortal data-slot="bottom-sheet-portal">
       {modal === true && <BottomSheetOverlay data-snap-points={hasSnapPoints ? "" : undefined} />}
@@ -131,6 +134,7 @@ function BottomSheetContent({ className, children, ...props }: BottomSheetPrimit
           {showSwipeHandle && <BottomSheetSwipeHandle />}
           <BottomSheetPrimitive.Content
             data-slot="bottom-sheet-content"
+            data-base-ui-swipe-ignore={disableContentSwipe ? "" : undefined}
             className={cn(
               "flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain rounded-[inherit] transition-opacity duration-300 ease-[cubic-bezier(0.45,1.005,0,1.005)] group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100 motion-reduce:transition-none",
             )}
