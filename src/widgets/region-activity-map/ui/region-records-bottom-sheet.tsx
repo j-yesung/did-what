@@ -182,6 +182,7 @@ export function RegionRecordsBottomSheet({
     >
       <BottomSheet.VirtualKeyboardProvider>
         <BottomSheet.Content
+          overlayHandle
           className={cn(
             "[--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
             heightLocked && "transition-[transform,opacity,filter]",
@@ -199,7 +200,7 @@ export function RegionRecordsBottomSheet({
             <div
               aria-hidden={isDetail}
               className={cn(
-                "flex max-h-[calc(75dvh-1.75rem-1px)] min-h-0 flex-1 flex-col transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
+                "flex max-h-[calc(75dvh-1px)] min-h-0 flex-1 flex-col pt-7 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
                 isDetail
                   ? "pointer-events-none absolute inset-x-0 top-0 translate-y-1 opacity-0"
                   : "relative translate-y-0 opacity-100 delay-75",
@@ -237,8 +238,6 @@ export function RegionRecordsBottomSheet({
                 </div>
               ) : null}
 
-              {/* 칩으로 목록을 좁혀도 시트가 출렁이지 않게, 목록 칸은 전체 목록 높이(윗여백 + 줄 h-15 + 구분선 1px)로 둔다.
-            목록이 시트 최대 높이를 넘으면 칸이 줄어들며 스크롤된다. */}
               <div
                 className="min-h-0 overflow-y-auto overscroll-contain px-5 pt-2"
                 style={
