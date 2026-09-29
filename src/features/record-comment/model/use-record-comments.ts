@@ -58,6 +58,7 @@ const applyCommentCacheAction = (
 
 export const useRecordComments = ({ member, recordId }: UseRecordCommentsProps) => {
   const [draft, setDraft] = useState("");
+  const [submittedCommentId, setSubmittedCommentId] = useState<string | null>(null);
   const [isSubmitting, startTransition] = useTransition();
   const submittingRef = useRef(false);
   const scrolledHashRef = useRef("");
@@ -95,6 +96,7 @@ export const useRecordComments = ({ member, recordId }: UseRecordCommentsProps) 
     const now = new Date().toISOString();
     submittingRef.current = true;
     setDraft("");
+    setSubmittedCommentId(commentId);
 
     runOptimistic(
       {
@@ -144,6 +146,16 @@ export const useRecordComments = ({ member, recordId }: UseRecordCommentsProps) 
     });
   };
 
+  // 새 댓글은 입력창 바로 위에 생긴다. 키보드나 긴 목록에 가려지지 않게 보이는 곳으로 옮긴다.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 낙관적 댓글이 그려진 뒤에 다시 찾아야 해서 목록을 계기로 둔다.
+  useEffect(() => {
+    if (!submittedCommentId) return;
+    const target = document.getElementById(`comment-${submittedCommentId}`);
+    if (!target) return;
+    setSubmittedCommentId(null);
+    target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [optimisticComments, submittedCommentId]);
+
   useEffect(() => {
     if (!comments.length) return;
     const commentId = window.location.hash.slice(1);
@@ -166,7 +178,8 @@ export const useRecordComments = ({ member, recordId }: UseRecordCommentsProps) 
   ]);
 
   return {
-    comments: optimisticComments,
+    // 서버와 캐시는 최신순이다. 대화처럼 오래된 것부터 보여주고, 새 댓글이 입력창 가까이에 생기게 뒤집는다.
+    comments: [...optimisticComments].reverse(),
     draft,
     hasNextPage: commentsQuery.hasNextPage,
     isLoadingMore: commentsQuery.isFetchingNextPage,
