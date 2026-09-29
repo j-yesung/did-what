@@ -8,9 +8,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
-import { recordDetailQueryOptions, regionRecordsQueryOptions } from "@/entities/record";
+import { recordDetailQueryOptions, regionRecordsQueryOptions, toRegionLocations } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
-import { getRegionCode, type Region } from "@/entities/region";
+import { createRegionActivityMaps, getRegionCode, type Region, RegionMiniMap } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, buttonVariants } from "@/shared/ui/button";
@@ -63,6 +63,13 @@ export function RegionRecordsBottomSheet({
   const [sheetHeight, setSheetHeight] = useState<string | null>(null);
   const isDetail = Boolean(detailRecordId);
   const renderedDetailId = detailRecordId ?? displayedDetailId;
+  const regionMap = useMemo(
+    () =>
+      region
+        ? createRegionActivityMaps(toRegionLocations(records)).find(({ code }) => code === region.code)
+        : undefined,
+    [records, region],
+  );
 
   // 브라우저 뒤로가기에서도 마지막 상세를 잠깐 남겨 두 화면을 교차 전환한다.
   useEffect(() => {
@@ -209,10 +216,28 @@ export function RegionRecordsBottomSheet({
               key={region?.code}
             >
               <BottomSheet.Header className="text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
-                {!isDetail && (
-                  <BottomSheet.Title className="truncate font-bold text-xl leading-7">{region?.name}</BottomSheet.Title>
-                )}
-                <p className="text-muted-foreground text-sm tabular-nums">기록 {regionRecords.length}개</p>
+                <div className="flex items-center gap-4">
+                  {regionMap ? (
+                    <div className="size-22 shrink-0">
+                      <RegionMiniMap label={`${regionMap.name}의 방문 지역 지도`} map={regionMap} />
+                    </div>
+                  ) : null}
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    {!isDetail && (
+                      <BottomSheet.Title className="break-keep font-bold text-xl leading-7">
+                        {region?.name}
+                      </BottomSheet.Title>
+                    )}
+                    {regionMap ? (
+                      <p className="break-keep text-muted-foreground text-sm tabular-nums">
+                        {regionMap.totalCount}곳 중 {regionMap.visitedCount}곳 방문
+                      </p>
+                    ) : null}
+                    <p className="text-muted-foreground text-sm tabular-nums">
+                      함께 남긴 기록 {regionRecords.length}개
+                    </p>
+                  </div>
+                </div>
               </BottomSheet.Header>
 
               {subregionCounts.length > 0 ? (
