@@ -77,12 +77,13 @@ export function RegionActivityMap({
   const pressRef = useRef<{ x: number; y: number } | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(initialUrlState.region);
   const [subregion, setSubregion] = useState(initialUrlState.subregion);
+  const [sheetClosing, setSheetClosing] = useState(false);
   const initialFunnel = useMemo(
     () => ({ step: initialUrlState.region ? ("list" as const) : ("map" as const), context: { recordId: null } }),
     [initialUrlState.region],
   );
   const funnel = useFunnel<MapRecordSheetSteps>({ id: FUNNEL_ID, initial: initialFunnel, disableCleanup: true });
-  const bottomSheetOpen = funnel.step !== "map" && selectedRegion !== null;
+  const bottomSheetOpen = funnel.step !== "map" && selectedRegion !== null && !sheetClosing;
   const [pressedBadge, setPressedBadge] = useState<string | null>(null);
   const points = useMemo(() => toRecordMapPoints(records), [records]);
   const map = useMemo(() => createKoreaMap(points), [points]);
@@ -303,12 +304,15 @@ export function RegionActivityMap({
         detailRecordId={funnel.step === "detail" ? funnel.context.recordId : null}
         member={member}
         onBeforeDetailOpen={() => saveMapUrl(selectedRegion?.code ?? null, subregion)}
+        onCloseComplete={() => {
+          if (!sheetClosing) return;
+          void funnel.history.replace("map", { recordId: null });
+          saveMapUrl(null, null);
+          setSheetClosing(false);
+        }}
         onDetailBack={() => void funnel.history.back()}
         onOpenChange={(nextOpen) => {
-          if (!nextOpen) {
-            void funnel.history.replace("map", { recordId: null });
-            saveMapUrl(null, null);
-          }
+          if (!nextOpen) setSheetClosing(true);
         }}
         onRecordOpen={(recordId) => void funnel.history.push("detail", { recordId })}
         onSubregionChange={setSubregion}

@@ -6,7 +6,6 @@ import { Drawer as BottomSheetPrimitive } from "@base-ui/react/drawer";
 import { cn } from "@/shared/lib/utils";
 
 type BottomSheetContextProps = {
-  disableContentSwipe: boolean;
   hasSnapPoints: boolean;
   modal: BottomSheetPrimitive.Root.Props["modal"];
   showSwipeHandle: boolean;
@@ -20,19 +19,17 @@ const useBottomSheet = () => {
   return context;
 };
 function BottomSheetRoot({
-  disableContentSwipe = false,
   modal = true,
   showSwipeHandle = false,
   snapPoints,
   ...props
 }: Omit<BottomSheetPrimitive.Root.Props, "swipeDirection"> & {
-  disableContentSwipe?: boolean;
   showSwipeHandle?: boolean;
 }) {
   const hasSnapPoints = snapPoints != null && snapPoints.length > 0;
   const contextValue = React.useMemo(
-    () => ({ disableContentSwipe, hasSnapPoints, modal, showSwipeHandle }),
-    [disableContentSwipe, hasSnapPoints, modal, showSwipeHandle],
+    () => ({ hasSnapPoints, modal, showSwipeHandle }),
+    [hasSnapPoints, modal, showSwipeHandle],
   );
   return (
     <BottomSheetContext.Provider value={contextValue}>
@@ -88,7 +85,7 @@ function BottomSheetSwipeHandle({ className, ...props }: React.ComponentProps<"d
       data-slot="bottom-sheet-swipe-handle"
       aria-hidden="true"
       className={cn(
-        "relative z-10 flex h-3 w-full shrink-0 cursor-grab items-end justify-center transition-opacity duration-200 after:block after:h-1 after:w-24 after:shrink-0 after:rounded-full after:bg-muted-foreground/30 active:cursor-grabbing group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100",
+        "relative z-10 flex h-7 w-full shrink-0 cursor-grab touch-none items-end justify-center transition-opacity duration-200 after:block after:h-1 after:w-24 after:shrink-0 after:rounded-full after:bg-muted-foreground/30 active:cursor-grabbing group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100",
         className,
       )}
       {...props}
@@ -96,7 +93,7 @@ function BottomSheetSwipeHandle({ className, ...props }: React.ComponentProps<"d
   );
 }
 function BottomSheetContent({ className, children, ...props }: BottomSheetPrimitive.Popup.Props) {
-  const { disableContentSwipe, hasSnapPoints, modal, showSwipeHandle } = useBottomSheet();
+  const { hasSnapPoints, modal, showSwipeHandle } = useBottomSheet();
   return (
     <BottomSheetPortal data-slot="bottom-sheet-portal">
       {modal === true && <BottomSheetOverlay data-snap-points={hasSnapPoints ? "" : undefined} />}
@@ -134,7 +131,6 @@ function BottomSheetContent({ className, children, ...props }: BottomSheetPrimit
           {showSwipeHandle && <BottomSheetSwipeHandle />}
           <BottomSheetPrimitive.Content
             data-slot="bottom-sheet-content"
-            data-base-ui-swipe-ignore={disableContentSwipe ? "" : undefined}
             className={cn(
               "flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain rounded-[inherit] transition-opacity duration-300 ease-[cubic-bezier(0.45,1.005,0,1.005)] group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100 motion-reduce:transition-none",
             )}
@@ -146,12 +142,14 @@ function BottomSheetContent({ className, children, ...props }: BottomSheetPrimit
     </BottomSheetPortal>
   );
 }
-function BottomSheetHeader({ className, ...props }: React.ComponentProps<"div">) {
+function BottomSheetHeader({ className, glass = false, ...props }: React.ComponentProps<"div"> & { glass?: boolean }) {
   return (
     <div
       data-slot="bottom-sheet-header"
       className={cn(
         "flex shrink-0 flex-col gap-0.5 px-5 pt-4 pb-0 group-data-[swipe-axis=y]/bottom-sheet-popup:text-center md:gap-0.5 md:text-left",
+        glass &&
+          "sticky top-0 z-10 bg-popover/55 backdrop-blur-xl backdrop-saturate-150 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-popover/55 after:backdrop-blur-sm after:[mask-image:linear-gradient(to_bottom,black,transparent)]",
         className,
       )}
       {...props}

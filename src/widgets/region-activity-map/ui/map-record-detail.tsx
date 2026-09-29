@@ -16,6 +16,7 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
 type MapRecordDetailProps = {
+  active: boolean;
   draft: string;
   member: { id: string; name: string };
   onBack: () => void;
@@ -23,18 +24,18 @@ type MapRecordDetailProps = {
   recordId: string;
 };
 
-export function MapRecordDetail({ draft, member, onBack, onDraftChange, recordId }: MapRecordDetailProps) {
+export function MapRecordDetail({ active, draft, member, onBack, onDraftChange, recordId }: MapRecordDetailProps) {
   const recordQuery = useQuery(recordDetailQueryOptions(recordId));
   const record = recordQuery.data;
   const regionText = record ? formatRecordRegionLabels(record, Number.POSITIVE_INFINITY) : "";
 
   return (
-    <>
-      <BottomSheet.Header className="pt-2 text-left">
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(--spacing(5),env(safe-area-inset-bottom))]">
+      <BottomSheet.Header className="pt-2 text-left" glass>
         <BackButton aria-label="지역 기록 목록으로" onClick={onBack} />
-        <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title>
+        {active ? <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title> : null}
       </BottomSheet.Header>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-3 pb-[max(--spacing(5),env(safe-area-inset-bottom))]">
+      <div className="px-5 pt-6">
         {recordQuery.isSuccess && !record ? (
           <LoadErrorAlert icon={<NotePencilIcon aria-hidden="true" />} title="기록을 찾을 수 없어요" />
         ) : recordQuery.isError ? (
@@ -107,6 +108,6 @@ export function MapRecordDetail({ draft, member, onBack, onDraftChange, recordId
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
