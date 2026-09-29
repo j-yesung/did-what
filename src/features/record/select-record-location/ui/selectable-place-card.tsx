@@ -5,6 +5,7 @@ import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { Spinner } from "@/shared/ui/spinner";
 
 type SelectablePlaceCardProps = {
   added: boolean;
@@ -14,6 +15,8 @@ type SelectablePlaceCardProps = {
   label?: string;
   name: string;
   onSelect: () => void;
+  /** 서버에서 이 장소를 확인하는 중. 체크 표시 대신 진행 표시를 보여준다. */
+  resolving?: boolean;
   selected: boolean;
 };
 
@@ -25,6 +28,7 @@ export function SelectablePlaceCard({
   label,
   name,
   onSelect,
+  resolving = false,
   selected,
 }: SelectablePlaceCardProps) {
   const select = () => {
@@ -38,12 +42,15 @@ export function SelectablePlaceCard({
 
   return (
     <li
+      aria-busy={resolving || undefined}
       aria-checked={added || selected}
       aria-disabled={disabled}
       className={cn(
         "w-full min-w-0 rounded-xl transition-transform duration-200 active:scale-[0.99]",
         FOCUS_RING,
         disabled ? "cursor-default" : "cursor-pointer",
+        // 눌러도 반응하지 않는 동안에는 흐리게 보여 말없이 무시되는 것처럼 보이지 않게 한다.
+        disabled && !added && !resolving && "opacity-50",
       )}
       onClick={select}
       onKeyDown={handleKeyDown}
@@ -64,6 +71,8 @@ export function SelectablePlaceCard({
           <CardAction>
             {added ? (
               <Badge>추가됨</Badge>
+            ) : resolving ? (
+              <Spinner aria-hidden="true" className="size-6 text-muted-foreground" />
             ) : (
               <Checkbox
                 aria-hidden="true"
