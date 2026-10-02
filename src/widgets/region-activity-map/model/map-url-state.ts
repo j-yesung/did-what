@@ -35,6 +35,7 @@ export const readMapUrlState = (params: Pick<URLSearchParams, "get"> | null): Ma
 // 지도가 쓰지 않는 다른 검색어는 그대로 둔다.
 export const toMapSearch = (search: string, { region, subregion, view }: MapUrlState) => {
   const params = new URLSearchParams(search);
+  params.delete("period");
   const entries: [string, string | null][] = [
     [REGION_PARAM, region],
     [SUBREGION_PARAM, region ? subregion : null],

@@ -20,7 +20,7 @@ test("지도 상태를 주소에 남기고 그대로 되읽는다", () => {
 
 test("시트를 닫으면 지역과 칩을 지우고 지도가 쓰지 않는 검색어는 남긴다", () => {
   assert.equal(
-    toMapSearch("?region=KR-11&sub=중구&other=1", { region: null, subregion: "중구", view: null }),
+    toMapSearch("?region=KR-11&sub=중구&period=month&other=1", { region: null, subregion: "중구", view: null }),
     "?other=1",
   );
   assert.equal(toMapSearch("?region=KR-11", { region: null, subregion: null, view: null }), "");

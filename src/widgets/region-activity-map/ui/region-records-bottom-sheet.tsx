@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
-import { CaretRightIcon } from "@phosphor-icons/react";
+import { CaretRightIcon, XIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 
 import { getSubregionName, type MapRecord } from "../model/record-map-points";
+import { getRegionVisitSummary } from "../model/region-visit-summary";
 import { MapRecordDetail } from "./map-record-detail";
 
 const DETAIL_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
@@ -165,9 +166,23 @@ export function RegionRecordsBottomSheet({
     void queryClient.prefetchQuery(recordDetailQueryOptions(recordId));
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   };
-  const visibleRecords = selectedSubregion
-    ? regionRecords.filter(({ subregions }) => subregions.includes(selectedSubregion))
-    : regionRecords;
+  const visibleRecords = useMemo(
+    () =>
+      selectedSubregion
+        ? regionRecords.filter(({ subregions }) => subregions.includes(selectedSubregion))
+        : regionRecords,
+    [regionRecords, selectedSubregion],
+  );
+  const summary = useMemo(
+    () =>
+      region
+        ? getRegionVisitSummary(
+            visibleRecords.map(({ record }) => record),
+            region.code,
+          )
+        : null,
+    [visibleRecords, region],
+  );
   const subregionChips = subregionCounts.map(([name, count]): [string, string, number] => [name, name, count]);
   // 한 곳만 다녀왔으면 전체와 그 한 곳이 같은 목록이라, 그 지역 칩 하나만 선택된 모습으로 보여준다.
   const singleSubregion = subregionCounts.length === 1 ? subregionCounts[0][0] : null;
@@ -188,7 +203,7 @@ export function RegionRecordsBottomSheet({
           overlayHandle
           className={cn(
             "[--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
-            heightLocked && "transition-[transform,opacity,filter]",
+            !heightLocked && "transition-[transform,height,opacity,filter]",
             isDetail && "bottom-(--drawer-keyboard-inset,0px)",
           )}
           onTransitionEnd={(event) => {
@@ -201,9 +216,8 @@ export function RegionRecordsBottomSheet({
         >
           <div className="relative flex min-h-0 flex-1 flex-col">
             <div
-              aria-hidden={isDetail}
               className={cn(
-                "flex max-h-[calc(75dvh-1px)] min-h-0 flex-1 flex-col pt-7 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
+                "flex max-h-[min(75dvh,calc(100dvh-env(safe-area-inset-top)-16px))] min-h-0 flex-1 flex-col pt-7 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
                 isDetail
                   ? "pointer-events-none absolute inset-x-0 top-0 translate-y-1 opacity-0"
                   : "relative translate-y-0 opacity-100 delay-75",
@@ -221,18 +235,20 @@ export function RegionRecordsBottomSheet({
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     {!isDetail && (
                       <BottomSheet.Title className="break-keep font-bold text-xl leading-7">
-                        {region?.name}
+                        {region?.name}의 기억
                       </BottomSheet.Title>
                     )}
-                    {regionMap ? (
+                    {summary ? (
                       <p className="break-keep text-muted-foreground text-sm tabular-nums">
-                        {regionMap.totalCount}곳 중 {regionMap.visitedCount}곳 방문
+                        장소 {summary.places.length}곳 · 기록 {visibleRecords.length}개
                       </p>
                     ) : null}
-                    <p className="text-muted-foreground text-sm tabular-nums">
-                      함께 남긴 기록 {regionRecords.length}개
-                    </p>
                   </div>
+                  <BottomSheet.Close
+                    render={<Button aria-label="지역 기록 닫기" className="size-11 min-w-0 p-0" variant="ghost" />}
+                  >
+                    <XIcon aria-hidden="true" />
+                  </BottomSheet.Close>
                 </div>
               </BottomSheet.Header>
 
@@ -260,50 +276,98 @@ export function RegionRecordsBottomSheet({
               ) : null}
 
               <div
-                className="min-h-0 overflow-y-auto overscroll-contain px-5 pt-2"
-                style={
-                  regionRecords.length > 0
-                    ? {
-                        height: `calc(var(--spacing) * 2 + ${regionRecords.length} * var(--spacing) * 15 + ${regionRecords.length - 1}px)`,
-                      }
-                    : undefined
-                }
+                className={cn(
+                  "min-h-0 overflow-y-auto overscroll-contain px-5 pt-2",
+                  regionRecords.length > 0 && "pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]",
+                )}
               >
                 {visibleRecords.length > 0 ? (
-                  <ul>
-                    {visibleRecords.map(({ record, subregions }, index) => (
-                      <li key={record.id}>
-                        {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
-                        <PressLink
-                          className={cn(
-                            buttonVariants({ variant: "ghost" }),
-                            "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
-                          )}
-                          href={`/records/${record.id}`}
-                          onClick={(event) => {
-                            if (event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
-                              return;
-                            event.preventDefault();
-                            handleRecordOpen(record.id);
-                          }}
-                          onPointerDown={(event) => {
-                            if (event.button === 0) prefetchRecord(record.id);
-                          }}
-                          prefetch={false}
-                        >
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate font-semibold text-base leading-5">{record.activity}</span>
-                            <span className="mt-1 block truncate text-muted-foreground text-xs">
-                              <span className="tabular-nums">{format(parseISO(record.recorded_at), "yyyy.M.d")}</span>
-                              {" · "}
-                              {subregions.join(", ")}
+                  <>
+                    {summary?.latestDate ? (
+                      <dl className="grid grid-cols-2 gap-3 py-4">
+                        <div>
+                          <dt className="text-muted-foreground text-xs">최근 방문</dt>
+                          <dd className="mt-1 font-semibold text-sm tabular-nums">
+                            {format(parseISO(summary.latestDate), "yyyy.M.d")}
+                          </dd>
+                        </div>
+                        {summary.places[0] ? (
+                          <div className="min-w-0">
+                            <dt className="text-muted-foreground text-xs">가장 자주 간 곳</dt>
+                            <dd className="mt-1 truncate font-semibold text-sm">{summary.places[0].name}</dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    ) : null}
+                    {summary && summary.places.length > 0 ? (
+                      <section aria-label="자주 간 장소" className="pb-4">
+                        <h3 className="mb-1 font-semibold text-sm">자주 간 장소</h3>
+                        <ol>
+                          {summary.places.slice(0, 3).map((place, index) => (
+                            <li key={place.id}>
+                              <button
+                                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-1 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+                                onClick={() => handleRecordOpen(place.recordId)}
+                                type="button"
+                              >
+                                <span className="w-4 text-muted-foreground tabular-nums">{index + 1}</span>
+                                <span className="min-w-0 flex-1 truncate font-medium">{place.name}</span>
+                                <span className="shrink-0 text-accent-text tabular-nums">{place.count}회</span>
+                                <CaretRightIcon aria-hidden="true" size={16} />
+                              </button>
+                            </li>
+                          ))}
+                        </ol>
+                        <Separator className="mt-2 bg-muted-foreground/20" />
+                      </section>
+                    ) : null}
+                    <h3 className="font-semibold text-sm">방문 기록</h3>
+                    <ul>
+                      {visibleRecords.map(({ record, subregions }, index) => (
+                        <li key={record.id}>
+                          {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
+                          <PressLink
+                            className={cn(
+                              buttonVariants({ variant: "ghost" }),
+                              "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
+                            )}
+                            href={`/records/${record.id}`}
+                            onClick={(event) => {
+                              if (
+                                event.button !== 0 ||
+                                event.altKey ||
+                                event.ctrlKey ||
+                                event.metaKey ||
+                                event.shiftKey
+                              )
+                                return;
+                              event.preventDefault();
+                              handleRecordOpen(record.id);
+                            }}
+                            onPointerDown={(event) => {
+                              if (event.button === 0) prefetchRecord(record.id);
+                            }}
+                            prefetch={false}
+                          >
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate font-semibold text-base leading-5">
+                                {record.activity}
+                              </span>
+                              <span className="mt-1 block truncate text-muted-foreground text-xs">
+                                <span className="tabular-nums">{format(parseISO(record.recorded_at), "yyyy.M.d")}</span>
+                                {" · "}
+                                {subregions.join(", ")}
+                                {record.record_places.some(({ place }) => place)
+                                  ? ` · ${record.record_places.flatMap(({ place }) => (place ? [place.name] : [])).join(", ")}`
+                                  : ""}
+                              </span>
                             </span>
-                          </span>
-                          <CaretRightIcon aria-hidden="true" className="ml-2 shrink-0" size={20} />
-                        </PressLink>
-                      </li>
-                    ))}
-                  </ul>
+                            <CaretRightIcon aria-hidden="true" className="ml-2 shrink-0" size={20} />
+                          </PressLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
                 ) : (
                   <Empty className="py-10">
                     <EmptyHeader>
@@ -324,7 +388,6 @@ export function RegionRecordsBottomSheet({
             </div>
             {renderedDetailId ? (
               <div
-                aria-hidden={!isDetail}
                 className={cn(
                   "flex min-h-0 flex-1 flex-col transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
                   isDetail

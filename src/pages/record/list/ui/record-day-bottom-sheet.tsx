@@ -148,7 +148,7 @@ export function RecordDayBottomSheet({
 
         <div
           className={cn(
-            "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(--spacing(5),env(safe-area-inset-bottom))]",
+            "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]",
             multipleRecords ? "pt-2" : "pt-4",
           )}
           ref={scrollRef}
