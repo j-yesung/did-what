@@ -31,7 +31,13 @@ export function RegionMiniMap({ className, label, map }: RegionMiniMapProps) {
     >
       <g aria-hidden="true">
         {/* 경기처럼 가운데가 빈 지역(서울 자리)은 안쪽 고리를 비워야 해서 evenodd로 칠한다. */}
-        <path className="fill-map-empty" d={map.path} fillRule="evenodd" />
+        <path
+          className="fill-muted stroke-muted-foreground"
+          d={map.path}
+          fillRule="evenodd"
+          strokeWidth={1}
+          vectorEffect="non-scaling-stroke"
+        />
         {map.cells.map((cell) => {
           if (cell.level === 0) return null;
           return (
