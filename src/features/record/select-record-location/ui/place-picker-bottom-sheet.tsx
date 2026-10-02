@@ -34,7 +34,7 @@ export function PlacePickerBottomSheet({
         새 장소 검색
       </BottomSheet.Trigger>
       <BottomSheet.VirtualKeyboardProvider>
-        <BottomSheet.Content className="[--drawer-height:var(--drawer-content-max-height)]">
+        <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--drawer-content-max-height)]">
           <PlacePickerPanel
             key={String(open)}
             maxSelectionCount={maxSelectionCount}

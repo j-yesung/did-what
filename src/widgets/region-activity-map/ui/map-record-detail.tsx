@@ -34,7 +34,7 @@ export function MapRecordDetail({ active, draft, member, onBack, onDraftChange, 
       <div className="absolute top-7 left-5 z-20">
         <BackButton aria-label="지역 기록 목록으로" onClick={onBack} />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(--spacing(5),env(safe-area-inset-bottom))]">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]">
         <BottomSheet.Header className="pt-7 text-left" glass>
           {active ? <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title> : null}
         </BottomSheet.Header>

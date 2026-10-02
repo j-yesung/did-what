@@ -188,7 +188,7 @@ export function RegionRecordsBottomSheet({
           overlayHandle
           className={cn(
             "[--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
-            heightLocked && "transition-[transform,opacity,filter]",
+            !heightLocked && "transition-[transform,height,opacity,filter]",
             isDetail && "bottom-(--drawer-keyboard-inset,0px)",
           )}
           onTransitionEnd={(event) => {
@@ -260,11 +260,14 @@ export function RegionRecordsBottomSheet({
               ) : null}
 
               <div
-                className="min-h-0 overflow-y-auto overscroll-contain px-5 pt-2"
+                className={cn(
+                  "min-h-0 overflow-y-auto overscroll-contain px-5 pt-2",
+                  regionRecords.length > 0 && "pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]",
+                )}
                 style={
                   regionRecords.length > 0
                     ? {
-                        height: `calc(var(--spacing) * 2 + ${regionRecords.length} * var(--spacing) * 15 + ${regionRecords.length - 1}px)`,
+                        height: `calc(var(--spacing) * 6 + env(safe-area-inset-bottom) + ${regionRecords.length} * var(--spacing) * 15 + ${regionRecords.length - 1}px)`,
                       }
                     : undefined
                 }

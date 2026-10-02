@@ -113,7 +113,7 @@ function BottomSheetContent({
           data-snap-points={hasSnapPoints ? "" : undefined}
           className={cn(
             // Base.
-            "group/bottom-sheet-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 flex h-(--drawer-content-height) max-h-(--drawer-content-max-height) min-h-0 w-full select-none flex-col rounded-t-3xl border border-x-0 border-b-0 bg-popover text-popover-foreground text-sm shadow-(--shadow-drawer) outline-none transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] motion-reduce:transition-none",
+            "group/bottom-sheet-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 flex h-(--drawer-content-height) max-h-(--drawer-content-max-height) min-h-0 w-full select-none flex-col rounded-t-3xl border border-x-0 border-b-0 bg-popover text-popover-foreground text-sm shadow-(--shadow-drawer) outline-none transition-[transform,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] motion-reduce:transition-none",
             // Nested.
             "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95",
             // Bleed.
@@ -180,7 +180,7 @@ function BottomSheetFooter({ className, ...props }: React.ComponentProps<"div">)
     <div
       data-slot="bottom-sheet-footer"
       className={cn(
-        "mt-auto flex shrink-0 flex-col gap-2 px-5 pt-0 pb-[max(--spacing(4),env(safe-area-inset-bottom))]",
+        "mt-auto flex shrink-0 flex-col gap-2 px-5 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]",
         className,
       )}
       {...props}
