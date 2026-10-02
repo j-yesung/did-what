@@ -21,13 +21,7 @@ export function RecordViewToggle() {
       aria-label={calendar ? "달력" : "목록"}
       className={cn("[&_svg]:size-6.75", ICON_WEIGHT_MEDIUM)}
       nativeButton={false}
-      render={
-        <PressLink
-          href={calendar ? "/records?view=calendar" : "/records"}
-          onClick={() => saveRecordView(nextView)}
-          prefetch
-        />
-      }
+      render={<PressLink href={`/records?view=${nextView}`} onClick={() => saveRecordView(nextView)} prefetch />}
       shape="circle"
     >
       {calendar ? (
