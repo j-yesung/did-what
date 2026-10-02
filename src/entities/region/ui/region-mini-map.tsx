@@ -1,15 +1,14 @@
 import { cn } from "@/shared/lib/utils";
 
-import { KOREA_MAP_CELL_STYLE, KOREA_MAP_DOT_RADIUS, type RegionActivityMap } from "../model/korea-map";
+import { KOREA_MAP_CELL_STYLE, type RegionActivityMap } from "../model/korea-map";
 
 const LEVEL_CLASS_NAMES = {
+  0: "fill-map-empty",
   1: "fill-map-level-1",
   2: "fill-map-level-2",
   3: "fill-map-level-3",
   4: "fill-map-level-4",
 } as const;
-
-const CELL_CENTER = KOREA_MAP_CELL_STYLE.size / 2;
 
 type RegionMiniMapProps = {
   className?: string;
@@ -17,7 +16,7 @@ type RegionMiniMapProps = {
   map: RegionActivityMap;
 };
 
-// 홈 지도와 같은 모양으로, 지역 윤곽 위에 기록이 남은 곳을 점으로 찍는다.
+// 홈 지도와 같은 둥근 셀과 농도로 지역의 방문 기록을 보여준다.
 export function RegionMiniMap({ className, label, map }: RegionMiniMapProps) {
   return (
     <svg
@@ -30,26 +29,17 @@ export function RegionMiniMap({ className, label, map }: RegionMiniMapProps) {
       viewBox={`0 0 ${map.width} ${map.height}`}
     >
       <g aria-hidden="true">
-        {/* 경기처럼 가운데가 빈 지역(서울 자리)은 안쪽 고리를 비워야 해서 evenodd로 칠한다. */}
-        <path
-          className="fill-muted stroke-muted-foreground"
-          d={map.path}
-          fillRule="evenodd"
-          strokeWidth={1}
-          vectorEffect="non-scaling-stroke"
-        />
-        {map.cells.map((cell) => {
-          if (cell.level === 0) return null;
-          return (
-            <circle
-              className={LEVEL_CLASS_NAMES[cell.level]}
-              cx={cell.x + CELL_CENTER}
-              cy={cell.y + CELL_CENTER}
-              key={cell.id}
-              r={KOREA_MAP_DOT_RADIUS[cell.level]}
-            />
-          );
-        })}
+        {map.cells.map((cell) => (
+          <rect
+            className={LEVEL_CLASS_NAMES[cell.level]}
+            height={KOREA_MAP_CELL_STYLE.size}
+            key={cell.id}
+            rx={KOREA_MAP_CELL_STYLE.radius}
+            width={KOREA_MAP_CELL_STYLE.size}
+            x={cell.x}
+            y={cell.y}
+          />
+        ))}
       </g>
     </svg>
   );

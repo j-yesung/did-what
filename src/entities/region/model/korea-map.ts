@@ -255,7 +255,7 @@ const getMainlandPolygons = (geometries: Geometry[]) => {
   });
 };
 
-// 지역 지도는 지역 윤곽이 딱 맞는 틀을 쓴다. 칸은 기록을 모으는 격자로만 쓰고, 화면에는 윤곽과 기록 점을 그린다.
+// 지역 지도는 본토 윤곽에 맞는 틀 안에 셀을 채운다.
 const generateRegionCells = (regionCode: RegionCode): KoreaMapGrid & { path: string } => {
   const regionGeometries = BOUNDARIES.filter(
     ({ properties }) => getBoundaryRegionCode(properties.shapeISO) === regionCode,
@@ -415,6 +415,14 @@ export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation
     return null;
 
   return projectDisplayPosition([longitude, latitude]);
+};
+
+export const getLocationRegionCode = ({ latitude, longitude }: Pick<RecordLocation, "latitude" | "longitude">) => {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  const feature = BOUNDARIES.find(({ geometry }) => containsPoint(geometry, [longitude, latitude]));
+  return feature
+    ? getBoundaryRegionCode(findIslandInset([longitude, latitude])?.regionCode ?? feature.properties.shapeISO)
+    : null;
 };
 
 // 바다 위 모서리도 지도 좌표로 옮겨야 해서 육지 검사 없이 투영한다. 첫 화면에 담을 틀을 잡을 때 쓴다.
