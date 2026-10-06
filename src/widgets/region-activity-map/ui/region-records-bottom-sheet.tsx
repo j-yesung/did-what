@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import { useMemo, useState } from "react";
 
-import { CaretRightIcon, XIcon } from "@phosphor-icons/react";
+import { CaretRightIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -22,7 +21,7 @@ import { getSubregionName, type MapRecord } from "../model/record-map-points";
 import { getRegionVisitSummary } from "../model/region-visit-summary";
 import { MapRecordDetail } from "./map-record-detail";
 
-const DETAIL_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
+const SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
 
 type RegionRecordsBottomSheetProps = {
   detailRecordId: string | null;
@@ -55,15 +54,15 @@ export function RegionRecordsBottomSheet({
 }: RegionRecordsBottomSheetProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const popupRef = useRef<HTMLDivElement>(null);
-  const listHeightRef = useRef<number | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [displayedDetailId, setDisplayedDetailId] = useState(detailRecordId);
-  const [detailEntered, setDetailEntered] = useState(Boolean(detailRecordId));
-  const [heightLocked, setHeightLocked] = useState(false);
-  const [sheetHeight, setSheetHeight] = useState<string | null>(null);
   const isDetail = Boolean(detailRecordId);
-  const renderedDetailId = detailRecordId ?? displayedDetailId;
+  // 기록 작성 funnel과 같은 단계 모션이다. 시트가 열리고 닫힐 때는 시트 모션만 보이도록 열린 동안의 전환에만 방향을 준다.
+  const [previousIsDetail, setPreviousIsDetail] = useState(isDetail);
+  const [direction, setDirection] = useState<"forward" | "backward" | null>(null);
+  if (previousIsDetail !== isDetail) {
+    setPreviousIsDetail(isDetail);
+    setDirection(open ? (isDetail ? "forward" : "backward") : null);
+  }
   const regionMap = useMemo(
     () =>
       region
@@ -72,65 +71,13 @@ export function RegionRecordsBottomSheet({
     [records, region],
   );
 
-  // 브라우저 뒤로가기에서도 마지막 상세를 잠깐 남겨 두 화면을 교차 전환한다.
-  useEffect(() => {
-    if (detailRecordId) setDisplayedDetailId(detailRecordId);
-  }, [detailRecordId]);
-
-  useEffect(() => {
-    if (!isDetail) {
-      setDetailEntered(false);
-      return;
-    }
-    let nextFrame = 0;
-    const frame = requestAnimationFrame(() => {
-      nextFrame = requestAnimationFrame(() => setDetailEntered(true));
-    });
-    return () => {
-      cancelAnimationFrame(frame);
-      cancelAnimationFrame(nextFrame);
-    };
-  }, [isDetail]);
-
-  // auto 높이는 전환되지 않으므로 목록의 실제 높이에서 시작해 다음 프레임에 목표 높이로 옮긴다.
-  useEffect(() => {
-    if (!open || listHeightRef.current === null) return;
-    let nextFrame = 0;
-    const frame = requestAnimationFrame(() => {
-      nextFrame = requestAnimationFrame(() => {
-        setHeightLocked(false);
-        setSheetHeight(isDetail ? DETAIL_HEIGHT : `${listHeightRef.current}px`);
-      });
-    });
-    return () => {
-      cancelAnimationFrame(frame);
-      cancelAnimationFrame(nextFrame);
-    };
-  }, [isDetail, open]);
-
   const handleOpenChangeComplete = (nextOpen: boolean) => {
     if (nextOpen) return;
     setDrafts({});
-    setDisplayedDetailId(null);
-    setDetailEntered(false);
-    setHeightLocked(false);
-    setSheetHeight(null);
-    listHeightRef.current = null;
+    setDirection(null);
     onCloseComplete();
   };
   const handleRecordOpen = (recordId: string) => {
-    const height = popupRef.current?.getBoundingClientRect().height;
-    if (height) {
-      listHeightRef.current = height;
-    }
-    flushSync(() => {
-      setDisplayedDetailId(recordId);
-      setDetailEntered(false);
-      if (height) {
-        setHeightLocked(true);
-        setSheetHeight(`${height}px`);
-      }
-    });
     onBeforeDetailOpen();
     onRecordOpen(recordId);
   };
@@ -203,25 +150,16 @@ export function RegionRecordsBottomSheet({
           overlayHandle
           className={cn(
             "[--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
-            !heightLocked && "transition-[transform,height,opacity,filter]",
             isDetail && "bottom-(--drawer-keyboard-inset,0px)",
           )}
-          onTransitionEnd={(event) => {
-            if (!isDetail && event.target === event.currentTarget && event.propertyName === "height") {
-              setSheetHeight(null);
-            }
-          }}
-          ref={popupRef}
-          style={{ height: sheetHeight ?? (isDetail ? DETAIL_HEIGHT : undefined) }}
+          style={{ height: SHEET_HEIGHT }}
         >
           <div className="relative flex min-h-0 flex-1 flex-col">
+            {/* 상세에 있는 동안에도 목록을 그대로 두어, 돌아왔을 때 보던 스크롤 위치에서 이어 본다. */}
             <div
-              className={cn(
-                "flex max-h-[min(75dvh,calc(100dvh-env(safe-area-inset-top)-16px))] min-h-0 flex-1 flex-col pt-7 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-                isDetail
-                  ? "pointer-events-none absolute inset-x-0 top-0 translate-y-1 opacity-0"
-                  : "relative translate-y-0 opacity-100 delay-75",
-              )}
+              className={cn("flex min-h-0 flex-1 flex-col pt-7", isDetail && "invisible absolute inset-0")}
+              data-direction={isDetail ? undefined : (direction ?? undefined)}
+              data-funnel-step
               inert={isDetail}
               key={region?.code}
             >
@@ -233,7 +171,9 @@ export function RegionRecordsBottomSheet({
                     </div>
                   ) : null}
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    {!isDetail && (
+                    {isDetail ? (
+                      <p className="break-keep font-bold text-foreground text-xl leading-7">{region?.name}의 기억</p>
+                    ) : (
                       <BottomSheet.Title className="break-keep font-bold text-xl leading-7">
                         {region?.name}의 기억
                       </BottomSheet.Title>
@@ -244,11 +184,6 @@ export function RegionRecordsBottomSheet({
                       </p>
                     ) : null}
                   </div>
-                  <BottomSheet.Close
-                    render={<Button aria-label="지역 기록 닫기" className="size-11 min-w-0 p-0" variant="ghost" />}
-                  >
-                    <XIcon aria-hidden="true" />
-                  </BottomSheet.Close>
                 </div>
               </BottomSheet.Header>
 
@@ -277,8 +212,9 @@ export function RegionRecordsBottomSheet({
 
               <div
                 className={cn(
-                  "min-h-0 overflow-y-auto overscroll-contain px-5 pt-2",
+                  "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-2",
                   regionRecords.length > 0 && "pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]",
+                  visibleRecords.length === 0 && "flex items-center",
                 )}
               >
                 {visibleRecords.length > 0 ? (
@@ -308,6 +244,9 @@ export function RegionRecordsBottomSheet({
                               <button
                                 className="flex min-h-11 w-full items-center gap-3 rounded-lg px-1 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
                                 onClick={() => handleRecordOpen(place.recordId)}
+                                onPointerDown={(event) => {
+                                  if (event.button === 0) prefetchRecord(place.recordId);
+                                }}
                                 type="button"
                               >
                                 <span className="w-4 text-muted-foreground tabular-nums">{index + 1}</span>
@@ -386,29 +325,24 @@ export function RegionRecordsBottomSheet({
                 </BottomSheet.Footer>
               ) : null}
             </div>
-            {renderedDetailId ? (
+            {detailRecordId ? (
               <div
-                className={cn(
-                  "flex min-h-0 flex-1 flex-col transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-                  isDetail
-                    ? "relative motion-reduce:translate-y-0 motion-reduce:opacity-100"
-                    : "pointer-events-none absolute inset-0",
-                  isDetail && detailEntered ? "translate-y-0 opacity-100 delay-75" : "translate-y-1 opacity-0",
-                )}
-                inert={!isDetail}
+                className="flex min-h-0 flex-1 flex-col"
+                data-direction={direction ?? undefined}
+                data-funnel-step
+                key={detailRecordId}
               >
                 <MapRecordDetail
-                  active={isDetail}
-                  draft={drafts[renderedDetailId] ?? ""}
+                  draft={drafts[detailRecordId] ?? ""}
                   member={member}
                   onBack={onDetailBack}
                   onDraftChange={(next) =>
                     setDrafts((current) => ({
                       ...current,
-                      [renderedDetailId]: typeof next === "function" ? next(current[renderedDetailId] ?? "") : next,
+                      [detailRecordId]: typeof next === "function" ? next(current[detailRecordId] ?? "") : next,
                     }))
                   }
-                  recordId={renderedDetailId}
+                  recordId={detailRecordId}
                 />
               </div>
             ) : null}

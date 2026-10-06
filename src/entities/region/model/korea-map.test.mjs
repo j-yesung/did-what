@@ -7,9 +7,9 @@ const {
   getActivityLevel,
   getKoreaMapFrame,
   getKoreaMapPosition,
+  getLocationRegionCode,
   getRegion,
   getRegionCode,
-  KOREA_MAP_REGION_PATHS,
   REGIONS,
 } = await import("./korea-map.ts");
 
@@ -162,9 +162,6 @@ assert.ok(
     .every((cell) => isInside({ x: cell.x + 2.2, y: cell.y + 2.2 })),
   "두 섬의 칸도 틀 안으로 옮긴다.",
 );
-assert.ok(
-  KOREA_MAP_REGION_PATHS.some(({ code, key }) => code === "KR-28" && key === "KR-41:KR-28"),
-  "경기로 잘못 든 백령도는 인천으로 연다.",
-);
+assert.equal(getLocationRegionCode({ latitude: 37.96, longitude: 124.68 }), "KR-28", "백령도 기록은 인천으로 센다.");
 
 process.stdout.write(`${map.cells.length} cells, ${map.columns} × ${map.rows} grid\n`);

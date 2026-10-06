@@ -7,7 +7,6 @@ import { recordLocationsQueryOptions } from "@/entities/record";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activity-map";
 
-// 불러오는 동안 같은 빈 배열을 넘겨 셀 농도를 다시 계산하지 않는다.
 const EMPTY_RECORDS: [] = [];
 
 export function HomeContent({ member }: { member: { id: string; name: string } }) {

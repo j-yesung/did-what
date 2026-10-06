@@ -261,6 +261,7 @@ export const useMapViewport = (map: MapSize, frame: MapFrame, initialView?: MapV
     unitsPerPixel,
     canReset: view !== null,
     view,
+    visibleFrame: { x: current.x, y: current.y, width, height },
     reset,
     focusOn,
     svgProps: {

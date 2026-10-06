@@ -16,7 +16,6 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
 type MapRecordDetailProps = {
-  active: boolean;
   draft: string;
   member: { id: string; name: string };
   onBack: () => void;
@@ -24,7 +23,7 @@ type MapRecordDetailProps = {
   recordId: string;
 };
 
-export function MapRecordDetail({ active, draft, member, onBack, onDraftChange, recordId }: MapRecordDetailProps) {
+export function MapRecordDetail({ draft, member, onBack, onDraftChange, recordId }: MapRecordDetailProps) {
   const recordQuery = useQuery(recordDetailQueryOptions(recordId));
   const record = recordQuery.data;
   const regionText = record ? formatRecordRegionLabels(record, Number.POSITIVE_INFINITY) : "";
@@ -36,7 +35,7 @@ export function MapRecordDetail({ active, draft, member, onBack, onDraftChange, 
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]">
         <BottomSheet.Header className="pt-7 text-left" glass>
-          {active ? <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title> : null}
+          <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title>
         </BottomSheet.Header>
         <div aria-hidden="true" className="h-(--toolbar-height)" />
         <div className="px-5 pt-6">

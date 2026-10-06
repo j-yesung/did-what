@@ -163,11 +163,11 @@
   --page-gap: 20px;
 
   /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
-  --map-empty: #e1e1e1;
-  --map-level-1: #b7b7b7;
-  --map-level-2: #858585;
-  --map-level-3: #505050;
-  --map-level-4: #1c1c1c;
+  --map-empty: var(--grey-200);
+  --map-level-1: var(--blue-200);
+  --map-level-2: var(--blue-300);
+  --map-level-3: var(--blue-500);
+  --map-level-4: var(--blue-700);
 
   /* 기록 카테고리. 달력 제목 띠의 옅은 배경은 이 값을 섞어 만든다. */
   --category-daily: var(--green-700);
@@ -278,12 +278,8 @@
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
   --input: var(--grey-700);
 
-  /* 어두운 표면에서는 기록이 많을수록 밝게 보여 셀 농도를 구분한다. */
-  --map-empty: #343434;
-  --map-level-1: #666666;
-  --map-level-2: #999999;
-  --map-level-3: #cccccc;
-  --map-level-4: #f2f2f2;
+  /* 기록 농도는 라이트와 같은 브랜드 색을 쓴다. 빈 칸만 표면을 따라간다. */
+  --map-empty: var(--grey-800);
 
   /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
   --category-daily: var(--green-400);
@@ -329,12 +325,8 @@
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
     --input: var(--grey-700);
 
-    /* 어두운 표면에서는 기록이 많을수록 밝게 보여 셀 농도를 구분한다. */
-    --map-empty: #343434;
-    --map-level-1: #666666;
-    --map-level-2: #999999;
-    --map-level-3: #cccccc;
-    --map-level-4: #f2f2f2;
+    /* 기록 농도는 라이트와 같은 브랜드 색을 쓴다. 빈 칸만 표면을 따라간다. */
+    --map-empty: var(--grey-800);
 
     /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
     --category-daily: var(--green-400);
