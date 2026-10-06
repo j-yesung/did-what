@@ -272,7 +272,7 @@ function CalendarMonthBuffer({ active, children }: { active: boolean; children: 
   return active ? children : deferredChildren;
 }
 
-export function RecordCalendar() {
+export function RecordCalendar({ member }: { member: { id: string; name: string } }) {
   const searchParams = useSearchParams();
   const shouldReduceMotion = useReducedMotion();
   const today = getToday();
@@ -446,7 +446,6 @@ export function RecordCalendar() {
   const handleBottomSheetOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) return;
-    setSelectedDate(null);
     setPendingDate(null);
     replaceCalendarHref(month);
   };
@@ -561,6 +560,11 @@ export function RecordCalendar() {
       <RecordDayBottomSheet
         date={selectedDate}
         isError={isError}
+        member={member}
+        onCloseComplete={() => {
+          setSelectedDate(null);
+          replaceCalendarHref(month);
+        }}
         onOpenChange={handleBottomSheetOpenChange}
         onRetry={() => void recordsQuery.refetch()}
         open={open}

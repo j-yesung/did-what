@@ -19,7 +19,7 @@ import { Separator } from "@/shared/ui/separator";
 
 import { getSubregionName, type MapRecord } from "../model/record-map-points";
 import { getRegionVisitSummary } from "../model/region-visit-summary";
-import { MapRecordDetail } from "./map-record-detail";
+import { RecordSheetDetail } from "./record-sheet-detail";
 
 const SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
 
@@ -338,7 +338,8 @@ export function RegionRecordsBottomSheet({
                 data-funnel-step
                 key={detailRecordId}
               >
-                <MapRecordDetail
+                <RecordSheetDetail
+                  backLabel="지역 기록 목록으로"
                   draft={drafts[detailRecordId] ?? ""}
                   member={member}
                   onBack={onDetailBack}
