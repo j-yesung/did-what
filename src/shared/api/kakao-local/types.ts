@@ -1,5 +1,7 @@
 export type KakaoPlace = {
   address: string | null;
+  categoryGroupCode: string | null;
+  categoryName: string | null;
   id: string;
   latitude: number;
   longitude: number;

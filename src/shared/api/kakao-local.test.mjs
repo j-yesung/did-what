@@ -40,6 +40,8 @@ assert.deepEqual(
     places: [
       {
         address: "서울 강남구 영동대로 513",
+        categoryGroupCode: null,
+        categoryName: null,
         id: "26338954",
         latitude: 37.51207412593136,
         longitude: 127.05902969025047,
@@ -57,6 +59,27 @@ assert.equal(
   null,
 );
 assert.equal(parseKakaoSearchResponse({ documents: [], meta: {} }), null);
+
+const categoryDocument = {
+  address_name: "서울 마포구",
+  category_group_code: "CE7",
+  category_name: "음식점 > 카페",
+  id: "123",
+  place_name: "작은 카페",
+  road_address_name: "",
+  x: "126.9",
+  y: "37.5",
+};
+const categoryPayload = (document) => ({ documents: [document], meta: { is_end: true, pageable_count: 1 } });
+const classifiedPlace = parseKakaoSearchResponse(categoryPayload(categoryDocument)).places[0];
+assert.equal(classifiedPlace.categoryGroupCode, "CE7");
+assert.equal(classifiedPlace.categoryName, "음식점 > 카페");
+assert.equal(parseKakaoSearchResponse(categoryPayload({ ...categoryDocument, category_name: 123 })), null);
+assert.equal(parseKakaoSearchResponse(categoryPayload({ ...categoryDocument, category_name: "가".repeat(201) })), null);
+assert.equal(
+  parseKakaoSearchResponse(categoryPayload({ ...categoryDocument, category_group_code: "a".repeat(21) })),
+  null,
+);
 
 // 같은 시·군·구의 동들은 한 지역으로 합쳐지고, 시·도 문서와 코드가 깨진 문서는 걸러진다.
 assert.deepEqual(

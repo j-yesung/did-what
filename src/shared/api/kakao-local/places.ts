@@ -34,6 +34,8 @@ export const parseKakaoSearchResponse = (
       typeof document.place_name !== "string" ||
       typeof document.address_name !== "string" ||
       typeof document.road_address_name !== "string" ||
+      (document.category_group_code != null && typeof document.category_group_code !== "string") ||
+      (document.category_name != null && typeof document.category_name !== "string") ||
       typeof document.x !== "string" ||
       typeof document.y !== "string"
     ) {
@@ -46,6 +48,8 @@ export const parseKakaoSearchResponse = (
     const latitudeText = document.y.trim();
     const longitude = Number(longitudeText);
     const latitude = Number(latitudeText);
+    const categoryGroupCode = (document.category_group_code as string | undefined)?.trim() || null;
+    const categoryName = (document.category_name as string | undefined)?.trim() || null;
 
     if (
       !idResult.valid ||
@@ -58,13 +62,17 @@ export const parseKakaoSearchResponse = (
       longitude < -180 ||
       longitude > 180 ||
       latitude < -90 ||
-      latitude > 90
+      latitude > 90 ||
+      (categoryGroupCode !== null && categoryGroupCode.length > 20) ||
+      (categoryName !== null && categoryName.length > 200)
     ) {
       return null;
     }
 
     places.push({
       address: document.road_address_name.trim() || document.address_name.trim() || null,
+      categoryGroupCode,
+      categoryName,
       id: idResult.id,
       latitude,
       longitude,

@@ -103,6 +103,8 @@ export const createPlaces = async (inputs: CreatePlaceInput[]): Promise<PlaceAct
   const { data: saved, error } = await supabase.rpc("save_owned_places", {
     p_places: verifiedPlaces.map(({ place, region }) => ({
       address: place.address,
+      category_group_code: place.categoryGroupCode,
+      category_name: place.categoryName,
       latitude: place.latitude,
       longitude: place.longitude,
       name: place.name,

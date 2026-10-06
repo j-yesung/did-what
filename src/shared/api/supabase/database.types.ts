@@ -109,6 +109,8 @@ export type Database = {
       places: {
         Row: {
           address: string | null;
+          category_group_code: string | null;
+          category_name: string | null;
           created_at: string;
           id: string;
           latitude: number;
@@ -124,6 +126,8 @@ export type Database = {
         };
         Insert: {
           address?: string | null;
+          category_group_code?: string | null;
+          category_name?: string | null;
           created_at?: string;
           id?: string;
           latitude: number;
@@ -139,6 +143,8 @@ export type Database = {
         };
         Update: {
           address?: string | null;
+          category_group_code?: string | null;
+          category_name?: string | null;
           created_at?: string;
           id?: string;
           latitude?: number;

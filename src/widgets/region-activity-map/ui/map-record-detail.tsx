@@ -5,10 +5,10 @@ import type { Dispatch, SetStateAction } from "react";
 import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
-import { formatRecordRegionLabels, RecordBadges, recordDetailQueryOptions } from "@/entities/record";
+import { PlaceIconTile } from "@/entities/place";
+import { formatRecordRegionLabels, RecordDetailHeader, recordDetailQueryOptions } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { RecordComments } from "@/features/record-comment";
-import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { PageSection } from "@/shared/ui/layouts";
@@ -50,32 +50,23 @@ export function MapRecordDetail({ draft, member, onBack, onDraftChange, recordId
             />
           ) : record ? (
             <div className="flex flex-col gap-5">
-              <section aria-labelledby="map-record-activity-title" className="px-1">
-                <h2
-                  className="text-balance font-bold text-3xl leading-tight tracking-[-0.045em]"
-                  id="map-record-activity-title"
-                >
-                  {record.activity}
-                </h2>
-                <p className="mt-2 text-muted-foreground text-sm">
-                  {[formatRecordPeriod(record.recorded_at, record.recorded_until), regionText]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                  <RecordBadges className="px-2 py-1" record={record} />
-                </div>
+              <section aria-labelledby="map-record-activity-title">
+                <RecordDetailHeader record={record} regionText={regionText} titleId="map-record-activity-title" />
               </section>
 
               {record.record_places.length > 0 ? (
-                <PageSection aria-labelledby="map-record-places-title">
-                  <h3 className="mb-3 font-semibold text-base" id="map-record-places-title">
-                    우리 어디 갔지?
-                  </h3>
-                  <ul className="flex flex-col gap-2">
+                <PageSection aria-labelledby="map-record-places-title" className="mx-0 border-0 px-1 pt-1">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h3 className="font-semibold text-base" id="map-record-places-title">
+                      우리 어디 갔지?
+                    </h3>
+                    <p className="text-muted-foreground text-xs">함께한 장소 {record.record_places.length}곳</p>
+                  </div>
+                  <ul className="flex flex-col">
                     {record.record_places.map(({ place }) => (
-                      <li className="flex min-h-11 items-center justify-between gap-3" key={place.id}>
-                        <div className="min-w-0">
+                      <li className="flex min-h-11 items-center gap-3 border-b py-3" key={place.id}>
+                        <PlaceIconTile place={place} />
+                        <div className="min-w-0 flex-1">
                           <p className="font-medium">{place.name}</p>
                           {place.address ? (
                             <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address}</p>
@@ -89,11 +80,11 @@ export function MapRecordDetail({ draft, member, onBack, onDraftChange, recordId
               ) : null}
 
               {record.memo ? (
-                <PageSection aria-labelledby="map-record-memo-title">
+                <PageSection aria-labelledby="map-record-memo-title" className="mx-0 border-0 px-1 pt-1">
                   <h3 className="mb-3 font-semibold text-base" id="map-record-memo-title">
                     우리 뭐했지?
                   </h3>
-                  <div className="flex flex-col gap-2 text-sm leading-relaxed">
+                  <div className="flex flex-col gap-2 border-primary border-l-2 pl-4 text-sm leading-relaxed">
                     {record.memo.split("\n").map((line, index) => (
                       <p className="min-h-lh whitespace-pre-wrap" key={`${record.id}-${index}`}>
                         {line}
