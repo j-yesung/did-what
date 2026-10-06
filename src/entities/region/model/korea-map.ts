@@ -442,20 +442,6 @@ export const getKoreaMapFrame = ({
   return { x: topLeft.x, y: topLeft.y, width: bottomRight.x - topLeft.x, height: bottomRight.y - topLeft.y };
 };
 
-// 셀 지도와 같은 좌표계로 시·도 경계를 그려 셀 대신 실제 지도 모양 위에 기록을 겹칠 수 있게 한다.
-// 옮긴 섬은 지역 코드를 바로잡을 수 있게 따로 묶는다.
-export const KOREA_MAP_REGION_PATHS = BOUNDARIES.flatMap(({ geometry, properties }) => {
-  const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
-  const paths = new Map<string, string>();
-
-  for (const polygon of polygons) {
-    const code = findIslandInset(polygon[0][0])?.regionCode ?? properties.shapeISO;
-    paths.set(code, (paths.get(code) ?? "") + toPathData(polygon, projectDisplayPosition));
-  }
-
-  return [...paths].map(([code, path]) => ({ code, key: `${properties.shapeISO}:${code}`, path }));
-});
-
 export const createKoreaMap = (records: RecordLocation[]): KoreaMapGrid => {
   return { ...KOREA_MAP_GRID, cells: mapRecordsToCells(KOREA_MAP_GRID.cells, records) };
 };

@@ -1,21 +1,21 @@
 "use client";
 
-import { type MouseEvent, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { Select } from "@base-ui/react/select";
+import { CaretDownIcon } from "@phosphor-icons/react";
 import { useFunnel } from "@use-funnel/browser";
 import { useSearchParams } from "next/navigation";
 
-import {
-  createKoreaMap,
-  getKoreaMapFrame,
-  getRegion,
-  KOREA_MAP_CELL_STYLE,
-  KOREA_MAP_REGION_PATHS,
-  type Region,
-} from "@/entities/region";
+import { createKoreaMap, getKoreaMapFrame, getRegion, KOREA_MAP_CELL_STYLE, type Region } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { readMapUrlState, toMapSearch } from "@/widgets/region-activity-map/model/map-url-state";
-import { type MapRecord, toRecordMapPoints } from "@/widgets/region-activity-map/model/record-map-points";
+import {
+  type MapRecord,
+  REGION_BADGE_ANCHORS,
+  toRecordMapPoints,
+} from "@/widgets/region-activity-map/model/record-map-points";
 import { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 import { useMapViewport } from "@/widgets/region-activity-map/model/use-map-viewport";
 import { MapControls } from "@/widgets/region-activity-map/ui/map-controls";
@@ -28,24 +28,18 @@ const LEVEL_CLASS_NAMES = {
   3: "fill-map-level-3",
   4: "fill-map-level-4",
 } as const;
-const TAP_SLOP = 8;
-// 첫 화면은 본토와 제주만 꽉 차게 담는다. 백령도·울릉도는 옆으로 옮기거나 축소하면 보인다.
-const HOME_FRAME = getKoreaMapFrame({ east: 129.7, north: 38.7, south: 33.1, west: 126 });
+// 첫 화면은 본토와 제주 주변에 한 단계 여백을 두어 지도의 전체 윤곽을 보기 쉽게 한다.
+const HOME_FRAME = getKoreaMapFrame({ east: 130.2, north: 39.4, south: 32.4, west: 125.5 });
 // 핀치하는 동안 매 프레임 주소를 바꾸지 않도록 움직임이 멈춘 뒤에 쓴다. iOS는 짧은 시간에 너무 자주 바꾸면 막는다.
 const URL_WRITE_DELAY = 250;
 const FUNNEL_ID = "map-record-sheet";
+const REGION_SHORTCUTS = Object.entries(REGION_BADGE_ANCHORS).sort(([, first], [, second]) =>
+  first.label.localeCompare(second.label, "ko"),
+);
 type MapRecordSheetSteps = {
   map: { recordId: null };
   list: { recordId: null };
   detail: { recordId: string };
-};
-
-// 보이지 않는 지역 경계가 셀 사이 여백까지 포함해 터치를 받는다.
-const findRegionAt = (clientX: number, clientY: number) => {
-  for (const element of document.elementsFromPoint(clientX, clientY)) {
-    const code = element.closest<SVGElement>("[data-region-code]")?.dataset.regionCode;
-    if (code) return getRegion(code);
-  }
 };
 
 export function RegionActivityMap({
@@ -60,7 +54,6 @@ export function RegionActivityMap({
     const state = readMapUrlState(searchParams);
     return { ...state, region: state.region ? (getRegion(state.region) ?? null) : null };
   });
-  const pressRef = useRef<{ x: number; y: number } | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(initialUrlState.region);
   const [subregion, setSubregion] = useState(initialUrlState.subregion);
   const [sheetClosing, setSheetClosing] = useState(false);
@@ -72,23 +65,21 @@ export function RegionActivityMap({
   const bottomSheetOpen = funnel.step !== "map" && selectedRegion !== null && !sheetClosing;
   const points = useMemo(() => toRecordMapPoints(records), [records]);
   const map = useMemo(() => createKoreaMap(points), [points]);
-  const highlightedRegion = bottomSheetOpen ? selectedRegion?.code : null;
   // 확대·이동 중에는 같은 셀 요소를 재사용해 1,250개 셀을 매 프레임 다시 만들지 않는다.
   const cells = useMemo(
     () =>
       map.cells.map((cell) => (
         <rect
-          className={cn(LEVEL_CLASS_NAMES[cell.level], cell.regionCode === highlightedRegion && "stroke-primary")}
+          className={LEVEL_CLASS_NAMES[cell.level]}
           height={KOREA_MAP_CELL_STYLE.size}
           key={cell.id}
           rx={KOREA_MAP_CELL_STYLE.radius}
-          strokeWidth={0.5}
           width={KOREA_MAP_CELL_STYLE.size}
           x={cell.x}
           y={cell.y}
         />
       )),
-    [map, highlightedRegion],
+    [map],
   );
   const viewport = useMapViewport(map, HOME_FRAME, initialUrlState.view);
   const currentLocation = useCurrentMapLocation(viewport.focusOn);
@@ -127,15 +118,41 @@ export function RegionActivityMap({
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${search}`);
   };
 
-  // 포인터 캡처 때문에 경계에서 click이 오지 않아, 실제 누른 자리에 있는 시·도를 찾는다.
-  const selectRegion = (event: MouseEvent) => {
-    const press = pressRef.current;
-    if (!press || Math.hypot(event.clientX - press.x, event.clientY - press.y) > TAP_SLOP) return;
-    openRegion(findRegionAt(event.clientX, event.clientY));
-  };
-
   return (
     <>
+      <nav
+        aria-label="지역 바로가기"
+        className="pointer-events-auto absolute top-(--page-top) left-5 z-30 flex h-(--toolbar-height) items-center"
+      >
+        <Select.Root<string> onValueChange={(code) => openRegion(getRegion(code ?? ""))} value={null}>
+          <Select.Trigger
+            aria-label="지역 선택"
+            render={
+              <LiquidGlassButton className="liquid-glass-control gap-2 px-5 focus-visible:ring-0" surface="group" />
+            }
+          >
+            <Select.Value placeholder="지역 선택" />
+            <CaretDownIcon aria-hidden="true" />
+          </Select.Trigger>
+          <Select.Portal>
+            <Select.Positioner align="start" alignItemWithTrigger={false} className="z-50" sideOffset={8}>
+              <Select.Popup className="max-h-[min(60vh,28rem)] w-44 overflow-y-auto rounded-2xl border border-border bg-surface p-1 shadow-lg">
+                <Select.List>
+                  {REGION_SHORTCUTS.map(([code, { label }]) => (
+                    <Select.Item
+                      className="flex h-11 cursor-pointer items-center rounded-xl px-3 text-foreground text-sm outline-none data-[highlighted]:bg-muted"
+                      key={code}
+                      value={code}
+                    >
+                      <Select.ItemText>{label}</Select.ItemText>
+                    </Select.Item>
+                  ))}
+                </Select.List>
+              </Select.Popup>
+            </Select.Positioner>
+          </Select.Portal>
+        </Select.Root>
+      </nav>
       <svg
         className={cn(
           // 지도가 상단 도구 막대와 하단 메뉴 사이에 꽉 차도록 그만큼 비워 둔다.
@@ -145,23 +162,6 @@ export function RegionActivityMap({
         aria-labelledby="korea-map-title korea-map-description"
         preserveAspectRatio="xMidYMid meet"
         {...viewport.svgProps}
-        onClick={selectRegion}
-        onPointerCancel={(event: PointerEvent<SVGSVGElement>) => {
-          pressRef.current = null;
-          viewport.svgProps.onPointerCancel(event);
-        }}
-        onPointerDown={(event: PointerEvent<SVGSVGElement>) => {
-          pressRef.current = event.isPrimary ? { x: event.clientX, y: event.clientY } : null;
-          viewport.svgProps.onPointerDown(event);
-        }}
-        onPointerMove={(event: PointerEvent<SVGSVGElement>) => {
-          const press = pressRef.current;
-          if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > TAP_SLOP) pressRef.current = null;
-          viewport.svgProps.onPointerMove(event);
-        }}
-        onPointerUp={(event: PointerEvent<SVGSVGElement>) => {
-          viewport.svgProps.onPointerUp(event);
-        }}
       >
         <title id="korea-map-title">대한민국 셀 기록 지도</title>
         <desc id="korea-map-description">
@@ -169,35 +169,14 @@ export function RegionActivityMap({
             records.length > 0
               ? `대한민국 지도 위에 기록 ${records.length}개를 둥근 사각형 셀의 농도로 표시한 지도.`
               : "아직 표시할 기록이 없는 대한민국 셀 지도.",
-            "작은 셀이나 셀 사이 여백을 포함한 지역 전체를 누르면 그 지역 기록을 볼 수 있어요.",
+            "상단 지역 선택에서 지역 기록을 볼 수 있어요.",
             "두 손가락으로 확대하거나 축소하고, 확대된 지도는 한 손가락으로 이동할 수 있어요.",
             currentLocation.position ? "현재 위치가 원형 점으로 표시되어 있어요." : null,
           ]
             .filter(Boolean)
             .join(" ")}
         </desc>
-        <g>
-          {KOREA_MAP_REGION_PATHS.map(({ code, key, path }) => (
-            <path
-              aria-label={`${getRegion(code)?.name ?? "지역"} 기록 보기`}
-              className="cursor-pointer fill-transparent outline-none focus-visible:stroke-primary"
-              d={path}
-              data-region-code={code}
-              fillRule="evenodd"
-              key={key}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter" && event.key !== " ") return;
-                event.preventDefault();
-                openRegion(getRegion(code));
-              }}
-              role="button"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              tabIndex={0}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-        </g>
+        <rect {...viewport.visibleFrame} fill="transparent" pointerEvents="all" />
         <g aria-hidden="true" pointerEvents="none">
           {cells}
           {currentLocation.position ? (
