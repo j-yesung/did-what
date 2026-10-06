@@ -128,7 +128,10 @@ export function RegionActivityMap({
           <Select.Trigger
             aria-label="지역 선택"
             render={
-              <LiquidGlassButton className="liquid-glass-control gap-2 px-5 focus-visible:ring-0" surface="group" />
+              <LiquidGlassButton
+                className="liquid-glass-control w-32 min-w-0 gap-2 px-3 focus-visible:ring-0"
+                surface="group"
+              />
             }
           >
             <Select.Value placeholder="지역 선택" />
@@ -136,7 +139,7 @@ export function RegionActivityMap({
           </Select.Trigger>
           <Select.Portal>
             <Select.Positioner align="start" alignItemWithTrigger={false} className="z-50" sideOffset={8}>
-              <Select.Popup className="max-h-[min(60vh,28rem)] w-44 overflow-y-auto rounded-2xl border border-border bg-surface p-1 shadow-lg">
+              <Select.Popup className="data-ending-style:transform-[scale(0.95)] data-starting-style:transform-[scale(0.95)] max-h-[min(60vh,28rem)] w-(--anchor-width) origin-(--transform-origin) overflow-y-auto rounded-2xl border border-border bg-surface p-1 shadow-lg transition-[transform,opacity] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-150 motion-reduce:transform-none motion-reduce:transition-opacity">
                 <Select.List>
                   {REGION_SHORTCUTS.map(([code, { label }]) => (
                     <Select.Item
