@@ -1,6 +1,6 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +15,9 @@ import { PageSection } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
-type MapRecordDetailProps = {
+type RecordSheetDetailProps = {
+  actions?: ReactNode;
+  backLabel?: string;
   draft: string;
   member: { id: string; name: string };
   onBack: () => void;
@@ -23,15 +25,24 @@ type MapRecordDetailProps = {
   recordId: string;
 };
 
-export function MapRecordDetail({ draft, member, onBack, onDraftChange, recordId }: MapRecordDetailProps) {
+export function RecordSheetDetail({
+  actions,
+  backLabel = "이전 화면으로",
+  draft,
+  member,
+  onBack,
+  onDraftChange,
+  recordId,
+}: RecordSheetDetailProps) {
   const recordQuery = useQuery(recordDetailQueryOptions(recordId));
   const record = recordQuery.data;
   const regionText = record ? formatRecordRegionLabels(record, Number.POSITIVE_INFINITY) : "";
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <div className="absolute top-7 left-5 z-20">
-        <BackButton aria-label="지역 기록 목록으로" onClick={onBack} />
+      <div className="pointer-events-none absolute inset-x-5 top-7 z-20 flex items-center justify-between gap-3 [&>*]:pointer-events-auto">
+        <BackButton aria-label={backLabel} onClick={onBack} />
+        {actions}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]">
         <BottomSheet.Header className="pt-7 text-left" glass>
@@ -50,14 +61,14 @@ export function MapRecordDetail({ draft, member, onBack, onDraftChange, recordId
             />
           ) : record ? (
             <div className="flex flex-col gap-5">
-              <section aria-labelledby="map-record-activity-title">
-                <RecordDetailHeader record={record} regionText={regionText} titleId="map-record-activity-title" />
+              <section aria-labelledby="sheet-record-activity-title">
+                <RecordDetailHeader record={record} regionText={regionText} titleId="sheet-record-activity-title" />
               </section>
 
               {record.record_places.length > 0 ? (
-                <PageSection aria-labelledby="map-record-places-title" className="mx-0 border-0 px-1 pt-1">
+                <PageSection aria-labelledby="sheet-record-places-title" className="mx-0 border-0 px-1 pt-1">
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <h3 className="font-semibold text-base" id="map-record-places-title">
+                    <h3 className="font-semibold text-base" id="sheet-record-places-title">
                       우리 어디 갔지?
                     </h3>
                     <p className="text-muted-foreground text-xs">함께한 장소 {record.record_places.length}곳</p>
@@ -80,8 +91,8 @@ export function MapRecordDetail({ draft, member, onBack, onDraftChange, recordId
               ) : null}
 
               {record.memo ? (
-                <PageSection aria-labelledby="map-record-memo-title" className="mx-0 border-0 px-1 pt-1">
-                  <h3 className="mb-3 font-semibold text-base" id="map-record-memo-title">
+                <PageSection aria-labelledby="sheet-record-memo-title" className="mx-0 border-0 px-1 pt-1">
+                  <h3 className="mb-3 font-semibold text-base" id="sheet-record-memo-title">
                     우리 뭐했지?
                   </h3>
                   <div className="flex flex-col gap-2 border-primary border-l-2 pl-4 text-sm leading-relaxed">

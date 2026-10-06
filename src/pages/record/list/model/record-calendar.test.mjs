@@ -1,4 +1,8 @@
-import { getCalendarWeekLayout, groupRecordsByDate } from "@/pages/record/list/model/record-calendar";
+import {
+  getCalendarWeekLayout,
+  getDaySheetRecordId,
+  groupRecordsByDate,
+} from "@/pages/record/list/model/record-calendar";
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -82,4 +86,15 @@ test("제목 한 줄만 들어갈 때는 넘친 날짜에 전체 기록 수를 �
   const result = layout([record("first", "2026-10-06"), record("second", "2026-10-06")], dates, 1);
   assert.deepEqual(result.segments, []);
   assert.deepEqual(result.hiddenCounts, [0, 0, 2, 0, 0, 0, 0]);
+});
+
+test("날짜 시트는 기록 하나면 바로 상세, 여러 개면 선택한 기록의 상세를 연다", () => {
+  const records = [{ id: "first" }, { id: "second" }];
+  assert.equal(getDaySheetRecordId(undefined, null), null);
+  assert.equal(getDaySheetRecordId([], null), null);
+  assert.equal(getDaySheetRecordId([records[0]], null), "first");
+  assert.equal(getDaySheetRecordId(records, null), null);
+  assert.equal(getDaySheetRecordId(records, "second"), "second");
+  assert.equal(getDaySheetRecordId([records[0]], "second"), "first");
+  assert.equal(getDaySheetRecordId(records, "deleted"), null);
 });

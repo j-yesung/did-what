@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { recordLocationsQueryOptions } from "@/entities/record";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { RecordSheetDetail } from "@/widgets/record-sheet-detail";
 import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activity-map";
 
 const EMPTY_RECORDS: [] = [];
@@ -21,7 +22,12 @@ export function HomeContent({ member }: { member: { id: string; name: string } }
         aria-busy={recordsQuery.isPending}
         data-screen="map"
       >
-        <RegionActivityMap member={member} records={records} />
+        <RegionActivityMap
+          records={records}
+          renderRecordDetail={(props) => (
+            <RecordSheetDetail {...props} backLabel="지역 기록 목록으로" member={member} />
+          )}
+        />
       </section>
 
       {recordsQuery.isError ? (

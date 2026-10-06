@@ -1,3 +1,4 @@
+import { requireMember } from "@/entities/member/server";
 import { parseRecordFilters, type RecordSearchParams } from "@/entities/record";
 import { RecordViewToggle } from "@/features/record/switch-record-view";
 import { getRecordView } from "@/features/record/switch-record-view/server";
@@ -19,6 +20,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
       ? "calendar"
       : "list";
   const filters = parseRecordFilters(params);
+  const member = view === "calendar" ? (await requireMember()).member : null;
 
   return (
     <>
@@ -32,8 +34,8 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
           <h1 className="sr-only">우리의 기록</h1>
         </header>
 
-        {view === "calendar" ? (
-          <RecordCalendar />
+        {view === "calendar" && member ? (
+          <RecordCalendar member={{ id: member.id, name: member.name }} />
         ) : (
           <>
             <RecordFilterForm filters={filters} />

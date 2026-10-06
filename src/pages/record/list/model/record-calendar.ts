@@ -77,6 +77,15 @@ export const getCalendarDayAction = (
   return isSelected ? "clear" : "create";
 };
 
+// 선택한 기록이 삭제되었으면 남은 기록 수에 맞춰 상세 또는 목록으로 돌아간다.
+export const getDaySheetRecordId = (
+  records: readonly { id: string }[] | undefined,
+  selectedRecordId: string | null,
+) => {
+  if (records?.some(({ id }) => id === selectedRecordId)) return selectedRecordId;
+  return records?.length === 1 ? records[0].id : null;
+};
+
 // 여러 날 기록은 범위 안의 모든 날짜에 넣는다. 날짜 안의 순서는 받은 순서(최신순)를 따른다.
 export const groupRecordsByDate = <T extends DatedRecord>(records: readonly T[], range: CalendarRange) => {
   const recordsByDate = new Map<string, T[]>();

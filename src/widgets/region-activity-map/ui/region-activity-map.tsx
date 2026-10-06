@@ -19,7 +19,10 @@ import {
 import { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 import { useMapViewport } from "@/widgets/region-activity-map/model/use-map-viewport";
 import { MapControls } from "@/widgets/region-activity-map/ui/map-controls";
-import { RegionRecordsBottomSheet } from "@/widgets/region-activity-map/ui/region-records-bottom-sheet";
+import {
+  type RegionRecordDetailRenderer,
+  RegionRecordsBottomSheet,
+} from "@/widgets/region-activity-map/ui/region-records-bottom-sheet";
 
 const LEVEL_CLASS_NAMES = {
   0: "fill-map-empty",
@@ -43,11 +46,11 @@ type MapRecordSheetSteps = {
 };
 
 export function RegionActivityMap({
-  member,
   records,
+  renderRecordDetail,
 }: {
-  member: { id: string; name: string };
   records: readonly MapRecord[];
+  renderRecordDetail: RegionRecordDetailRenderer;
 }) {
   const searchParams = useSearchParams();
   const [initialUrlState] = useState(() => {
@@ -204,7 +207,6 @@ export function RegionActivityMap({
       <MapControls viewport={viewport} currentLocation={currentLocation} />
       <RegionRecordsBottomSheet
         detailRecordId={funnel.step === "detail" ? funnel.context.recordId : null}
-        member={member}
         onBeforeDetailOpen={() => saveMapUrl(selectedRegion?.code ?? null, subregion)}
         onCloseComplete={() => {
           if (!sheetClosing) return;
@@ -221,6 +223,7 @@ export function RegionActivityMap({
         open={bottomSheetOpen}
         records={records}
         region={selectedRegion}
+        renderRecordDetail={renderRecordDetail}
         subregion={subregion}
       />
     </>
