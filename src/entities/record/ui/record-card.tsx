@@ -13,7 +13,7 @@ import { PressLink } from "@/shared/ui/press-link";
 import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
 import { formatRecordRegionLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
-import { RecordBadges } from "./record-badges";
+import { RecordCategoryBadge } from "./record-badges";
 
 type RecordCardProps = {
   isLast: boolean;
@@ -94,15 +94,8 @@ export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, star
             <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
               {/* 긴 기간 표기는 지역·배지와 한 줄에 못 들어간다. 줄을 통째로 차지해 뒤가 밀리지 않게 한다. */}
               {period ? <span className="w-full shrink-0 tabular-nums">{period}</span> : null}
-              {regionLabels ? (
-                <>
-                  <span className="truncate">{regionLabels}</span>
-                  <span className="shrink-0" aria-hidden="true">
-                    ·
-                  </span>
-                </>
-              ) : null}
-              <RecordBadges record={record} />
+              {regionLabels ? <span className="truncate">{regionLabels}</span> : null}
+              <RecordCategoryBadge category={record.category} />
             </span>
             {commentCount > 0 ? (
               <span className="inline-flex shrink-0 items-center gap-0.5 tabular-nums">

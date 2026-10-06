@@ -109,7 +109,7 @@ export const fetchRecordPlaces = async (recordId: string) => {
   const { data, error } = await createClient()
     .from("records")
     .select(
-      "id, record_regions(region_code, region_label, region_name), record_places(place:places(id, name, address, saved_at))",
+      "id, record_regions(region_code, region_label, region_name), record_places(place:places(id, name, address, saved_at, category_group_code, category_name))",
     )
     .eq("id", recordId)
     .maybeSingle();

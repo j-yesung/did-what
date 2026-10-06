@@ -162,6 +162,8 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
       })),
       ...kakaoPlaces.map((verified) => ({
         address: verified.place.address,
+        category_group_code: verified.place.categoryGroupCode,
+        category_name: verified.place.categoryName,
         kind: "kakao" as const,
         latitude: verified.place.latitude,
         longitude: verified.place.longitude,

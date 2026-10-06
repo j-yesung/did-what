@@ -50,9 +50,9 @@ import {
   getCalendarHref,
   getCalendarRange,
   getCalendarSwipeMonthShift,
+  getCalendarWeekLayout,
   getTitleLines,
   getToday,
-  getVisibleTitleCount,
   groupRecordsByDate,
   parseCalendarDate,
   parseCalendarMonth,
@@ -79,20 +79,26 @@ const RecordCalendarContext = createContext<RecordCalendarContextValue>({
   titleLines: DEFAULT_TITLE_LINES,
 });
 
+const RecordWeekContext = createContext({ hiddenCounts: new Map<string, number>(), visibleLines: 0 });
+
 /**
  * 셀 전체가 날짜 버튼 하나다. 제목 띠는 보여주기만 하고 누를 수 없다.
  * 라이브러리 DayButton으로 감싸 키보드 이동 때의 포커스 처리를 그대로 쓴다.
  */
 function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps) {
-  const { recordsByDate, titleLines } = useContext(RecordCalendarContext);
+  const { recordsByDate } = useContext(RecordCalendarContext);
+  const { hiddenCounts, visibleLines } = useContext(RecordWeekContext);
   const records = recordsByDate.get(day.isoDate) ?? [];
-  const visibleCount = getVisibleTitleCount(records.length, titleLines);
-  const hiddenCount = records.length - visibleCount;
+  const hiddenCount = hiddenCounts.get(day.isoDate) ?? 0;
 
   return (
     <DayButton
       {...props}
-      aria-label={records.length > 0 ? `${props["aria-label"]}, 기록 ${records.length}개` : props["aria-label"]}
+      aria-label={
+        records.length > 0
+          ? `${props["aria-label"]}, 기록 ${records.length}개, ${records.map((record) => record.activity).join(", ")}`
+          : props["aria-label"]
+      }
       className={cn(
         // 최소 높이는 날짜 숫자와 제목 한 줄이 들어가는 만큼이다(getTitleLines와 같은 계산).
         "flex min-h-11.25 w-full min-w-0 flex-1 cursor-pointer flex-col gap-px overflow-hidden rounded-lg px-0.5 pt-1 text-left after:inset-0",
@@ -113,21 +119,12 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
       >
         {children}
       </span>
-      {records.slice(0, visibleCount).map((record) => (
-        <span
-          className={cn(
-            // 늦게 도착한 제목이 툭 튀어나오지 않게 짧게 페이드한다.
-            "fade-in-0 h-4 shrink-0 animate-in overflow-hidden whitespace-nowrap rounded-lg px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none",
-            RECORD_CATEGORY_FILL[normalizeRecordCategory(record.category)],
-          )}
-          key={record.id}
-        >
-          {record.activity}
-        </span>
-      ))}
       {/* 여러 기록을 묶은 표시라 어느 카테고리도 대표할 수 없다. */}
       {hiddenCount > 0 ? (
-        <span className="h-4 shrink-0 rounded-lg bg-muted-foreground/15 px-1 text-[0.625rem] text-muted-foreground leading-4">
+        <span
+          className="absolute inset-x-0.5 h-4 rounded-lg bg-muted-foreground/15 px-1 text-[0.625rem] text-muted-foreground leading-4"
+          style={{ top: `calc(1.75rem + 1px + ${visibleLines} * (1rem + 1px))` }}
+        >
           +{hiddenCount}
         </span>
       ) : null}
@@ -143,8 +140,51 @@ function RecordWeeks(props: WeeksProps) {
   return <tbody role="rowgroup" {...props} />;
 }
 
-function RecordWeek({ week: _week, ...props }: WeekProps) {
-  return <tr role="row" {...props} />;
+function RecordWeek({ week, children, ...props }: WeekProps) {
+  const { recordsByDate, titleLines } = useContext(RecordCalendarContext);
+  const layout = useMemo(
+    () =>
+      getCalendarWeekLayout(
+        recordsByDate,
+        week.days.map((day) => day.isoDate),
+        titleLines,
+      ),
+    [recordsByDate, titleLines, week],
+  );
+  const weekContext = useMemo(
+    () => ({
+      hiddenCounts: new Map(week.days.map((day, index) => [day.isoDate, layout.hiddenCounts[index]])),
+      visibleLines: layout.visibleLines,
+    }),
+    [layout, week],
+  );
+
+  return (
+    <RecordWeekContext.Provider value={weekContext}>
+      <tr role="row" {...props}>
+        {children}
+        <td
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-[calc(2rem+1px)] grid auto-rows-[1rem] grid-cols-7 gap-y-px"
+          colSpan={7}
+          role="presentation"
+        >
+          {layout.segments.map(({ record, start, end, lane }) => (
+            <span
+              className={cn(
+                "fade-in-0 mx-0.5 min-w-0 animate-in truncate rounded-lg px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none",
+                RECORD_CATEGORY_FILL[normalizeRecordCategory(record.category)],
+              )}
+              key={record.id}
+              style={{ gridColumn: `${start + 1} / span ${end - start + 1}`, gridRow: lane + 1 }}
+            >
+              {record.activity}
+            </span>
+          ))}
+        </td>
+      </tr>
+    </RecordWeekContext.Provider>
+  );
 }
 
 // 화면의 월 제목은 바깥 헤더가 맡으므로 라이브러리 캡션은 숨긴다.
@@ -171,7 +211,7 @@ const CALENDAR_CLASS_NAMES = {
   month_grid: "flex flex-1 flex-col",
   months: "flex flex-1 flex-col",
   root: "flex w-full min-w-0 flex-1 flex-col",
-  week: "flex flex-1 basis-0 border-t",
+  week: "relative flex flex-1 basis-0 border-t",
   weekday: "min-w-0 flex-1 basis-0 pb-2 text-center font-normal text-muted-foreground text-xs",
   weekdays: "flex",
   weeks: "flex flex-1 flex-col",

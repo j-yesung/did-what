@@ -41,3 +41,12 @@ export const RECORD_CATEGORY_FILL: Record<RecordCategory, string> = {
   travel: "bg-category-travel-subtle",
   uncategorized: "bg-category-uncategorized-subtle",
 };
+
+export const RECORD_CATEGORY_BADGE: Record<RecordCategory, string> = {
+  anniversary: "bg-category-anniversary/8 text-category-anniversary",
+  daily: "bg-category-daily/8 text-category-daily",
+  date: "bg-category-date/8 text-category-date",
+  gathering: "bg-category-gathering/8 text-category-gathering",
+  travel: "bg-primary/15 text-primary",
+  uncategorized: "bg-muted text-muted-foreground",
+};

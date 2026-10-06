@@ -4,8 +4,10 @@ export type RegionCode = Region["code"];
 
 export type MapRecord = {
   activity: string;
+  category: string;
   id: string;
   recorded_at: string;
+  recorded_until: string | null;
   record_places: { place: { id: string; latitude: number; longitude: number; name: string } | null }[];
   record_regions: { region_code: string; region_latitude: number; region_longitude: number; region_name: string }[];
 };

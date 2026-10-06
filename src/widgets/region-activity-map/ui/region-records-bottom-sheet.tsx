@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
-import { recordDetailQueryOptions, toRegionLocations } from "@/entities/record";
+import { RecordCategoryBadge, recordDetailQueryOptions, toRegionLocations } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { createRegionActivityMaps, getRegionCode, type Region, RegionMiniMap } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
@@ -220,19 +220,13 @@ export function RegionRecordsBottomSheet({
                 {visibleRecords.length > 0 ? (
                   <>
                     {summary?.latestDate ? (
-                      <dl className="grid grid-cols-2 gap-3 py-4">
+                      <dl className="py-4">
                         <div>
                           <dt className="text-muted-foreground text-xs">최근 방문</dt>
                           <dd className="mt-1 font-semibold text-sm tabular-nums">
                             {format(parseISO(summary.latestDate), "yyyy.M.d")}
                           </dd>
                         </div>
-                        {summary.places[0] ? (
-                          <div className="min-w-0">
-                            <dt className="text-muted-foreground text-xs">가장 자주 간 곳</dt>
-                            <dd className="mt-1 truncate font-semibold text-sm">{summary.places[0].name}</dd>
-                          </div>
-                        ) : null}
                       </dl>
                     ) : null}
                     {summary && summary.places.length > 0 ? (
@@ -262,49 +256,61 @@ export function RegionRecordsBottomSheet({
                     ) : null}
                     <h3 className="font-semibold text-sm">방문 기록</h3>
                     <ul>
-                      {visibleRecords.map(({ record, subregions }, index) => (
-                        <li key={record.id}>
-                          {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
-                          <PressLink
-                            className={cn(
-                              buttonVariants({ variant: "ghost" }),
-                              "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
-                            )}
-                            href={`/records/${record.id}`}
-                            onClick={(event) => {
-                              if (
-                                event.button !== 0 ||
-                                event.altKey ||
-                                event.ctrlKey ||
-                                event.metaKey ||
-                                event.shiftKey
-                              )
-                                return;
-                              event.preventDefault();
-                              handleRecordOpen(record.id);
-                            }}
-                            onPointerDown={(event) => {
-                              if (event.button === 0) prefetchRecord(record.id);
-                            }}
-                            prefetch={false}
-                          >
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate font-semibold text-base leading-5">
-                                {record.activity}
+                      {visibleRecords.map(({ record, subregions }, index) => {
+                        const date = format(parseISO(record.recorded_at), "yyyy.M.d");
+                        const until = record.recorded_until;
+                        const period =
+                          until && until !== record.recorded_at
+                            ? `${date}–${format(parseISO(until), until.slice(0, 4) === record.recorded_at.slice(0, 4) ? "M.d" : "yyyy.M.d")}`
+                            : date;
+                        return (
+                          <li key={record.id}>
+                            {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
+                            <PressLink
+                              className={cn(
+                                buttonVariants({ variant: "ghost" }),
+                                "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
+                              )}
+                              href={`/records/${record.id}`}
+                              onClick={(event) => {
+                                if (
+                                  event.button !== 0 ||
+                                  event.altKey ||
+                                  event.ctrlKey ||
+                                  event.metaKey ||
+                                  event.shiftKey
+                                )
+                                  return;
+                                event.preventDefault();
+                                handleRecordOpen(record.id);
+                              }}
+                              onPointerDown={(event) => {
+                                if (event.button === 0) prefetchRecord(record.id);
+                              }}
+                              prefetch={false}
+                            >
+                              <span className="min-w-0 flex-1">
+                                <span className="flex min-w-0 items-center justify-between gap-2">
+                                  <span className="min-w-0 truncate font-semibold text-base leading-5">
+                                    {record.activity}
+                                  </span>
+                                  <RecordCategoryBadge category={record.category} />
+                                </span>
+                                <span className="mt-1 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
+                                  <span className="shrink-0 tabular-nums">{period}</span>
+                                  {!selectedSubregion && !singleSubregion ? (
+                                    <>
+                                      <span aria-hidden="true">·</span>
+                                      <span className="truncate">{subregions.join(", ")}</span>
+                                    </>
+                                  ) : null}
+                                </span>
                               </span>
-                              <span className="mt-1 block truncate text-muted-foreground text-xs">
-                                <span className="tabular-nums">{format(parseISO(record.recorded_at), "yyyy.M.d")}</span>
-                                {" · "}
-                                {subregions.join(", ")}
-                                {record.record_places.some(({ place }) => place)
-                                  ? ` · ${record.record_places.flatMap(({ place }) => (place ? [place.name] : [])).join(", ")}`
-                                  : ""}
-                              </span>
-                            </span>
-                            <CaretRightIcon aria-hidden="true" className="ml-2 shrink-0" size={20} />
-                          </PressLink>
-                        </li>
-                      ))}
+                              <CaretRightIcon aria-hidden="true" className="ml-2 shrink-0" size={20} />
+                            </PressLink>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </>
                 ) : (

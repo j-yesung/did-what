@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { formatRecordRegionLabels, RecordBadges, type RecordSummary } from "@/entities/record";
+import { formatRecordRegionLabels, RecordCategoryBadge, type RecordSummary } from "@/entities/record";
 import { DeleteRecordConfirm } from "@/features/record/delete-record";
 import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { ActionSheet } from "@/shared/ui/action-sheet";
@@ -29,7 +29,7 @@ export function RecordActionSheet({ onOpenChange, open, record }: RecordActionSh
                 .filter(Boolean)
                 .join(" · ")}
               <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                <RecordBadges record={record} />
+                <RecordCategoryBadge category={record.category} />
               </span>
             </>
           ) : null

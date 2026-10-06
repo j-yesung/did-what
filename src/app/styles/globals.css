@@ -57,6 +57,9 @@
   --green-400: #3ddc9a;
   --green-700: #0d9c63;
 
+  --teal-400: #3cc6cb;
+  --teal-600: #0e959b;
+
   --yellow-500: #f5b700;
 
   --rose-400: #ff8fb1;
@@ -176,6 +179,9 @@
   --category-anniversary: var(--amber-500);
   --category-gathering: var(--purple-500);
   --category-uncategorized: var(--grey-600);
+
+  /* 장소 아이콘. 카페(브랜드)·여행(파랑)과 구분되는 색이 필요한 종류만 따로 둔다. */
+  --place-attraction: var(--teal-600);
 }
 
 @theme inline {
@@ -192,6 +198,7 @@
   --color-category-gathering-subtle: color-mix(in srgb, var(--category-gathering) 18%, transparent);
   --color-category-uncategorized: var(--category-uncategorized);
   --color-category-uncategorized-subtle: color-mix(in srgb, var(--category-uncategorized) 18%, transparent);
+  --color-place-attraction: var(--place-attraction);
   --color-map-empty: var(--map-empty);
   --color-map-level-1: var(--map-level-1);
   --color-map-level-2: var(--map-level-2);
@@ -288,6 +295,7 @@
   --category-anniversary: var(--amber-400);
   --category-gathering: var(--purple-400);
   --category-uncategorized: var(--grey-400);
+  --place-attraction: var(--teal-400);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -335,6 +343,7 @@
     --category-anniversary: var(--amber-400);
     --category-gathering: var(--purple-400);
     --category-uncategorized: var(--grey-400);
+    --place-attraction: var(--teal-400);
   }
 }
 
