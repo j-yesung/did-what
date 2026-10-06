@@ -28,6 +28,7 @@ export const fetchPlaces = async () => {
     .from("places")
     .select(SAVED_PLACE_COLUMNS)
     .not("saved_at", "is", null)
+    .order("saved_at", { ascending: false })
     .order("name");
 
   if (error) throw error;

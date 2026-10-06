@@ -26,25 +26,25 @@ export async function PlacesPage({ searchParams }: PlacesPageProps) {
       : searchResult && "error" in searchResult
         ? searchResult.error
         : undefined;
+  const searchForm = <PlaceSearchForm key="place-search" query={query} searchError={searchError} />;
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
-      <header className="min-h-13">
-        <h1 className="sr-only">장소</h1>
-      </header>
-
-      <PlaceSearchForm query={query} searchError={searchError} />
+      <h1 className="sr-only">장소</h1>
 
       {hasSearch ? (
-        queryResult?.valid && successfulSearchResult ? (
-          <PlaceSearchResults
-            initialPage={{ ...successfulSearchResult, query: queryResult.query, scope: null }}
-            initialPlaces={initialPlaces}
-            query={queryResult.query}
-          />
-        ) : null
+        <>
+          {searchForm}
+          {queryResult?.valid && successfulSearchResult ? (
+            <PlaceSearchResults
+              initialPage={{ ...successfulSearchResult, query: queryResult.query, scope: null }}
+              initialPlaces={initialPlaces}
+              query={queryResult.query}
+            />
+          ) : null}
+        </>
       ) : (
-        <SavedPlaceList initialPlaces={initialPlaces} />
+        <SavedPlaceList initialPlaces={initialPlaces} searchForm={searchForm} />
       )}
     </PageShell>
   );

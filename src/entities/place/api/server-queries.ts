@@ -9,6 +9,7 @@ export const getSavedPlaces = async (ownerId: string) => {
     .select(SAVED_PLACE_COLUMNS)
     .eq("owner_id", ownerId)
     .not("saved_at", "is", null)
+    .order("saved_at", { ascending: false })
     .order("name");
 
   if (error) throw error;
