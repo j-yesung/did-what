@@ -97,3 +97,44 @@ export const groupRecordsByDate = <T extends DatedRecord>(records: readonly T[],
 
   return recordsByDate;
 };
+
+/** 기간 기록은 주 안에서 같은 줄을 유지하고, 겹치는 기록은 빈 줄에 배치한다. */
+export const getCalendarWeekLayout = <T extends DatedRecord & { id: string }>(
+  recordsByDate: ReadonlyMap<string, readonly T[]>,
+  dates: readonly string[],
+  titleLines: number,
+) => {
+  const records = new Map<string, T>();
+  for (const date of dates) {
+    for (const record of recordsByDate.get(date) ?? []) records.set(record.id, record);
+  }
+
+  const segments = [...records.values()]
+    .map((record) => {
+      const start = dates.findIndex((date) => date >= record.recorded_at);
+      const end = dates.findLastIndex((date) => date <= (record.recorded_until ?? record.recorded_at));
+      return { record, start, end, lane: 0 };
+    })
+    .sort((first, second) => second.end - second.start - (first.end - first.start));
+  const lanes: boolean[][] = [];
+  for (const segment of segments) {
+    let lane = lanes.findIndex((occupied) =>
+      dates.every((_, column) => column < segment.start || column > segment.end || !occupied[column]),
+    );
+    if (lane === -1) {
+      lane = lanes.length;
+      lanes.push(Array(dates.length).fill(false));
+    }
+    segment.lane = lane;
+    for (let column = segment.start; column <= segment.end; column++) lanes[lane][column] = true;
+  }
+
+  // 주 전체가 같은 줄을 사용해야 기간 띠가 끊기지 않는다. 넘치는 주는 마지막 줄을 +N에 쓴다.
+  const visibleLines = getVisibleTitleCount(lanes.length, titleLines);
+  const hiddenCounts = dates.map(
+    (_, column) =>
+      segments.filter((segment) => segment.lane >= visibleLines && segment.start <= column && column <= segment.end)
+        .length,
+  );
+  return { segments: segments.filter((segment) => segment.lane < visibleLines), hiddenCounts, visibleLines };
+};
