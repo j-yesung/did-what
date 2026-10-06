@@ -56,7 +56,6 @@ export function RegionActivityMap({
   records: readonly MapRecord[];
 }) {
   const searchParams = useSearchParams();
-  // 기록을 보고 돌아오면 주소에 남겨 둔 시트·칩·확대 상태로 이어서 보여준다. 달력의 ?date=와 같은 방식이다.
   const [initialUrlState] = useState(() => {
     const state = readMapUrlState(searchParams);
     return { ...state, region: state.region ? (getRegion(state.region) ?? null) : null };
@@ -137,9 +136,6 @@ export function RegionActivityMap({
 
   return (
     <>
-      <div className="pointer-events-none absolute top-[calc(var(--page-top)+var(--toolbar-height)+16px)] left-5 z-10">
-        <h1 className="font-bold text-xl tracking-tight">함께 쌓인 지도</h1>
-      </div>
       <svg
         className={cn(
           // 지도가 상단 도구 막대와 하단 메뉴 사이에 꽉 차도록 그만큼 비워 둔다.

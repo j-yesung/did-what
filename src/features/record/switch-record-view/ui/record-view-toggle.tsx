@@ -1,7 +1,6 @@
 "use client";
 
 import { CalendarDotsIcon, ListBulletsIcon } from "@phosphor-icons/react";
-import { useSearchParams } from "next/navigation";
 
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
@@ -10,10 +9,8 @@ import { PressLink } from "@/shared/ui/press-link";
 
 import { type RecordView, saveRecordView } from "../model/record-view-preference";
 
-export function RecordViewToggle() {
-  const searchParams = useSearchParams();
-
-  const calendar = searchParams?.get("view") !== "calendar";
+export function RecordViewToggle({ view }: { view: RecordView }) {
+  const calendar = view !== "calendar";
   const nextView: RecordView = calendar ? "calendar" : "list";
 
   return (

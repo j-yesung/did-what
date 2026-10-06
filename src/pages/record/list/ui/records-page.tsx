@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
-
 import { parseRecordFilters, type RecordSearchParams } from "@/entities/record";
+import { RecordViewToggle } from "@/features/record/switch-record-view";
 import { getRecordView } from "@/features/record/switch-record-view/server";
 import { PageShell } from "@/shared/ui/layouts";
 
@@ -15,29 +14,33 @@ type RecordsPageProps = {
 export async function RecordsPage({ searchParams }: RecordsPageProps) {
   const params = await searchParams;
 
-  // 주소에 아무것도 없이 들어오면(하단 메뉴, 작성 후 이동 등) 마지막에 고른 보기로 보낸다.
-  // 서버에서 정해야 목록이 먼저 보였다가 달력으로 바뀌지 않는다.
-  if (Object.keys(params).length === 0 && (await getRecordView()) === "calendar") {
-    redirect("/records?view=calendar");
-  }
-
-  const view = params.view === "calendar" ? "calendar" : "list";
+  const view =
+    params.view === "calendar" || (Object.keys(params).length === 0 && (await getRecordView()) === "calendar")
+      ? "calendar"
+      : "list";
   const filters = parseRecordFilters(params);
 
   return (
-    <PageShell className="gap-4" withBottomNavigation>
-      <header className="min-h-13">
-        <h1 className="sr-only">우리의 기록</h1>
-      </header>
+    <>
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
+        <div className="mx-auto flex w-full max-w-(--app-width) items-start px-5 pt-(--page-top)">
+          <RecordViewToggle view={view} />
+        </div>
+      </div>
+      <PageShell className="gap-4" withBottomNavigation>
+        <header className="min-h-13">
+          <h1 className="sr-only">우리의 기록</h1>
+        </header>
 
-      {view === "calendar" ? (
-        <RecordCalendar />
-      ) : (
-        <>
-          <RecordFilterForm filters={filters} />
-          <RecordList filters={filters} />
-        </>
-      )}
-    </PageShell>
+        {view === "calendar" ? (
+          <RecordCalendar />
+        ) : (
+          <>
+            <RecordFilterForm filters={filters} />
+            <RecordList filters={filters} />
+          </>
+        )}
+      </PageShell>
+    </>
   );
 }
