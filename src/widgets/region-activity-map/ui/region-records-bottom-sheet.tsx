@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type Dispatch, type ReactNode, type SetStateAction, useMemo, useState } from "react";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,13 +19,18 @@ import { Separator } from "@/shared/ui/separator";
 
 import { getSubregionName, type MapRecord } from "../model/record-map-points";
 import { getRegionVisitSummary } from "../model/region-visit-summary";
-import { RecordSheetDetail } from "./record-sheet-detail";
 
 const SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
 
+export type RegionRecordDetailRenderer = (props: {
+  draft: string;
+  onBack: () => void;
+  onDraftChange: Dispatch<SetStateAction<string>>;
+  recordId: string;
+}) => ReactNode;
+
 type RegionRecordsBottomSheetProps = {
   detailRecordId: string | null;
-  member: { id: string; name: string };
   onBeforeDetailOpen: () => void;
   onCloseComplete: () => void;
   onDetailBack: () => void;
@@ -35,12 +40,12 @@ type RegionRecordsBottomSheetProps = {
   open: boolean;
   records: readonly MapRecord[];
   region: Region | null;
+  renderRecordDetail: RegionRecordDetailRenderer;
   subregion: string | null;
 };
 
 export function RegionRecordsBottomSheet({
   detailRecordId,
-  member,
   onBeforeDetailOpen,
   onCloseComplete,
   onDetailBack,
@@ -50,6 +55,7 @@ export function RegionRecordsBottomSheet({
   open,
   records,
   region,
+  renderRecordDetail,
   subregion,
 }: RegionRecordsBottomSheetProps) {
   const router = useRouter();
@@ -338,19 +344,16 @@ export function RegionRecordsBottomSheet({
                 data-funnel-step
                 key={detailRecordId}
               >
-                <RecordSheetDetail
-                  backLabel="지역 기록 목록으로"
-                  draft={drafts[detailRecordId] ?? ""}
-                  member={member}
-                  onBack={onDetailBack}
-                  onDraftChange={(next) =>
+                {renderRecordDetail({
+                  draft: drafts[detailRecordId] ?? "",
+                  onBack: onDetailBack,
+                  onDraftChange: (next) =>
                     setDrafts((current) => ({
                       ...current,
                       [detailRecordId]: typeof next === "function" ? next(current[detailRecordId] ?? "") : next,
-                    }))
-                  }
-                  recordId={detailRecordId}
-                />
+                    })),
+                  recordId: detailRecordId,
+                })}
               </div>
             ) : null}
           </div>

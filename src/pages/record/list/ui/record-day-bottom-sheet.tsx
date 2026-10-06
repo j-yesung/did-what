@@ -27,7 +27,7 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 import { Spinner } from "@/shared/ui/spinner";
-import { RecordSheetDetail } from "@/widgets/region-activity-map/ui/record-sheet-detail";
+import { RecordSheetDetail } from "@/widgets/record-sheet-detail";
 
 import { getCalendarHref, getDaySheetRecordId } from "../model/record-calendar";
 
