@@ -1,6 +1,5 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { cn } from "@/shared/lib/utils";
@@ -18,7 +17,7 @@ export function CalendarRecordCreateButton({ date }: CalendarRecordCreateButtonP
   const hiddenTransform = shouldReduceMotion ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)";
 
   return (
-    <div aria-live="polite" className="pointer-events-none absolute inset-x-0 bottom-26 z-10 flex justify-center px-4">
+    <div aria-live="polite" className="pointer-events-none flex min-w-0 justify-center px-2">
       <AnimatePresence initial={false}>
         {date ? (
           <motion.div
@@ -34,7 +33,7 @@ export function CalendarRecordCreateButton({ date }: CalendarRecordCreateButtonP
                 href={`/records/new?date=${date}`}
                 prefetch
               >
-                {format(parseISO(date), "M월 d일")} 기록 남기기
+                기록 남기기
               </PressLink>
             </div>
           </motion.div>

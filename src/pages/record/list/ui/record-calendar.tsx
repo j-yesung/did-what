@@ -48,7 +48,6 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import {
   getCalendarDayAction,
   getCalendarHref,
-  getCalendarMonthSummary,
   getCalendarRange,
   getCalendarSwipeMonthShift,
   getTitleLines,
@@ -177,32 +176,6 @@ const CALENDAR_CLASS_NAMES = {
   weekdays: "flex",
   weeks: "flex flex-1 flex-col",
 };
-
-const SUMMARY_COUNT = "font-semibold text-foreground tabular-nums";
-
-function CalendarMonthSummary({
-  month,
-  recordsByDate,
-}: {
-  month: string;
-  recordsByDate: ReadonlyMap<string, readonly RecordSummary[]> | undefined;
-}) {
-  if (!recordsByDate) return null;
-
-  const { recordCount, regionCount } = getCalendarMonthSummary(recordsByDate, month);
-  if (recordCount === 0) return <p className="text-muted-foreground text-sm">아직 조용하네요</p>;
-
-  return (
-    <p className="text-muted-foreground text-sm">
-      {regionCount > 0 ? (
-        <>
-          <span className={SUMMARY_COUNT}>{regionCount}</span>개 지역에서{" "}
-        </>
-      ) : null}
-      <span className={SUMMARY_COUNT}>{recordCount}</span>번 함께했어요
-    </p>
-  );
-}
 
 const replaceCalendarHref = (month: string, date?: string | null) => {
   window.history.replaceState(window.history.state, "", getCalendarHref(month, date));
@@ -528,22 +501,22 @@ export function RecordCalendar() {
         </motion.div>
       </div>
 
-      {createDate ? <div className="h-16 shrink-0" /> : null}
       <div className="flex h-24 shrink-0 flex-col items-center justify-center gap-2 pb-2">
         <div className="flex h-5 items-center justify-center text-center">
-          {createDate ? null : <CalendarMonthSummary month={month} recordsByDate={recordsByDate} />}
+          {createDate ? (
+            <p className="text-muted-foreground text-sm">{format(parseISO(createDate), "M월 d일")}</p>
+          ) : null}
         </div>
-        <div aria-label="달 이동" className="flex w-full items-center justify-between" role="group">
+        <div aria-label="달력 조작" className="flex w-full items-center justify-between" role="group">
           <LiquidGlassButton aria-label="이전 달" onClick={() => settleMonth(-1)} shape="circle">
             <CaretLeftIcon aria-hidden="true" />
           </LiquidGlassButton>
+          <CalendarRecordCreateButton date={createDate} />
           <LiquidGlassButton aria-label="다음 달" onClick={() => settleMonth(1)} shape="circle">
             <CaretRightIcon aria-hidden="true" />
           </LiquidGlassButton>
         </div>
       </div>
-
-      <CalendarRecordCreateButton date={createDate} />
 
       <RecordDayBottomSheet
         date={selectedDate}

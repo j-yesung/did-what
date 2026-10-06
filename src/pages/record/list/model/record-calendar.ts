@@ -68,29 +68,6 @@ export const getVisibleTitleCount = (recordCount: number, lines: number) => {
   return recordCount > lines ? lines - 1 : recordCount;
 };
 
-/**
- * 달력 아래에 보여줄 이번 달 요약. 날짜별로 펼쳐 둔 Map을 다시 쓰므로 날짜 계산이 필요 없다.
- * 여러 날 기록은 날짜마다 들어 있어 기록 수는 id로 중복을 걷어낸다.
- */
-export const getCalendarMonthSummary = (
-  recordsByDate: ReadonlyMap<string, readonly { id: string; region_name?: string }[]>,
-  month: string,
-) => {
-  const recordIds = new Set<string>();
-  const regions = new Set<string>();
-
-  for (const [date, records] of recordsByDate) {
-    // 달력은 앞뒤 달의 날짜도 보여주므로 이번 달에 속한 날짜만 센다.
-    if (!date.startsWith(month)) continue;
-    for (const record of records) {
-      recordIds.add(record.id);
-      if (record.region_name) regions.add(record.region_name);
-    }
-  }
-
-  return { recordCount: recordIds.size, regionCount: regions.size };
-};
-
 export const getCalendarDayAction = (
   records: readonly unknown[] | undefined,
   isSelected: boolean,
