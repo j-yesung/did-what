@@ -2,8 +2,19 @@
 
 **함께한 사람과 장소를 중심으로 우리의 하루를 기록합니다.**
 
-연인이나 친구와 언제, 어디서, 무엇을 했는지 남기고 대한민국 지도와 타임라인으로 돌아보는 관계 기반 라이프로그 서비스입니다.
+뭐했지는 홈 화면에 설치해 앱처럼 사용하는 관계 기반 라이프로그 PWA(Progressive Web App)입니다.
+연인이나 친구와 언제, 어디서, 무엇을 했는지 기록하고 대한민국 지도와 타임라인으로 돌아봅니다.
 여행뿐 아니라 퇴근 후 산책, 단골 카페에서의 대화, 기념일처럼 함께한 일상도 모아 볼 수 있습니다.
+
+## 홈 화면에 설치해서 사용하기
+
+뭐했지는 브라우저에서 바로 사용할 수 있고 홈 화면에 설치하면 주소창 없이 독립된 앱 화면으로 실행됩니다.
+
+- **iPhone**: Safari에서 서비스를 열고 공유 메뉴의 ‘홈 화면에 추가’를 선택합니다. [Apple 설치 안내](https://support.apple.com/ko-kr/guide/iphone/iph42ab2f3a7/ios)
+- **Android·데스크톱**: 지원 브라우저의 ‘앱 설치’ 또는 ‘홈 화면에 추가’ 메뉴를 사용합니다. [브라우저별 설치 안내](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing)
+- **기록 알림**: 지원 환경에서 알림 권한을 허용하고 설정의 ‘기록 알림’을 켜면 새 기록의 웹 푸시를 받을 수 있습니다.
+
+현재 기록 조회와 저장에는 인터넷 연결이 필요합니다.
 
 ## 주요 기능
 
@@ -84,6 +95,7 @@
 | 인증·데이터 | Supabase Auth, PostgreSQL, RLS |
 | 장소·지역 검색 | Kakao Local API |
 | 인터랙션 | Motion, use-funnel |
+| PWA | Web App Manifest, Service Worker, Web Push |
 | 도구 | pnpm, Biome, Node.js 내장 테스트 러너 |
 
 ## 로컬 실행
