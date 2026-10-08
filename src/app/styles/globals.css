@@ -185,7 +185,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-pretendard), "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --font-sans: "Pretendard Variable", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --color-category-daily: var(--category-daily);
   --color-category-daily-subtle: color-mix(in srgb, var(--category-daily) 18%, transparent);
   --color-category-date: var(--category-date);

@@ -1,23 +1,15 @@
 import type { ReactNode } from "react";
 
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
 
 import { getTheme } from "@/features/switch-theme/server";
 import { QueryProvider } from "@/shared/lib/react-query/query-provider";
-import { cn } from "@/shared/lib/utils";
 import { PreventForwardSwipe } from "@/shared/ui/prevent-forward-swipe";
 import { ToastProvider } from "@/shared/ui/toast-provider";
 
 import "@/app/styles/globals.css";
 import "@/app/styles/liquid-glass.css";
-
-const pretendard = localFont({
-  src: "./fonts/PretendardVariable.woff2",
-  weight: "45 920",
-  display: "swap",
-  variable: "--font-pretendard",
-});
+import "./fonts/pretendard.css";
 
 const THEME_COLOR = { dark: "#191f28", light: "#f9fafb" };
 
@@ -74,7 +66,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const splashColorSchemes: readonly (keyof typeof THEME_COLOR)[] = theme === "system" ? ["light", "dark"] : [theme];
 
   return (
-    <html className={cn(pretendard.variable, theme !== "system" && theme)} lang="ko">
+    <html className={theme === "system" ? undefined : theme} lang="ko">
       <head>
         {IOS_SPLASH_SCREENS.flatMap(({ height, scale, width }) =>
           splashColorSchemes.map((colorScheme) => (
