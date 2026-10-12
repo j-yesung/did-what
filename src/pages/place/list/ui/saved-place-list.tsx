@@ -125,7 +125,7 @@ export function SavedPlaceList({
           title="저장한 장소를 불러오지 못했어요"
         />
       ) : places.length === 0 ? (
-        <Empty className="flex-none border-0 py-10">
+        <Empty className="flex-1 border-0 py-10">
           <EmptyHeader className="gap-1">
             <EmptyTitle className="font-semibold text-base">저장한 장소가 없어요</EmptyTitle>
             <EmptyDescription className="text-sm/normal">장소를 검색해 저장해 보세요.</EmptyDescription>

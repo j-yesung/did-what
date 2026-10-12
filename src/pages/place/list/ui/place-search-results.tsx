@@ -63,7 +63,7 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
   return (
     <section
       aria-labelledby="place-search-results-title"
-      className={cn("flex flex-col gap-3", hasSelectedPlaces && "pb-20")}
+      className={cn("flex flex-1 flex-col gap-3", hasSelectedPlaces && "pb-20")}
     >
       <div className="flex items-start justify-between gap-3 px-1">
         <h2 className="min-w-0 font-bold text-lg" id="place-search-results-title">
@@ -122,7 +122,7 @@ export function PlaceSearchResults({ initialPage, initialPlaces, query }: PlaceS
           <p className="px-1 pt-2 text-muted-foreground text-xs">Kakao 장소 검색</p>
         </div>
       ) : (
-        <Empty className="flex-none border-0 py-10">
+        <Empty className="flex-1 border-0 py-10">
           <EmptyHeader className="gap-1">
             <EmptyTitle className="font-semibold text-base">검색 결과가 없어요</EmptyTitle>
             <EmptyDescription className="text-sm/normal">지역명이나 장소 이름을 바꿔 보세요.</EmptyDescription>
