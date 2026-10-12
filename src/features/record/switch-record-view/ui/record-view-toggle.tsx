@@ -2,6 +2,7 @@
 
 import { CalendarDotsIcon, ListBulletsIcon } from "@phosphor-icons/react";
 
+import { useActionOverride } from "@/shared/lib/action-override";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
@@ -12,13 +13,14 @@ import { type RecordView, saveRecordView } from "../model/record-view-preference
 export function RecordViewToggle({ view }: { view: RecordView }) {
   const calendar = view !== "calendar";
   const nextView: RecordView = calendar ? "calendar" : "list";
+  const saveView = useActionOverride(saveRecordView);
 
   return (
     <LiquidGlassButton
       aria-label={calendar ? "달력" : "목록"}
       className={cn("[&_svg]:size-6.75", ICON_WEIGHT_MEDIUM)}
       nativeButton={false}
-      render={<PressLink href={`/records?view=${nextView}`} onClick={() => saveRecordView(nextView)} prefetch />}
+      render={<PressLink href={`/records?view=${nextView}`} onClick={() => saveView(nextView)} prefetch />}
       shape="circle"
     >
       {calendar ? (

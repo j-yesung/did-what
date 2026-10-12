@@ -6,6 +6,7 @@ import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 
 import { type AccountMember, getMemberAvatarTone, getMemberInitial } from "@/entities/member";
+import { useActionOverride } from "@/shared/lib/action-override";
 import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
@@ -25,11 +26,12 @@ type MemberSelectProps = {
 
 export function MemberSelect({ currentMemberId, destination, members }: MemberSelectProps) {
   const [selectedMember, setSelectedMember] = useState<AccountMember>();
+  const selectMemberAction = useActionOverride(selectMember);
 
   const select = useMutation({
     mutationFn: async (memberId: string) => {
       const endpoint = await getPushEndpoint();
-      return runServerAction(() => selectMember({ destination, endpoint, memberId }));
+      return runServerAction(() => selectMemberAction({ destination, endpoint, memberId }));
     },
     onError: () => setSelectedMember(undefined),
     onSuccess: (result, memberId) => {

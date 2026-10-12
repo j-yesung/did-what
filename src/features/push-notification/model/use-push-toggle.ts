@@ -4,6 +4,7 @@ import { useEffect, useOptimistic, useRef, useState, useTransition } from "react
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useActionOverride } from "@/shared/lib/action-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 
@@ -12,6 +13,7 @@ import { removeSubscription, saveSubscription } from "../api/subscription-action
 
 export const usePushToggle = () => {
   const queryClient = useQueryClient();
+  const isSupported = useActionOverride(isPushSupported);
 
   const [hydrated, setHydrated] = useState(false);
   const [unsupported, setUnsupported] = useState(false);
@@ -19,7 +21,7 @@ export const usePushToggle = () => {
   const pendingChecked = useRef<boolean | null>(null);
   const pendingToggle = useRef<Promise<void> | null>(null);
 
-  const isUnsupported = hydrated && (unsupported || !isPushSupported());
+  const isUnsupported = hydrated && (unsupported || !isSupported());
 
   const canLoadEndpoint = hydrated && !isUnsupported;
   const pushEndpointQuery = useQuery({ ...pushEndpointQueryOptions, enabled: canLoadEndpoint });

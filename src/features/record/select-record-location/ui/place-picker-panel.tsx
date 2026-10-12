@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { usePlaceSearch } from "@/entities/place";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
+import { useActionOverride } from "@/shared/lib/action-override";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
@@ -40,7 +41,8 @@ export function PlacePickerPanel({ maxSelectionCount, onAdd, regions, selectedKe
   const scope = regions.find((region) => region.code === scopeCode);
   const search = usePlaceSearch({ latitude: scope?.latitude, longitude: scope?.longitude, page: 1, query });
 
-  const resolve = useMutation({ mutationFn: resolveRecordPlace });
+  const resolvePlace = useActionOverride(resolveRecordPlace);
+  const resolve = useMutation({ mutationFn: resolvePlace });
   /**
    * 장소는 서버에서 하나씩 확인한다. 확인이 끝나 선택 목록에 반영될 때까지를 전환으로 묶어,
    * 그동안 확인 중인 카드와 잠시 멈춘 카드를 구분해 보여주고 '추가'는 끝난 뒤에 실행한다.

@@ -10,6 +10,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  // 체험 데모는 로그인 없이 샘플 데이터로만 동작하므로 세션을 확인하지 않는다.
+  if (request.nextUrl.pathname === "/demo" || request.nextUrl.pathname.startsWith("/demo/")) {
+    return NextResponse.next({ request });
+  }
+
   if (
     shouldShowAppShell(
       request.method,

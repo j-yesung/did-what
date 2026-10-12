@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 
+import { useActionOverride } from "@/shared/lib/action-override";
 import { FieldLegend, FieldSet } from "@/shared/ui/field";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 
@@ -15,6 +16,7 @@ type ThemeSelectProps = {
 export function ThemeSelect({ value }: ThemeSelectProps) {
   const [selectedTheme, setSelectedTheme] = useState(value);
   const [isPending, startTransition] = useTransition();
+  const saveTheme = useActionOverride(setTheme);
 
   useEffect(() => setSelectedTheme(value), [value]);
 
@@ -23,7 +25,7 @@ export function ThemeSelect({ value }: ThemeSelectProps) {
     const formData = new FormData();
     formData.set("theme", nextTheme);
     setSelectedTheme(nextTheme);
-    startTransition(() => setTheme(formData));
+    startTransition(() => saveTheme(formData));
   };
 
   return (
