@@ -4,7 +4,7 @@ import { WarningCircleIcon } from "@phosphor-icons/react";
 
 import { Button, buttonVariants } from "@/shared/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
-import { PageShell } from "@/shared/ui/layouts";
+import { PageShell } from "@/shared/ui/layouts/page-shell";
 import { PressLink } from "@/shared/ui/press-link";
 
 // reset은 화면만 다시 그려 서버에서 난 오류는 그대로 다시 난다. retry는 서버 데이터까지 다시 받는다.
