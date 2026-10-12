@@ -22,6 +22,7 @@ import {
   recordCommentListQueryOptions,
   reduceOptimisticComments,
 } from "@/entities/record-comment";
+import { useActionOverride } from "@/shared/lib/action-override";
 import { showToast } from "@/shared/lib/toast";
 
 import { createComment, deleteComment } from "../api/comment-actions";
@@ -81,6 +82,8 @@ export const useRecordComments = ({
   const submittingRef = useRef(false);
   const scrolledHashRef = useRef("");
   const queryClient = useQueryClient();
+  const createCommentAction = useActionOverride(createComment);
+  const deleteCommentAction = useActionOverride(deleteComment);
   const queryOptions = recordCommentListQueryOptions(recordId);
   const commentsQuery = useInfiniteQuery(queryOptions);
   const comments = useMemo(
@@ -131,7 +134,7 @@ export const useRecordComments = ({
       },
       async () => {
         try {
-          const result = await createComment({ body, commentId, expectedMemberId: member.id, recordId });
+          const result = await createCommentAction({ body, commentId, expectedMemberId: member.id, recordId });
           if (result.status === "error" || !result.comment) {
             setDraft((current) => current || body);
             showToast({ description: result.message, title: "댓글을 남기지 못했어요", variant: "warning" });
@@ -151,7 +154,7 @@ export const useRecordComments = ({
   const removeComment = (comment: RecordComment) => {
     runOptimistic({ id: comment.id, type: "delete" }, async () => {
       try {
-        const result = await deleteComment({ commentId: comment.id, expectedMemberId: member.id, recordId });
+        const result = await deleteCommentAction({ commentId: comment.id, expectedMemberId: member.id, recordId });
         if (result.status === "error" || !result.commentId) {
           showToast({ description: result.message, title: "댓글을 삭제하지 못했어요", variant: "warning" });
           void commentsQuery.refetch();

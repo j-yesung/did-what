@@ -3,13 +3,9 @@ import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 
 import { getTheme } from "@/features/switch-theme/server";
-import { QueryProvider } from "@/shared/lib/react-query/query-provider";
 import { PreventForwardSwipe } from "@/shared/ui/prevent-forward-swipe";
-import { ToastProvider } from "@/shared/ui/toast-provider";
 
 import "@/app/styles/globals.css";
-import "@/app/styles/liquid-glass.css";
-import "./fonts/pretendard.css";
 
 const THEME_COLOR = { dark: "#191f28", light: "#f9fafb" };
 
@@ -84,9 +80,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
         )}
       </head>
       <body>
-        <QueryProvider>{children}</QueryProvider>
+        {children}
         <PreventForwardSwipe />
-        <ToastProvider />
       </body>
     </html>
   );

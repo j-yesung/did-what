@@ -13,7 +13,7 @@ type EmptyRecordsProps = {
 
 export function EmptyRecords({ description, title }: EmptyRecordsProps) {
   return (
-    <Empty>
+    <Empty className="flex-1">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <NotePencilIcon aria-hidden="true" />

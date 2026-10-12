@@ -19,6 +19,7 @@ import {
 import { readRecordNotifications } from "@/features/notification/read-record-notifications";
 import { PlaceSaveButton } from "@/features/place/save-place";
 import { RecordComments } from "@/features/record-comment";
+import { useActionOverride } from "@/shared/lib/action-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
@@ -36,6 +37,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   const redirectedMissingRecord = useRef(false);
   const readNotifications = useRef(false);
   const queryClient = useQueryClient();
+  const markRecordRead = useActionOverride(readRecordNotifications);
   const fromNotification = searchParams?.get("from") === "notification";
   const summaryQueryKey = recordSummaryQueryKey(recordId);
   const cachedSummary = queryClient.getQueryState(summaryQueryKey)?.isInvalidated
@@ -74,12 +76,12 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
     if (!fromNotification || readNotifications.current) return;
 
     readNotifications.current = true;
-    void runServerAction(() => readRecordNotifications(recordId))
+    void runServerAction(() => markRecordRead(recordId))
       .then(() => queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY }))
       .catch(() => {
         // 읽음 표시는 부가 기능이라 실패해도 기록 보기를 막지 않는다.
       });
-  }, [fromNotification, queryClient, recordId]);
+  }, [fromNotification, markRecordRead, queryClient, recordId]);
 
   useEffect(() => {
     if (!fromNotification || !recordMissing || redirectedMissingRecord.current) return;

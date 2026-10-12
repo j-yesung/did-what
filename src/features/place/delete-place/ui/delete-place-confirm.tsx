@@ -2,6 +2,7 @@
 
 import { placesQueryOptions } from "@/entities/place";
 import { RECORD_DETAILS_QUERY_KEY } from "@/entities/record";
+import { useActionOverride } from "@/shared/lib/action-override";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
@@ -18,7 +19,8 @@ type DeletePlaceConfirmProps = {
 };
 
 export function DeletePlaceConfirm({ name, onClose, onDeleted, open, placeId, recordCount }: DeletePlaceConfirmProps) {
-  const remove = useActionMutation(() => deletePlace(placeId), {
+  const removePlace = useActionOverride(deletePlace);
+  const remove = useActionMutation(() => removePlace(placeId), {
     error: "장소를 삭제하지 못했어요",
     invalidate: [placesQueryOptions.queryKey, RECORD_DETAILS_QUERY_KEY],
     onSuccess: () => {

@@ -12,6 +12,7 @@ import {
   unreadNotificationCountQueryOptions,
 } from "@/entities/notification";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
+import { useActionOverride } from "@/shared/lib/action-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
@@ -34,8 +35,9 @@ export function NotificationList({ memberId }: NotificationListProps) {
   const unreadOptions = unreadNotificationCountQueryOptions(memberId);
   const listQuery = useInfiniteQuery(listOptions);
   const unreadQuery = useQuery(unreadOptions);
+  const markAllRead = useActionOverride(readAllNotifications);
   const readAll = useMutation({
-    mutationFn: () => runServerAction(readAllNotifications),
+    mutationFn: () => runServerAction(markAllRead),
     onSuccess: async (result) => {
       if (result?.status === "error") {
         showToast({ description: result.message, title: "모두 읽지 못했어요", variant: "warning" });
@@ -107,7 +109,7 @@ export function NotificationList({ memberId }: NotificationListProps) {
           title="알림을 불러오지 못했어요"
         />
       ) : notifications.length === 0 ? (
-        <Empty className="border-0 py-12">
+        <Empty className="flex-1 border-0 py-12">
           <EmptyHeader className="gap-1">
             <EmptyTitle className="font-semibold text-base">새 알림이 없어요</EmptyTitle>
             <EmptyDescription className="text-sm/normal">새 기록과 댓글을 여기서 확인해요.</EmptyDescription>

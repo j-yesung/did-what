@@ -479,6 +479,39 @@
   }
 }
 
+@keyframes app-loading-question-draw {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+
+  50%,
+  75% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  90%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes app-loading-question-dot {
+  0%,
+  45%,
+  90%,
+  100% {
+    opacity: 0;
+  }
+
+  60%,
+  75% {
+    opacity: 1;
+  }
+}
+
 @keyframes tab-content-enter {
   from {
     opacity: 0;
@@ -532,6 +565,16 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  /* 선을 그린 뒤 점을 찍고 잠시 유지한다. 로딩 반복 주기라 화면 전환보다 길게 둔다. */
+  .app-loading-question-stroke {
+    stroke-dasharray: 100;
+    animation: app-loading-question-draw 900ms linear infinite;
+  }
+
+  .app-loading-question-dot {
+    animation: app-loading-question-dot 900ms cubic-bezier(0.23, 1, 0.32, 1) infinite;
+  }
+
   .map-location-pulse {
     transform-box: fill-box;
     transform-origin: center;
