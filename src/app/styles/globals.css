@@ -465,6 +465,38 @@
   }
 }
 
+/* 터치와 고대비 모드는 네이티브 표시를 유지하고, 숨길 때도 스크롤바 폭은 유지한다. */
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  *:hover,
+  *:focus-visible {
+    scrollbar-color: color-mix(in srgb, var(--muted-foreground) 40%, transparent) transparent;
+  }
+
+  @supports not (scrollbar-color: transparent transparent) {
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    *::-webkit-scrollbar-track,
+    *::-webkit-scrollbar-thumb,
+    *::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    *:hover::-webkit-scrollbar-thumb,
+    *:focus-visible::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--muted-foreground) 40%, transparent);
+    }
+  }
+}
+
 @keyframes loading-dot {
   0%,
   60%,
