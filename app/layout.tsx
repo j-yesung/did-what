@@ -59,25 +59,18 @@ export const generateViewport = async (): Promise<Viewport> => {
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const theme = await getTheme();
-  const splashColorSchemes: readonly (keyof typeof THEME_COLOR)[] = theme === "system" ? ["light", "dark"] : [theme];
 
   return (
     <html className={theme === "system" ? undefined : theme} lang="ko">
       <head>
-        {IOS_SPLASH_SCREENS.flatMap(({ height, scale, width }) =>
-          splashColorSchemes.map((colorScheme) => (
-            <link
-              href={`/splash/${width * scale}x${height * scale}-${colorScheme}.png`}
-              key={`${width}x${height}@${scale}-${colorScheme}`}
-              media={
-                theme === "system"
-                  ? `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${scale}) and (orientation: portrait) and (prefers-color-scheme: ${colorScheme})`
-                  : `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${scale}) and (orientation: portrait)`
-              }
-              rel="apple-touch-startup-image"
-            />
-          )),
-        )}
+        {IOS_SPLASH_SCREENS.map(({ height, scale, width }) => (
+          <link
+            href={`/splash/${width * scale}x${height * scale}.png`}
+            key={`${width}x${height}@${scale}`}
+            media={`(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${scale}) and (orientation: portrait)`}
+            rel="apple-touch-startup-image"
+          />
+        ))}
       </head>
       <body>
         {children}
