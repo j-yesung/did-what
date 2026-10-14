@@ -51,17 +51,20 @@ export const hasRecordFilters = (filters: RecordFilters) => {
   return Boolean(filters.category || filters.query || filters.from || filters.to) || filters.sort !== "recent";
 };
 
-// 지금 필터를 유지한 채 일부만 바꾼 목록 주소를 만든다.
-export const buildRecordsHref = (filters: RecordFilters, overrides: Partial<RecordFilters> = {}) => {
-  const next = { ...filters, ...overrides };
-  const params = new URLSearchParams();
+export const setRecordFilterParams = (searchParams: URLSearchParams, filters: RecordFilters) => {
+  const params = new URLSearchParams(searchParams);
+  const values = {
+    category: filters.category,
+    from: filters.from,
+    q: filters.query,
+    sort: filters.sort === "recent" ? "" : filters.sort,
+    to: filters.to,
+  };
 
-  if (next.category) params.set("category", next.category);
-  if (next.query) params.set("q", next.query);
-  if (next.from) params.set("from", next.from);
-  if (next.to) params.set("to", next.to);
-  if (next.sort !== "recent") params.set("sort", next.sort);
+  for (const [key, value] of Object.entries(values)) {
+    if (value) params.set(key, value);
+    else params.delete(key);
+  }
 
-  const search = params.toString();
-  return search ? `/records?${search}` : "/records";
+  return params;
 };

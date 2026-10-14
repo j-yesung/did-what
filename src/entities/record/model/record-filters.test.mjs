@@ -1,7 +1,8 @@
-import { buildRecordsHref, hasRecordFilters, parseRecordFilters } from "./record-filters.ts";
+import { hasRecordFilters, parseRecordFilters, setRecordFilterParams } from "./record-filters.ts";
 import assert from "node:assert/strict";
 
 const EMPTY = { category: "", from: "", query: "", sort: "recent", to: "" };
+const search = (current, filters) => setRecordFilterParams(new URLSearchParams(current), filters).toString();
 
 assert.deepEqual(parseRecordFilters({}), EMPTY);
 assert.deepEqual(parseRecordFilters({ q: ["a", "b"], sort: "unknown" }), EMPTY);
@@ -23,15 +24,9 @@ assert.equal(hasRecordFilters(EMPTY), false);
 assert.equal(hasRecordFilters({ ...EMPTY, sort: "oldest" }), true);
 assert.equal(hasRecordFilters({ ...EMPTY, query: "커피" }), true);
 
-assert.equal(buildRecordsHref(EMPTY), "/records");
-assert.equal(
-  buildRecordsHref({ ...EMPTY, query: "커 피", from: "2026-08-01" }),
-  "/records?q=%EC%BB%A4+%ED%94%BC&from=2026-08-01",
-);
-assert.equal(
-  buildRecordsHref({ ...EMPTY, query: "커피" }, { sort: "oldest" }),
-  "/records?q=%EC%BB%A4%ED%94%BC&sort=oldest",
-);
+assert.equal(search("view=list&category=date&sort=oldest", EMPTY), "view=list");
+assert.equal(search("", { ...EMPTY, query: "커 피", from: "2026-08-01" }), "from=2026-08-01&q=%EC%BB%A4+%ED%94%BC");
+assert.equal(search("q=커피", { ...EMPTY, query: "커피", sort: "oldest" }), "q=%EC%BB%A4%ED%94%BC&sort=oldest");
 
 assert.equal(parseRecordFilters({ category: "travel" }).category, "travel");
 assert.equal(parseRecordFilters({ category: "uncategorized" }).category, "uncategorized");
@@ -40,9 +35,6 @@ assert.equal(parseRecordFilters({ category: ["travel", "date"] }).category, "");
 assert.equal(hasRecordFilters({ ...EMPTY, category: "travel" }), true);
 const categoryFilters = { ...EMPTY, category: "travel", query: "바다", from: "2026-09-01", sort: "oldest" };
 assert.deepEqual(
-  parseRecordFilters(
-    Object.fromEntries(new URL(buildRecordsHref(categoryFilters), "https://example.test").searchParams),
-  ),
+  parseRecordFilters(Object.fromEntries(setRecordFilterParams(new URLSearchParams(), categoryFilters))),
   categoryFilters,
 );
-assert.equal(buildRecordsHref({ ...EMPTY, category: "date" }, { category: "" }), "/records");

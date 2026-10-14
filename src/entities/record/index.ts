@@ -21,12 +21,12 @@ export {
 } from "./model/category";
 export { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";
 export {
-  buildRecordsHref,
   hasRecordFilters,
   parseRecordFilters,
   type RecordFilters,
   type RecordSearchParams,
   type RecordSort,
+  setRecordFilterParams,
 } from "./model/record-filters";
 export {
   type RecordFieldErrors,

@@ -1,20 +1,13 @@
 "use client";
 
-import { type SubmitEvent, useEffect, useState, useTransition } from "react";
+import { type SubmitEvent, useEffect, useState } from "react";
 
 import { Toggle } from "@base-ui/react/toggle";
 import { ToggleGroup } from "@base-ui/react/toggle-group";
 import { XIcon } from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
-import { useRouter } from "next/navigation";
 
-import {
-  buildRecordsHref,
-  hasRecordFilters,
-  isRecordCategory,
-  RECORD_CATEGORY_OPTIONS,
-  type RecordFilters,
-} from "@/entities/record";
+import { hasRecordFilters, isRecordCategory, RECORD_CATEGORY_OPTIONS, type RecordFilters } from "@/entities/record";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { SearchField } from "@/shared/ui/search-field";
@@ -23,6 +16,7 @@ import { RecordFilterBottomSheet } from "./record-filter-bottom-sheet";
 
 type RecordFilterFormProps = {
   filters: RecordFilters;
+  onFiltersChange: (filters: RecordFilters) => void;
 };
 
 const formatFilterDate = (value: string) => format(parseISO(value), "M/d");
@@ -33,12 +27,9 @@ const getPeriodChipLabel = ({ from, to }: Pick<RecordFilters, "from" | "to">) =>
   return `${formatFilterDate(to)}까지`;
 };
 
-export function RecordFilterForm({ filters }: RecordFilterFormProps) {
-  const router = useRouter();
+export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormProps) {
   const [query, setQuery] = useState(filters.query);
-  // 목록을 새로 받는 동안 검색창에 진행 표시를 띄운다.
-  const [navigating, startNavigation] = useTransition();
-  const navigate = (href: string) => startNavigation(() => router.push(href));
+  const updateFilters = (overrides: Partial<RecordFilters>) => onFiltersChange({ ...filters, ...overrides });
 
   useEffect(() => {
     setQuery(filters.query);
@@ -57,11 +48,11 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate(buildRecordsHref(filters, { query }));
+    updateFilters({ query });
   };
 
   const handleFilterApply = (nextFilters: Pick<RecordFilters, "from" | "sort" | "to">) => {
-    navigate(buildRecordsHref({ ...filters, query, ...nextFilters }));
+    updateFilters({ query, ...nextFilters });
   };
 
   const filterChipClassName = cn(
@@ -77,12 +68,11 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         <SearchField
           aria-label="기록 검색"
           className="min-w-0 flex-1"
-          loading={navigating}
           maxLength={100}
           name="q"
           // 글자만 지우고 결과는 그대로 두면 빈 검색창과 걸러진 목록이 어긋난다.
           onClear={() => {
-            if (filters.query) navigate(buildRecordsHref(filters, { query: "" }));
+            if (filters.query) updateFilters({ query: "" });
           }}
           onValueChange={setQuery}
           placeholder="활동, 메모, 지역으로 검색"
@@ -101,8 +91,10 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
         aria-label="기록 카테고리"
         className="flex gap-4 overflow-x-auto border-border border-b px-1"
         onValueChange={(values) => {
+          // 이미 고른 탭을 다시 누르면 빈 값이 온다.
+          if (values.length === 0) return;
           const category = values[0];
-          navigate(buildRecordsHref(filters, { category: isRecordCategory(category) ? category : "", query }));
+          updateFilters({ category: isRecordCategory(category) ? category : "", query });
         }}
         value={[filters.category || "all"]}
       >

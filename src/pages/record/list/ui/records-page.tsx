@@ -1,13 +1,12 @@
 import { requireMember } from "@/entities/member/server";
-import { parseRecordFilters, type RecordSearchParams } from "@/entities/record";
+import type { RecordSearchParams } from "@/entities/record";
 import { RecordViewToggle } from "@/features/record/switch-record-view";
 import { getRecordView } from "@/features/record/switch-record-view/server";
 import { cn } from "@/shared/lib/utils";
 import { PageShell } from "@/shared/ui/layouts";
 
 import { RecordCalendar } from "./record-calendar";
-import { RecordFilterForm } from "./record-filter-form";
-import { RecordList } from "./record-list";
+import { RecordListContent } from "./record-list-content";
 
 type RecordsPageProps = {
   searchParams: Promise<RecordSearchParams>;
@@ -20,7 +19,6 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
     params.view === "calendar" || (Object.keys(params).length === 0 && (await getRecordView()) === "calendar")
       ? "calendar"
       : "list";
-  const filters = parseRecordFilters(params);
   const member = view === "calendar" ? (await requireMember()).member : null;
 
   return (
@@ -38,10 +36,7 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
         {view === "calendar" && member ? (
           <RecordCalendar member={{ id: member.id, name: member.name }} />
         ) : (
-          <>
-            <RecordFilterForm filters={filters} />
-            <RecordList filters={filters} />
-          </>
+          <RecordListContent />
         )}
       </PageShell>
     </>

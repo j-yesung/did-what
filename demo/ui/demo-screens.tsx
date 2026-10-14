@@ -6,12 +6,7 @@ import { useSearchParams } from "next/navigation";
 
 import { AppNotFound } from "@/app/ui/app-not-found";
 import type { SavedPlaceRow } from "@/entities/place";
-import {
-  normalizeRecordCategory,
-  normalizeRecordWeather,
-  parseRecordFilters,
-  sortPrimaryRegionFirst,
-} from "@/entities/record";
+import { normalizeRecordCategory, normalizeRecordWeather, sortPrimaryRegionFirst } from "@/entities/record";
 import { LogoutButton } from "@/features/auth";
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
@@ -26,8 +21,7 @@ import { PlaceSearchResults } from "@/pages/place/list/ui/place-search-results";
 import { SavedPlaceList } from "@/pages/place/list/ui/saved-place-list";
 import { RecordDetailContent } from "@/pages/record/detail/ui/record-detail-content";
 import { RecordCalendar } from "@/pages/record/list/ui/record-calendar";
-import { RecordFilterForm } from "@/pages/record/list/ui/record-filter-form";
-import { RecordList } from "@/pages/record/list/ui/record-list";
+import { RecordListContent } from "@/pages/record/list/ui/record-list-content";
 import { validateKakaoQuery } from "@/shared/api/kakao-local/validation";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { cn } from "@/shared/lib/utils";
@@ -84,7 +78,6 @@ export function DemoRecordsScreen({ member }: { member: Member }) {
   const { recordView } = useDemoState();
   const search = searchParams?.toString() ?? "";
   const params = useMemo(() => Object.fromEntries(new URLSearchParams(search)), [search]);
-  const filters = useMemo(() => parseRecordFilters(params), [params]);
   const view =
     params.view === "calendar" || (Object.keys(params).length === 0 && recordView === "calendar") ? "calendar" : "list";
 
@@ -100,14 +93,7 @@ export function DemoRecordsScreen({ member }: { member: Member }) {
           <h1 className="sr-only">우리의 기록</h1>
         </header>
 
-        {view === "calendar" ? (
-          <RecordCalendar member={member} />
-        ) : (
-          <>
-            <RecordFilterForm filters={filters} />
-            <RecordList filters={filters} />
-          </>
-        )}
+        {view === "calendar" ? <RecordCalendar member={member} /> : <RecordListContent />}
       </PageShell>
     </>
   );
