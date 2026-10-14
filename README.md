@@ -42,7 +42,7 @@
 
 대한민국 활동 지도에서 발자취를 보고 타임라인과 달력에서 함께한 날들을 다시 찾아봅니다.
 
-[![대한민국 활동 지도, 날짜순 기록 타임라인, 월별 달력을 이어 붙인 실제 화면](docs/images/overview-flow.png)](docs/images/overview-flow.png)
+[![대한민국 활동 지도, 날짜순 기록 타임라인, 월별 달력과 선택한 날의 기록 목록을 이어 붙인 실제 화면](docs/images/overview-flow.png)](docs/images/overview-flow.png)
 
 ### 기록 작성: 언제 → 어디서 → 무엇을
 
@@ -77,7 +77,7 @@
 
 - [회원가입 · 로그인 · 구성원 최초 설정](docs/images/auth-flow.png)
 - [지역 검색 시트 · 저장 장소 선택 시트 · 작성 중 나가기 확인](docs/images/record-picker-flow.png)
-- [기간·정렬 필터 시트 · 날짜별 기록 목록 시트 · 시트 안의 기록 상세](docs/images/record-browse-flow.png)
+- [기간·정렬 필터 시트 · 날짜별 기록 목록 · 시트 안의 기록 상세](docs/images/record-browse-flow.png)
 - [기록 관리 시트 · 기록 수정 화면 위·아래](docs/images/record-manage-flow.png)
 - [새 장소 검색·저장 · 장소 관리 시트 · 장소 삭제 확인](docs/images/place-manage-flow.png)
 - [다크 모드 설정 · 구성원별 알림 · 로그아웃 확인](docs/images/settings-flow.png)
