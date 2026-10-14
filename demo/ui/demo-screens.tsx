@@ -30,6 +30,7 @@ import { RecordFilterForm } from "@/pages/record/list/ui/record-filter-form";
 import { RecordList } from "@/pages/record/list/ui/record-list";
 import { validateKakaoQuery } from "@/shared/api/kakao-local/validation";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
+import { cn } from "@/shared/lib/utils";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
@@ -94,7 +95,7 @@ export function DemoRecordsScreen({ member }: { member: Member }) {
           <RecordViewToggle view={view} />
         </div>
       </div>
-      <PageShell className="gap-4" withBottomNavigation>
+      <PageShell className={cn("gap-4", view === "calendar" && "h-(--screen-height)")} withBottomNavigation>
         <header className="min-h-13">
           <h1 className="sr-only">우리의 기록</h1>
         </header>

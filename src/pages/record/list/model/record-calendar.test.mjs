@@ -1,6 +1,6 @@
 import {
   getCalendarWeekLayout,
-  getDaySheetRecordId,
+  getDefaultCalendarDate,
   groupRecordsByDate,
 } from "@/pages/record/list/model/record-calendar";
 
@@ -15,7 +15,7 @@ const record = (id, start, end = null) => ({
   recorded_at: start,
   recorded_until: end,
 });
-const layout = (records, days = dates, lines = 3) =>
+const layout = (records, days = dates, lines = 2) =>
   getCalendarWeekLayout(groupRecordsByDate(records, range), days, lines);
 const positions = (result) => result.segments.map(({ record, start, end, lane }) => [record.id, start, end, lane]);
 
@@ -34,11 +34,7 @@ test("토요일에 시작한 기간은 다음 주 일요일부터 이어지는 �
   assert.deepEqual(positions(layout(records)), [["trip", 0, 1, 0]]);
 });
 
-test("주중 기간도 날짜 사이에서 제목을 반복하지 않고 연결한다", () => {
-  assert.deepEqual(positions(layout([record("trip", "2026-10-06", "2026-10-09")])), [["trip", 2, 5, 0]]);
-});
-
-test("겹친 기간은 다른 줄에 놓고 같은 제목의 별도 기록도 유지한다", () => {
+test("겹친 기간은 다른 줄에 놓고 하루 기록은 빈 줄을 채운다", () => {
   const result = layout([
     record("single", "2026-10-07"),
     record("trip", "2026-10-06", "2026-10-09"),
@@ -52,7 +48,7 @@ test("겹친 기간은 다른 줄에 놓고 같은 제목의 별도 기록도 �
   assert.deepEqual(result.hiddenCounts, [0, 0, 0, 0, 0, 0, 0]);
 });
 
-test("줄이 부족해도 기간 띠를 유지하고 날짜별 숨겨진 기록 수를 표시한다", () => {
+test("줄이 모자라도 기간 띠를 유지하고 날짜별로 숨긴 기록 수를 센다", () => {
   const result = layout(
     [
       record("trip", "2026-10-04", "2026-10-10"),
@@ -61,11 +57,10 @@ test("줄이 부족해도 기간 띠를 유지하고 날짜별 숨겨진 기록 
       record("last", "2026-10-08"),
     ],
     dates,
-    2,
+    1,
   );
   assert.deepEqual(positions(result), [["trip", 0, 6, 0]]);
   assert.deepEqual(result.hiddenCounts, [0, 0, 2, 0, 1, 0, 0]);
-  assert.equal(result.visibleLines, 1);
 });
 
 test("월 경계를 넘는 기간은 보이는 주 범위에 맞춰 연결하고 빈 주는 비워 둔다", () => {
@@ -82,19 +77,8 @@ test("월 경계를 넘는 기간은 보이는 주 범위에 맞춰 연결하고
   assert.deepEqual(positions(layout([])), []);
 });
 
-test("제목 한 줄만 들어갈 때는 넘친 날짜에 전체 기록 수를 표시한다", () => {
-  const result = layout([record("first", "2026-10-06"), record("second", "2026-10-06")], dates, 1);
-  assert.deepEqual(result.segments, []);
-  assert.deepEqual(result.hiddenCounts, [0, 0, 2, 0, 0, 0, 0]);
-});
-
-test("날짜 시트는 기록 하나면 바로 상세, 여러 개면 선택한 기록의 상세를 연다", () => {
-  const records = [{ id: "first" }, { id: "second" }];
-  assert.equal(getDaySheetRecordId(undefined, null), null);
-  assert.equal(getDaySheetRecordId([], null), null);
-  assert.equal(getDaySheetRecordId([records[0]], null), "first");
-  assert.equal(getDaySheetRecordId(records, null), null);
-  assert.equal(getDaySheetRecordId(records, "second"), "second");
-  assert.equal(getDaySheetRecordId([records[0]], "second"), "first");
-  assert.equal(getDaySheetRecordId(records, "deleted"), null);
+test("달을 옮기면 이번 달은 오늘, 다른 달은 1일을 고른다", () => {
+  assert.equal(getDefaultCalendarDate("2026-10", "2026-10-14"), "2026-10-14");
+  assert.equal(getDefaultCalendarDate("2026-11", "2026-10-14"), "2026-11-01");
+  assert.equal(getDefaultCalendarDate("2025-10", "2026-10-14"), "2025-10-01");
 });

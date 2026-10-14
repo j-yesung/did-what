@@ -371,8 +371,8 @@
     @apply font-sans;
   }
 
-  /* 지도 홈은 스크롤할 내용이 없다. 고무줄 반동까지 막아 화면이 붙박이처럼 고정되게 한다. */
-  html:has([data-screen="map"]) {
+  /* 지도 홈과 달력은 문서가 스크롤되지 않는다. 고무줄 반동까지 막아 화면이 붙박이처럼 고정되게 한다. */
+  html:has([data-screen="map"], [data-screen="calendar"]) {
     overscroll-behavior-y: none;
   }
 
@@ -539,18 +539,6 @@
   }
 }
 
-/** 날짜를 고르면 뜨는 CTA. 제자리에서 천천히 떠다녀 새로 생긴 것을 알린다. */
-@keyframes calendar-record-create-float {
-  0%,
-  100% {
-    transform: translateY(-3px);
-  }
-
-  50% {
-    transform: translateY(3px);
-  }
-}
-
 @keyframes map-location-pulse {
   from {
     opacity: 1;
@@ -568,16 +556,6 @@
     transform-box: fill-box;
     transform-origin: center;
     animation: map-location-pulse 1800ms cubic-bezier(0.23, 1, 0.32, 1) infinite;
-  }
-
-  .calendar-record-create-float {
-    animation: calendar-record-create-float 2800ms cubic-bezier(0.77, 0, 0.175, 1) infinite;
-  }
-
-  /* 누르는 중에는 멈춰야 목표가 움직이지 않는다. */
-  .calendar-record-create-float:active,
-  .calendar-record-create-float:focus-within {
-    animation-play-state: paused;
   }
 
   [data-funnel-step][data-direction="forward"] {
