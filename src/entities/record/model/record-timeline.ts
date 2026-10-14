@@ -7,6 +7,7 @@ export const getRecordTimelineItemState = (records: readonly TimelineRecord[], i
   const previousDate = records[index - 1]?.recorded_at;
 
   return {
+    endsDate: date !== records[index + 1]?.recorded_at,
     startsDate: date !== previousDate,
     startsMonth: date?.slice(0, 7) !== previousDate?.slice(0, 7),
   };

@@ -95,17 +95,17 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                 </div>
 
                 {records.map((record, index) => {
-                  const { startsDate, startsMonth } = getRecordTimelineItemState(records, index);
+                  const { endsDate, startsDate, startsMonth } = getRecordTimelineItemState(records, index);
 
                   return (
                     <Fragment key={record.id}>
                       {startsMonth ? (
-                        <p className={cn("px-1 pb-2 font-bold text-lg tracking-tight", index > 0 && "mt-6")}>
+                        <p className={cn("px-1 font-bold text-[27px] tracking-tight", index > 0 && "mt-8")}>
                           {formatRecordTimelineMonth(record.recorded_at)}
                         </p>
                       ) : null}
                       <RecordCard
-                        isLast={index === records.length - 1}
+                        endsDate={endsDate}
                         onDetailPrefetch={prefetchComments}
                         record={record}
                         startsDate={startsDate}

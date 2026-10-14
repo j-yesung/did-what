@@ -91,17 +91,17 @@ export function RecordList({ filters }: RecordListProps) {
       )}
     >
       {records.map((record, index) => {
-        const { startsDate, startsMonth } = getRecordTimelineItemState(records, index);
+        const { endsDate, startsDate, startsMonth } = getRecordTimelineItemState(records, index);
 
         return (
           <Fragment key={record.id}>
             {startsMonth ? (
-              <p className={cn("px-1 pb-2 font-bold text-lg tracking-[-0.025em]", index > 0 && "mt-6")}>
+              <p className={cn("px-1 font-bold text-[27px] tracking-[-0.025em]", index > 0 && "mt-8")}>
                 {formatRecordTimelineMonth(record.recorded_at)}
               </p>
             ) : null}
             <RecordCard
-              isLast={index === records.length - 1}
+              endsDate={endsDate}
               onDetailPrefetch={prefetchComments}
               onLongPress={() => {
                 setActionTarget(record);
