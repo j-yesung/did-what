@@ -1,70 +1,57 @@
 "use client";
 
-import { CaretRightIcon, ChatCircleIcon } from "@phosphor-icons/react";
+import { ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { useLongPress } from "@/shared/lib/use-long-press";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
+import { normalizeRecordCategory, RECORD_CATEGORY_DOT } from "../model/category";
 import { formatRecordRegionLabels } from "../model/record-region";
+import { formatRecordTimelineDate } from "../model/record-timeline";
 import type { RecordSummary } from "../model/types";
 import { RecordCategoryBadge } from "./record-badges";
 
 type RecordCardProps = {
-  isLast: boolean;
+  endsMonth: boolean;
   onDetailPrefetch?: (recordId: string) => void;
   /** 꾹 눌렀을 때. 넘기지 않으면 꾹 누름을 듣지 않는다. */
   onLongPress?: () => void;
   record: RecordSummary;
-  startsDate: boolean;
+  side: "left" | "right";
 };
 
-const WEEKDAY = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", weekday: "short" });
-
-export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, startsDate }: RecordCardProps) {
+export function RecordCard({ endsMonth, onDetailPrefetch, onLongPress, record, side }: RecordCardProps) {
   const router = useRouter();
   const longPress = useLongPress(onLongPress);
   const queryClient = useQueryClient();
   const href = `/records/${record.id}`;
   const commentCount = record.record_comments?.[0]?.count ?? 0;
   const regionLabels = formatRecordRegionLabels(record);
-  // 하루짜리는 왼쪽 날짜 칸이 이미 말해 준다. 여러 날에 걸친 기록만 기간을 따로 적는다.
-  const period =
-    record.recorded_until && record.recorded_until !== record.recorded_at
-      ? formatRecordPeriod(record.recorded_at, record.recorded_until)
-      : null;
-
+  const category = normalizeRecordCategory(record.category);
   const cacheRecordSummary = () => queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
 
   return (
-    <article className="grid grid-cols-[3rem_1rem_minmax(0,1fr)] gap-x-1">
-      <div className="pt-3 text-center">
-        {startsDate ? (
-          <time
-            aria-label={formatRecordPeriod(record.recorded_at)}
-            className="flex flex-col items-center tabular-nums"
-            dateTime={record.recorded_at}
-          >
-            <span className="font-bold text-2xl leading-none">{Number(record.recorded_at.slice(8, 10))}</span>
-            <span className="mt-1 text-muted-foreground text-xs">
-              {WEEKDAY.format(new Date(`${record.recorded_at}T00:00:00+09:00`))}
-            </span>
-          </time>
-        ) : null}
-      </div>
-      <div className="relative flex justify-center" aria-hidden="true">
-        <span className={cn("absolute top-0 left-1/2 w-px -translate-x-1/2 bg-border", isLast ? "h-5" : "bottom-0")} />
-        {startsDate ? (
-          <span className="absolute top-4 z-10 size-2.5 rounded-full border-2 border-background bg-primary" />
-        ) : null}
-      </div>
+    <article
+      className="relative grid min-w-0 grid-cols-[minmax(0,1fr)_2rem_minmax(0,1fr)] pb-6"
+      data-timeline-side={side}
+    >
+      <span aria-hidden="true" className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+      {endsMonth ? (
+        <span
+          aria-hidden="true"
+          className="absolute bottom-0 left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-border"
+        />
+      ) : null}
       <Button
-        className="h-auto min-h-18 justify-start whitespace-normal rounded-none px-2 py-3 text-left font-normal after:hidden [&>span]:block [&>span]:w-full"
+        className={cn(
+          "row-start-1 h-auto min-h-18 min-w-0 justify-start whitespace-normal rounded-md p-0 font-normal after:hidden [&>span]:block [&>span]:w-full",
+          side === "left" ? "col-start-1 text-right" : "col-start-3 text-left",
+        )}
         fullWidth
         nativeButton={false}
         render={
@@ -86,19 +73,40 @@ export function RecordCard({ isLast, onDetailPrefetch, onLongPress, record, star
         variant="ghost"
       >
         <span className="min-w-0">
-          <h3 className="flex min-w-0 items-center justify-between gap-2 font-bold text-base leading-snug tracking-[-0.02em]">
-            <span className="line-clamp-2 min-w-0 flex-1">{record.activity}</span>
-            <CaretRightIcon className="shrink-0 text-muted-foreground" aria-hidden="true" />
+          <time
+            className="mb-1.5 block text-[11px] text-muted-foreground tabular-nums leading-normal"
+            dateTime={record.recorded_at}
+          >
+            {formatRecordTimelineDate(record.recorded_at, record.recorded_until)}
+          </time>
+          <h3 className="relative min-w-0 break-words font-semibold text-base leading-relaxed tracking-[-0.035em]">
+            {record.activity}
+            <span
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none absolute top-2 z-10 size-2 rounded-full ring-3 ring-background",
+                RECORD_CATEGORY_DOT[category],
+                side === "left" ? "-right-5" : "-left-5",
+              )}
+            />
           </h3>
-          <span className="mt-1.5 flex min-w-0 items-center justify-between gap-2 text-muted-foreground text-xs">
-            <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
-              {/* 긴 기간 표기는 지역·배지와 한 줄에 못 들어간다. 줄을 통째로 차지해 뒤가 밀리지 않게 한다. */}
-              {period ? <span className="w-full shrink-0 tabular-nums">{period}</span> : null}
-              {regionLabels ? <span className="truncate">{regionLabels}</span> : null}
-              <RecordCategoryBadge category={record.category} />
-            </span>
+          {record.memo?.trim() ? (
+            <p className="mt-1.5 line-clamp-2 break-words text-dark-weak-foreground text-xs leading-relaxed">
+              {record.memo}
+            </p>
+          ) : null}
+          {regionLabels ? (
+            <p className="mt-1.5 break-words text-[11px] text-muted-foreground leading-relaxed">{regionLabels}</p>
+          ) : null}
+          <span
+            className={cn(
+              "mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground text-xs",
+              side === "left" && "justify-end",
+            )}
+          >
+            <RecordCategoryBadge category={record.category} />
             {commentCount > 0 ? (
-              <span className="inline-flex shrink-0 items-center gap-0.5 tabular-nums">
+              <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] tabular-nums">
                 <ChatCircleIcon className="size-4" aria-hidden="true" />
                 <span className="sr-only">댓글</span>
                 {commentCount}

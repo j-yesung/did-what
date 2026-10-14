@@ -144,7 +144,12 @@ const isAfterCursor = (record: DemoRecord, cursor: RecordCursor, ascending: bool
 export const getRecordPage = (state: DemoState, filters: RecordFilters, cursor: RecordCursor | null) => {
   const ascending = filters.sort === "oldest";
   const sorted = sortRecent(
-    state.records.filter((record) => inPeriod(record, filters) && matchesQuery(record, filters.query)),
+    state.records.filter(
+      (record) =>
+        inPeriod(record, filters) &&
+        matchesQuery(record, filters.query) &&
+        (!filters.category || record.category === filters.category),
+    ),
   );
   const ordered = ascending ? sorted.toReversed() : sorted;
   const remaining = cursor ? ordered.filter((record) => isAfterCursor(record, cursor, ascending)) : ordered;

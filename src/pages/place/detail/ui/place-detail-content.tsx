@@ -42,6 +42,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
   const records = (recordsQuery.data ?? [])
     .map(({ record }) => record)
     .toSorted((a, b) => b.recorded_at.localeCompare(a.recorded_at));
+  let monthStartIndex = 0;
   const isPlacePending = !place && !placeQuery.isError && (placesQuery.isPending || placeQuery.isPending);
 
   return (
@@ -95,20 +96,27 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                 </div>
 
                 {records.map((record, index) => {
-                  const { startsDate, startsMonth } = getRecordTimelineItemState(records, index);
+                  const { startsMonth } = getRecordTimelineItemState(records, index);
+                  if (startsMonth) monthStartIndex = index;
+                  const endsMonth = record.recorded_at.slice(0, 7) !== records[index + 1]?.recorded_at.slice(0, 7);
 
                   return (
                     <Fragment key={record.id}>
                       {startsMonth ? (
-                        <p className={cn("px-1 pb-2 font-bold text-lg tracking-tight", index > 0 && "mt-6")}>
+                        <p
+                          className={cn(
+                            "pb-6 text-center font-semibold text-lg tracking-tight",
+                            index > 0 && "mt-6 border-border border-t border-dashed pt-7",
+                          )}
+                        >
                           {formatRecordTimelineMonth(record.recorded_at)}
                         </p>
                       ) : null}
                       <RecordCard
-                        isLast={index === records.length - 1}
+                        endsMonth={endsMonth}
                         onDetailPrefetch={prefetchComments}
                         record={record}
-                        startsDate={startsDate}
+                        side={(index - monthStartIndex) % 2 === 0 ? "left" : "right"}
                       />
                     </Fragment>
                   );

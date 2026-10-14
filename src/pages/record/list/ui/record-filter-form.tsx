@@ -2,11 +2,19 @@
 
 import { type SubmitEvent, useEffect, useState, useTransition } from "react";
 
+import { Toggle } from "@base-ui/react/toggle";
+import { ToggleGroup } from "@base-ui/react/toggle-group";
 import { XIcon } from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
-import { buildRecordsHref, hasRecordFilters, type RecordFilters } from "@/entities/record";
+import {
+  buildRecordsHref,
+  hasRecordFilters,
+  isRecordCategory,
+  RECORD_CATEGORY_OPTIONS,
+  type RecordFilters,
+} from "@/entities/record";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { SearchField } from "@/shared/ui/search-field";
@@ -64,7 +72,7 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
   );
 
   return (
-    <form action="/records" className="space-y-3" method="get" onSubmit={handleSubmit} role="search">
+    <form action="/records" className="flex flex-col gap-3" method="get" onSubmit={handleSubmit} role="search">
       <div className="flex items-start gap-2">
         <SearchField
           aria-label="기록 검색"
@@ -81,12 +89,37 @@ export function RecordFilterForm({ filters }: RecordFilterFormProps) {
           value={query}
         />
 
+        <input name="category" type="hidden" value={filters.category} />
         <input name="from" type="hidden" value={filters.from} />
         <input name="to" type="hidden" value={filters.to} />
         <input name="sort" type="hidden" value={filters.sort} />
 
         <RecordFilterBottomSheet from={filters.from} onApply={handleFilterApply} sort={filters.sort} to={filters.to} />
       </div>
+
+      <ToggleGroup
+        aria-label="기록 카테고리"
+        className="flex gap-4 overflow-x-auto border-border border-b px-1"
+        onValueChange={(values) => {
+          const category = values[0];
+          navigate(buildRecordsHref(filters, { category: isRecordCategory(category) ? category : "", query }));
+        }}
+        value={[filters.category || "all"]}
+      >
+        {[{ label: "전체", value: "all" }, ...RECORD_CATEGORY_OPTIONS].map((option) => (
+          <Toggle
+            className={cn(
+              "h-11 shrink-0 border-transparent border-b-2 px-1 text-[13px] text-muted-foreground data-pressed:border-foreground data-pressed:font-semibold data-pressed:text-foreground",
+              FOCUS_RING,
+            )}
+            key={option.value}
+            type="button"
+            value={option.value}
+          >
+            {option.label}
+          </Toggle>
+        ))}
+      </ToggleGroup>
 
       {filters.from || filters.to || filters.sort !== "recent" ? (
         <div aria-label="적용 중인 필터" className="flex flex-wrap gap-2">

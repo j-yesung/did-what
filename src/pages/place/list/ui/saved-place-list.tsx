@@ -2,7 +2,6 @@
 
 import { type ReactNode, useState } from "react";
 
-import { CaretRightIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -15,9 +14,10 @@ import {
   type SavedPlaceRow,
 } from "@/entities/place";
 import { useLongPress } from "@/shared/lib/use-long-press";
+import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+import { buttonVariants } from "@/shared/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
-import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 
@@ -38,45 +38,37 @@ function SavedPlaceListItem({ onDetailPrefetch, onLongPress, place }: SavedPlace
   const regionLabel = getPlaceRegionLabel(place.region_name, place.address);
 
   return (
-    <div>
-      <ListRow
-        className="px-0 py-4"
-        aria-label={`${place.name} 상세 보기`}
-        nativeButton={false}
-        right={<CaretRightIcon aria-hidden="true" className="size-4 text-muted-foreground" />}
-        render={
-          <PressLink
-            {...longPress}
-            href={href}
-            onClick={cachePlace}
-            onPointerDown={(event) => {
-              longPress.onPointerDown?.(event);
-              if (event.button !== 0) return;
-              onDetailPrefetch(place);
-            }}
-            prefetch={false}
-          />
-        }
+    <li className="min-w-0">
+      <PressLink
+        {...longPress}
+        className={cn(
+          buttonVariants({ fullWidth: true, variant: "ghost" }),
+          "h-auto min-w-0 flex-col gap-1.5 whitespace-normal rounded-2xl p-0 after:hidden",
+        )}
+        aria-label={`${place.name}, ${regionLabel}, 기록 ${recordCount}개 상세 보기`}
+        href={href}
+        onClick={cachePlace}
+        onPointerDown={(event) => {
+          longPress.onPointerDown?.(event);
+          if (event.button !== 0) return;
+          onDetailPrefetch(place);
+        }}
+        prefetch={false}
       >
-        <span className="flex min-w-0 items-center gap-3">
-          <PlaceIconTile className="size-12.5" place={place} />
-          <ListRowTexts
-            className="min-w-0 flex-1 gap-1 [&>span:first-child]:font-bold [&>span:first-child]:text-base"
-            description={
-              <span className="flex min-w-0 items-center justify-between gap-2 text-[11px]">
-                <span className="min-w-0 truncate">{regionLabel}</span>
-                {recordCount > 0 ? (
-                  <Badge className="rounded-lg px-2 py-1 text-[10px]" tone="primary">
-                    기록 {recordCount}
-                  </Badge>
-                ) : null}
-              </span>
-            }
-            title={place.name}
-          />
+        <span aria-hidden="true" className="relative block w-[84%]">
+          <PlaceIconTile className="aspect-square size-auto w-full rounded-2xl [&_svg]:size-6.5" place={place} />
+          {recordCount > 0 ? (
+            <Badge className="absolute top-1.5 right-1.5 h-4.5 min-w-4.5 rounded-md bg-surface/80 px-1 py-0 text-[10px] tabular-nums leading-none">
+              {recordCount}
+            </Badge>
+          ) : null}
         </span>
-      </ListRow>
-    </div>
+        <span className="flex w-full min-w-0 flex-col gap-0.5 text-center">
+          <span className="line-clamp-2 font-semibold text-[11px] leading-3.5">{place.name}</span>
+          <span className="w-full truncate text-[10px] text-muted-foreground leading-3">{regionLabel}</span>
+        </span>
+      </PressLink>
+    </li>
   );
 }
 
@@ -132,12 +124,12 @@ export function SavedPlaceList({
           </EmptyHeader>
         </Empty>
       ) : (
-        <section aria-label={`저장한 장소 ${places.length}곳`} className="flex flex-col gap-1">
+        <section aria-label={`저장한 장소 ${places.length}곳`} className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-semibold text-base">저장한 장소</h2>
             <span className="text-muted-foreground text-xs">최근 저장순</span>
           </div>
-          <div className="flex flex-col divide-y overflow-hidden">
+          <ul className="grid grid-cols-4 items-start gap-x-2.5 gap-y-4">
             {places.map((place) => (
               <SavedPlaceListItem
                 key={place.id}
@@ -149,7 +141,7 @@ export function SavedPlaceList({
                 place={place}
               />
             ))}
-          </div>
+          </ul>
         </section>
       )}
       <PlaceActionSheet onOpenChange={setActionOpen} open={actionOpen} place={actionTarget} />
