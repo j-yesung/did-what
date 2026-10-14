@@ -21,12 +21,12 @@ export {
 } from "./model/category";
 export { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";
 export {
-  buildRecordsHref,
   hasRecordFilters,
   parseRecordFilters,
   type RecordFilters,
   type RecordSearchParams,
   type RecordSort,
+  setRecordFilterParams,
 } from "./model/record-filters";
 export {
   type RecordFieldErrors,
@@ -37,7 +37,11 @@ export {
 } from "./model/record-form";
 export { type RecordRegionLocationRow, toRegionLocations } from "./model/record-locations";
 export { formatRecordRegionLabels, sortPrimaryRegionFirst } from "./model/record-region";
-export { formatRecordTimelineMonth, getRecordTimelineItemState } from "./model/record-timeline";
+export {
+  formatRecordTimelineDate,
+  formatRecordTimelineMonth,
+  getRecordTimelineItemState,
+} from "./model/record-timeline";
 export type { RecordFormState, RecordSummary } from "./model/types";
 export {
   DEFAULT_RECORD_WEATHER,

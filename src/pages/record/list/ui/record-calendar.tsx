@@ -16,7 +16,6 @@ import {
   DayButton,
   type DayButtonProps,
   DayPicker,
-  type Modifiers,
   type MonthCaptionProps,
   type WeekProps,
   type WeeksProps,
@@ -42,54 +41,43 @@ import {
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 
 import {
-  getCalendarDayAction,
   getCalendarHref,
   getCalendarRange,
   getCalendarSwipeMonthShift,
   getCalendarWeekLayout,
-  getTitleLines,
+  getDefaultCalendarDate,
   getToday,
   groupRecordsByDate,
   parseCalendarDate,
   parseCalendarMonth,
   shiftMonth,
 } from "../model/record-calendar";
-import { CalendarRecordCreateButton } from "./calendar-record-create-button";
-import { RecordDayBottomSheet } from "./record-day-bottom-sheet";
+import { RecordDayList } from "./record-day-list";
+import { RecordDetailBottomSheet } from "./record-detail-bottom-sheet";
 
-// 칸 높이를 재기 전(서버 렌더링 포함)에 쓰는 제목 줄 수
-const DEFAULT_TITLE_LINES = 2;
+const TITLE_LINES = 1;
 // 앞뒤 달을 함께 그려 드래그 중에도 다음 달이 손가락을 따라 나타나게 한다.
 const MONTH_OFFSETS = [-1, 0, 1];
 const CURRENT_MONTH_INDEX = 1;
 const EMPTY_RECORDS_BY_DATE: ReadonlyMap<string, readonly RecordSummary[]> = new Map();
+const EMPTY_HIDDEN_COUNTS: ReadonlyMap<string, number> = new Map();
 const SNAP_SPRING = { bounce: 0, type: spring, visualDuration: 0.25 } as const;
 
-type RecordCalendarContextValue = {
-  recordsByDate: ReadonlyMap<string, readonly RecordSummary[]>;
-  titleLines: number;
-};
-
-const RecordCalendarContext = createContext<RecordCalendarContextValue>({
-  recordsByDate: EMPTY_RECORDS_BY_DATE,
-  titleLines: DEFAULT_TITLE_LINES,
-});
-
-const RecordWeekContext = createContext({ hiddenCounts: new Map<string, number>(), visibleLines: 0 });
+const RecordCalendarContext = createContext(EMPTY_RECORDS_BY_DATE);
+const RecordWeekContext = createContext(EMPTY_HIDDEN_COUNTS);
 
 /**
  * 셀 전체가 날짜 버튼 하나다. 제목 띠는 보여주기만 하고 누를 수 없다.
  * 라이브러리 DayButton으로 감싸 키보드 이동 때의 포커스 처리를 그대로 쓴다.
  */
 function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps) {
-  const { recordsByDate } = useContext(RecordCalendarContext);
-  const { hiddenCounts, visibleLines } = useContext(RecordWeekContext);
+  const recordsByDate = useContext(RecordCalendarContext);
+  const hiddenCount = useContext(RecordWeekContext).get(day.isoDate) ?? 0;
   const records = recordsByDate.get(day.isoDate) ?? [];
-  const hiddenCount = hiddenCounts.get(day.isoDate) ?? 0;
 
   return (
     <DayButton
@@ -100,8 +88,7 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
           : props["aria-label"]
       }
       className={cn(
-        // 최소 높이는 날짜 숫자와 제목 한 줄이 들어가는 만큼이다(getTitleLines와 같은 계산).
-        "flex min-h-11.25 w-full min-w-0 flex-1 cursor-pointer flex-col gap-px overflow-hidden rounded-lg px-0.5 pt-1 text-left after:inset-0",
+        "flex w-full min-w-0 flex-1 cursor-pointer flex-col items-center rounded-lg pt-0.5 after:inset-0",
         PRESS_FEEDBACK,
         FOCUS_RING,
       )}
@@ -110,7 +97,7 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
     >
       <span
         className={cn(
-          "mx-auto flex size-6 shrink-0 items-center justify-center rounded-full text-sm tabular-nums",
+          "flex size-6 shrink-0 items-center justify-center rounded-full text-sm tabular-nums",
           modifiers.outside && "text-muted-foreground",
           // 파란 글자는 다크 배경에서 대비가 모자라 오늘은 테두리로만 표시한다.
           modifiers.today && "font-semibold ring-1 ring-primary",
@@ -119,11 +106,10 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
       >
         {children}
       </span>
-      {/* 여러 기록을 묶은 표시라 어느 카테고리도 대표할 수 없다. */}
       {hiddenCount > 0 ? (
         <span
-          className="absolute inset-x-0.5 h-4 rounded-lg bg-muted-foreground/15 px-1 text-[0.625rem] text-muted-foreground leading-4"
-          style={{ top: `calc(1.75rem + 1px + ${visibleLines} * (1rem + 1px))` }}
+          aria-hidden="true"
+          className="absolute top-1 right-0.5 text-[0.5625rem] text-muted-foreground tabular-nums leading-none"
         >
           +{hiddenCount}
         </span>
@@ -133,7 +119,7 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
 }
 
 /**
- * 달력이 하단 내비게이션 앞까지 남는 높이를 채우도록 표를 flex로 배치한다.
+ * 제목 띠를 주 위에 겹쳐 그리려고 표를 flex로 배치한다.
  * 표 요소의 display를 바꾸면 Safari가 행 의미를 지우는 경우가 있어 역할을 직접 적는다.
  */
 function RecordWeeks(props: WeeksProps) {
@@ -141,39 +127,35 @@ function RecordWeeks(props: WeeksProps) {
 }
 
 function RecordWeek({ week, children, ...props }: WeekProps) {
-  const { recordsByDate, titleLines } = useContext(RecordCalendarContext);
-  const layout = useMemo(
-    () =>
-      getCalendarWeekLayout(
-        recordsByDate,
-        week.days.map((day) => day.isoDate),
-        titleLines,
-      ),
-    [recordsByDate, titleLines, week],
+  const recordsByDate = useContext(RecordCalendarContext);
+  const dates = useMemo(() => week.days.map((day) => day.isoDate), [week]);
+  const layout = useMemo(() => getCalendarWeekLayout(recordsByDate, dates, TITLE_LINES), [dates, recordsByDate]);
+  const hiddenCounts = useMemo(
+    () => new Map(dates.map((date, index) => [date, layout.hiddenCounts[index]])),
+    [dates, layout],
   );
-  const weekContext = useMemo(
-    () => ({
-      hiddenCounts: new Map(week.days.map((day, index) => [day.isoDate, layout.hiddenCounts[index]])),
-      visibleLines: layout.visibleLines,
-    }),
-    [layout, week],
-  );
+  const firstDate = dates[0];
+  const lastDate = dates[dates.length - 1];
 
   return (
-    <RecordWeekContext.Provider value={weekContext}>
+    <RecordWeekContext.Provider value={hiddenCounts}>
       <tr role="row" {...props}>
         {children}
+        {/* 날짜 버튼의 위 여백(0.125rem)과 숫자(1.5rem) 아래에 제목 띠를 놓는다. */}
         <td
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-[calc(2rem+1px)] grid auto-rows-[1rem] grid-cols-7 gap-y-px"
+          className="pointer-events-none absolute inset-x-0 top-6.75 grid auto-rows-[1rem] grid-cols-7 gap-y-px"
           colSpan={7}
           role="presentation"
         >
           {layout.segments.map(({ record, start, end, lane }) => (
             <span
               className={cn(
-                "fade-in-0 mx-0.5 min-w-0 animate-in truncate rounded-lg px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none",
+                "fade-in-0 mx-0.5 min-w-0 animate-in truncate rounded-sm px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none",
                 RECORD_CATEGORY_FILL[normalizeRecordCategory(record.category)],
+                record.recorded_at < firstDate && "ml-0 rounded-l-none",
+                (record.recorded_until ?? record.recorded_at) > lastDate && "mr-0 rounded-r-none",
+                week.days.slice(start, end + 1).every((day) => day.outside) && "opacity-40",
               )}
               key={record.id}
               style={{ gridColumn: `${start + 1} / span ${end - start + 1}`, gridRow: lane + 1 }}
@@ -205,16 +187,16 @@ const CALENDAR_COMPONENTS = {
 };
 
 const CALENDAR_CLASS_NAMES = {
-  day: "flex min-w-0 flex-1 basis-0 flex-col pt-1",
-  month: "flex w-full flex-1 flex-col",
+  day: "flex min-w-0 flex-1 basis-0 flex-col",
+  month: "flex w-full flex-col",
   month_caption: "pointer-events-none absolute size-px overflow-hidden opacity-0",
-  month_grid: "flex flex-1 flex-col",
-  months: "flex flex-1 flex-col",
-  root: "flex w-full min-w-0 flex-1 flex-col",
-  week: "relative flex flex-1 basis-0 border-t",
-  weekday: "min-w-0 flex-1 basis-0 pb-2 text-center font-normal text-muted-foreground text-xs",
+  month_grid: "flex flex-col",
+  months: "flex flex-col",
+  root: "flex w-full min-w-0 flex-col",
+  week: "relative flex h-11.5 border-t",
+  weekday: "min-w-0 flex-1 basis-0 pb-1.5 text-center font-normal text-muted-foreground text-xs",
   weekdays: "flex",
-  weeks: "flex flex-1 flex-col",
+  weeks: "flex flex-col",
 };
 
 const replaceCalendarHref = (month: string, date?: string | null) => {
@@ -223,11 +205,10 @@ const replaceCalendarHref = (month: string, date?: string | null) => {
 
 type CalendarMonthProps = {
   month: string;
-  onDayClick: (date: Date, modifiers: Modifiers) => void;
+  onDayClick: (date: Date) => void;
   onMonthChange: (date: Date) => void;
   records: readonly RecordSummary[] | undefined;
   selectedDate: string | null;
-  titleLines: number;
   today: string;
 };
 
@@ -238,17 +219,15 @@ const CalendarMonth = memo(function CalendarMonth({
   onMonthChange,
   records,
   selectedDate,
-  titleLines,
   today,
 }: CalendarMonthProps) {
   const recordsByDate = useMemo(
     () => (records ? groupRecordsByDate(records, getCalendarRange(month)) : EMPTY_RECORDS_BY_DATE),
     [month, records],
   );
-  const calendarContext = useMemo(() => ({ recordsByDate, titleLines }), [recordsByDate, titleLines]);
 
   return (
-    <RecordCalendarContext.Provider value={calendarContext}>
+    <RecordCalendarContext.Provider value={recordsByDate}>
       <DayPicker
         classNames={CALENDAR_CLASS_NAMES}
         components={CALENDAR_COMPONENTS}
@@ -277,12 +256,12 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
   const shouldReduceMotion = useReducedMotion();
   const today = getToday();
   const initialMonth = parseCalendarMonth(searchParams?.get("month"), today);
-  const initialDate = parseCalendarDate(searchParams?.get("date"), initialMonth);
   const [month, setMonth] = useState(initialMonth);
-  const [selectedDate, setSelectedDate] = useState<string | null>(initialDate);
-  const [pendingDate, setPendingDate] = useState<string | null>(initialDate);
-  const [open, setOpen] = useState(Boolean(initialDate));
-  const [titleLines, setTitleLines] = useState(DEFAULT_TITLE_LINES);
+  const [selectedDate, setSelectedDate] = useState(
+    () => parseCalendarDate(searchParams?.get("date"), initialMonth) ?? getDefaultCalendarDate(initialMonth, today),
+  );
+  const [detailRecord, setDetailRecord] = useState<RecordSummary | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const snapAnimationRef = useRef<ReturnType<typeof animate> | null>(null);
@@ -315,42 +294,24 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
     return months;
   }, [month, monthBoundsQuery.data, today]);
 
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    // 6주가 화면 높이를 나눠 가지므로 칸 높이는 기기마다 다르다. 들어가는 만큼만 제목을 보여준다.
-    const observer = new ResizeObserver(() => {
-      const button = viewport.querySelector("td button");
-      if (!button) return;
-      const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-      setTitleLines(getTitleLines(button.getBoundingClientRect().height, rootFontSize));
-    });
-    observer.observe(viewport);
-    return () => observer.disconnect();
-  }, []);
-
   useEffect(() => () => snapAnimationRef.current?.stop(), []);
 
-  // 서버 요청과 이력 추가 없이 주소의 월만 바꿔 상세에서 돌아왔을 때 같은 달을 보여준다.
-  const changeMonth = useCallback((nextMonth: string, keepSelection = false) => {
+  // 서버 요청과 이력 추가 없이 주소만 바꿔 상세나 작성 화면에서 돌아왔을 때 같은 날을 보여준다.
+  const changeMonth = useCallback((nextMonth: string, nextDate = getDefaultCalendarDate(nextMonth, getToday())) => {
     monthRef.current = nextMonth;
     setMonth(nextMonth);
-    if (!keepSelection) {
-      setSelectedDate(null);
-      setPendingDate(null);
-      setOpen(false);
-    }
-    replaceCalendarHref(nextMonth);
+    setSelectedDate(nextDate);
+    replaceCalendarHref(nextMonth, nextDate);
   }, []);
 
-  const stopSnap = () => {
+  const stopSnap = useCallback(() => {
     const track = trackRef.current;
     if (!track || !snapAnimationRef.current) return;
     const offsetX = new DOMMatrixReadOnly(getComputedStyle(track).transform).m41;
     snapAnimationRef.current.stop();
     snapAnimationRef.current = null;
     x.jump(offsetX);
-  };
+  }, [x]);
 
   const settleMonth = (amount: number, velocity = 0) => {
     stopSnap();
@@ -397,64 +358,23 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
     changeMonth(nextMonth);
   };
 
-  // 아직 이번 달을 받지 못했으면 '기록 없음'인지 알 수 없다.
-  const getDayRecords = useCallback(
-    (date: string | null) => (date && recordsByDate ? (recordsByDate.get(date) ?? []) : undefined),
-    [recordsByDate],
+  const handleDayClick = useCallback(
+    (date: Date) => {
+      stopSnap();
+      x.jump(0);
+      changeMonth(format(date, "yyyy-MM"), format(date, "yyyy-MM-dd"));
+    },
+    [changeMonth, stopSnap, x],
   );
-
-  const openDay = (date: Date, modifiers: Modifiers) => {
-    stopSnap();
-    x.jump(0);
-    const nextDate = format(date, "yyyy-MM-dd");
-    const action = getCalendarDayAction(getDayRecords(nextDate), selectedDate === nextDate && !open);
-    const nextMonth = modifiers.outside ? format(date, "yyyy-MM") : month;
-
-    if (modifiers.outside) changeMonth(nextMonth, true);
-
-    if (action === "clear") {
-      setSelectedDate(null);
-      replaceCalendarHref(nextMonth);
-      return;
-    }
-
-    setSelectedDate(nextDate);
-    setPendingDate(action === "wait" ? nextDate : null);
-    setOpen(action === "open" || action === "wait");
-    replaceCalendarHref(nextMonth, action === "open" || action === "wait" ? nextDate : null);
-  };
-
-  /**
-   * openDay는 보고 있는 달과 선택한 날짜에 매여 있어 렌더마다 새 함수가 된다.
-   * 그대로 내려보내면 날짜 선택 때마다 memo가 풀려 달력 전체를 다시 그리므로 ref로 최신 것만 꺼내 쓴다.
-   */
-  const openDayRef = useRef(openDay);
-  openDayRef.current = openDay;
-  const handleDayClick = useCallback((date: Date, modifiers: Modifiers) => openDayRef.current(date, modifiers), []);
   const handleMonthChange = useCallback((date: Date) => changeMonth(format(date, "yyyy-MM")), [changeMonth]);
 
-  useEffect(() => {
-    if (!pendingDate) return;
-    const records = getDayRecords(pendingDate);
-    if (!records) return;
-
-    setPendingDate(null);
-    setOpen(records.length > 0);
-    replaceCalendarHref(month, records.length > 0 ? pendingDate : null);
-  }, [getDayRecords, month, pendingDate]);
-
-  const handleBottomSheetOpenChange = (nextOpen: boolean) => {
-    setOpen(nextOpen);
-    if (nextOpen) return;
-    setPendingDate(null);
-    replaceCalendarHref(month);
+  const openRecord = (record: RecordSummary) => {
+    setDetailRecord(record);
+    setDetailOpen(true);
   };
 
-  const selectedRecords = getDayRecords(selectedDate);
-  const createDate = !open && selectedRecords?.length === 0 ? selectedDate : null;
-
   return (
-    <section className="relative flex flex-1 flex-col gap-2">
+    <section className="relative flex min-h-0 flex-1 flex-col gap-2" data-screen="calendar">
       <header className="flex items-center justify-between gap-2 pl-1">
         <h2 className="relative inline-flex min-w-0 items-center">
           <select
@@ -471,9 +391,13 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
           </select>
           <CaretDownIcon aria-hidden="true" className="pointer-events-none absolute right-1 size-4" />
         </h2>
-        <Button color="dark" onClick={() => jumpToMonth(today.slice(0, 7))} variant="weak">
-          오늘
-        </Button>
+        <div aria-label="달력 조작" className="flex shrink-0 items-center gap-1" role="group">
+          <Button color="dark" onClick={() => jumpToMonth(today.slice(0, 7))} variant="weak">
+            오늘
+          </Button>
+          <IconButton aria-label="이전 달" icon={CaretLeftIcon} onClick={() => settleMonth(-1)} />
+          <IconButton aria-label="다음 달" icon={CaretRightIcon} onClick={() => settleMonth(1)} />
+        </div>
       </header>
 
       {isError ? (
@@ -485,10 +409,8 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
         />
       ) : null}
 
-      <div
-        className="relative flex w-full min-w-0 flex-1 touch-pan-y touch-pinch-zoom overflow-hidden"
-        ref={viewportRef}
-      >
+      {/* 세로 이동을 브라우저에 넘기면 대각선 스와이프가 세로 스크롤로 바뀌어 월 이동이 끊긴다. */}
+      <div className="relative flex w-full min-w-0 shrink-0 touch-none overflow-hidden" ref={viewportRef}>
         <motion.div
           className="motion-reduce:transform-none! ml-[-100%] flex w-[300%] shrink-0 will-change-transform"
           drag="x"
@@ -531,7 +453,6 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
                   onMonthChange={handleMonthChange}
                   records={monthQueries[index].data}
                   selectedDate={index === CURRENT_MONTH_INDEX ? selectedDate : null}
-                  titleLines={titleLines}
                   today={today}
                 />
               </CalendarMonthBuffer>
@@ -540,36 +461,15 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
         </motion.div>
       </div>
 
-      <div className="flex h-24 shrink-0 flex-col items-center justify-center gap-2 pb-2">
-        <div className="flex h-5 items-center justify-center text-center">
-          {createDate ? (
-            <p className="text-muted-foreground text-sm">{format(parseISO(createDate), "M월 d일")}</p>
-          ) : null}
-        </div>
-        <div aria-label="달력 조작" className="flex w-full items-center justify-between" role="group">
-          <LiquidGlassButton aria-label="이전 달" onClick={() => settleMonth(-1)} shape="circle">
-            <CaretLeftIcon aria-hidden="true" />
-          </LiquidGlassButton>
-          <CalendarRecordCreateButton date={createDate} />
-          <LiquidGlassButton aria-label="다음 달" onClick={() => settleMonth(1)} shape="circle">
-            <CaretRightIcon aria-hidden="true" />
-          </LiquidGlassButton>
-        </div>
-      </div>
-
-      <RecordDayBottomSheet
+      {/* 날짜를 바꾸면 목록 스크롤을 맨 위로 되돌린다. */}
+      <RecordDayList
         date={selectedDate}
-        isError={isError}
-        member={member}
-        onCloseComplete={() => {
-          setSelectedDate(null);
-          replaceCalendarHref(month);
-        }}
-        onOpenChange={handleBottomSheetOpenChange}
-        onRetry={() => void recordsQuery.refetch()}
-        open={open}
-        records={selectedRecords}
+        key={selectedDate}
+        onRecordOpen={openRecord}
+        records={recordsByDate ? (recordsByDate.get(selectedDate) ?? []) : undefined}
       />
+
+      <RecordDetailBottomSheet member={member} onOpenChange={setDetailOpen} open={detailOpen} record={detailRecord} />
     </section>
   );
 }

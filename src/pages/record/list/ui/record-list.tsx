@@ -21,16 +21,16 @@ import { Button } from "@/shared/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
-import { PressLink } from "@/shared/ui/press-link";
 
 import { useRecordListQuery } from "../model/use-record-list-query";
 import { RecordActionSheet } from "./record-action-sheet";
 
 type RecordListProps = {
   filters: RecordFilters;
+  onFiltersReset: () => void;
 };
 
-export function RecordList({ filters }: RecordListProps) {
+export function RecordList({ filters, onFiltersReset }: RecordListProps) {
   const queryClient = useQueryClient();
   const recordsQuery = useRecordListQuery(filters);
   // 시트는 계속 띄워 두고 open만 여닫는다. 닫히는 동안 내용이 사라지지 않고 여는 전환도 그대로 탄다.
@@ -67,12 +67,7 @@ export function RecordList({ filters }: RecordListProps) {
           <EmptyTitle className="font-semibold text-base">조건에 맞는 기록이 없어요</EmptyTitle>
           <EmptyDescription className="text-sm/normal">검색어나 기간을 조정해 보세요.</EmptyDescription>
         </EmptyHeader>
-        <Button
-          className="text-accent-text"
-          nativeButton={false}
-          render={<PressLink href="/records" />}
-          variant="ghost"
-        >
+        <Button className="text-accent-text" onClick={onFiltersReset} variant="ghost">
           전체 기록 보기
         </Button>
       </Empty>

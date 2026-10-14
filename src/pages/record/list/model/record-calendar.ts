@@ -12,8 +12,6 @@ type DatedRecord = {
   recorded_until: string | null;
 };
 
-export type CalendarDayAction = "clear" | "create" | "open" | "wait";
-
 const MONTH_PATTERN = /^[1-9]\d{3}-(0[1-9]|1[0-2])$/;
 const KST_OFFSET = 9 * 60 * 60 * 1000;
 const SWIPE_HYSTERESIS = 10;
@@ -55,35 +53,12 @@ export const getCalendarRange = (month: string): CalendarRange => {
   return { from: format(start, "yyyy-MM-dd"), to: format(addDays(start, 41), "yyyy-MM-dd") };
 };
 
-/**
- * 날짜 칸에 제목을 몇 줄 놓을 수 있는지. 칸 높이는 화면 높이를 6주가 나눠 가지므로 기기마다 다르다.
- * 버튼 위 여백(0.25rem)과 날짜 숫자(1.5rem) 아래로 한 줄(1rem + 간격 1px)씩 쌓는다. 날짜 칸 스타일과 맞춰야 한다.
- */
-export const getTitleLines = (buttonHeight: number, rootFontSize: number) => {
-  return Math.max(1, Math.floor((buttonHeight - 1.75 * rootFontSize) / (rootFontSize + 1)));
+export const getDefaultCalendarDate = (month: string, today: string) => {
+  return today.startsWith(month) ? today : `${month}-01`;
 };
 
-// 줄이 모자라면 마지막 줄은 '+N'이 쓴다.
-export const getVisibleTitleCount = (recordCount: number, lines: number) => {
-  return recordCount > lines ? lines - 1 : recordCount;
-};
-
-export const getCalendarDayAction = (
-  records: readonly unknown[] | undefined,
-  isSelected: boolean,
-): CalendarDayAction => {
-  if (!records) return "wait";
-  if (records.length > 0) return "open";
-  return isSelected ? "clear" : "create";
-};
-
-// 선택한 기록이 삭제되었으면 남은 기록 수에 맞춰 상세 또는 목록으로 돌아간다.
-export const getDaySheetRecordId = (
-  records: readonly { id: string }[] | undefined,
-  selectedRecordId: string | null,
-) => {
-  if (records?.some(({ id }) => id === selectedRecordId)) return selectedRecordId;
-  return records?.length === 1 ? records[0].id : null;
+export const isMultiDayRecord = (record: DatedRecord) => {
+  return Boolean(record.recorded_until && record.recorded_until !== record.recorded_at);
 };
 
 // 여러 날 기록은 범위 안의 모든 날짜에 넣는다. 날짜 안의 순서는 받은 순서(최신순)를 따른다.
@@ -111,7 +86,7 @@ export const groupRecordsByDate = <T extends DatedRecord>(records: readonly T[],
 export const getCalendarWeekLayout = <T extends DatedRecord & { id: string }>(
   recordsByDate: ReadonlyMap<string, readonly T[]>,
   dates: readonly string[],
-  titleLines: number,
+  lines: number,
 ) => {
   const records = new Map<string, T>();
   for (const date of dates) {
@@ -138,12 +113,9 @@ export const getCalendarWeekLayout = <T extends DatedRecord & { id: string }>(
     for (let column = segment.start; column <= segment.end; column++) lanes[lane][column] = true;
   }
 
-  // 주 전체가 같은 줄을 사용해야 기간 띠가 끊기지 않는다. 넘치는 주는 마지막 줄을 +N에 쓴다.
-  const visibleLines = getVisibleTitleCount(lanes.length, titleLines);
   const hiddenCounts = dates.map(
     (_, column) =>
-      segments.filter((segment) => segment.lane >= visibleLines && segment.start <= column && column <= segment.end)
-        .length,
+      segments.filter((segment) => segment.lane >= lines && segment.start <= column && column <= segment.end).length,
   );
-  return { segments: segments.filter((segment) => segment.lane < visibleLines), hiddenCounts, visibleLines };
+  return { segments: segments.filter((segment) => segment.lane < lines), hiddenCounts };
 };
