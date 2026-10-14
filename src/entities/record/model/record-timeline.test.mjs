@@ -1,4 +1,8 @@
-import { formatRecordTimelineMonth, getRecordTimelineItemState } from "@/entities/record/model/record-timeline";
+import {
+  formatRecordTimelineDate,
+  formatRecordTimelineMonth,
+  getRecordTimelineItemState,
+} from "@/entities/record/model/record-timeline";
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -29,4 +33,12 @@ test("기록 하나만 있어도 날짜의 시작과 끝을 표시한다", () =>
     startsDate: true,
     startsMonth: true,
   });
+});
+
+test("타임라인 날짜는 짧은 기간을 표시하고 연도를 넘기면 양쪽 연도를 보존한다", () => {
+  assert.equal(formatRecordTimelineDate("2026-10-04"), "10월 4일 일요일");
+  assert.equal(formatRecordTimelineDate("2026-10-04", "2026-10-04"), "10월 4일 일요일");
+  assert.equal(formatRecordTimelineDate("2026-09-28", "2026-09-30"), "9.28 – 9.30");
+  assert.equal(formatRecordTimelineDate("2026-09-30", "2026-10-02"), "9.30 – 10.2");
+  assert.equal(formatRecordTimelineDate("2025-12-31", "2026-01-02"), "2025.12.31 – 2026.1.2");
 });

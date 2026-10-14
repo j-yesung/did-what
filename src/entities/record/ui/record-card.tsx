@@ -4,57 +4,54 @@ import { ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { useLongPress } from "@/shared/lib/use-long-press";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
+import { normalizeRecordCategory, RECORD_CATEGORY_DOT } from "../model/category";
 import { formatRecordRegionLabels } from "../model/record-region";
+import { formatRecordTimelineDate } from "../model/record-timeline";
 import type { RecordSummary } from "../model/types";
 import { RecordCategoryBadge } from "./record-badges";
 
 type RecordCardProps = {
-  endsDate: boolean;
+  endsMonth: boolean;
   onDetailPrefetch?: (recordId: string) => void;
   /** 꾹 눌렀을 때. 넘기지 않으면 꾹 누름을 듣지 않는다. */
   onLongPress?: () => void;
   record: RecordSummary;
-  startsDate: boolean;
+  side: "left" | "right";
 };
 
-const WEEKDAY = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", weekday: "long" });
-
-export function RecordCard({ endsDate, onDetailPrefetch, onLongPress, record, startsDate }: RecordCardProps) {
+export function RecordCard({ endsMonth, onDetailPrefetch, onLongPress, record, side }: RecordCardProps) {
   const router = useRouter();
   const longPress = useLongPress(onLongPress);
   const queryClient = useQueryClient();
   const href = `/records/${record.id}`;
   const commentCount = record.record_comments?.[0]?.count ?? 0;
   const regionLabels = formatRecordRegionLabels(record);
-  // 날짜 구분과 중복되지 않도록 여러 날에 걸친 기록만 기간을 적는다.
-  const period =
-    record.recorded_until && record.recorded_until !== record.recorded_at
-      ? formatRecordPeriod(record.recorded_at, record.recorded_until)
-      : null;
-
+  const category = normalizeRecordCategory(record.category);
   const cacheRecordSummary = () => queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
 
   return (
-    <article className={cn("min-w-0", endsDate && "border-border border-b pb-3")}>
-      {startsDate ? (
-        <time
-          aria-label={formatRecordPeriod(record.recorded_at)}
-          className="mt-7 mb-1 block px-1 font-semibold text-[13px] text-accent-text tabular-nums"
-          dateTime={record.recorded_at}
-        >
-          {Number(record.recorded_at.slice(5, 7))}월 {Number(record.recorded_at.slice(8, 10))}일{" "}
-          {WEEKDAY.format(new Date(`${record.recorded_at}T00:00:00+09:00`))}
-        </time>
+    <article
+      className="relative grid min-w-0 grid-cols-[minmax(0,1fr)_2rem_minmax(0,1fr)] pb-6"
+      data-timeline-side={side}
+    >
+      <span aria-hidden="true" className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+      {endsMonth ? (
+        <span
+          aria-hidden="true"
+          className="absolute bottom-0 left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-border"
+        />
       ) : null}
       <Button
-        className="h-auto min-h-18 justify-start whitespace-normal rounded-none px-1 py-4 text-left font-normal after:hidden [&>span]:block [&>span]:w-full"
+        className={cn(
+          "row-start-1 h-auto min-h-18 min-w-0 justify-start whitespace-normal rounded-md p-0 font-normal after:hidden [&>span]:block [&>span]:w-full",
+          side === "left" ? "col-start-1 text-right" : "col-start-3 text-left",
+        )}
         fullWidth
         nativeButton={false}
         render={
@@ -76,22 +73,40 @@ export function RecordCard({ endsDate, onDetailPrefetch, onLongPress, record, st
         variant="ghost"
       >
         <span className="min-w-0">
-          <h3 className="line-clamp-2 min-w-0 break-words font-semibold text-xl leading-normal tracking-[-0.035em]">
+          <time
+            className="mb-1.5 block text-[11px] text-muted-foreground tabular-nums leading-normal"
+            dateTime={record.recorded_at}
+          >
+            {formatRecordTimelineDate(record.recorded_at, record.recorded_until)}
+          </time>
+          <h3 className="relative min-w-0 break-words font-semibold text-base leading-relaxed tracking-[-0.035em]">
             {record.activity}
+            <span
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none absolute top-2 z-10 size-2 rounded-full ring-3 ring-background",
+                RECORD_CATEGORY_DOT[category],
+                side === "left" ? "-right-5" : "-left-5",
+              )}
+            />
           </h3>
-          {period ? <p className="mt-1.5 text-accent-text text-xs tabular-nums">{period}</p> : null}
           {record.memo?.trim() ? (
-            <p className="mt-2 line-clamp-2 break-words text-dark-weak-foreground text-sm leading-relaxed">
+            <p className="mt-1.5 line-clamp-2 break-words text-dark-weak-foreground text-xs leading-relaxed">
               {record.memo}
             </p>
           ) : null}
-          <span className="mt-3 flex min-w-0 items-center justify-between gap-3 text-muted-foreground text-xs leading-relaxed">
-            <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
-              {regionLabels ? <span className="min-w-0 break-words">{regionLabels}</span> : null}
-              <RecordCategoryBadge category={record.category} />
-            </span>
+          {regionLabels ? (
+            <p className="mt-1.5 break-words text-[11px] text-muted-foreground leading-relaxed">{regionLabels}</p>
+          ) : null}
+          <span
+            className={cn(
+              "mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground text-xs",
+              side === "left" && "justify-end",
+            )}
+          >
+            <RecordCategoryBadge category={record.category} />
             {commentCount > 0 ? (
-              <span className="inline-flex shrink-0 items-center gap-0.5 tabular-nums">
+              <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] tabular-nums">
                 <ChatCircleIcon className="size-4" aria-hidden="true" />
                 <span className="sr-only">댓글</span>
                 {commentCount}

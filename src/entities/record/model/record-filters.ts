@@ -1,8 +1,10 @@
+import { isRecordCategory, type RecordCategory } from "@/entities/record/model/category";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 
 export type RecordSort = "recent" | "oldest";
 
 export type RecordFilters = {
+  category: RecordCategory | "";
   from: string;
   query: string;
   sort: RecordSort;
@@ -29,12 +31,14 @@ const readDate = (value: string | string[] | undefined) => {
 };
 
 export const parseRecordFilters = (params: RecordSearchParams): RecordFilters => {
+  const category = readParam(params.category);
   const query = readParam(params.q).replace(RESERVED_PATTERN, "").trim().slice(0, MAX_QUERY_LENGTH);
   const from = readDate(params.from);
   const to = readDate(params.to);
   const swap = Boolean(from && to) && from > to;
 
   return {
+    category: isRecordCategory(category) ? category : "",
     from: swap ? to : from,
     query,
     sort: readParam(params.sort) === "oldest" ? "oldest" : "recent",
@@ -44,7 +48,7 @@ export const parseRecordFilters = (params: RecordSearchParams): RecordFilters =>
 
 // 기본값(검색어 없음·기간 없음·최신순)이 아니면 목록이 걸러진 상태다.
 export const hasRecordFilters = (filters: RecordFilters) => {
-  return Boolean(filters.query || filters.from || filters.to) || filters.sort !== "recent";
+  return Boolean(filters.category || filters.query || filters.from || filters.to) || filters.sort !== "recent";
 };
 
 // 지금 필터를 유지한 채 일부만 바꾼 목록 주소를 만든다.
@@ -52,6 +56,7 @@ export const buildRecordsHref = (filters: RecordFilters, overrides: Partial<Reco
   const next = { ...filters, ...overrides };
   const params = new URLSearchParams();
 
+  if (next.category) params.set("category", next.category);
   if (next.query) params.set("q", next.query);
   if (next.from) params.set("from", next.from);
   if (next.to) params.set("to", next.to);

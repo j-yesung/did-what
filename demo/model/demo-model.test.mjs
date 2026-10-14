@@ -19,7 +19,7 @@ const context = () => ({
   createId: () => `00000000-0000-4000-8000-f${String((sequence += 1)).padStart(11, "0")}`,
   now: "2026-10-12T03:00:00.000Z",
 });
-const FILTERS = { from: "", query: "", sort: "recent", to: "" };
+const FILTERS = { category: "", from: "", query: "", sort: "recent", to: "" };
 
 test("처음 샘플은 구성원 2명과 서로 연결된 기록·장소·댓글·알림으로 시작한다", () => {
   const state = createSeedState(TODAY);
@@ -190,4 +190,33 @@ test("부모가 보낸 명령은 정해진 이름과 값만 받는다", () => {
   assert.equal(readDemoCommand(toCommandMessage({ memberId: 1, name: "switchMember" })), null);
   assert.equal(readDemoCommand({ command: { name: "addRecord" }, source: "other", type: "command" }), null);
   assert.equal(readDemoCommand(toCommandMessage({ code: "alert(1)", name: "eval" })), null);
+});
+
+test("카테고리 필터는 검색·기간·정렬과 함께 다음 페이지까지 유지된다", () => {
+  const state = createSeedState(TODAY);
+  const busan = state.records.find(({ id }) => id === DEMO_RECORD_IDS.busan);
+  state.records.push(
+    ...Array.from({ length: 25 }, (_, index) => ({
+      ...busan,
+      id: demoId("b", index + 100),
+      activity: `부산 바다 ${index}`,
+    })),
+  );
+  const filters = {
+    ...FILTERS,
+    category: "travel",
+    query: "부산",
+    from: busan.recorded_at,
+    to: busan.recorded_until,
+    sort: "oldest",
+  };
+  const first = getRecordPage(state, filters, null);
+  const second = getRecordPage(state, filters, first.nextCursor);
+  assert.equal(first.records.length, 20);
+  assert.equal(second.records.length, 6);
+  assert.equal(second.nextCursor, null);
+  const rows = [...first.records, ...second.records];
+  assert.equal(new Set(rows.map((row) => row.id)).size, 26);
+  assert.ok(rows.every((row) => row.category === "travel" && row.activity.includes("부산")));
+  assert.equal(getRecordPage(state, { ...filters, category: "daily" }, null).records.length, 0);
 });

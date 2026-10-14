@@ -71,6 +71,7 @@ export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCurs
     .order("id", { ascending })
     .limit(RECORD_PAGE_SIZE + 1);
 
+  if (filters.category) query = query.eq("category", filters.category);
   if (period.from) query = query.or(period.from);
   if (period.to) query = query.lte("recorded_at", period.to);
   if (filters.query) {
@@ -93,7 +94,7 @@ export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCurs
 
 // 기간과 겹치는 기록을 마지막 페이지까지 모은다. 중간에 실패하면 일부만 돌려주지 않고 전체를 실패로 둔다.
 export const fetchRecordsInPeriod = async (period: Pick<RecordFilters, "from" | "to">) => {
-  const filters: RecordFilters = { ...period, query: "", sort: "recent" };
+  const filters: RecordFilters = { ...period, category: "", query: "", sort: "recent" };
   let page = await fetchRecordPage(filters, null);
   const records = [...page.records];
 
