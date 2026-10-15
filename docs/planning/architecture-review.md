@@ -8,7 +8,7 @@
 
 ### 근거
 
-[korea-map.ts](../src/entities/region/model/korea-map.ts)는 행정구역 정의·코드 변환, GeoJSON 경계 처리, 격자 생성, 방문 집계를 함께 담당한다. 전국·지역별 격자도 모듈을 불러올 때 생성한다.
+[korea-map.ts](../../src/entities/region/model/korea-map.ts)는 행정구역 정의·코드 변환, GeoJSON 경계 처리, 격자 생성, 방문 집계를 함께 담당한다. 전국·지역별 격자도 모듈을 불러올 때 생성한다.
 
 ### 개선 방향
 
@@ -18,4 +18,4 @@
 
 - 파일은 줄 수가 아니라 변경 이유와 책임이 갈릴 때 분리한다.
 - 각 작업 전 현재 호출처를 다시 확인한다.
-- 코드 변경 후 검증은 [검증 가이드](./verification.md)를 따른다.
+- 코드 변경 후 검증은 [검증 가이드](../guides/verification.md)를 따른다.

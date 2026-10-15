@@ -149,11 +149,11 @@ public/          PWA 아이콘, 서비스 워커 등 정적 파일
 ```
 
 Feature-Sliced Design의 레이어별 의존 방향을 따릅니다.
-상세 규칙은 [코드 컨벤션](docs/convention.md)에 정리되어 있습니다.
+상세 규칙은 [코드 컨벤션](docs/guides/convention.md)에 정리되어 있습니다.
 
 ## 개발 문서
 
-- [코드 컨벤션](docs/convention.md)
-- [변경 범위별 검증 가이드](docs/verification.md)
+- [코드 컨벤션](docs/guides/convention.md)
+- [변경 범위별 검증 가이드](docs/guides/verification.md)
 - [DB 마이그레이션 안내](supabase/README.md)
-- [추후 기능과 백로그](docs/future-features.md)
+- [추후 기능과 백로그](docs/planning/future-features.md)
