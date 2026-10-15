@@ -17,8 +17,7 @@ import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 
-import { getSubregionName, type MapRecord } from "../model/record-map-points";
-import { getRegionVisitSummary } from "../model/region-visit-summary";
+import { getSubregionName, type MapRecord, REGION_BADGE_ANCHORS } from "../model/record-map-points";
 
 const SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
 
@@ -111,7 +110,8 @@ export function RegionRecordsBottomSheet({
     return [...counts].sort(([, first], [, second]) => second - first);
   }, [regionRecords]);
   // 주소로 되살린 칩이 지금 기록에 없는 이름이면 전체로 본다.
-  const selectedSubregion = subregionCounts.some(([name]) => name === subregion) ? subregion : null;
+  const selectedSubregion =
+    subregionCounts.length > 1 && subregionCounts.some(([name]) => name === subregion) ? subregion : null;
 
   // 누르는 순간 다음 화면 데이터를 받기 시작해, 넘어갔을 때 빈 화면이 잠깐 보이지 않게 한다.
   const prefetchRecord = (recordId: string) => {
@@ -126,23 +126,11 @@ export function RegionRecordsBottomSheet({
         : regionRecords,
     [regionRecords, selectedSubregion],
   );
-  const summary = useMemo(
-    () =>
-      region
-        ? getRegionVisitSummary(
-            visibleRecords.map(({ record }) => record),
-            region.code,
-          )
-        : null,
-    [visibleRecords, region],
-  );
-  const subregionChips = subregionCounts.map(([name, count]): [string, string, number] => [name, name, count]);
-  // 한 곳만 다녀왔으면 전체와 그 한 곳이 같은 목록이라, 그 지역 칩 하나만 선택된 모습으로 보여준다.
-  const singleSubregion = subregionCounts.length === 1 ? subregionCounts[0][0] : null;
-  const chips: [string | null, string, number][] = singleSubregion
-    ? subregionChips
-    : [[null, "전체", regionRecords.length], ...subregionChips];
-  const activeChip = singleSubregion ?? selectedSubregion;
+  const chips: [string | null, string, number][] = [
+    [null, "전체", regionRecords.length],
+    ...subregionCounts.map(([name, count]): [string, string, number] => [name, name, count]),
+  ];
+  const regionLabel = region ? REGION_BADGE_ANCHORS[region.code].label : "";
 
   return (
     <BottomSheet
@@ -170,30 +158,30 @@ export function RegionRecordsBottomSheet({
               key={region?.code}
             >
               <BottomSheet.Header className="text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   {regionMap ? (
-                    <div className="size-22 shrink-0">
+                    <div className="size-15 shrink-0">
                       <RegionMiniMap label={`${regionMap.name}의 방문 지역 지도`} map={regionMap} />
                     </div>
                   ) : null}
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     {isDetail ? (
-                      <p className="break-keep font-bold text-foreground text-xl leading-7">{region?.name}의 기억</p>
+                      <p className="break-keep font-bold text-foreground text-xl leading-7">{regionLabel}의 기억</p>
                     ) : (
                       <BottomSheet.Title className="break-keep font-bold text-xl leading-7">
-                        {region?.name}의 기억
+                        {regionLabel}의 기억
                       </BottomSheet.Title>
                     )}
-                    {summary ? (
+                    {regionRecords.length > 0 ? (
                       <p className="break-keep text-muted-foreground text-sm tabular-nums">
-                        장소 {summary.places.length}곳 · 기록 {visibleRecords.length}개
+                        기록 {visibleRecords.length}개
                       </p>
                     ) : null}
                   </div>
                 </div>
               </BottomSheet.Header>
 
-              {subregionCounts.length > 0 ? (
+              {subregionCounts.length > 1 ? (
                 <div
                   aria-label="시·군·구"
                   className="scrollbar-none flex shrink-0 gap-2 overflow-x-auto px-5 pt-3 pb-1"
@@ -201,10 +189,10 @@ export function RegionRecordsBottomSheet({
                 >
                   {chips.map(([name, label, count]) => (
                     <button
-                      aria-pressed={activeChip === name}
+                      aria-pressed={selectedSubregion === name}
                       className={cn(
                         "min-h-9 shrink-0 rounded-full bg-muted px-3.5 font-medium text-muted-foreground text-sm tabular-nums transition-colors",
-                        activeChip === name && "bg-primary font-semibold text-primary-foreground",
+                        selectedSubregion === name && "bg-primary font-semibold text-primary-foreground",
                       )}
                       key={label}
                       onClick={() => onSubregionChange(name)}
@@ -218,48 +206,13 @@ export function RegionRecordsBottomSheet({
 
               <div
                 className={cn(
-                  "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-2",
+                  "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-4",
                   regionRecords.length > 0 && "pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]",
                   visibleRecords.length === 0 && "flex items-center",
                 )}
               >
                 {visibleRecords.length > 0 ? (
                   <>
-                    {summary?.latestDate ? (
-                      <dl className="py-4">
-                        <div>
-                          <dt className="text-muted-foreground text-xs">최근 방문</dt>
-                          <dd className="mt-1 font-semibold text-sm tabular-nums">
-                            {format(parseISO(summary.latestDate), "yyyy.M.d")}
-                          </dd>
-                        </div>
-                      </dl>
-                    ) : null}
-                    {summary && summary.places.length > 0 ? (
-                      <section aria-label="자주 간 장소" className="pb-4">
-                        <h3 className="mb-1 font-semibold text-sm">자주 간 장소</h3>
-                        <ol>
-                          {summary.places.slice(0, 3).map((place, index) => (
-                            <li key={place.id}>
-                              <button
-                                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-1 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
-                                onClick={() => handleRecordOpen(place.recordId)}
-                                onPointerDown={(event) => {
-                                  if (event.button === 0) prefetchRecord(place.recordId);
-                                }}
-                                type="button"
-                              >
-                                <span className="w-4 text-muted-foreground tabular-nums">{index + 1}</span>
-                                <span className="min-w-0 flex-1 truncate font-medium">{place.name}</span>
-                                <span className="shrink-0 text-accent-text tabular-nums">{place.count}회</span>
-                                <CaretRightIcon aria-hidden="true" size={16} />
-                              </button>
-                            </li>
-                          ))}
-                        </ol>
-                        <Separator className="mt-2 bg-muted-foreground/20" />
-                      </section>
-                    ) : null}
                     <h3 className="font-semibold text-sm">방문 기록</h3>
                     <ul>
                       {visibleRecords.map(({ record, subregions }, index) => {
@@ -304,7 +257,7 @@ export function RegionRecordsBottomSheet({
                                 </span>
                                 <span className="mt-1 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
                                   <span className="shrink-0 tabular-nums">{period}</span>
-                                  {!selectedSubregion && !singleSubregion ? (
+                                  {!selectedSubregion ? (
                                     <>
                                       <span aria-hidden="true">·</span>
                                       <span className="truncate">{subregions.join(", ")}</span>
