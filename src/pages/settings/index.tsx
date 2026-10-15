@@ -7,7 +7,7 @@ import { getTheme } from "@/features/switch-theme/server";
 import { PageSection, PageShell } from "@/shared/ui/layouts";
 
 export async function SettingsPage() {
-  const [theme, { member }] = await Promise.all([getTheme(), requireMember()]);
+  const [theme, { member, members }] = await Promise.all([getTheme(), requireMember()]);
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
@@ -17,7 +17,7 @@ export async function SettingsPage() {
 
       <div className="flex flex-1 flex-col">
         <PageSection className="pt-4 pb-4">
-          <CurrentMemberSetting name={member.name} />
+          <CurrentMemberSetting member={member} members={members} />
         </PageSection>
         <PageSection className="pt-4 pb-4">
           <ThemeSelect value={theme} />

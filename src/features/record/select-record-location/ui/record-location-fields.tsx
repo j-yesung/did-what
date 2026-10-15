@@ -15,7 +15,6 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { type RecordLocationPlace, type RecordLocationRegion, toVisitedRegions } from "../model/location-picker";
 import { PlacePickerBottomSheet } from "./place-picker-bottom-sheet";
 import { RegionPickerDialog } from "./region-picker-dialog";
-import { SavedPlacePickerBottomSheet } from "./saved-place-picker-bottom-sheet";
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
@@ -177,23 +176,14 @@ export function RecordLocationFields({
           </ul>
         ) : null}
 
-        <div className="grid grid-cols-2 gap-2">
-          <SavedPlacePickerBottomSheet
-            disabled={savedPlaces.length === 0 || places.length >= MAX_VISITED_PLACES}
-            maxSelectionCount={MAX_VISITED_PLACES - places.length}
-            onAdd={addPlaces}
-            regions={visitedRegions}
-            savedPlaces={savedPlaces}
-            selectedKeys={selectedKeys}
-          />
-          <PlacePickerBottomSheet
-            disabled={places.length >= MAX_VISITED_PLACES}
-            maxSelectionCount={MAX_VISITED_PLACES - places.length}
-            onAdd={addPlaces}
-            regions={visitedRegions}
-            selectedKeys={selectedKeys}
-          />
-        </div>
+        <PlacePickerBottomSheet
+          disabled={places.length >= MAX_VISITED_PLACES}
+          maxSelectionCount={MAX_VISITED_PLACES - places.length}
+          onAdd={addPlaces}
+          regions={visitedRegions}
+          savedPlaces={savedPlaces}
+          selectedKeys={selectedKeys}
+        />
         <FieldError id="places-error">{placeError}</FieldError>
       </Field>
 

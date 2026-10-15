@@ -11,17 +11,15 @@ import {
   formatRecordTimelineMonth,
   getRecordTimelineItemState,
   RecordCard,
+  RecordCreateButton,
   RecordTimeline,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
-import { formatDate } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { PressLink } from "@/shared/ui/press-link";
 
 type PlaceDetailContentProps = {
   placeId: string;
@@ -49,6 +47,11 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
     <OverscrollBack fallbackHref="/places">
       <PageShell>
         <PageHeader back="/places" />
+        <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
+          <div className="mx-auto flex w-full max-w-(--app-width) justify-end px-5 pt-(--page-top)">
+            <RecordCreateButton className="pointer-events-auto" href={`/records/new?placeId=${placeId}`} />
+          </div>
+        </div>
 
         {isPlacePending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
           <LoadErrorAlert
@@ -71,19 +74,6 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                 {place.name}
               </h1>
               <p className="mt-1 text-muted-foreground text-sm">{place.address ?? "주소 정보 없음"}</p>
-              <p className="mt-2 text-muted-foreground text-xs">
-                {place.saved_at ? `${formatDate(place.saved_at)}에 저장했어요.` : "방문 기록에 연결된 장소예요."}
-              </p>
-              <Button
-                className="mt-5"
-                fullWidth
-                nativeButton={false}
-                render={<PressLink href={`/records/new?placeId=${place.id}`} />}
-                size="xlarge"
-              >
-                <NotePencilRoundedIcon aria-hidden="true" className="size-6" data-icon="inline-start" />
-                이곳에서 기록하기
-              </Button>
             </section>
 
             {recordsQuery.isPending ? null : records.length ? (
@@ -123,7 +113,13 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                 })}
               </RecordTimeline>
             ) : (
-              <EmptyRecords title={`${place.name}에서 남긴 기록이 없어요`} />
+              <div className="flex flex-col items-center gap-6 py-8">
+                <EmptyRecords title={`${place.name}에서 남긴 기록이 없어요`} />
+                <RecordCreateButton href={`/records/new?placeId=${place.id}`}>
+                  <NotePencilRoundedIcon aria-hidden="true" data-icon="inline-start" />
+                  이곳에서 기록하기
+                </RecordCreateButton>
+              </div>
             )}
           </>
         )}

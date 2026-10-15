@@ -16,13 +16,10 @@ import { ThemeSelect } from "@/features/switch-theme";
 import { HomeContent } from "@/pages/home/ui/home-content";
 import { NotificationList } from "@/pages/notification/ui/notification-list";
 import { PlaceDetailContent } from "@/pages/place/detail/ui/place-detail-content";
-import { PlaceSearchForm } from "@/pages/place/list/ui/place-search-form";
-import { PlaceSearchResults } from "@/pages/place/list/ui/place-search-results";
 import { SavedPlaceList } from "@/pages/place/list/ui/saved-place-list";
 import { RecordDetailContent } from "@/pages/record/detail/ui/record-detail-content";
 import { RecordCalendar } from "@/pages/record/list/ui/record-calendar";
 import { RecordListContent } from "@/pages/record/list/ui/record-list-content";
-import { validateKakaoQuery } from "@/shared/api/kakao-local/validation";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { cn } from "@/shared/lib/utils";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
@@ -37,7 +34,7 @@ import { RecordCreateFunnel } from "@/widgets/record-form/funnel/create-record-f
 import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
 
 import { toDemoHref } from "../lib/demo-href";
-import { getDemoPlaceSearchPage, getSavedPlaceRows, toDetailRow } from "../model/queries";
+import { getSavedPlaceRows, toDetailRow } from "../model/queries";
 import { demoStore, useDemoState } from "../model/store";
 import { useDemo } from "./demo-context";
 
@@ -205,36 +202,13 @@ export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
 export function DemoPlacesScreen() {
   const searchParams = useSearchParams();
   const state = useDemoState();
-  const hasSearch = searchParams?.has("q") ?? false;
-  const rawQuery = searchParams?.get("q") ?? "";
-  const queryResult = hasSearch ? validateKakaoQuery(rawQuery) : null;
-  const query = queryResult?.valid ? queryResult.query : rawQuery;
   const initialPlaces = getSavedPlaceRows(state) as SavedPlaceRow[];
-  const searchError = queryResult && !queryResult.valid ? queryResult.error : undefined;
-  const searchForm = <PlaceSearchForm key="place-search" query={query} searchError={searchError} />;
-
   return (
     <PageShell className="gap-4" withBottomNavigation>
-      <h1 className="sr-only">장소</h1>
-
-      {hasSearch ? (
-        <>
-          {searchForm}
-          <p className="-mt-2 px-1 text-muted-foreground text-xs">
-            데모 · 검색 결과는 샘플입니다. 실제 카카오 검색을 하지 않아요.
-          </p>
-          {queryResult?.valid ? (
-            <PlaceSearchResults
-              initialPage={getDemoPlaceSearchPage(queryResult.query)}
-              initialPlaces={initialPlaces}
-              key={queryResult.query}
-              query={queryResult.query}
-            />
-          ) : null}
-        </>
-      ) : (
-        <SavedPlaceList initialPlaces={initialPlaces} searchForm={searchForm} />
-      )}
+      <header className="min-h-13">
+        <h1 className="sr-only">내 장소</h1>
+      </header>
+      <SavedPlaceList initialPlaces={initialPlaces} initialSearchQuery={searchParams?.get("q") ?? undefined} />
     </PageShell>
   );
 }
@@ -253,7 +227,7 @@ export function DemoNotificationsScreen({ member }: { member: Member }) {
 }
 
 export function DemoSettingsScreen({ member }: { member: Member }) {
-  const { theme } = useDemoState();
+  const { theme, members } = useDemoState();
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
@@ -263,7 +237,7 @@ export function DemoSettingsScreen({ member }: { member: Member }) {
 
       <div className="flex flex-1 flex-col">
         <PageSection className="pt-4 pb-4">
-          <CurrentMemberSetting name={member.name} />
+          <CurrentMemberSetting member={member} members={members} />
         </PageSection>
         <PageSection className="pt-4 pb-4">
           <ThemeSelect value={theme} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -20,8 +20,10 @@ import { buttonVariants } from "@/shared/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
+import { SearchField } from "@/shared/ui/search-field";
 
 import { PlaceActionSheet } from "./place-action-sheet";
+import { PlaceSearchBottomSheet } from "./place-search-bottom-sheet";
 
 type SavedPlaceListItemProps = {
   onDetailPrefetch: (place: SavedPlaceRow) => void;
@@ -74,11 +76,12 @@ function SavedPlaceListItem({ onDetailPrefetch, onLongPress, place }: SavedPlace
 
 export function SavedPlaceList({
   initialPlaces,
-  searchForm,
+  initialSearchQuery,
 }: {
   initialPlaces: SavedPlaceRow[];
-  searchForm: ReactNode;
+  initialSearchQuery?: string;
 }) {
+  const [query, setQuery] = useState("");
   const router = useRouter();
   const queryClient = useQueryClient();
   const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
@@ -93,44 +96,51 @@ export function SavedPlaceList({
   };
 
   const places = placesQuery.data;
-  const visitedPlaceCount = places.filter((place) => (place.record_places[0]?.count ?? 0) > 0).length;
+  const normalizedQuery = query.trim().toLocaleLowerCase("ko-KR");
+  const visiblePlaces = places.filter((place) =>
+    [place.name, place.address, place.region_name].some((value) =>
+      value?.toLocaleLowerCase("ko-KR").includes(normalizedQuery),
+    ),
+  );
 
   return (
     <>
-      {!placesQuery.isError ? (
-        <dl aria-label="장소 요약" className="flex gap-8 py-2">
-          <div className="flex flex-col-reverse gap-1">
-            <dt className="text-muted-foreground text-xs">저장한 장소</dt>
-            <dd className="font-bold text-3xl tabular-nums tracking-tight">{places.length}</dd>
-          </div>
-          <div className="flex flex-col-reverse gap-1">
-            <dt className="text-muted-foreground text-xs">기록을 남긴 장소</dt>
-            <dd className="font-bold text-3xl tabular-nums tracking-tight">{visitedPlaceCount}</dd>
-          </div>
-        </dl>
-      ) : null}
-      {searchForm}
+      <SearchField
+        aria-label="저장한 장소 검색"
+        maxLength={100}
+        onValueChange={setQuery}
+        placeholder="저장한 장소 이름 또는 주소"
+        value={query}
+      />
+      <div className="flex min-h-11 items-center justify-between gap-2">
+        <p className="text-muted-foreground text-xs">저장한 장소 {places.length}곳</p>
+        <PlaceSearchBottomSheet initialPlaces={initialPlaces} initialQuery={initialSearchQuery} />
+      </div>
       {placesQuery.isError ? (
         <LoadErrorAlert
           onRetry={() => void placesQuery.refetch()}
           retrying={placesQuery.isFetching}
           title="저장한 장소를 불러오지 못했어요"
         />
-      ) : places.length === 0 ? (
+      ) : visiblePlaces.length === 0 ? (
         <Empty className="flex-1 border-0 py-10">
           <EmptyHeader className="gap-1">
-            <EmptyTitle className="font-semibold text-base">저장한 장소가 없어요</EmptyTitle>
-            <EmptyDescription className="text-sm/normal">장소를 검색해 저장해 보세요.</EmptyDescription>
+            <EmptyTitle className="font-semibold text-base">
+              {query.trim() ? "검색 결과가 없어요" : "저장한 장소가 없어요"}
+            </EmptyTitle>
+            <EmptyDescription className="text-sm/normal">
+              {query.trim() ? "장소 이름이나 주소를 바꿔 보세요." : "새 장소를 찾아 저장해 보세요."}
+            </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
-        <section aria-label={`저장한 장소 ${places.length}곳`} className="flex flex-col gap-4">
+        <section aria-label={`저장한 장소 ${visiblePlaces.length}곳`} className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-semibold text-base">저장한 장소</h2>
             <span className="text-muted-foreground text-xs">최근 저장순</span>
           </div>
           <ul className="grid grid-cols-4 items-start gap-x-2.5 gap-y-4">
-            {places.map((place) => (
+            {visiblePlaces.map((place) => (
               <SavedPlaceListItem
                 key={place.id}
                 onDetailPrefetch={prefetchDetail}

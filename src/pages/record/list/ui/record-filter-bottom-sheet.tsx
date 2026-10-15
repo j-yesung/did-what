@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react";
+import { SlidersHorizontalIcon } from "@phosphor-icons/react";
 
 import type { RecordSort } from "@/entities/record";
 import { formatRecordDate } from "@/shared/lib/date/format-date";
@@ -37,6 +37,8 @@ export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPerio
 
   const period = { from, to };
   const hasFilters = Boolean(from || to) || sort !== "recent";
+  const hasDraft = Boolean(draftRange.from || draftRange.to || draftSort !== "recent");
+  const invalid = Boolean(draftRange.from && draftRange.to && draftRange.to < draftRange.from);
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -47,7 +49,7 @@ export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPerio
   };
 
   const handleApply = () => {
-    if (draftRange.from && draftRange.to && draftRange.to < draftRange.from) return;
+    if (invalid) return;
     onApply({
       from: draftRange.from,
       sort: draftSort,
@@ -57,8 +59,8 @@ export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPerio
   };
 
   const handleClear = () => {
-    onApply({ from: "", sort: "recent", to: "" });
-    setOpen(false);
+    setDraftRange({ from: "", to: "" });
+    setDraftSort("recent");
   };
 
   return (
@@ -77,15 +79,18 @@ export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPerio
       />
 
       <BottomSheet.Content>
-        <BottomSheet.Title className="sr-only">기록 필터</BottomSheet.Title>
-
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-4">
+        <BottomSheet.Header>
+          <BottomSheet.Title className="text-left font-bold text-xl">기록 필터</BottomSheet.Title>
+        </BottomSheet.Header>
+        <div className="flex min-h-0 flex-col gap-6 overflow-y-auto overscroll-contain px-5 py-6">
           <section aria-labelledby="record-sort-title">
-            <h3 className="mb-2 font-semibold text-base" id="record-sort-title">
+            <h3 className="mb-3 font-semibold text-sm" id="record-sort-title">
               정렬
             </h3>
             <SegmentedControl
               aria-labelledby="record-sort-title"
+              name="record-filter-sort"
+              size="large"
               onValueChange={(value) => setDraftSort(value as RecordSort)}
               value={draftSort}
             >
@@ -95,84 +100,44 @@ export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPerio
           </section>
 
           <section aria-labelledby="record-period-title">
-            <h3 className="mb-2 font-semibold text-base" id="record-period-title">
+            <h3 className="mb-3 font-semibold text-sm" id="record-period-title">
               기간
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <Field className="min-w-0">
-                <FieldLabel className="text-muted-foreground" htmlFor="filter-start-date">
-                  첫날
-                </FieldLabel>
-                <div className="relative">
-                  <DateInput
-                    className={draftRange.from ? "[&>span]:pr-9" : undefined}
-                    id="filter-start-date"
-                    placeholder="처음부터"
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setDraftRange((current) => ({
-                        from: value,
-                        to: !current.to || current.to < value ? value : current.to,
-                      }));
-                    }}
-                    value={draftRange.from}
-                  />
-                  {draftRange.from ? (
-                    <IconButton
-                      aria-label="첫날 지우기"
-                      className="absolute top-1/2 right-1 z-20 -translate-y-1/2"
-                      icon={XIcon}
-                      iconSize={16}
-                      onClick={() => setDraftRange((current) => ({ ...current, from: "" }))}
-                      size="sm"
-                      type="button"
-                    />
-                  ) : null}
-                </div>
+                <FieldLabel htmlFor="filter-start-date">첫날</FieldLabel>
+                <DateInput
+                  id="filter-start-date"
+                  onChange={(event) => setDraftRange((current) => ({ ...current, from: event.target.value }))}
+                  placeholder="처음부터"
+                  value={draftRange.from}
+                />
               </Field>
-              <Field className="min-w-0">
-                <FieldLabel className="text-muted-foreground" htmlFor="filter-end-date">
-                  마지막 날
-                </FieldLabel>
-                <div className="relative">
-                  <DateInput
-                    className={draftRange.to ? "[&>span]:pr-9" : undefined}
-                    id="filter-end-date"
-                    placeholder="마지막까지"
-                    min={draftRange.from || undefined}
-                    onChange={(event) => setDraftRange((current) => ({ ...current, to: event.target.value }))}
-                    value={draftRange.to}
-                  />
-                  {draftRange.to ? (
-                    <IconButton
-                      aria-label="마지막 날 지우기"
-                      className="absolute top-1/2 right-1 z-20 -translate-y-1/2"
-                      icon={XIcon}
-                      iconSize={16}
-                      onClick={() => setDraftRange((current) => ({ ...current, to: "" }))}
-                      size="sm"
-                      type="button"
-                    />
-                  ) : null}
-                </div>
+              <Field className="min-w-0" data-invalid={invalid}>
+                <FieldLabel htmlFor="filter-end-date">마지막 날</FieldLabel>
+                <DateInput
+                  aria-describedby={invalid ? "filter-date-error" : undefined}
+                  aria-invalid={invalid}
+                  id="filter-end-date"
+                  onChange={(event) => setDraftRange((current) => ({ ...current, to: event.target.value }))}
+                  placeholder="마지막까지"
+                  value={draftRange.to}
+                />
               </Field>
             </div>
+            {invalid ? (
+              <p className="mt-2 text-destructive text-xs" id="filter-date-error" role="alert">
+                마지막 날은 첫날과 같거나 이후여야 해요.
+              </p>
+            ) : null}
           </section>
         </div>
 
-        <BottomSheet.Footer>
-          {hasFilters ? (
-            <Button onClick={handleClear} size="large" type="button" variant="neutral">
-              필터 초기화
-            </Button>
-          ) : null}
-          <Button
-            disabled={Boolean(draftRange.from && draftRange.to && draftRange.to < draftRange.from)}
-            fullWidth
-            onClick={handleApply}
-            size="large"
-            type="button"
-          >
+        <BottomSheet.Footer className="flex-row">
+          <Button disabled={!hasDraft} onClick={handleClear} size="large" type="button" variant="neutral">
+            초기화
+          </Button>
+          <Button className="min-w-0 flex-1" disabled={invalid} onClick={handleApply} size="large" type="button">
             적용
           </Button>
         </BottomSheet.Footer>

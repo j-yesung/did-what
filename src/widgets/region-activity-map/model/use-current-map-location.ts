@@ -5,7 +5,7 @@ import { showToast } from "@/shared/lib/toast";
 
 type MapPosition = NonNullable<ReturnType<typeof getKoreaMapPosition>>;
 
-export const useCurrentMapLocation = (onLocate: (position: MapPosition) => void) => {
+export const useCurrentMapLocation = () => {
   const [position, setPosition] = useState<MapPosition | null>(null);
   const [isPending, setIsPending] = useState(false);
 
@@ -26,7 +26,6 @@ export const useCurrentMapLocation = (onLocate: (position: MapPosition) => void)
           return;
         }
         setPosition(position);
-        onLocate(position);
       },
       (error) => {
         setIsPending(false);
