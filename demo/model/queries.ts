@@ -202,10 +202,6 @@ const toPlaceSearchResult = (
   scope,
 });
 
-/** 장소 검색 화면의 첫 페이지. 서버가 넘기던 initialPage와 같은 모양이다. */
-export const getDemoPlaceSearchPage = (query: string) =>
-  toPlaceSearchResult(searchDemoKakaoPlaces(query), query.trim(), null);
-
 const readScope = (params: { latitude?: unknown; longitude?: unknown }) =>
   typeof params.latitude === "number" && typeof params.longitude === "number"
     ? { latitude: params.latitude, longitude: params.longitude }

@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
-import { WarningCircleIcon } from "@phosphor-icons/react";
+import { CheckIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 
 import { type AccountMember, getMemberAvatarTone, getMemberInitial } from "@/entities/member";
@@ -12,8 +10,6 @@ import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { Button } from "@/shared/ui/button";
-import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { selectMember } from "../api/select-member";
@@ -22,10 +18,10 @@ type MemberSelectProps = {
   currentMemberId?: string;
   destination?: string;
   members: AccountMember[];
+  onSelected?: () => void;
 };
 
-export function MemberSelect({ currentMemberId, destination, members }: MemberSelectProps) {
-  const [selectedMember, setSelectedMember] = useState<AccountMember>();
+export function MemberSelect({ currentMemberId, destination, members, onSelected }: MemberSelectProps) {
   const selectMemberAction = useActionOverride(selectMember);
 
   const select = useMutation({
@@ -33,13 +29,12 @@ export function MemberSelect({ currentMemberId, destination, members }: MemberSe
       const endpoint = await getPushEndpoint();
       return runServerAction(() => selectMemberAction({ destination, endpoint, memberId }));
     },
-    onError: () => setSelectedMember(undefined),
     onSuccess: (result, memberId) => {
       if (result?.status === "error") {
-        setSelectedMember(undefined);
         return;
       }
 
+      onSelected?.();
       const member = members.find(({ id }) => id === memberId);
       if (member) {
         showToast({ title: `${member.name}님으로 전환했어요`, variant: "success" });
@@ -51,97 +46,54 @@ export function MemberSelect({ currentMemberId, destination, members }: MemberSe
   const pendingMemberId = select.isPending ? select.variables : undefined;
 
   return (
-    <>
-      <div className="flex flex-1 flex-col justify-center gap-8 py-4">
-        {select.data?.message || select.isError ? (
-          <Alert variant="destructive">
-            <WarningCircleIcon aria-hidden="true" />
-            <AlertTitle>변경하지 못했어요</AlertTitle>
-            <AlertDescription className="whitespace-pre-line">
-              {select.data?.message ?? "사용자를 변경하지 못했습니다.\n잠시 후 다시 시도해 주세요."}
-            </AlertDescription>
-          </Alert>
-        ) : null}
+    <div className="flex flex-1 flex-col gap-4">
+      {select.data?.message || select.isError ? (
+        <Alert variant="destructive">
+          <WarningCircleIcon aria-hidden="true" />
+          <AlertTitle>변경하지 못했어요</AlertTitle>
+          <AlertDescription className="whitespace-pre-line">
+            {select.data?.message ?? "사용자를 변경하지 못했습니다.\n잠시 후 다시 시도해 주세요."}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
-        <ul className="mx-auto grid w-full max-w-56 grid-cols-2 gap-x-4 gap-y-5">
-          {members.map((member) => {
-            const selected = member.id === currentMemberId;
-            return (
-              <li className="flex min-w-0 flex-col items-center gap-2" key={member.id}>
-                <Button
-                  aria-label={selected ? `${member.name}, 현재 사용 중` : `${member.name} 선택`}
-                  aria-current={selected ? "true" : undefined}
-                  className="h-auto rounded-xl p-0 disabled:opacity-100 [&>span]:w-full"
-                  disabled={selected || select.isPending}
-                  fullWidth
-                  onClick={() => setSelectedMember(member)}
-                  type="button"
-                  variant="ghost"
+      <ul className="flex flex-col gap-2">
+        {members.map((member) => {
+          const selected = member.id === currentMemberId;
+          return (
+            <li key={member.id}>
+              <button
+                aria-label={selected ? `${member.name}, 현재 사용 중` : `${member.name}으로 전환`}
+                aria-pressed={selected}
+                aria-busy={pendingMemberId === member.id || undefined}
+                className="flex min-h-20 w-full cursor-pointer items-center gap-4 rounded-2xl px-3 py-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-default"
+                disabled={selected || select.isPending}
+                onClick={() => select.mutate(member.id)}
+                type="button"
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "flex size-13 shrink-0 items-center justify-center rounded-2xl font-semibold text-xl",
+                    getMemberAvatarTone(member.id),
+                  )}
                 >
-                  <span className="relative block w-full overflow-hidden rounded-xl bg-card">
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "flex aspect-square w-full select-none items-center justify-center font-semibold text-4xl transition-opacity",
-                        getMemberAvatarTone(member.id),
-                        select.isPending && pendingMemberId !== member.id && "opacity-40",
-                      )}
-                    >
-                      {getMemberInitial(member.name)}
-                    </span>
-                    {selected ? (
-                      <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-primary ring-inset"
-                      />
-                    ) : null}
-                    {pendingMemberId === member.id ? (
-                      <span className="absolute inset-0 flex items-center justify-center bg-dimmed">
-                        <Spinner className="text-light" />
-                      </span>
-                    ) : null}
-                  </span>
-                </Button>
-                <span className="flex w-full flex-col items-center gap-0.5">
-                  <span
-                    className={cn(
-                      "w-full truncate text-center font-medium text-sm",
-                      selected ? "text-foreground" : "text-muted-foreground",
-                    )}
-                  >
-                    {member.name}
-                  </span>
-                  {selected ? <span className="text-accent-text text-xs">현재 사용 중</span> : null}
+                  {getMemberInitial(member.name)}
                 </span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      {/* 선택 확인 다이얼로그 */}
-      <ConfirmDialog
-        title={`${selectedMember?.name ?? "선택한 사용자"}님으로 사용할까요?`}
-        description="알림을 확인할 사용자로 선택해요."
-        cancelButton={
-          <ConfirmDialogCancelButton disabled={select.isPending} onClick={() => setSelectedMember(undefined)}>
-            취소
-          </ConfirmDialogCancelButton>
-        }
-        confirmButton={
-          <Button
-            loading={select.isPending}
-            onClick={() => selectedMember && select.mutate(selectedMember.id)}
-            variant="fill"
-          >
-            선택
-          </Button>
-        }
-        onClose={() => {
-          if (!select.isPending) setSelectedMember(undefined);
-        }}
-        open={selectedMember !== undefined}
-      />
-    </>
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="truncate font-semibold text-base">{member.name}</span>
+                  {selected ? <span className="text-muted-foreground text-xs">현재 사용 중</span> : null}
+                </span>
+                {pendingMemberId === member.id ? (
+                  <Spinner className="size-5 shrink-0 text-muted-foreground" />
+                ) : selected ? (
+                  <CheckIcon aria-hidden="true" className="shrink-0 text-primary" size={20} weight="bold" />
+                ) : null}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import type { PlaceOption } from "@/entities/place";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 
@@ -14,6 +15,7 @@ type PlacePickerBottomSheetProps = {
   onAdd: (places: RecordLocationPlace[]) => void;
   regions: RecordLocationRegion[];
   selectedKeys: Set<string>;
+  savedPlaces: PlaceOption[];
 };
 
 export function PlacePickerBottomSheet({
@@ -22,6 +24,7 @@ export function PlacePickerBottomSheet({
   onAdd,
   regions,
   selectedKeys,
+  savedPlaces,
 }: PlacePickerBottomSheetProps) {
   const [open, setOpen] = useState(false);
 
@@ -29,9 +32,9 @@ export function PlacePickerBottomSheet({
     <BottomSheet onOpenChange={setOpen} open={open} showSwipeHandle>
       <BottomSheet.Trigger
         disabled={disabled}
-        render={<Button disabled={disabled} size="large" type="button" variant="neutral" />}
+        render={<Button disabled={disabled} fullWidth size="large" type="button" variant="neutral" />}
       >
-        새 장소 검색
+        장소 추가
       </BottomSheet.Trigger>
       <BottomSheet.VirtualKeyboardProvider>
         <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--drawer-content-max-height)]">
@@ -44,6 +47,7 @@ export function PlacePickerBottomSheet({
             }}
             regions={regions}
             selectedKeys={selectedKeys}
+            savedPlaces={savedPlaces}
           />
         </BottomSheet.Content>
       </BottomSheet.VirtualKeyboardProvider>
