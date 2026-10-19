@@ -36,7 +36,13 @@ export {
   validateRecordInput,
 } from "./model/record-form";
 export { type RecordRegionLocationRow, toRegionLocations } from "./model/record-locations";
-export { formatRecordRegionLabels, sortPrimaryRegionFirst } from "./model/record-region";
+export {
+  formatRecordRegionLabels,
+  getRecordRegionKey,
+  mergeVisitedRegions,
+  sortPrimaryRecordRegions,
+  sortPrimaryRegionFirst,
+} from "./model/record-region";
 export {
   formatRecordTimelineDate,
   formatRecordTimelineMonth,
@@ -52,6 +58,7 @@ export {
   type RecordWeather,
 } from "./model/weather";
 export { EmptyRecords } from "./ui/empty-records";
+export { RecordActionToolbar } from "./ui/record-action-toolbar";
 export { RecordBadges, RecordCategoryBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RecordCreateButton } from "./ui/record-create-button";

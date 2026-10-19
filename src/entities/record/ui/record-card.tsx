@@ -4,7 +4,6 @@ import { ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { useLongPress } from "@/shared/lib/use-long-press";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
@@ -19,15 +18,12 @@ import { RecordCategoryBadge } from "./record-badges";
 type RecordCardProps = {
   endsMonth: boolean;
   onDetailPrefetch?: (recordId: string) => void;
-  /** 꾹 눌렀을 때. 넘기지 않으면 꾹 누름을 듣지 않는다. */
-  onLongPress?: () => void;
   record: RecordSummary;
   side: "left" | "right";
 };
 
-export function RecordCard({ endsMonth, onDetailPrefetch, onLongPress, record, side }: RecordCardProps) {
+export function RecordCard({ endsMonth, onDetailPrefetch, record, side }: RecordCardProps) {
   const router = useRouter();
-  const longPress = useLongPress(onLongPress);
   const queryClient = useQueryClient();
   const href = `/records/${record.id}`;
   const commentCount = record.record_comments?.[0]?.count ?? 0;
@@ -56,11 +52,9 @@ export function RecordCard({ endsMonth, onDetailPrefetch, onLongPress, record, s
         nativeButton={false}
         render={
           <PressLink
-            {...longPress}
             href={href}
             onClick={cacheRecordSummary}
             onPointerDown={(event) => {
-              longPress.onPointerDown?.(event);
               if (event.button !== 0) return;
               cacheRecordSummary();
               router.prefetch(href);

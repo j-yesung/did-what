@@ -24,3 +24,7 @@ test("기록이나 방문 지역이 없으면 빈 집계를 반환한다", () =>
   assert.equal(getRegionRecordCounts([]).size, 0);
   assert.equal(getRegionRecordCounts([record()]).size, 0);
 });
+
+test("같은 지역의 표시명이 여러 개여도 방문 기록 수는 한 번만 센다", () => {
+  assert.equal(getRegionRecordCounts([record("1144000000", "1144000000")]).get("KR-11"), 1);
+});

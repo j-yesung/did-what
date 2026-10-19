@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 
 import { getSavedPlaces } from "@/entities/place/server";
-import { normalizeRecordCategory, normalizeRecordWeather, sortPrimaryRegionFirst } from "@/entities/record";
+import {
+  normalizeRecordCategory,
+  normalizeRecordWeather,
+  sortPrimaryRecordRegions,
+  sortPrimaryRegionFirst,
+} from "@/entities/record";
 import { getRecord } from "@/entities/record/server";
 import { updateRecord } from "@/features/record/edit-record/api/update-record";
 import { toExistingRecordLocationPlace, toShortRegionName } from "@/features/record/select-record-location";
@@ -79,7 +84,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
               recordedUntil: record.recorded_until,
               weather: normalizeRecordWeather(record.weather),
               // 장소에서 따라온 지역은 장소가 다시 데려오므로, 직접 고른 지역만 되살린다.
-              regions: sortPrimaryRegionFirst(record.record_regions, record.region_code, (region) => region.region_code)
+              regions: sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label)
                 .filter(({ selected_directly: selectedDirectly }) => selectedDirectly)
                 .map((region) => ({
                   code: region.region_code,

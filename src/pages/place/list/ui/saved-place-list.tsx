@@ -13,7 +13,6 @@ import {
   placesQueryOptions,
   type SavedPlaceRow,
 } from "@/entities/place";
-import { useLongPress } from "@/shared/lib/use-long-press";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { buttonVariants } from "@/shared/ui/button";
@@ -22,17 +21,14 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 import { SearchField } from "@/shared/ui/search-field";
 
-import { PlaceActionSheet } from "./place-action-sheet";
 import { PlaceSearchBottomSheet } from "./place-search-bottom-sheet";
 
 type SavedPlaceListItemProps = {
   onDetailPrefetch: (place: SavedPlaceRow) => void;
-  onLongPress: () => void;
   place: SavedPlaceRow;
 };
 
-function SavedPlaceListItem({ onDetailPrefetch, onLongPress, place }: SavedPlaceListItemProps) {
-  const longPress = useLongPress(onLongPress);
+function SavedPlaceListItem({ onDetailPrefetch, place }: SavedPlaceListItemProps) {
   const queryClient = useQueryClient();
   const href = `/places/${place.id}`;
   const cachePlace = () => queryClient.setQueryData(placeQueryKey(place.id), place);
@@ -42,7 +38,6 @@ function SavedPlaceListItem({ onDetailPrefetch, onLongPress, place }: SavedPlace
   return (
     <li className="min-w-0">
       <PressLink
-        {...longPress}
         className={cn(
           buttonVariants({ fullWidth: true, variant: "ghost" }),
           "h-auto min-w-0 flex-col gap-1.5 whitespace-normal rounded-2xl p-0 after:hidden",
@@ -51,7 +46,6 @@ function SavedPlaceListItem({ onDetailPrefetch, onLongPress, place }: SavedPlace
         href={href}
         onClick={cachePlace}
         onPointerDown={(event) => {
-          longPress.onPointerDown?.(event);
           if (event.button !== 0) return;
           onDetailPrefetch(place);
         }}
@@ -85,8 +79,6 @@ export function SavedPlaceList({
   const router = useRouter();
   const queryClient = useQueryClient();
   const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
-  const [actionTarget, setActionTarget] = useState<SavedPlaceRow | null>(null);
-  const [actionOpen, setActionOpen] = useState(false);
 
   const prefetchDetail = (place: SavedPlaceRow) => {
     queryClient.setQueryData(placeQueryKey(place.id), place);
@@ -141,20 +133,11 @@ export function SavedPlaceList({
           </div>
           <ul className="grid grid-cols-4 items-start gap-x-2.5 gap-y-4">
             {visiblePlaces.map((place) => (
-              <SavedPlaceListItem
-                key={place.id}
-                onDetailPrefetch={prefetchDetail}
-                onLongPress={() => {
-                  setActionTarget(place);
-                  setActionOpen(true);
-                }}
-                place={place}
-              />
+              <SavedPlaceListItem key={place.id} onDetailPrefetch={prefetchDetail} place={place} />
             ))}
           </ul>
         </section>
       )}
-      <PlaceActionSheet onOpenChange={setActionOpen} open={actionOpen} place={actionTarget} />
     </>
   );
 }

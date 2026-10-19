@@ -1,4 +1,4 @@
-import { formatRecordRegionLabels, sortPrimaryRegionFirst } from "./record-region.ts";
+import { formatRecordRegionLabels, sortPrimaryRecordRegions, sortPrimaryRegionFirst } from "./record-region.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -44,4 +44,27 @@ test("이름이 같아도 코드가 다르면 다른 지역으로 센다", () =>
 test("방문 지역이 없으면 대표 지역 이름만 보여준다", () => {
   assert.equal(formatRecordRegionLabels({ region_label: "마포구" }), "마포구");
   assert.equal(formatRecordRegionLabels({}), "");
+});
+
+test("같은 지역의 여러 표시명이 뒤섞여도 기존 대표 표시명을 먼저 둔다", () => {
+  const entries = regions(MOKPO, [MAPO[0], "디지털미디어시티"], YEOSU, [MAPO[0], "난지 한강공원"]);
+  const sorted = sortPrimaryRecordRegions(entries, MAPO[0], "난지 한강공원");
+  assert.deepEqual(
+    sorted.map(({ region_label }) => region_label),
+    ["난지 한강공원", "디지털미디어시티", "목포시", "여수시"],
+  );
+  assert.equal(entries[0].region_label, "목포시");
+  assert.equal(
+    formatRecordRegionLabels({ region_code: MAPO[0], region_label: "난지 한강공원", record_regions: entries }),
+    "난지 한강공원 · 디지털미디어시티 외 2곳",
+  );
+});
+
+test("대표 표시명이 사라졌으면 같은 코드의 항목을 앞에 두고 기존 순서를 유지한다", () => {
+  const entries = regions(MOKPO, [MAPO[0], "디지털미디어시티"], [MAPO[0], "난지 한강공원"]);
+  assert.deepEqual(
+    sortPrimaryRecordRegions(entries, MAPO[0], "제거된 이름").map(({ region_label }) => region_label),
+    ["디지털미디어시티", "난지 한강공원", "목포시"],
+  );
+  assert.deepEqual(sortPrimaryRecordRegions(entries, undefined, undefined), entries);
 });
