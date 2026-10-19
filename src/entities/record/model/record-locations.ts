@@ -23,11 +23,13 @@ export const toRegionLocations = (
   }[],
 ) => {
   return records.flatMap(({ id, record_regions: regions }) =>
-    regions.map((region) => ({
-      administrativeCode: region.region_code,
-      id: `${id}:${region.region_code}`,
-      latitude: region.region_latitude,
-      longitude: region.region_longitude,
-    })),
+    regions
+      .filter((region, index, all) => all.findIndex((item) => item.region_code === region.region_code) === index)
+      .map((region) => ({
+        administrativeCode: region.region_code,
+        id: `${id}:${region.region_code}`,
+        latitude: region.region_latitude,
+        longitude: region.region_longitude,
+      })),
   );
 };

@@ -39,16 +39,18 @@ export const toRecordMapPoints = (records: readonly MapRecord[]): RecordMapPoint
       }));
     }
 
-    return record.record_regions.map((region) => ({
-      activity: record.activity,
-      id: `region:${record.id}:${region.region_code}`,
-      kind: "region" as const,
-      label: region.region_name,
-      latitude: region.region_latitude,
-      longitude: region.region_longitude,
-      recordedAt: record.recorded_at,
-      recordId: record.id,
-    }));
+    return record.record_regions
+      .filter((region, index, all) => all.findIndex((item) => item.region_code === region.region_code) === index)
+      .map((region) => ({
+        activity: record.activity,
+        id: `region:${record.id}:${region.region_code}`,
+        kind: "region" as const,
+        label: region.region_name,
+        latitude: region.region_latitude,
+        longitude: region.region_longitude,
+        recordedAt: record.recorded_at,
+        recordId: record.id,
+      }));
   });
 
 // region_name은 "서울 중구", "충북 청주시 상당구"처럼 시·도 약칭 뒤에 시·군·구가 붙는다.

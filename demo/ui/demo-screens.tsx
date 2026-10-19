@@ -6,7 +6,12 @@ import { useSearchParams } from "next/navigation";
 
 import { AppNotFound } from "@/app/ui/app-not-found";
 import type { SavedPlaceRow } from "@/entities/place";
-import { normalizeRecordCategory, normalizeRecordWeather, sortPrimaryRegionFirst } from "@/entities/record";
+import {
+  normalizeRecordCategory,
+  normalizeRecordWeather,
+  sortPrimaryRecordRegions,
+  sortPrimaryRegionFirst,
+} from "@/entities/record";
 import { LogoutButton } from "@/features/auth";
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
@@ -178,7 +183,7 @@ export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
             ).map(({ place }) => toExistingRecordLocationPlace(place)),
             recordedAt: record.recorded_at,
             recordedUntil: record.recorded_until,
-            regions: sortPrimaryRegionFirst(record.record_regions, record.region_code, (region) => region.region_code)
+            regions: sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label)
               .filter(({ selected_directly: selectedDirectly }) => selectedDirectly)
               .map((region) => ({
                 code: region.region_code,

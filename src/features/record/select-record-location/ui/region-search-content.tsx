@@ -5,7 +5,7 @@ import { type SubmitEvent, useState } from "react";
 import { ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
-import { recordLocationsQueryOptions } from "@/entities/record";
+import { getRecordRegionKey, recordLocationsQueryOptions } from "@/entities/record";
 import { useRegionSearch } from "@/entities/region";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
@@ -61,7 +61,7 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
             </h3>
             <ul className="flex flex-wrap gap-1.5">
               {recentRegions.map((region) => (
-                <li key={region.code}>
+                <li key={getRecordRegionKey(region)}>
                   <Button
                     className="rounded-lg"
                     onClick={() => onSelect(region)}

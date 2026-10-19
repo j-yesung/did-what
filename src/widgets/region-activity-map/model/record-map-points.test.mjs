@@ -77,3 +77,26 @@ test("개수 제한이 있으면 기록 많은 곳부터 그 수만큼만 배지
   );
   assert.equal(placeRegionBadges(spread, 1).length, 6);
 });
+
+test("같은 지역에 여러 표시명을 남겨도 지도 지역 점은 한 번만 만든다", () => {
+  const region = {
+    region_code: "1144000000",
+    region_name: "서울 마포구",
+    region_latitude: 37.56,
+    region_longitude: 126.97,
+  };
+  const points = toRecordMapPoints([
+    {
+      id: "a",
+      activity: "산책",
+      recorded_at: "2026-10-19",
+      record_places: [],
+      record_regions: [
+        { ...region, region_label: "난지 한강공원" },
+        { ...region, region_label: "디지털미디어시티" },
+      ],
+    },
+  ]);
+  assert.equal(points.length, 1);
+  assert.equal(points[0].id, "region:a:1144000000");
+});

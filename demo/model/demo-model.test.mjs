@@ -1,12 +1,16 @@
+import { sortPrimaryRecordRegions } from "@/entities/record/model/record-region";
+
 import { toAppHref, toDemoHref, toSafeAppPath } from "../lib/demo-href.ts";
 import { readDemoCommand, toCommandMessage } from "../lib/messages.ts";
 import {
   addSampleRecord,
   createComment,
+  createRecord,
   deleteComment,
   deletePlace,
   deleteRecord,
   receiveNotification,
+  updateRecord,
 } from "./actions.ts";
 import { getRecordPage, resolveDemoQuery } from "./queries.ts";
 import { createSeedState, DEMO_MEMBER_IDS, DEMO_RECORD_IDS, demoId } from "./seed.ts";
@@ -219,4 +223,96 @@ test("카테고리 필터는 검색·기간·정렬과 함께 다음 페이지�
   assert.equal(new Set(rows.map((row) => row.id)).size, 26);
   assert.ok(rows.every((row) => row.category === "travel" && row.activity.includes("부산")));
   assert.equal(getRecordPage(state, { ...filters, category: "daily" }, null).records.length, 0);
+});
+
+test("데모 생성·수정은 같은 지역의 다른 표시명을 보존하고 정확한 중복만 합친다", () => {
+  const state = createSeedState(TODAY);
+  const region = (label) => ({ code: "1144012000", label, name: "서울 마포구 망원동" });
+  const input = {
+    activity: "마포 산책",
+    category: "daily",
+    recordedAt: TODAY,
+    weather: "sunny",
+    regions: [region("마포구"), region("망원동"), region(" 망원동 ")],
+    places: [{ kind: "existing", placeId: demoId("c", 1), save: false }],
+  };
+  const created = createRecord(state, input, DEMO_MEMBER_IDS.jimin, context());
+  assert.equal(created.ok, true);
+  const saved = created.state.records.find(({ id }) => id === created.recordId);
+  assert.deepEqual(
+    saved.regions.map(({ region_label }) => region_label),
+    ["마포구", "망원동"],
+  );
+  assert.equal(new Set(saved.regions.map(({ region_code }) => region_code)).size, 1);
+  assert.ok(saved.regions.every(({ selected_directly }) => selected_directly));
+  assert.deepEqual(saved.placeIds, [demoId("c", 1)]);
+
+  const updated = updateRecord(
+    created.state,
+    created.recordId,
+    {
+      ...input,
+      regions: [region("마포구"), region("한강공원")],
+    },
+    context(),
+  );
+  assert.equal(updated.ok, true);
+  assert.deepEqual(
+    updated.state.records.find(({ id }) => id === created.recordId).regions.map(({ region_label }) => region_label),
+    ["마포구", "한강공원"],
+  );
+});
+
+test("데모도 표시명이 다른 방문 지역 항목은 최대 10개까지 저장한다", () => {
+  const state = createSeedState(TODAY);
+  const input = {
+    activity: "마포 산책",
+    category: "daily",
+    recordedAt: TODAY,
+    weather: "sunny",
+    places: [],
+    regions: Array.from({ length: 10 }, (_, index) => ({
+      code: "1144012000",
+      label: `방문 ${index}`,
+      name: "서울 마포구 망원동",
+    })),
+  };
+  const created = createRecord(state, input, DEMO_MEMBER_IDS.jimin, context());
+  assert.equal(created.ok, true);
+  assert.equal(created.state.records.find(({ id }) => id === created.recordId).regions.length, 10);
+  assert.equal(
+    createRecord(
+      state,
+      { ...input, regions: [...input.regions, { ...input.regions[0], label: "초과" }] },
+      DEMO_MEMBER_IDS.jimin,
+      context(),
+    ).ok,
+    false,
+  );
+});
+
+test("조회 순서가 바뀐 기록의 메모만 수정해도 대표 표시명을 유지한다", () => {
+  const input = {
+    activity: "마포 산책",
+    category: "daily",
+    recordedAt: TODAY,
+    weather: "sunny",
+    places: [],
+    regions: ["난지 한강공원", "디지털미디어시티"].map((label) => ({
+      code: "1144012000",
+      label,
+      name: "서울 마포구 망원동",
+    })),
+  };
+  const created = createRecord(createSeedState(TODAY), input, DEMO_MEMBER_IDS.jimin, context());
+  assert.equal(created.ok, true);
+  const detail = resolveDemoQuery(created.state, ["records", "detail", created.recordId], undefined);
+  const regions = sortPrimaryRecordRegions(detail.record_regions.toReversed(), detail.region_code, detail.region_label)
+    .filter(({ selected_directly }) => selected_directly)
+    .map((region) => ({ code: region.region_code, label: region.region_label, name: region.region_name }));
+  const updated = updateRecord(created.state, created.recordId, { ...input, regions, memo: "메모만 수정" }, context());
+  assert.equal(updated.ok, true);
+  const after = resolveDemoQuery(updated.state, ["records", "detail", created.recordId], undefined);
+  assert.equal(after.region_label, "난지 한강공원");
+  assert.equal(after.memo, "메모만 수정");
 });

@@ -1,5 +1,6 @@
 import type { PlaceOption } from "@/entities/place";
 import type { RecordPlaceReference, RecordRegionLocationRow } from "@/entities/record";
+import { getRecordRegionKey, mergeVisitedRegions } from "@/entities/record/model/record-region";
 import type { KakaoRegion } from "@/shared/api/kakao-local";
 
 export type RecordLocationRegion = KakaoRegion & { label: string };
@@ -55,9 +56,10 @@ export const toRecentRegions = (
 
   for (const record of records) {
     for (const region of record.record_regions) {
-      if (!region.region_code || seen.has(region.region_code)) continue;
+      const key = getRecordRegionKey({ code: region.region_code, label: region.region_label });
+      if (!region.region_code || seen.has(key)) continue;
 
-      seen.add(region.region_code);
+      seen.add(key);
       regions.push({
         code: region.region_code,
         fullName: region.region_name,
@@ -79,12 +81,23 @@ export const toVisitedRegions = (
   regions: readonly RecordLocationRegion[],
   places: readonly RecordLocationPlace[],
 ): RecordLocationRegion[] => {
-  const visited = new Map<string, RecordLocationRegion>();
-  for (const region of [...regions, ...places.map((place) => place.region)]) {
-    if (!visited.has(region.code)) visited.set(region.code, region);
-  }
-
-  return [...visited.values()];
+  return mergeVisitedRegions(
+    regions,
+    places.map((place) => place.region),
+  );
 };
 
 export type ResolveRecordPlaceResult = { error: string } | { place: RecordLocationPlace };
+
+export const removeRecordLocationRegion = (
+  regions: readonly RecordLocationRegion[],
+  places: readonly RecordLocationPlace[],
+  target: RecordLocationRegion,
+) => {
+  const nextRegions = regions.filter((region) => getRecordRegionKey(region) !== getRecordRegionKey(target));
+  const keepsRegion = nextRegions.some((region) => region.code === target.code);
+  return {
+    places: keepsRegion ? [...places] : places.filter((place) => place.region.code !== target.code),
+    regions: nextRegions,
+  };
+};

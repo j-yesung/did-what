@@ -1,6 +1,11 @@
 "use server";
 
-import { MAX_VISITED_REGIONS, type RecordInput, type RecordPlaceReference } from "@/entities/record";
+import {
+  MAX_VISITED_REGIONS,
+  mergeVisitedRegions,
+  type RecordInput,
+  type RecordPlaceReference,
+} from "@/entities/record";
 import { getRegionCode } from "@/entities/region";
 import type { KakaoSearchScope } from "@/shared/api/kakao-local";
 import {
@@ -218,25 +223,31 @@ export const validateRecordSelections = async (data: RecordInput, ownerId: strin
   ]);
   if (!verifiedPlaces || verifiedRegions.some((region) => !region)) return null;
 
-  // 사용자가 고른 지역이 먼저다. 첫 지역이 기록의 대표 지역이 되고, 같은 지역은 한 번만 저장한다.
-  const regions = new Map<string, RecordRegionValue>();
-  verifiedRegions.forEach((region, index) => {
-    if (!region || regions.has(region.code)) return;
-    regions.set(region.code, {
-      code: region.code,
-      label: data.regions[index].label,
-      latitude: region.latitude,
-      longitude: region.longitude,
-      name: region.fullName,
-      selected_directly: true,
-    });
-  });
-  for (const region of verifiedPlaces.regions) {
-    if (!regions.has(region.code)) regions.set(region.code, { ...region, selected_directly: false });
-  }
+  // 표시명이 다른 직접 선택은 보존하고, 장소의 지역은 코드별로 한 번만 보충한다.
+  const directRegions: RecordRegionValue[] = verifiedRegions.flatMap((region, index) =>
+    region
+      ? [
+          {
+            code: region.code,
+            label: data.regions[index].label,
+            latitude: region.latitude,
+            longitude: region.longitude,
+            name: region.fullName,
+            selected_directly: true,
+          },
+        ]
+      : [],
+  );
+  const regions = mergeVisitedRegions(
+    directRegions,
+    verifiedPlaces.regions.map((region) => ({
+      ...region,
+      selected_directly: false,
+    })),
+  );
 
-  if (regions.size < 1 || regions.size > MAX_VISITED_REGIONS) return null;
-  return { places: verifiedPlaces.places, regions: [...regions.values()] };
+  if (regions.length < 1 || regions.length > MAX_VISITED_REGIONS) return null;
+  return { places: verifiedPlaces.places, regions };
 };
 
 export const resolveRecordPlace = async (input: {

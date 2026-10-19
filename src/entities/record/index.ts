@@ -36,7 +36,13 @@ export {
   validateRecordInput,
 } from "./model/record-form";
 export { type RecordRegionLocationRow, toRegionLocations } from "./model/record-locations";
-export { formatRecordRegionLabels, sortPrimaryRegionFirst } from "./model/record-region";
+export {
+  formatRecordRegionLabels,
+  getRecordRegionKey,
+  mergeVisitedRegions,
+  sortPrimaryRecordRegions,
+  sortPrimaryRegionFirst,
+} from "./model/record-region";
 export {
   formatRecordTimelineDate,
   formatRecordTimelineMonth,

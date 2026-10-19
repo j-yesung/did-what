@@ -1,12 +1,11 @@
+import { MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
 import type { RecordInput } from "@/entities/record/model/record-form";
+import { getRecordRegionKey } from "@/entities/record/model/record-region";
 import type { RecordComment } from "@/entities/record-comment/model/record-comment";
 
 import { DEMO_REGIONS, getDemoKakaoPlace } from "./samples.ts";
 import { shiftDate, toDemoPlace, toDemoRegion } from "./seed.ts";
 import type { DemoNotification, DemoPlace, DemoRecord, DemoRegion, DemoState } from "./types.ts";
-
-// 실제 limits.ts와 같은 상한. 서버 검증과 같은 조건으로 막는다.
-const MAX_VISITED_REGIONS = 5;
 
 type Context = { createId: () => string; now: string };
 
@@ -118,8 +117,9 @@ const resolveSelections = (state: DemoState, input: RecordInput, { createId, now
   for (const selected of input.regions) {
     const region = knownRegion(state, selected.code);
     if (!region) return null;
-    if (!regions.has(region.code)) {
-      regions.set(region.code, {
+    const key = getRecordRegionKey(selected);
+    if (!regions.has(key)) {
+      regions.set(key, {
         region_code: region.code,
         region_label: selected.label,
         region_latitude: region.latitude,
@@ -130,7 +130,8 @@ const resolveSelections = (state: DemoState, input: RecordInput, { createId, now
     }
   }
   for (const region of placeRegions) {
-    if (!regions.has(region.region_code)) regions.set(region.region_code, region);
+    if ([...regions.values()].some((selected) => selected.region_code === region.region_code)) continue;
+    regions.set(getRecordRegionKey({ code: region.region_code, label: region.region_label }), region);
   }
 
   if (regions.size < 1 || regions.size > MAX_VISITED_REGIONS) return null;

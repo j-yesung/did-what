@@ -1,10 +1,10 @@
+import { isRecordCategory, type RecordCategory } from "@/entities/record/model/category";
+import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
+import { getRecordRegionKey } from "@/entities/record/model/record-region";
+import { isRecordWeather, type RecordWeather } from "@/entities/record/model/weather";
 import type { KakaoSearchScope } from "@/shared/api/kakao-local";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
-
-import { isRecordCategory, type RecordCategory } from "./category";
-import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./limits";
-import { isRecordWeather, type RecordWeather } from "./weather";
 
 export type RecordPlaceReference =
   | { kind: "existing"; placeId: string; save: boolean }
@@ -145,7 +145,7 @@ const parsePlaces = (value: string): RecordPlaceReference[] | null => {
   }
 };
 
-/** 같은 지역은 한 기록에 한 번만 담는다. 먼저 고른 쪽의 이름표를 남긴다. */
+/** 같은 지역이라도 표시명이 다르면 보존한다. */
 const parseRegions = (value: string): RecordRegionReference[] | null => {
   try {
     const parsed: unknown = JSON.parse(value || "[]");
@@ -172,7 +172,8 @@ const parseRegions = (value: string): RecordRegionReference[] | null => {
         return null;
       }
 
-      if (!regions.has(code)) regions.set(code, { code, label: trimmedLabel, name: trimmedName });
+      const key = getRecordRegionKey({ code, label: trimmedLabel });
+      if (!regions.has(key)) regions.set(key, { code, label: trimmedLabel, name: trimmedName });
     }
 
     return [...regions.values()];

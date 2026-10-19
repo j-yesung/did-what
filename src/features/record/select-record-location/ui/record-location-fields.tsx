@@ -5,14 +5,19 @@ import { useState } from "react";
 import { XIcon } from "@phosphor-icons/react";
 
 import type { PlaceOption } from "@/entities/place";
-import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record";
+import { getRecordRegionKey, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record";
 import { showToast } from "@/shared/lib/toast";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
 import { IconButton } from "@/shared/ui/icon-button";
 
-import { type RecordLocationPlace, type RecordLocationRegion, toVisitedRegions } from "../model/location-picker";
+import {
+  type RecordLocationPlace,
+  type RecordLocationRegion,
+  removeRecordLocationRegion,
+  toVisitedRegions,
+} from "../model/location-picker";
 import { PlacePickerBottomSheet } from "./place-picker-bottom-sheet";
 import { RegionPickerDialog } from "./region-picker-dialog";
 
@@ -46,7 +51,7 @@ export function RecordLocationFields({
   };
 
   const selectRegion = (nextRegion: RecordLocationRegion) => {
-    if (visitedRegions.some((region) => region.code === nextRegion.code)) return;
+    if (visitedRegions.some((region) => getRecordRegionKey(region) === getRecordRegionKey(nextRegion))) return;
     if (visitedRegions.length >= MAX_VISITED_REGIONS) return;
 
     apply([...regions, nextRegion], places);
@@ -80,16 +85,13 @@ export function RecordLocationFields({
     );
   };
 
-  /** 지역을 지우면 그 지역의 장소도 함께 사라진다. 남겨 두면 지역이 곧바로 다시 따라 들어오기 때문이다. */
   const removeRegion = (target: RecordLocationRegion) => {
-    apply(
-      regions.filter((region) => region.code !== target.code),
-      places.filter((place) => place.region.code !== target.code),
-    );
+    const next = removeRecordLocationRegion(regions, places, target);
+    apply(next.regions, next.places);
   };
 
   const requestRemoveRegion = (target: RecordLocationRegion) => {
-    if (places.some((place) => place.region.code === target.code)) {
+    if (removeRecordLocationRegion(regions, places, target).places.length < places.length) {
       setRegionToRemove(target);
       return;
     }
@@ -117,7 +119,7 @@ export function RecordLocationFields({
         {visitedRegions.length ? (
           <ul aria-label="방문 지역" className="flex flex-wrap gap-1.5">
             {visitedRegions.map((region) => (
-              <li key={region.code}>
+              <li key={getRecordRegionKey(region)}>
                 <span className="flex h-8 items-center gap-0.5 rounded-lg border bg-card pr-0.5 pl-2.5">
                   <span className="max-w-40 truncate font-semibold text-[13px]" title={region.fullName}>
                     {region.label}
@@ -180,7 +182,9 @@ export function RecordLocationFields({
           disabled={places.length >= MAX_VISITED_PLACES}
           maxSelectionCount={MAX_VISITED_PLACES - places.length}
           onAdd={addPlaces}
-          regions={visitedRegions}
+          regions={visitedRegions.filter(
+            (region, index) => visitedRegions.findIndex((item) => item.code === region.code) === index,
+          )}
           savedPlaces={savedPlaces}
           selectedKeys={selectedKeys}
         />

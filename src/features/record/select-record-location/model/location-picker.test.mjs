@@ -1,4 +1,9 @@
-import { toExistingRecordLocationPlace, toRecentRegions, toVisitedRegions } from "./location-picker.ts";
+import {
+  removeRecordLocationRegion,
+  toExistingRecordLocationPlace,
+  toRecentRegions,
+  toVisitedRegions,
+} from "./location-picker.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -21,7 +26,7 @@ const region = (code, label) => ({
   name: label,
 });
 
-test("최근 순서를 유지하면서 같은 지역은 한 번만 남는다", () => {
+test("최근 순서를 유지하면서 같은 지역과 표시명만 중복으로 거른다", () => {
   const regions = toRecentRegions([
     record(regionRow("1144012300", "망원", "서울 마포구 망원동")),
     record(regionRow("1168010100", "역삼", "서울 강남구 역삼동")),
@@ -30,9 +35,9 @@ test("최근 순서를 유지하면서 같은 지역은 한 번만 남는다", (
 
   assert.deepEqual(
     regions.map((region) => region.code),
-    ["1144012300", "1168010100"],
+    ["1144012300", "1168010100", "1144012300"],
   );
-  // 중복은 뒤엣것이 아니라 먼저 만난 기록의 이름표를 쓴다.
+  assert.equal(regions[2].label, "홍대");
   assert.equal(regions[0].label, "망원");
 });
 
@@ -117,4 +122,38 @@ test("이미 있는 장소는 그 장소의 지역을 방문 지역으로 데려
     longitude: 126.9,
     name: "망원동",
   });
+});
+
+test("같은 마포구의 서로 다른 표시명은 보존하고 자동 지역은 덧붙이지 않는다", () => {
+  const nanji = region("1144000000", "난지 한강공원");
+  const dmc = region("1144000000", "디지털미디어시티");
+  const places = [{ key: "kakao:1", region: region("1144000000", "마포구") }];
+  assert.deepEqual(toVisitedRegions([nanji, dmc, nanji], places), [nanji, dmc]);
+});
+
+test("같은 지역의 다른 항목이 남으면 항목 하나만 제거하고 장소는 유지한다", () => {
+  const nanji = region("1144000000", "난지 한강공원");
+  const dmc = region("1144000000", "디지털미디어시티");
+  const mokpo = region("4611000000", "목포시");
+  const places = [
+    { key: "kakao:1", region: nanji },
+    { key: "kakao:2", region: mokpo },
+  ];
+  assert.deepEqual(removeRecordLocationRegion([nanji, dmc, mokpo], places, nanji), {
+    regions: [dmc, mokpo],
+    places,
+  });
+  assert.deepEqual(removeRecordLocationRegion([dmc, mokpo], places, dmc), {
+    regions: [mokpo],
+    places: [places[1]],
+  });
+  assert.deepEqual(removeRecordLocationRegion([], places, nanji), {
+    regions: [],
+    places: [places[1]],
+  });
+});
+
+test("최근 지역도 같은 지역과 표시명이면 한 번만 남긴다", () => {
+  const row = regionRow("1144000000", "난지 한강공원", "서울 마포구");
+  assert.equal(toRecentRegions([record(row), record(row)]).length, 1);
 });
