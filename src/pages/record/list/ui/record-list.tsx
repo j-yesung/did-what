@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 
 import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,7 +12,6 @@ import {
   hasRecordFilters,
   RecordCard,
   type RecordFilters,
-  type RecordSummary,
   RecordTimeline,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
@@ -23,7 +22,6 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 
 import { useRecordListQuery } from "../model/use-record-list-query";
-import { RecordActionSheet } from "./record-action-sheet";
 
 type RecordListProps = {
   filters: RecordFilters;
@@ -33,10 +31,6 @@ type RecordListProps = {
 export function RecordList({ filters, onFiltersReset }: RecordListProps) {
   const queryClient = useQueryClient();
   const recordsQuery = useRecordListQuery(filters);
-  // 시트는 계속 띄워 두고 open만 여닫는다. 닫히는 동안 내용이 사라지지 않고 여는 전환도 그대로 탄다.
-  const [actionTarget, setActionTarget] = useState<RecordSummary | null>(null);
-  const [actionOpen, setActionOpen] = useState(false);
-
   const prefetchComments = (recordId: string) => {
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   };
@@ -107,10 +101,6 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
             <RecordCard
               endsMonth={endsMonth}
               onDetailPrefetch={prefetchComments}
-              onLongPress={() => {
-                setActionTarget(record);
-                setActionOpen(true);
-              }}
               record={record}
               side={(index - monthStartIndex) % 2 === 0 ? "left" : "right"}
             />
@@ -124,7 +114,6 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
           onClick={() => recordsQuery.fetchNextPage()}
         />
       ) : null}
-      <RecordActionSheet onOpenChange={setActionOpen} open={actionOpen} record={actionTarget} />
     </RecordTimeline>
   );
 }

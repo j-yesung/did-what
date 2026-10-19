@@ -58,6 +58,7 @@ export {
   type RecordWeather,
 } from "./model/weather";
 export { EmptyRecords } from "./ui/empty-records";
+export { RecordActionToolbar } from "./ui/record-action-toolbar";
 export { RecordBadges, RecordCategoryBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RecordCreateButton } from "./ui/record-create-button";

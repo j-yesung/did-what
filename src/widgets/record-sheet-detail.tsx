@@ -1,13 +1,19 @@
 "use client";
 
-import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { PlaceIconTile } from "@/entities/place";
-import { formatRecordRegionLabels, RecordDetailHeader, recordDetailQueryOptions } from "@/entities/record";
+import {
+  formatRecordRegionLabels,
+  RecordActionToolbar,
+  RecordDetailHeader,
+  recordDetailQueryOptions,
+} from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
+import { DeleteRecordConfirm } from "@/features/record/delete-record";
 import { RecordComments } from "@/features/record-comment";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -16,7 +22,6 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
 type RecordSheetDetailProps = {
-  actions?: ReactNode;
   backLabel?: string;
   draft: string;
   member: { id: string; name: string };
@@ -26,7 +31,6 @@ type RecordSheetDetailProps = {
 };
 
 export function RecordSheetDetail({
-  actions,
   backLabel = "이전 화면으로",
   draft,
   member,
@@ -34,6 +38,7 @@ export function RecordSheetDetail({
   onDraftChange,
   recordId,
 }: RecordSheetDetailProps) {
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const recordQuery = useQuery(recordDetailQueryOptions(recordId));
   const record = recordQuery.data;
   const regionText = record ? formatRecordRegionLabels(record, Number.POSITIVE_INFINITY) : "";
@@ -42,7 +47,7 @@ export function RecordSheetDetail({
     <div className="relative flex min-h-0 flex-1 flex-col">
       <div className="pointer-events-none absolute inset-x-5 top-7 z-20 flex items-center justify-between gap-3 [&>*]:pointer-events-auto">
         <BackButton aria-label={backLabel} onClick={onBack} />
-        {actions}
+        {record ? <RecordActionToolbar onDelete={() => setDeleteOpen(true)} recordId={recordId} /> : null}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]">
         <BottomSheet.Header className="pt-7 text-left" glass>
@@ -114,6 +119,13 @@ export function RecordSheetDetail({
           )}
         </div>
       </div>
+      <DeleteRecordConfirm
+        activity={record?.activity ?? ""}
+        onClose={() => setDeleteOpen(false)}
+        onDeleted={onBack}
+        open={deleteOpen}
+        recordId={recordId}
+      />
     </div>
   );
 }
