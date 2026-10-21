@@ -81,25 +81,6 @@ export const toDetailRow = (state: DemoState, record: DemoRecord) => ({
   weather: record.weather,
 });
 
-const toRecordPlacesRow = (state: DemoState, record: DemoRecord) => ({
-  id: record.id,
-  record_places: placesOf(state, record).map((place) => ({
-    place: {
-      address: place.address,
-      category_group_code: place.category_group_code,
-      category_name: place.category_name,
-      id: place.id,
-      name: place.name,
-      saved_at: place.saved_at,
-    },
-  })),
-  record_regions: record.regions.map(({ region_code, region_label, region_name }) => ({
-    region_code,
-    region_label,
-    region_name,
-  })),
-});
-
 const toPlaceDetailRow = ({ ...place }: DemoPlace) => place;
 
 /** SAVED_PLACE_COLUMNS와 같은 모양. 기록 수는 이 장소를 쓰는 기록을 센다. */
@@ -213,7 +194,7 @@ const readScope = (params: { latitude?: unknown; longitude?: unknown }) =>
  */
 export const resolveDemoQuery = (state: DemoState, queryKey: readonly unknown[], pageParam: unknown) => {
   const data = state;
-  const [scope, second, third, fourth] = queryKey;
+  const [scope, second, third] = queryKey;
   const findRecord = (id: unknown) => data.records.find((record) => record.id === id);
 
   if (scope === "records") {
@@ -228,7 +209,6 @@ export const resolveDemoQuery = (state: DemoState, queryKey: readonly unknown[],
     }
     if (second === "detail") {
       const record = findRecord(third);
-      if (fourth === "places") return record ? toRecordPlacesRow(data, record) : null;
       return record ? toDetailRow(data, record) : null;
     }
   }
@@ -251,11 +231,6 @@ export const resolveDemoQuery = (state: DemoState, queryKey: readonly unknown[],
       const searchScope = readScope(params);
       return toPlaceSearchResult(searchDemoKakaoPlaces(params.query, searchScope), params.query.trim(), searchScope);
     }
-  }
-
-  if (scope === "place-search") {
-    const query = String(second);
-    return toPlaceSearchResult(searchDemoKakaoPlaces(query), query.trim(), null);
   }
 
   if (scope === "regions" && second === "search") {

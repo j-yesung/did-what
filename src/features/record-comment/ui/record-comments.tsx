@@ -3,7 +3,9 @@
 import type { Dispatch, SetStateAction } from "react";
 
 import { PageSection } from "@/shared/ui/layouts";
+import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
+import { Spinner } from "@/shared/ui/spinner";
 
 import { useRecordComments } from "../model/use-record-comments";
 import { CommentCreateForm } from "./comment-create-form";
@@ -21,6 +23,10 @@ export function RecordComments({ draft: initialDraft, member, onDraftChange, rec
     comments,
     draft,
     hasNextPage,
+    isLoading,
+    isError,
+    isRetrying,
+    retry,
     isLoadingMore,
     isMoreError,
     loadMore,
@@ -38,6 +44,8 @@ export function RecordComments({ draft: initialDraft, member, onDraftChange, rec
         </h2>
       </header>
       <div className="flex flex-col">
+        {isLoading ? <Spinner aria-label="댓글을 불러오는 중" /> : null}
+        {isError ? <LoadErrorAlert title="댓글을 불러오지 못했어요" onRetry={retry} retrying={isRetrying} /> : null}
         {/* 오래된 것부터 보여주므로 더 오래된 댓글은 목록 위에서 불러온다. */}
         {hasNextPage ? (
           <LoadMoreButton

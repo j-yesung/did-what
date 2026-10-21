@@ -9,7 +9,6 @@ import {
   fetchRecordLocations,
   fetchRecordMonthBounds,
   fetchRecordPage,
-  fetchRecordPlaces,
   fetchRecordsInPeriod,
 } from "./client-queries";
 
@@ -25,14 +24,6 @@ export const recordDetailQueryOptions = (recordId: string) => {
     ...MAIN_QUERY_OPTIONS,
     queryKey: [...RECORD_DETAILS_QUERY_KEY, recordId],
     queryFn: () => fetchRecord(recordId),
-  });
-};
-
-export const recordPlacesQueryOptions = (recordId: string) => {
-  return queryOptions({
-    ...MAIN_QUERY_OPTIONS,
-    queryKey: [...RECORD_DETAILS_QUERY_KEY, recordId, "places"],
-    queryFn: () => fetchRecordPlaces(recordId),
   });
 };
 

@@ -1,18 +1,14 @@
 "use client";
 
-import { Fragment } from "react";
-
 import { NotePencilIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import {
   EmptyRecords,
-  formatRecordTimelineMonth,
-  getRecordTimelineItemState,
   hasRecordFilters,
-  RecordCard,
   type RecordFilters,
   RecordTimeline,
+  RecordTimelineItems,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { cn } from "@/shared/lib/utils";
@@ -70,8 +66,6 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
     );
   }
 
-  let monthStartIndex = 0;
-
   return (
     <RecordTimeline
       aria-busy={recordsQuery.isPlaceholderData || undefined}
@@ -81,32 +75,7 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
         recordsQuery.isPlaceholderData && "opacity-50",
       )}
     >
-      {records.map((record, index) => {
-        const { startsMonth } = getRecordTimelineItemState(records, index);
-        if (startsMonth) monthStartIndex = index;
-        const endsMonth = record.recorded_at.slice(0, 7) !== records[index + 1]?.recorded_at.slice(0, 7);
-
-        return (
-          <Fragment key={record.id}>
-            {startsMonth ? (
-              <p
-                className={cn(
-                  "pb-6 text-center font-semibold text-lg tracking-tight",
-                  index > 0 && "mt-6 border-border border-t border-dashed pt-7",
-                )}
-              >
-                {formatRecordTimelineMonth(record.recorded_at)}
-              </p>
-            ) : null}
-            <RecordCard
-              endsMonth={endsMonth}
-              onDetailPrefetch={prefetchComments}
-              record={record}
-              side={(index - monthStartIndex) % 2 === 0 ? "left" : "right"}
-            />
-          </Fragment>
-        );
-      })}
+      <RecordTimelineItems records={records} onDetailPrefetch={prefetchComments} />
       {recordsQuery.hasNextPage ? (
         <LoadMoreButton
           error={recordsQuery.isFetchNextPageError ? "기록을 더 불러오지 못했어요." : undefined}

@@ -1,26 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  memo,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  DayButton,
-  type DayButtonProps,
-  DayPicker,
-  type MonthCaptionProps,
-  type WeekProps,
-  type WeeksProps,
-} from "react-day-picker";
-import { ko } from "react-day-picker/locale";
+import { type ReactNode, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
 import { CaretDownIcon, CaretLeftIcon, CaretRightIcon, NotePencilIcon } from "@phosphor-icons/react";
@@ -31,15 +11,7 @@ import { animate } from "motion/mini";
 import { motion, type PanInfo, useMotionTemplate, useMotionValue, useReducedMotion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 
-import {
-  normalizeRecordCategory,
-  RECORD_CATEGORY_FILL,
-  type RecordSummary,
-  recordCalendarQueryOptions,
-  recordMonthBoundsQueryOptions,
-} from "@/entities/record";
-import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
-import { cn } from "@/shared/lib/utils";
+import { type RecordSummary, recordCalendarQueryOptions, recordMonthBoundsQueryOptions } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
 import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -48,7 +20,6 @@ import {
   getCalendarHref,
   getCalendarRange,
   getCalendarSwipeMonthShift,
-  getCalendarWeekLayout,
   getDefaultCalendarDate,
   getToday,
   groupRecordsByDate,
@@ -56,194 +27,18 @@ import {
   parseCalendarMonth,
   shiftMonth,
 } from "../model/record-calendar";
+import { CalendarMonth } from "./calendar-month";
 import { RecordDayList } from "./record-day-list";
 import { RecordDetailBottomSheet } from "./record-detail-bottom-sheet";
 
-const TITLE_LINES = 1;
 // 앞뒤 달을 함께 그려 드래그 중에도 다음 달이 손가락을 따라 나타나게 한다.
 const MONTH_OFFSETS = [-1, 0, 1];
 const CURRENT_MONTH_INDEX = 1;
-const EMPTY_RECORDS_BY_DATE: ReadonlyMap<string, readonly RecordSummary[]> = new Map();
-const EMPTY_HIDDEN_COUNTS: ReadonlyMap<string, number> = new Map();
 const SNAP_SPRING = { bounce: 0, type: spring, visualDuration: 0.25 } as const;
-
-const RecordCalendarContext = createContext(EMPTY_RECORDS_BY_DATE);
-const RecordWeekContext = createContext(EMPTY_HIDDEN_COUNTS);
-
-/**
- * 셀 전체가 날짜 버튼 하나다. 제목 띠는 보여주기만 하고 누를 수 없다.
- * 라이브러리 DayButton으로 감싸 키보드 이동 때의 포커스 처리를 그대로 쓴다.
- */
-function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps) {
-  const recordsByDate = useContext(RecordCalendarContext);
-  const hiddenCount = useContext(RecordWeekContext).get(day.isoDate) ?? 0;
-  const records = recordsByDate.get(day.isoDate) ?? [];
-
-  return (
-    <DayButton
-      {...props}
-      aria-label={
-        records.length > 0
-          ? `${props["aria-label"]}, 기록 ${records.length}개, ${records.map((record) => record.activity).join(", ")}`
-          : props["aria-label"]
-      }
-      className={cn(
-        "flex w-full min-w-0 flex-1 cursor-pointer flex-col items-center rounded-lg pt-0.5 after:inset-0",
-        PRESS_FEEDBACK,
-        FOCUS_RING,
-      )}
-      day={day}
-      modifiers={modifiers}
-    >
-      <span
-        className={cn(
-          "flex size-6 shrink-0 items-center justify-center rounded-full text-sm tabular-nums",
-          modifiers.outside && "text-muted-foreground",
-          // 파란 글자는 다크 배경에서 대비가 모자라 오늘은 테두리로만 표시한다.
-          modifiers.today && "font-semibold ring-1 ring-primary",
-          modifiers.selected && "bg-primary font-semibold text-primary-foreground ring-0",
-        )}
-      >
-        {children}
-      </span>
-      {hiddenCount > 0 ? (
-        <span
-          aria-hidden="true"
-          className="absolute top-1 right-0.5 text-[0.5625rem] text-muted-foreground tabular-nums leading-none"
-        >
-          +{hiddenCount}
-        </span>
-      ) : null}
-    </DayButton>
-  );
-}
-
-/**
- * 제목 띠를 주 위에 겹쳐 그리려고 표를 flex로 배치한다.
- * 표 요소의 display를 바꾸면 Safari가 행 의미를 지우는 경우가 있어 역할을 직접 적는다.
- */
-function RecordWeeks(props: WeeksProps) {
-  return <tbody role="rowgroup" {...props} />;
-}
-
-function RecordWeek({ week, children, ...props }: WeekProps) {
-  const recordsByDate = useContext(RecordCalendarContext);
-  const dates = useMemo(() => week.days.map((day) => day.isoDate), [week]);
-  const layout = useMemo(() => getCalendarWeekLayout(recordsByDate, dates, TITLE_LINES), [dates, recordsByDate]);
-  const hiddenCounts = useMemo(
-    () => new Map(dates.map((date, index) => [date, layout.hiddenCounts[index]])),
-    [dates, layout],
-  );
-  const firstDate = dates[0];
-  const lastDate = dates[dates.length - 1];
-
-  return (
-    <RecordWeekContext.Provider value={hiddenCounts}>
-      <tr role="row" {...props}>
-        {children}
-        {/* 날짜 버튼의 위 여백(0.125rem)과 숫자(1.5rem) 아래에 제목 띠를 놓는다. */}
-        <td
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-6.75 grid auto-rows-[1rem] grid-cols-7 gap-y-px"
-          colSpan={7}
-          role="presentation"
-        >
-          {layout.segments.map(({ record, start, end, lane }) => (
-            <span
-              className={cn(
-                "fade-in-0 mx-0.5 min-w-0 animate-in truncate rounded-sm px-1 text-[0.625rem] text-foreground leading-4 duration-150 motion-reduce:animate-none",
-                RECORD_CATEGORY_FILL[normalizeRecordCategory(record.category)],
-                record.recorded_at < firstDate && "ml-0 rounded-l-none",
-                (record.recorded_until ?? record.recorded_at) > lastDate && "mr-0 rounded-r-none",
-                week.days.slice(start, end + 1).every((day) => day.outside) && "opacity-40",
-              )}
-              key={record.id}
-              style={{ gridColumn: `${start + 1} / span ${end - start + 1}`, gridRow: lane + 1 }}
-            >
-              {record.activity}
-            </span>
-          ))}
-        </td>
-      </tr>
-    </RecordWeekContext.Provider>
-  );
-}
-
-// 화면의 월 제목은 바깥 헤더가 맡으므로 라이브러리 캡션은 숨긴다.
-function RecordMonthCaption({
-  calendarMonth: _calendarMonth,
-  displayIndex: _displayIndex,
-  ...props
-}: MonthCaptionProps) {
-  return <div aria-hidden="true" {...props} />;
-}
-
-// 렌더마다 새 객체를 넘기면 DayPicker가 날짜 칸을 전부 다시 만들어 누름 반응과 포커스가 끊긴다.
-const CALENDAR_COMPONENTS = {
-  DayButton: RecordDayButton,
-  MonthCaption: RecordMonthCaption,
-  Week: RecordWeek,
-  Weeks: RecordWeeks,
-};
-
-const CALENDAR_CLASS_NAMES = {
-  day: "flex min-w-0 flex-1 basis-0 flex-col",
-  month: "flex w-full flex-col",
-  month_caption: "pointer-events-none absolute size-px overflow-hidden opacity-0",
-  month_grid: "flex flex-col",
-  months: "flex flex-col",
-  root: "flex w-full min-w-0 flex-col",
-  week: "relative flex h-11.5 border-t",
-  weekday: "min-w-0 flex-1 basis-0 pb-1.5 text-center font-normal text-muted-foreground text-xs",
-  weekdays: "flex",
-  weeks: "flex flex-col",
-};
 
 const replaceCalendarHref = (month: string, date?: string | null) => {
   window.history.replaceState(window.history.state, "", getCalendarHref(month, date, window.location.search));
 };
-
-type CalendarMonthProps = {
-  month: string;
-  onDayClick: (date: Date) => void;
-  onMonthChange: (date: Date) => void;
-  records: readonly RecordSummary[] | undefined;
-  selectedDate: string | null;
-  today: string;
-};
-
-/** 한 달치 달력. 날짜 선택처럼 월 데이터가 바뀌지 않는 렌더에서는 다시 그리지 않는다. */
-const CalendarMonth = memo(function CalendarMonth({
-  month,
-  onDayClick,
-  onMonthChange,
-  records,
-  selectedDate,
-  today,
-}: CalendarMonthProps) {
-  const recordsByDate = useMemo(
-    () => (records ? groupRecordsByDate(records, getCalendarRange(month)) : EMPTY_RECORDS_BY_DATE),
-    [month, records],
-  );
-
-  return (
-    <RecordCalendarContext.Provider value={recordsByDate}>
-      <DayPicker
-        classNames={CALENDAR_CLASS_NAMES}
-        components={CALENDAR_COMPONENTS}
-        fixedWeeks
-        hideNavigation
-        locale={ko}
-        modifiers={{ selected: selectedDate ? parseISO(selectedDate) : false }}
-        month={parseISO(`${month}-01`)}
-        onDayClick={onDayClick}
-        onMonthChange={onMonthChange}
-        showOutsideDays
-        today={parseISO(today)}
-      />
-    </RecordCalendarContext.Provider>
-  );
-});
 
 function CalendarMonthBuffer({ active, children }: { active: boolean; children: ReactNode }) {
   // 새로 추가되는 화면 밖 달은 월 확정과 좌표 보정이 끝난 뒤 낮은 우선순위로 그린다.

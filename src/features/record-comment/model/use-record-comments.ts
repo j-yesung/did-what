@@ -202,6 +202,10 @@ export const useRecordComments = ({
     // 서버와 캐시는 최신순이다. 대화처럼 오래된 것부터 보여주고, 새 댓글이 입력창 가까이에 생기게 뒤집는다.
     comments: [...optimisticComments].reverse(),
     draft,
+    isLoading: commentsQuery.isPending,
+    isError: commentsQuery.isError && !commentsQuery.data,
+    isRetrying: commentsQuery.isFetching,
+    retry: () => void commentsQuery.refetch(),
     hasNextPage: commentsQuery.hasNextPage,
     isLoadingMore: commentsQuery.isFetchingNextPage,
     isMoreError: commentsQuery.isFetchNextPageError,
