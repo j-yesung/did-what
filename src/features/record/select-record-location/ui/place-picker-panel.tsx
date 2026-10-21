@@ -366,7 +366,7 @@ export function PlacePickerPanel({
             aria-label={
               optimisticSelectedKeys.size > 0 ? `${optimisticSelectedKeys.size}곳 추가` : "장소를 선택해 주세요"
             }
-            className="relative size-15 border border-border/50 bg-foreground! text-background [&_svg]:size-7"
+            className="h-12 min-w-0 border border-border/50 bg-foreground! px-5 text-background text-sm [&_svg]:size-5"
             disabled={optimisticSelectedKeys.size === 0 || addQueued}
             onClick={() => {
               if (resolving) {
@@ -376,7 +376,7 @@ export function PlacePickerPanel({
               setSelectionError(onAdd([...selectedPlaces.values()]));
             }}
             title={optimisticSelectedKeys.size > 0 ? `${optimisticSelectedKeys.size}곳 추가` : "장소를 선택해 주세요"}
-            shape="circle"
+            shape="pill"
             type="button"
           >
             {addQueued ? (
@@ -388,14 +388,7 @@ export function PlacePickerPanel({
                 weight="bold"
               />
             )}
-            {optimisticSelectedKeys.size > 0 && !addQueued ? (
-              <span
-                aria-hidden="true"
-                className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-full border-[3px] border-popover bg-light px-1 font-bold text-[11px] text-light-foreground leading-none shadow-sm"
-              >
-                {optimisticSelectedKeys.size}
-              </span>
-            ) : null}
+            <span>{optimisticSelectedKeys.size}곳 추가</span>
           </LiquidGlassButton>
         ) : null}
       </div>

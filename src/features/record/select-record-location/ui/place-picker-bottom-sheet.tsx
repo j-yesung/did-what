@@ -2,6 +2,8 @@
 
 import { type Dispatch, type SetStateAction, useState } from "react";
 
+import { PlusIcon } from "@phosphor-icons/react";
+
 import type { PlaceOption } from "@/entities/place";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
@@ -47,6 +49,7 @@ export function PlacePickerBottomSheet({
         disabled={disabled}
         render={<Button disabled={disabled} fullWidth size="large" type="button" variant="neutral" />}
       >
+        <PlusIcon aria-hidden="true" className="size-4" />
         장소 추가
       </BottomSheet.Trigger>
       <BottomSheet.VirtualKeyboardProvider>
