@@ -106,6 +106,8 @@ test("방문 지역은 직접 고른 지역과 장소의 지역을 중복 없이
 test("이미 있는 장소는 그 장소의 지역을 방문 지역으로 데려온다", () => {
   const place = toExistingRecordLocationPlace({
     address: "서울 마포구 망원로 1",
+    category_group_code: "CE7",
+    category_name: "음식점 > 카페",
     id: "00000000-0000-4000-8000-000000000001",
     latitude: 37.55,
     longitude: 126.9,
@@ -115,6 +117,8 @@ test("이미 있는 장소는 그 장소의 지역을 방문 지역으로 데려
   });
 
   assert.equal(place.key, "existing:00000000-0000-4000-8000-000000000001");
+  assert.equal(place.category_group_code, "CE7");
+  assert.equal(place.category_name, "음식점 > 카페");
   assert.deepEqual(place.reference, { kind: "existing", placeId: "00000000-0000-4000-8000-000000000001", save: false });
   assert.deepEqual(place.region, {
     code: "1144012300",

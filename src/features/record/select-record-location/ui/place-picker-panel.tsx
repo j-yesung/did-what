@@ -170,7 +170,11 @@ export function PlacePickerPanel({
         setSelectedPlaces((current) => {
           if (current.size >= maxSelectionCount || selectedKeys.has(result.place.key)) return current;
           const next = new Map(current);
-          next.set(result.place.key, result.place);
+          next.set(result.place.key, {
+            ...result.place,
+            category_group_code: place.categoryGroupCode,
+            category_name: place.categoryName,
+          });
           return next;
         });
       } catch {

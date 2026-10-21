@@ -4,7 +4,7 @@ import { type Dispatch, type SetStateAction, useState } from "react";
 
 import { XIcon } from "@phosphor-icons/react";
 
-import type { PlaceOption } from "@/entities/place";
+import { PlaceIconTile, type PlaceOption } from "@/entities/place";
 import { getRecordRegionKey, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
@@ -156,12 +156,16 @@ export function RecordLocationFields({
             {places.map((place) => (
               <li className="rounded-xl border bg-card px-3 py-2" key={place.key}>
                 <div className="flex min-h-11 items-center gap-3">
+                  <PlaceIconTile
+                    place={
+                      savedPlaces.find(
+                        (saved) => place.reference.kind === "existing" && saved.id === place.reference.placeId,
+                      ) ?? place
+                    }
+                  />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-sm">{place.name}</p>
-                    <p className="mt-0.5 truncate text-muted-foreground text-xs">
-                      {place.region.label}
-                      {place.address ? ` · ${place.address}` : ""}
-                    </p>
+                    <p className="line-clamp-2 break-words font-medium text-sm">{place.name}</p>
+                    <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.region.label}</p>
                   </div>
                   <IconButton
                     aria-label={`${place.name} 방문 장소에서 제거`}

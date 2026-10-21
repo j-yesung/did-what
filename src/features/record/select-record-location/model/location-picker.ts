@@ -6,7 +6,7 @@ import type { KakaoRegion } from "@/shared/api/kakao-local";
 
 export type RecordLocationRegion = KakaoRegion & { label: string };
 
-export type RecordLocationPlace = {
+export type RecordLocationPlace = Pick<PlaceOption, "category_group_code" | "category_name"> & {
   address: string | null;
   key: string;
   name: string;
@@ -43,6 +43,8 @@ export const toExistingRecordLocationPlace = (place: Omit<PlaceOption, "saved_at
 
   return {
     address: place.address,
+    category_group_code: place.category_group_code,
+    category_name: place.category_name,
     key: `existing:${place.id}`,
     name: place.name,
     reference: { kind: "existing", placeId: place.id, save: false },
