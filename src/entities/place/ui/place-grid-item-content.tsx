@@ -20,7 +20,7 @@ export function PlaceGridItemContent({ badge, place, selected }: PlaceGridItemCo
           className={cn(
             "aspect-square size-auto w-full rounded-2xl [&_svg]:size-6.5",
             selected !== undefined && "border-2 border-transparent",
-            selected && "border-primary",
+            selected && "border-accent-text",
           )}
           place={place}
         />

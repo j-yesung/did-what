@@ -22,7 +22,7 @@ const PLACE_ICONS = {
   other: MapPinIcon,
 };
 const PLACE_COLORS: Record<PlaceKind, string> = {
-  cafe: "bg-secondary text-primary",
+  cafe: "bg-accent-text/8 text-accent-text",
   restaurant: "bg-category-date/8 text-category-date",
   park: "bg-category-daily/8 text-category-daily",
   attraction: "bg-place-attraction/8 text-place-attraction",
