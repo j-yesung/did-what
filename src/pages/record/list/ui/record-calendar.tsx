@@ -200,7 +200,7 @@ const CALENDAR_CLASS_NAMES = {
 };
 
 const replaceCalendarHref = (month: string, date?: string | null) => {
-  window.history.replaceState(window.history.state, "", getCalendarHref(month, date));
+  window.history.replaceState(window.history.state, "", getCalendarHref(month, date, window.location.search));
 };
 
 type CalendarMonthProps = {

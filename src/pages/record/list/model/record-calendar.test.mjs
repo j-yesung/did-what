@@ -1,4 +1,5 @@
 import {
+  getCalendarHref,
   getCalendarWeekLayout,
   getDefaultCalendarDate,
   groupRecordsByDate,
@@ -18,6 +19,25 @@ const record = (id, start, end = null) => ({
 const layout = (records, days = dates, lines = 2) =>
   getCalendarWeekLayout(groupRecordsByDate(records, range), days, lines);
 const positions = (result) => result.segments.map(({ record, start, end, lane }) => [record.id, start, end, lane]);
+
+test("달과 날짜를 바꿔도 목록의 검색·기간·카테고리·정렬 조건을 보존한다", () => {
+  const href = getCalendarHref(
+    "2026-09",
+    "2026-09-12",
+    "view=list&month=2026-08&date=2026-08-15&q=커피&category=travel&sort=oldest&from=2026-01-01",
+  );
+  const params = new URLSearchParams(href.split("?")[1]);
+  assert.equal(params.get("view"), "calendar");
+  assert.equal(params.get("month"), "2026-09");
+  assert.equal(params.get("date"), "2026-09-12");
+  assert.equal(params.get("q"), "커피");
+  assert.equal(params.get("category"), "travel");
+  assert.equal(params.get("sort"), "oldest");
+  assert.equal(params.get("from"), "2026-01-01");
+  const reset = new URLSearchParams(getCalendarHref("2026-10", null, params.toString()).split("?")[1]);
+  assert.equal(reset.has("date"), false);
+  assert.equal(reset.get("q"), "커피");
+});
 
 test("토요일에 시작한 기간은 다음 주 일요일부터 이어지는 하나의 띠로 표시한다", () => {
   const records = [record("trip", "2026-10-03", "2026-10-05")];
