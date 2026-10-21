@@ -32,7 +32,7 @@ const SEGMENTED_CONTROL_ITEM =
   "relative z-10 flex min-w-0 flex-1 cursor-pointer transition-transform duration-150 ease-out has-disabled:cursor-not-allowed has-disabled:opacity-50";
 
 const SEGMENTED_CONTROL_ITEM_SURFACE =
-  "flex w-full items-center justify-center rounded-lg px-2 font-medium text-muted-foreground transition-colors duration-200 ease-out";
+  "flex w-full items-center justify-center rounded-lg px-2 font-medium text-segmented-foreground transition-colors duration-200 ease-out";
 
 type SegmentedControlProps = Omit<React.ComponentProps<"div">, "onChange"> & {
   name?: string;
@@ -60,7 +60,7 @@ function SegmentedControl({
   return (
     <SegmentedControlContext.Provider value={{ name, onValueChange, size, value }}>
       <div
-        className={cn("relative flex w-full rounded-xl bg-border p-1", SEGMENTED_CONTROL_SIZE[size], className)}
+        className={cn("relative flex w-full rounded-xl bg-segmented p-1", SEGMENTED_CONTROL_SIZE[size], className)}
         data-size={size}
         data-slot="segmented-control"
         role="radiogroup"
@@ -69,7 +69,7 @@ function SegmentedControl({
       >
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-1 left-1 rounded-lg bg-surface shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] will-change-transform motion-reduce:transition-none"
+          className="pointer-events-none absolute inset-y-1 left-1 rounded-lg bg-segmented-active shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] will-change-transform motion-reduce:transition-none"
           data-slot="segmented-control-indicator"
           style={{
             transform: `translateX(${selectedIndex * 100}%)`,
@@ -110,7 +110,7 @@ function SegmentedControlItem({ children, className, disabled, render, value, ..
         SEGMENTED_CONTROL_ITEM_SURFACE,
         SEGMENTED_CONTROL_ITEM_SIZE[context.size],
         "touch-manipulation select-none [-webkit-tap-highlight-color:transparent] active:scale-[0.98]",
-        checked && "text-foreground",
+        checked && "text-segmented-active-foreground",
         FOCUS_RING,
         className,
       ),
@@ -137,7 +137,7 @@ function SegmentedControlItem({ children, className, disabled, render, value, ..
         className={cn(
           SEGMENTED_CONTROL_ITEM_SURFACE,
           SEGMENTED_CONTROL_ITEM_SIZE[context.size],
-          "peer-checked:text-foreground peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
+          "peer-checked:text-segmented-active-foreground peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
         )}
       >
         {children}

@@ -41,7 +41,7 @@ export function PlacePickerPanel({
   selectedKeys,
   savedPlaces,
 }: PlacePickerPanelProps) {
-  const [tab, setTab] = useState(savedPlaces.length ? "saved" : "search");
+  const [tab, setTab] = useState("search");
   const [savedQuery, setSavedQuery] = useState("");
   const [selectionError, setSelectionError] = useState<string>();
   const [keyword, setKeyword] = useState("");
@@ -182,11 +182,11 @@ export function PlacePickerPanel({
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-5 pt-4 pb-0">
         <SegmentedControl aria-label="장소 찾기 범위" name="place-picker-tab" onValueChange={setTab} value={tab}>
-          <SegmentedControlItem disabled={resolving || addQueued} value="saved">
-            내 장소
-          </SegmentedControlItem>
           <SegmentedControlItem disabled={resolving || addQueued} value="search">
             검색
+          </SegmentedControlItem>
+          <SegmentedControlItem disabled={resolving || addQueued} value="saved">
+            저장한 장소
           </SegmentedControlItem>
         </SegmentedControl>
         {tab === "saved" ? (
@@ -195,7 +195,7 @@ export function PlacePickerPanel({
               aria-label="저장한 장소 검색"
               maxLength={100}
               onValueChange={setSavedQuery}
-              placeholder="장소 이름 또는 주소 검색"
+              placeholder="저장한 장소에서 이름 또는 주소로 찾기"
               value={savedQuery}
             />
             {filteredSavedPlaces.length ? (
