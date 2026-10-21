@@ -113,18 +113,18 @@ function BottomSheetContent({
           data-snap-points={hasSnapPoints ? "" : undefined}
           className={cn(
             // Base.
-            "group/bottom-sheet-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 flex h-(--drawer-content-height) max-h-(--drawer-content-max-height) min-h-0 w-full select-none flex-col rounded-t-3xl border border-x-0 border-b-0 bg-popover text-popover-foreground text-sm shadow-(--shadow-drawer) outline-none transition-[transform,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] motion-reduce:transition-none",
+            "group/bottom-sheet-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 flex h-(--drawer-content-height) max-h-(--drawer-content-max-height) min-h-0 w-full select-none flex-col rounded-t-3xl border border-x-0 border-b-0 bg-surface text-foreground text-sm shadow-(--shadow-drawer) outline-none transition-[transform,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] motion-reduce:transition-none",
             // Nested.
             "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95",
             // Bleed.
-            "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-(--bleed) after:bg-(--drawer-bleed-background,var(--color-popover))",
+            "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-(--bleed) after:bg-(--drawer-bleed-background,var(--color-surface))",
             // Sizing.
             "[--drawer-content-height:var(--drawer-height,auto)] [--drawer-content-max-height:75dvh] data-snap-points:[--drawer-content-height:100dvh]",
             // Stack.
             "[--bleed:3rem] [--peek:1rem] [--stack-height:var(--drawer-frontmost-height,var(--drawer-height,0px))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-scale-base:max(0,calc(1-(var(--nested-drawers)*var(--stack-step))))] [--stack-scale:clamp(0,calc(var(--stack-scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--stack-shrink:calc(1-var(--stack-scale))] [--stack-step:0.05]",
             // Transitions.
             "data-ending-style:transform-(--closed-transform) data-starting-style:transform-(--closed-transform) data-ending-style:data-nested-drawer-swiping:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-ending-style:opacity-[0.9999] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-nested-drawer-swiping:duration-0 data-swiping:duration-0",
-            "[--drawer-bleed-background:var(--color-popover)] [--drawer-inset:0px]",
+            "[--drawer-bleed-background:var(--color-surface)] [--drawer-inset:0px]",
             // Axis: y. 넓은 화면에서는 앱 본문 폭 안에서만 열리게 한다.
             "inset-x-0 mx-auto min-[700px]:max-w-(--app-width)",
             "data-nested-drawer-open:h-(--stack-height)",
@@ -168,7 +168,7 @@ function BottomSheetHeader({
       {glass ? (
         <span
           aria-hidden="true"
-          className="mask-[linear-gradient(to_bottom,black_calc(100%-1.5rem),rgb(0_0_0/0.6)_calc(100%-1rem),rgb(0_0_0/0.2)_calc(100%-0.5rem),transparent)] pointer-events-none absolute inset-x-0 top-0 -bottom-6 -z-10 bg-popover/40 backdrop-blur-xs"
+          className="mask-[linear-gradient(to_bottom,black_calc(100%-1.5rem),rgb(0_0_0/0.6)_calc(100%-1rem),rgb(0_0_0/0.2)_calc(100%-0.5rem),transparent)] pointer-events-none absolute inset-x-0 top-0 -bottom-6 -z-10 bg-surface/40 backdrop-blur-xs"
         />
       ) : null}
       {children}
