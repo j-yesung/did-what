@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 import {
   getPlaceRegionLabel,
-  PlaceIconTile,
+  PlaceGridItemContent,
   placeQueryKey,
   placeRecordsQueryOptions,
   placesQueryOptions,
@@ -51,18 +51,16 @@ function SavedPlaceListItem({ onDetailPrefetch, place }: SavedPlaceListItemProps
         }}
         prefetch={false}
       >
-        <span aria-hidden="true" className="relative block w-[84%]">
-          <PlaceIconTile className="aspect-square size-auto w-full rounded-2xl [&_svg]:size-6.5" place={place} />
-          {recordCount > 0 ? (
-            <Badge className="absolute top-1.5 right-1.5 h-4.5 min-w-4.5 rounded-md bg-surface/80 px-1 py-0 text-[10px] tabular-nums leading-none">
-              {recordCount}
-            </Badge>
-          ) : null}
-        </span>
-        <span className="flex w-full min-w-0 flex-col gap-0.5 text-center">
-          <span className="line-clamp-2 font-semibold text-[11px] leading-3.5">{place.name}</span>
-          <span className="w-full truncate text-[10px] text-muted-foreground leading-3">{regionLabel}</span>
-        </span>
+        <PlaceGridItemContent
+          badge={
+            recordCount > 0 ? (
+              <Badge className="absolute top-1.5 right-1.5 h-4.5 min-w-4.5 rounded-md bg-surface/80 px-1 py-0 text-[10px] tabular-nums leading-none">
+                {recordCount}
+              </Badge>
+            ) : null
+          }
+          place={place}
+        />
       </PressLink>
     </li>
   );

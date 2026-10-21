@@ -22,6 +22,7 @@ import {
   toExistingRecordLocationPlace,
 } from "../model/location-picker";
 import { SelectablePlaceCard } from "./selectable-place-card";
+import { SelectablePlaceGridItem } from "./selectable-place-grid-item";
 
 type PlacePickerPanelProps = {
   maxSelectionCount: number;
@@ -42,7 +43,6 @@ export function PlacePickerPanel({
   savedPlaces,
 }: PlacePickerPanelProps) {
   const [tab, setTab] = useState("search");
-  const [savedQuery, setSavedQuery] = useState("");
   const [selectionError, setSelectionError] = useState<string>();
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState("");
@@ -81,17 +81,10 @@ export function PlacePickerPanel({
       .filter((place) => place.provider === "kakao" && place.region_name)
       .map((place) => [place.provider_place_id, place]),
   );
-  const normalizedSavedQuery = savedQuery.trim().toLocaleLowerCase("ko-KR");
   const inRegion = (place: PlaceOption) =>
     regions.some((region) => place.region_code.slice(0, 5) === region.code.slice(0, 5));
-  const filteredSavedPlaces = savedPlaces
-    .filter(
-      (place) =>
-        place.region_name &&
-        [place.name, place.address, place.region_name].some((value) =>
-          value?.toLocaleLowerCase("ko-KR").includes(normalizedSavedQuery),
-        ),
-    )
+  const selectableSavedPlaces = savedPlaces
+    .filter((place) => place.region_name)
     .toSorted((a, b) => Number(inRegion(b)) - Number(inRegion(a)));
   const isSavedPlaceAdded = (place: PlaceOption) =>
     selectedKeys.has(`existing:${place.id}`) ||
@@ -191,38 +184,29 @@ export function PlacePickerPanel({
         </SegmentedControl>
         {tab === "saved" ? (
           <>
-            <SearchField
-              aria-label="저장한 장소 검색"
-              maxLength={100}
-              onValueChange={setSavedQuery}
-              placeholder="저장한 장소에서 이름 또는 주소로 찾기"
-              value={savedQuery}
-            />
-            {filteredSavedPlaces.length ? (
+            {selectableSavedPlaces.length ? (
               <ul
                 aria-label="저장한 장소"
-                className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain p-1"
+                className="grid min-h-0 min-w-0 flex-1 grid-cols-4 content-start items-start gap-x-2.5 gap-y-4 overflow-y-auto overflow-x-hidden overscroll-contain p-1"
               >
-                {filteredSavedPlaces.map((place) => {
+                {selectableSavedPlaces.map((place) => {
                   const added = isSavedPlaceAdded(place);
                   const selected = optimisticSelectedKeys.has(`existing:${place.id}`);
                   const selectionLimitReached = optimisticSelectedKeys.size >= maxSelectionCount && !selected;
                   return (
-                    <SelectablePlaceCard
+                    <SelectablePlaceGridItem
                       added={added}
-                      address={place.address ?? place.region_name ?? "주소 정보 없음"}
-                      checkboxDisabled={selectionLimitReached}
                       disabled={added || resolving || selectionLimitReached}
                       key={place.id}
-                      name={place.name}
                       onSelect={() => toggleSavedPlace(place)}
+                      place={place}
                       selected={selected}
                     />
                   );
                 })}
               </ul>
             ) : (
-              <p className="py-8 text-center text-muted-foreground text-sm">일치하는 저장 장소가 없어요.</p>
+              <p className="py-8 text-center text-muted-foreground text-sm">선택할 수 있는 저장한 장소가 없어요.</p>
             )}
           </>
         ) : (
