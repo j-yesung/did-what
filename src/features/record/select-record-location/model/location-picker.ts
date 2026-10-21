@@ -15,22 +15,28 @@ export type RecordLocationPlace = Pick<PlaceOption, "category_group_code" | "cat
   region: RecordLocationRegion;
 };
 
-export type PlacePickerTab = "search" | "saved";
+export type PlacePickerTab = "places" | "regions";
 
 export type PlacePickerDraft = {
   keyword: string;
   query: string;
+  regionKeyword: string;
+  regionQuery: string;
   scopeCode: string | null;
   selectedPlaces: Map<string, RecordLocationPlace>;
+  selectedRegions: Map<string, RecordLocationRegion>;
   tab: PlacePickerTab;
 };
 
 export const createPlacePickerDraft = (): PlacePickerDraft => ({
   keyword: "",
   query: "",
+  regionKeyword: "",
+  regionQuery: "",
   scopeCode: null,
   selectedPlaces: new Map(),
-  tab: "search",
+  selectedRegions: new Map(),
+  tab: "places",
 });
 
 /** "서울 마포구 망원동"에서 "망원동"처럼 전체 지역명의 마지막 마디. */

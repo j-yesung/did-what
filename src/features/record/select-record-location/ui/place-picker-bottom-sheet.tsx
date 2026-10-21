@@ -19,7 +19,7 @@ import { PlacePickerPanel } from "./place-picker-panel";
 type PlacePickerBottomSheetProps = {
   disabled?: boolean;
   maxSelectionCount: number;
-  onAdd: (places: RecordLocationPlace[]) => string | undefined;
+  onAdd: (places: RecordLocationPlace[], regions: RecordLocationRegion[]) => string | undefined;
   draft?: PlacePickerDraft;
   onDraftChange?: Dispatch<SetStateAction<PlacePickerDraft>>;
   searchRegionName?: string;
@@ -50,7 +50,7 @@ export function PlacePickerBottomSheet({
         render={<Button disabled={disabled} fullWidth size="large" type="button" variant="neutral" />}
       >
         <PlusIcon aria-hidden="true" className="size-4" />
-        장소 추가
+        방문한 곳 추가
       </BottomSheet.Trigger>
       <BottomSheet.VirtualKeyboardProvider>
         <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--drawer-content-max-height)]">
@@ -60,9 +60,13 @@ export function PlacePickerBottomSheet({
             searchRegionName={searchRegionName}
             maxSelectionCount={maxSelectionCount}
             onAdd={(places) => {
-              const error = onAdd(places);
+              const error = onAdd(places, [...(draft ?? localDraft).selectedRegions.values()]);
               if (error) return error;
-              setDraft((current) => ({ ...current, selectedPlaces: new Map() }));
+              setDraft((current) => ({
+                ...current,
+                selectedPlaces: new Map(),
+                selectedRegions: new Map(),
+              }));
               setOpen(false);
             }}
             regions={regions}

@@ -1,23 +1,18 @@
 "use client";
 
-import {
-  type Dispatch,
-  type SetStateAction,
-  type SubmitEvent,
-  useEffect,
-  useMemo,
-  useOptimistic,
-  useState,
-  useTransition,
-} from "react";
+import { type Dispatch, type SetStateAction, type SubmitEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { CheckIcon, WarningCircleIcon } from "@phosphor-icons/react";
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { CheckIcon } from "@animateicons/react/lucide";
+import { ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 
-import { type PlaceOption, type PlaceSearchResult, searchPlaces } from "@/entities/place";
+import { getPlaceRegionLabel, type PlaceOption, type PlaceSearchResult, searchPlaces } from "@/entities/place";
+import { getRecordRegionKey, MAX_VISITED_PLACES, recordLocationsQueryOptions } from "@/entities/record";
+import { useRegionSearch } from "@/entities/region";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { KAKAO_SEARCH_MAX_PAGE, type KakaoPlace } from "@/shared/api/kakao-local";
 import { useActionOverride } from "@/shared/lib/action-override";
+import { showToast } from "@/shared/lib/toast";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -30,17 +25,18 @@ import { Spinner } from "@/shared/ui/spinner";
 
 import { resolveRecordPlace } from "../api/resolve-record-location";
 import {
+  getRecordLocationSelectionError,
   type PlacePickerDraft,
   type RecordLocationPlace,
   type RecordLocationRegion,
   toExistingRecordLocationPlace,
+  toRecentRegions,
 } from "../model/location-picker";
 import { SelectablePlaceCard } from "./selectable-place-card";
-import { SelectablePlaceGridItem } from "./selectable-place-grid-item";
 
 type PlacePickerPanelProps = {
   maxSelectionCount: number;
-  onAdd: (places: RecordLocationPlace[]) => string | undefined;
+  onAdd: (places: RecordLocationPlace[], regions: RecordLocationRegion[]) => string | undefined;
   draft: PlacePickerDraft;
   onDraftChange: Dispatch<SetStateAction<PlacePickerDraft>>;
   searchRegionName?: string;
@@ -52,6 +48,9 @@ type PlacePickerPanelProps = {
 /** 좌표 없이 전국에서 찾는 칩. 지역 칩과 같은 목록에 들어가므로 코드 자리를 하나 비워 둔다. */
 const NATIONWIDE_CODE = "";
 
+const showPlaceLimitToast = () =>
+  showToast({ title: `장소는 ${MAX_VISITED_PLACES}곳까지 추가할 수 있어요.`, variant: "warning" });
+
 export function PlacePickerPanel({
   maxSelectionCount,
   onAdd,
@@ -62,17 +61,21 @@ export function PlacePickerPanel({
   onDraftChange,
   searchRegionName,
 }: PlacePickerPanelProps) {
-  const { tab, keyword, query, selectedPlaces } = draft;
+  const { tab, keyword, query, regionKeyword, regionQuery, selectedPlaces, selectedRegions } = draft;
   const updateDraft = (patch: Partial<PlacePickerDraft>) => onDraftChange((current) => ({ ...current, ...patch }));
   const setSelectedPlaces = (update: (current: Map<string, RecordLocationPlace>) => Map<string, RecordLocationPlace>) =>
     onDraftChange((current) => ({ ...current, selectedPlaces: update(current.selectedPlaces) }));
   const [selectionError, setSelectionError] = useState<string>();
   const scopeCode = draft.scopeCode ?? regions[0]?.code ?? (searchRegionName ? "map" : NATIONWIDE_CODE);
-  const selectedPlaceKeys = useMemo(() => new Set(selectedPlaces.keys()), [selectedPlaces]);
-  const [optimisticSelectedKeys, selectOptimistically] = useOptimistic(selectedPlaceKeys, (current, key: string) =>
-    new Set(current).add(key),
+  const [pendingPlaceKeys, setPendingPlaceKeys] = useState<Set<string>>(() => new Set());
+  const pendingRequests = useRef(new Map<string, symbol>());
+  const optimisticSelectedKeys = useMemo(
+    () => new Set([...selectedPlaces.keys(), ...pendingPlaceKeys]),
+    [pendingPlaceKeys, selectedPlaces],
   );
-  const showFloatingButton = optimisticSelectedKeys.size > 0 || (tab === "search" && Boolean(query));
+  const selectedRegionKeys = useMemo(() => new Set(selectedRegions.keys()), [selectedRegions]);
+  const selectedCount = optimisticSelectedKeys.size + selectedRegions.size;
+  const showFloatingButton = selectedCount > 0 || (tab === "places" && Boolean(query));
   const scope = regions.find((region) => region.code === scopeCode);
   const searchQuery = scopeCode === "map" && query ? `${searchRegionName} ${query}` : query;
   const queryTooLong = searchQuery.length > 100;
@@ -80,31 +83,13 @@ export function PlacePickerPanel({
   const search = useInfiniteQuery({
     queryKey: ["places", "search", searchParams, "infinite"],
     queryFn: ({ pageParam, signal }) => searchPlaces({ ...searchParams, page: pageParam }, signal),
-    enabled: tab === "search" && Boolean(query) && !queryTooLong,
+    enabled: tab === "places" && Boolean(query) && !queryTooLong,
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.isEnd || lastPage.page >= KAKAO_SEARCH_MAX_PAGE ? undefined : lastPage.page + 1,
     staleTime: 60_000,
   });
   const searchResults = (search.data?.pages ?? []).flatMap((page) => page.places.map((place) => ({ page, place })));
-
-  const resolvePlace = useActionOverride(resolveRecordPlace);
-  const resolve = useMutation({ mutationFn: resolvePlace });
-  /**
-   * 장소는 서버에서 하나씩 확인한다. 확인이 끝나 선택 목록에 반영될 때까지를 전환으로 묶어,
-   * 그동안 확인 중인 카드와 잠시 멈춘 카드를 구분해 보여주고 '추가'는 끝난 뒤에 실행한다.
-   */
-  const [resolving, startResolve] = useTransition();
-  const [addQueued, setAddQueued] = useState(false);
-  const resolvingKey = resolving && resolve.variables ? `kakao:${resolve.variables.providerPlaceId}` : null;
-
-  useEffect(() => {
-    if (!addQueued || resolving) return;
-    setAddQueued(false);
-    if (selectionError) return;
-    if (selectedPlaces.size > 0) setSelectionError(onAdd([...selectedPlaces.values()]));
-  }, [addQueued, onAdd, resolving, selectedPlaces, selectionError]);
-
   const savedByProviderId = new Map(
     savedPlaces
       .filter((place) => place.provider === "kakao" && place.region_name)
@@ -112,15 +97,59 @@ export function PlacePickerPanel({
   );
   const inRegion = (place: PlaceOption) =>
     regions.some((region) => place.region_code.slice(0, 5) === region.code.slice(0, 5));
+  const searchScopes = regions.filter(
+    (region, index) => regions.findIndex((item) => item.code === region.code) === index,
+  );
   const selectableSavedPlaces = savedPlaces
     .filter((place) => place.region_name)
     .toSorted((a, b) => Number(inRegion(b)) - Number(inRegion(a)));
+  const savedMatches = query.trim()
+    ? selectableSavedPlaces
+        .filter(
+          (place) =>
+            `${place.name} ${place.address ?? ""} ${getPlaceRegionLabel(place.region_name, place.address)}`
+              .toLocaleLowerCase("ko")
+              .includes(query.trim().toLocaleLowerCase("ko")) ||
+            searchResults.some(({ place: result }) => result.id === place.provider_place_id),
+        )
+        .filter((place) => place.region_name)
+    : [];
+  const savedMatchIds = new Set(savedMatches.map((place) => place.provider_place_id).filter(Boolean));
+  const savedMatchNames = new Set(
+    savedMatches.map((place) => `${place.name.trim().toLocaleLowerCase("ko")}|${place.address?.trim() ?? ""}`),
+  );
+  const uniqueSearchResults = searchResults.filter(({ place }) => {
+    const providerMatch = savedMatchIds.has(place.id);
+    const nameAddressMatch = savedMatchNames.has(
+      `${place.name.trim().toLocaleLowerCase("ko")}|${place.address?.trim() ?? ""}`,
+    );
+    return !providerMatch && !nameAddressMatch;
+  });
+  const regionSearch = useRegionSearch(regionQuery);
+  const regionRecords = useQuery({ ...recordLocationsQueryOptions, enabled: tab === "regions" });
+  const recentRegions = toRecentRegions(regionRecords.data ?? []);
+  const resolvePlace = useActionOverride(resolveRecordPlace);
+  const resolve = useMutation({ mutationFn: resolvePlace });
+  const resolving = pendingPlaceKeys.size > 0;
+  const [addQueued, setAddQueued] = useState(false);
+
+  useEffect(() => {
+    if (!addQueued || resolving) return;
+    setAddQueued(false);
+    if (selectionError) return;
+    if (selectedCount > 0) setSelectionError(onAdd([...selectedPlaces.values()], [...selectedRegions.values()]));
+  }, [addQueued, onAdd, resolving, selectedCount, selectedPlaces, selectedRegions, selectionError]);
+
   const isSavedPlaceAdded = (place: PlaceOption) =>
     selectedKeys.has(`existing:${place.id}`) ||
     (place.provider === "kakao" && selectedKeys.has(`kakao:${place.provider_place_id}`));
   const toggleSavedPlace = (place: PlaceOption) => {
     const key = `existing:${place.id}`;
-    if (!place.region_name || isSavedPlaceAdded(place) || resolving) return;
+    if (!place.region_name || isSavedPlaceAdded(place) || addQueued) return;
+    if (!selectedPlaces.has(key) && optimisticSelectedKeys.size >= maxSelectionCount) {
+      showPlaceLimitToast();
+      return;
+    }
     setSelectionError(undefined);
     setSelectedPlaces((current) => {
       const next = new Map(current);
@@ -128,6 +157,21 @@ export function PlacePickerPanel({
       else if (next.size < maxSelectionCount) next.set(key, toExistingRecordLocationPlace(place));
       return next;
     });
+  };
+
+  const toggleRegion = (region: RecordLocationRegion) => {
+    const key = getRecordRegionKey(region);
+    if (regions.some((item) => getRecordRegionKey(item) === key)) return;
+    setSelectionError(undefined);
+    const next = new Map(selectedRegions);
+    if (next.has(key)) next.delete(key);
+    else next.set(key, region);
+    const error = getRecordLocationSelectionError([...regions, ...next.values()], [...selectedPlaces.values()]);
+    if (error) {
+      showToast({ title: error, variant: "warning" });
+      return;
+    }
+    updateDraft({ selectedRegions: next });
   };
 
   const selectPlace = (place: KakaoPlace, searched: PlaceSearchResult) => {
@@ -138,7 +182,17 @@ export function PlacePickerPanel({
       return;
     }
     const key = `kakao:${place.id}`;
-    if (selectedKeys.has(key) || resolving) return;
+    if (selectedKeys.has(key) || addQueued) return;
+
+    if (pendingRequests.current.has(key)) {
+      pendingRequests.current.delete(key);
+      setPendingPlaceKeys((current) => {
+        const next = new Set(current);
+        next.delete(key);
+        return next;
+      });
+      return;
+    }
 
     if (optimisticSelectedKeys.has(key)) {
       setSelectedPlaces((current) => {
@@ -149,12 +203,16 @@ export function PlacePickerPanel({
       return;
     }
 
-    if (optimisticSelectedKeys.size >= maxSelectionCount) return;
+    if (optimisticSelectedKeys.size >= maxSelectionCount) {
+      showPlaceLimitToast();
+      return;
+    }
 
     setSelectionError(undefined);
-    startResolve(async () => {
-      selectOptimistically(key);
-
+    const request = Symbol(key);
+    pendingRequests.current.set(key, request);
+    setPendingPlaceKeys((current) => new Set(current).add(key));
+    void (async () => {
       try {
         const result = await resolve.mutateAsync({
           page: searched.page,
@@ -162,6 +220,8 @@ export function PlacePickerPanel({
           query: searched.query,
           scope: searched.scope,
         });
+        // 해제하거나 다시 선택한 행은 이전 요청의 응답으로 덮어쓰지 않는다.
+        if (pendingRequests.current.get(key) !== request) return;
         if ("error" in result) {
           setSelectionError(result.error);
           return;
@@ -178,9 +238,20 @@ export function PlacePickerPanel({
           return next;
         });
       } catch {
-        setSelectionError("장소를 확인하지 못했어요.\n잠시 후 다시 시도해 주세요.");
+        if (pendingRequests.current.get(key) === request) {
+          setSelectionError("장소를 확인하지 못했어요.\n잠시 후 다시 시도해 주세요.");
+        }
+      } finally {
+        if (pendingRequests.current.get(key) === request) {
+          pendingRequests.current.delete(key);
+          setPendingPlaceKeys((current) => {
+            const next = new Set(current);
+            next.delete(key);
+            return next;
+          });
+        }
       }
-    });
+    })();
   };
 
   const handleSearch = (event: SubmitEvent<HTMLFormElement>) => {
@@ -198,12 +269,25 @@ export function PlacePickerPanel({
     updateDraft({ query: nextQuery });
   };
 
+  const handleRegionSearch = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectionError(undefined);
+    const nextQuery = regionKeyword.trim();
+    if (!nextQuery) return;
+    if (nextQuery === regionQuery) {
+      void regionSearch.refetch();
+      return;
+    }
+    updateDraft({ regionQuery: nextQuery });
+  };
+
   return (
     <>
       <BottomSheet.Header>
-        <BottomSheet.Title className="text-left font-bold text-xl">장소 추가</BottomSheet.Title>
+        <BottomSheet.Title className="text-left font-bold text-xl">방문한 곳 추가</BottomSheet.Title>
         <BottomSheet.Description className="text-left">
-          기록에 추가할 장소를 최대 {maxSelectionCount}곳까지 선택하세요.
+          장소를 검색하거나 특정 장소 없이 지역만 남길 수 있어요.
         </BottomSheet.Description>
       </BottomSheet.Header>
 
@@ -217,55 +301,115 @@ export function PlacePickerPanel({
         data-error={selectionError ? "" : undefined}
       >
         <SegmentedControl
-          aria-label="장소 찾기 범위"
-          name="place-picker-tab"
+          aria-label="방문한 곳 종류"
+          name="visit-location-tab"
+          size="large"
           onValueChange={(tab) => {
-            if (tab !== "search" && tab !== "saved") return;
+            if (tab !== "places" && tab !== "regions") return;
             setSelectionError(undefined);
             updateDraft({ tab });
           }}
           value={tab}
         >
-          <SegmentedControlItem disabled={resolving || addQueued} value="search">
-            검색
+          <SegmentedControlItem disabled={addQueued} value="places">
+            장소
           </SegmentedControlItem>
-          <SegmentedControlItem disabled={resolving || addQueued} value="saved">
-            저장한 장소
+          <SegmentedControlItem disabled={addQueued} value="regions">
+            지역
           </SegmentedControlItem>
         </SegmentedControl>
-        {tab === "saved" ? (
+        {tab === "regions" ? (
           <>
-            {selectableSavedPlaces.length ? (
-              <ul
-                aria-label="저장한 장소"
-                className="grid min-h-0 min-w-0 flex-1 grid-cols-4 content-start items-start gap-x-2.5 gap-y-4 overflow-y-auto overflow-x-hidden overscroll-contain p-1 pb-(--picker-bottom-space)"
+            <form aria-label="지역 검색" onSubmit={handleRegionSearch} role="search">
+              <SearchField
+                aria-label="지역 이름"
+                loading={regionSearch.isFetching}
+                maxLength={100}
+                onClear={() => updateDraft({ regionKeyword: "", regionQuery: "" })}
+                onValueChange={(regionKeyword) => updateDraft({ regionKeyword })}
+                placeholder="예: 망원동, 홍대"
+                value={regionKeyword}
+              />
+            </form>
+            {!regionQuery && recentRegions.length ? (
+              <section
+                aria-label="최근 간 지역"
+                className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pb-(--picker-bottom-space)"
               >
-                {selectableSavedPlaces.map((place) => {
-                  const added = isSavedPlaceAdded(place);
-                  const selected = optimisticSelectedKeys.has(`existing:${place.id}`);
-                  const selectionLimitReached = optimisticSelectedKeys.size >= maxSelectionCount && !selected;
+                <h3 className="flex items-center gap-1.5 font-semibold text-muted-foreground text-xs">
+                  <ClockCounterClockwiseIcon aria-hidden="true" className="size-3.5 text-foreground" />
+                  최근 간 지역
+                </h3>
+                <ul className="flex flex-col">
+                  {recentRegions.map((region) => {
+                    const key = getRecordRegionKey(region);
+                    const selected = selectedRegionKeys.has(key);
+                    const added = regions.some((item) => getRecordRegionKey(item) === key);
+                    return (
+                      <SelectablePlaceCard
+                        added={added}
+                        address={region.fullName}
+                        disabled={added || addQueued}
+                        key={key}
+                        label="최근 간 지역"
+                        name={region.label}
+                        onSelect={() => toggleRegion(region)}
+                        selected={selected}
+                      />
+                    );
+                  })}
+                </ul>
+              </section>
+            ) : null}
+            {regionSearch.isError ? (
+              <Alert variant="destructive">
+                <WarningCircleIcon aria-hidden="true" />
+                <AlertDescription>{getErrorMessage(regionSearch.error)}</AlertDescription>
+              </Alert>
+            ) : null}
+            {regionSearch.data?.related && regionSearch.data.regions.length ? (
+              <p className="text-muted-foreground text-xs">입력한 검색어와 연관된 지역이에요.</p>
+            ) : null}
+            {regionSearch.data?.regions.length === 0 ? (
+              <p className="py-8 text-center text-muted-foreground text-sm">선택할 수 있는 지역이 없어요.</p>
+            ) : null}
+            {regionSearch.data?.regions.length ? (
+              <ul
+                aria-label="지역 검색 결과"
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-(--picker-bottom-space)"
+              >
+                {regionSearch.data.regions.map((region) => {
+                  const selectedRegion = {
+                    ...region,
+                    label:
+                      regionSearch.data?.query === regionQuery
+                        ? region.name
+                        : (regionSearch.data?.query ?? region.name),
+                  };
+                  const key = getRecordRegionKey(selectedRegion);
+                  const selected = selectedRegionKeys.has(key);
+                  const added = regions.some((item) => getRecordRegionKey(item) === key);
                   return (
-                    <SelectablePlaceGridItem
+                    <SelectablePlaceCard
                       added={added}
-                      disabled={added || resolving || selectionLimitReached}
-                      key={place.id}
-                      onSelect={() => toggleSavedPlace(place)}
-                      place={place}
+                      address={selectedRegion.fullName}
+                      disabled={added || addQueued}
+                      key={key}
+                      name={selectedRegion.label}
+                      onSelect={() => toggleRegion(selectedRegion)}
                       selected={selected}
                     />
                   );
                 })}
               </ul>
-            ) : (
-              <p className="py-8 text-center text-muted-foreground text-sm">선택할 수 있는 저장한 장소가 없어요.</p>
-            )}
+            ) : null}
           </>
         ) : (
           <>
-            {regions.length || searchRegionName ? (
+            {searchScopes.length || searchRegionName ? (
               <ul aria-label="검색 기준 지역" className="flex flex-wrap gap-1.5">
                 {[
-                  ...regions.map((region) => ({ code: region.code, label: `${region.label} 주변` })),
+                  ...searchScopes.map((region) => ({ code: region.code, label: `${region.label} 주변` })),
                   ...(searchRegionName ? [{ code: "map", label: `${searchRegionName} 기준` }] : []),
                   { code: NATIONWIDE_CODE, label: "전국" },
                 ].map((region) => (
@@ -311,31 +455,52 @@ export function PlacePickerPanel({
               </Alert>
             ) : null}
 
-            {search.data && searchResults.length === 0 ? (
+            {search.data && !savedMatches.length && !uniqueSearchResults.length ? (
               <p className="py-8 text-center text-muted-foreground text-sm">검색 결과가 없어요.</p>
             ) : null}
 
-            {searchResults.length ? (
+            {savedMatches.length || uniqueSearchResults.length ? (
               <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-1 pb-(--picker-bottom-space)">
-                <ul className="flex flex-col gap-2">
-                  {searchResults.map(({ page, place }) => {
+                <ul aria-label="장소 검색 결과" className="flex flex-col">
+                  {savedMatches.map((place) => {
+                    const key = `existing:${place.id}`;
+                    const added = isSavedPlaceAdded(place);
+                    const selected = selectedPlaces.has(key);
+                    return (
+                      <SelectablePlaceCard
+                        added={added}
+                        address={place.address ?? "주소 정보 없음"}
+                        disabled={added || addQueued}
+                        key={place.id}
+                        name={place.name}
+                        onSelect={() => toggleSavedPlace(place)}
+                        place={place}
+                        saved
+                        selected={selected}
+                      />
+                    );
+                  })}
+                  {uniqueSearchResults.map(({ page, place }) => {
                     const saved = savedByProviderId.get(place.id);
                     const key = saved ? `existing:${saved.id}` : `kakao:${place.id}`;
                     const added = saved ? isSavedPlaceAdded(saved) : selectedKeys.has(key);
                     const selected = optimisticSelectedKeys.has(key);
-                    const selectionLimitReached = optimisticSelectedKeys.size >= maxSelectionCount && !selected;
-                    const disabled = added || resolving || selectionLimitReached;
+                    const pending = pendingPlaceKeys.has(key);
+                    const disabled = added || addQueued;
 
                     return (
                       <SelectablePlaceCard
                         added={added}
                         address={place.address ?? "주소 정보 없음"}
-                        checkboxDisabled={selectionLimitReached}
                         disabled={disabled}
                         key={place.id}
                         name={place.name}
                         onSelect={() => selectPlace(place, page)}
-                        resolving={key === resolvingKey}
+                        place={{
+                          category_group_code: place.categoryGroupCode,
+                          category_name: place.categoryName,
+                        }}
+                        resolving={pending}
                         selected={selected}
                       />
                     );
@@ -362,37 +527,31 @@ export function PlacePickerPanel({
           </Alert>
         ) : null}
         <span aria-live="polite" className="sr-only">
-          선택한 장소 {optimisticSelectedKeys.size}곳
+          선택한 곳 {selectedCount}곳
         </span>
         {showFloatingButton ? (
           <LiquidGlassButton
             aria-busy={addQueued || undefined}
-            aria-label={
-              optimisticSelectedKeys.size > 0 ? `${optimisticSelectedKeys.size}곳 추가` : "장소를 선택해 주세요"
-            }
+            aria-label={selectedCount > 0 ? `${selectedCount}곳 추가` : "방문한 곳을 선택해 주세요"}
             className="h-12 min-w-0 border border-border/50 bg-foreground! px-5 text-background text-sm [&_svg]:size-5"
-            disabled={optimisticSelectedKeys.size === 0 || addQueued}
+            disabled={selectedCount === 0 || addQueued}
             onClick={() => {
               if (resolving) {
                 setAddQueued(true);
                 return;
               }
-              setSelectionError(onAdd([...selectedPlaces.values()]));
+              setSelectionError(onAdd([...selectedPlaces.values()], [...selectedRegions.values()]));
             }}
-            title={optimisticSelectedKeys.size > 0 ? `${optimisticSelectedKeys.size}곳 추가` : "장소를 선택해 주세요"}
+            title={selectedCount > 0 ? `${selectedCount}곳 추가` : "방문한 곳을 선택해 주세요"}
             shape="pill"
             type="button"
           >
             {addQueued ? (
               <Spinner aria-hidden="true" />
             ) : (
-              <CheckIcon
-                aria-hidden="true"
-                className="stroke-current [stroke-linejoin:round] [stroke-width:8]"
-                weight="bold"
-              />
+              <CheckIcon aria-hidden="true" className="stroke-current [stroke-linejoin:round] [stroke-width:8]" />
             )}
-            <span>{optimisticSelectedKeys.size}곳 추가</span>
+            <span>{selectedCount}곳 추가</span>
           </LiquidGlassButton>
         ) : null}
       </div>

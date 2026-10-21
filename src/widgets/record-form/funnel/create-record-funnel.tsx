@@ -118,7 +118,7 @@ function RecordCreateFunnelClient({
   const [fieldErrors, setFieldErrors] = useState<RecordFieldErrors>({});
   const navigation = useRecordCreateNavigation({
     busyRef,
-    dirty: draft.dirty || pickerDraft.selectedPlaces.size > 0,
+    dirty: draft.dirty || pickerDraft.selectedPlaces.size > 0 || pickerDraft.selectedRegions.size > 0,
     fallbackHref: returnTo,
     funnelIndex: funnel.index,
   });

@@ -8,7 +8,7 @@ import { PlaceIconTile, type PlaceOption } from "@/entities/place";
 import { getRecordRegionKey, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
-import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
+import { Field, FieldError } from "@/shared/ui/field";
 import { IconButton } from "@/shared/ui/icon-button";
 
 import {
@@ -20,7 +20,6 @@ import {
   toVisitedRegions,
 } from "../model/location-picker";
 import { PlacePickerBottomSheet } from "./place-picker-bottom-sheet";
-import { RegionPickerDialog } from "./region-picker-dialog";
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
@@ -57,22 +56,22 @@ export function RecordLocationFields({
     onValueChange?.(nextRegions, nextPlaces);
   };
 
-  const selectRegion = (nextRegion: RecordLocationRegion) => {
-    if (visitedRegions.some((region) => getRecordRegionKey(region) === getRecordRegionKey(nextRegion))) return;
-    if (visitedRegions.length >= MAX_VISITED_REGIONS) return;
-
-    apply([...regions, nextRegion], places);
-  };
-
-  const addPlaces = (additions: RecordLocationPlace[]) => {
+  const addPlaces = (additions: RecordLocationPlace[], regionAdditions: RecordLocationRegion[]) => {
     const nextAdditions = additions.filter((place) => !places.some((current) => current.key === place.key));
-    if (!nextAdditions.length) return;
-
+    const existingRegionKeys = new Set(regions.map((region) => getRecordRegionKey(region)));
+    const nextRegionAdditions = regionAdditions.filter((region) => {
+      const key = getRecordRegionKey(region);
+      if (existingRegionKeys.has(key)) return false;
+      existingRegionKeys.add(key);
+      return true;
+    });
+    if (!nextAdditions.length && !nextRegionAdditions.length) return;
     const nextPlaces = [...places, ...nextAdditions];
-    const error = getRecordLocationSelectionError(regions, nextPlaces);
+    const nextRegions = [...regions, ...nextRegionAdditions];
+    const error = getRecordLocationSelectionError(nextRegions, nextPlaces);
     if (error) return error;
 
-    apply(regions, nextPlaces);
+    apply(nextRegions, nextPlaces);
   };
 
   const removePlace = (key: string) => {
@@ -107,52 +106,9 @@ export function RecordLocationFields({
       />
       <input name="places" type="hidden" value={JSON.stringify(places.map((place) => place.reference))} />
 
-      <Field data-invalid={Boolean(regionError)}>
-        <FieldContent className="gap-1">
-          <FieldLabel className="font-semibold text-base">어느 지역에 갔나요?</FieldLabel>
-          <FieldDescription>최대 {MAX_VISITED_REGIONS}곳까지 담을 수 있어요.</FieldDescription>
-        </FieldContent>
-
-        {visitedRegions.length ? (
-          <ul aria-label="방문 지역" className="flex flex-wrap gap-1.5">
-            {visitedRegions.map((region) => (
-              <li key={getRecordRegionKey(region)}>
-                <span className="flex h-8 items-center gap-0.5 rounded-lg border bg-card pr-0.5 pl-2.5">
-                  <span className="max-w-40 truncate font-semibold text-[13px]" title={region.fullName}>
-                    {region.label}
-                  </span>
-                  <IconButton
-                    aria-label={`${region.label} 방문 지역에서 제거`}
-                    icon={XIcon}
-                    iconSize={14}
-                    onClick={() => requestRemoveRegion(region)}
-                    size="sm"
-                    type="button"
-                  />
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        <RegionPickerDialog
-          searchRegionName={searchRegionName}
-          aria-describedby={regionError ? "regions-error" : undefined}
-          aria-invalid={Boolean(regionError)}
-          disabled={visitedRegions.length >= MAX_VISITED_REGIONS}
-          onSelect={selectRegion}
-        />
-        <FieldError id="regions-error">{regionError}</FieldError>
-      </Field>
-
-      <Field data-invalid={Boolean(placeError)}>
-        <FieldContent className="gap-1">
-          <FieldLabel className="font-semibold text-base">방문 장소</FieldLabel>
-          <FieldDescription>최대 {MAX_VISITED_PLACES}곳까지 추가할 수 있어요.</FieldDescription>
-        </FieldContent>
-
-        {places.length ? (
-          <ul className="flex flex-col gap-2">
+      <Field aria-label="방문한 곳" data-invalid={Boolean(regionError || placeError)}>
+        {places.length || regions.length ? (
+          <ul aria-label="방문한 곳 목록" className="flex flex-col gap-2">
             {places.map((place) => (
               <li className="rounded-xl border bg-card px-3 py-2" key={place.key}>
                 <div className="flex min-h-11 items-center gap-3">
@@ -177,6 +133,28 @@ export function RecordLocationFields({
                 </div>
               </li>
             ))}
+            {regions
+              .filter(
+                (region) => !places.some((place) => getRecordRegionKey(place.region) === getRecordRegionKey(region)),
+              )
+              .map((region) => (
+                <li className="rounded-xl border bg-card px-3 py-2" key={getRecordRegionKey(region)}>
+                  <div className="flex min-h-11 items-center gap-3">
+                    <PlaceIconTile className="bg-muted text-muted-foreground" place={{}} />
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-2 break-words font-medium text-sm">{region.label}</p>
+                      <p className="mt-0.5 truncate text-muted-foreground text-xs">지역만 기록</p>
+                    </div>
+                    <IconButton
+                      aria-label={`${region.label} 방문 지역에서 제거`}
+                      icon={XIcon}
+                      iconSize={18}
+                      onClick={() => requestRemoveRegion(region)}
+                      type="button"
+                    />
+                  </div>
+                </li>
+              ))}
           </ul>
         ) : null}
 
@@ -184,16 +162,14 @@ export function RecordLocationFields({
           draft={pickerDraft}
           onDraftChange={onPickerDraftChange}
           searchRegionName={searchRegionName}
-          disabled={places.length >= MAX_VISITED_PLACES}
+          disabled={places.length >= MAX_VISITED_PLACES && visitedRegions.length >= MAX_VISITED_REGIONS}
           maxSelectionCount={MAX_VISITED_PLACES - places.length}
           onAdd={addPlaces}
-          regions={visitedRegions.filter(
-            (region, index) => visitedRegions.findIndex((item) => item.code === region.code) === index,
-          )}
+          regions={visitedRegions}
           savedPlaces={savedPlaces}
           selectedKeys={selectedKeys}
         />
-        <FieldError id="places-error">{placeError}</FieldError>
+        <FieldError id="places-error">{placeError ?? regionError}</FieldError>
       </Field>
 
       <ConfirmDialog

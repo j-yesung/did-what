@@ -10,7 +10,7 @@ import { getRecordCreateStepIndex, RECORD_CREATE_STEPS, type RecordCreateStep } 
 
 const STEP_COPY: Record<RecordCreateStep, { description: string; title: string }> = {
   when: { description: "날짜와 그날의 날씨를 알려주세요.", title: "언제였나요?" },
-  where: { description: "장소를 추가하면 지역도 함께 담겨요. 지역만 남겨도 괜찮아요.", title: "어디에 다녀왔나요?" },
+  where: { description: "장소나 지역을 골라 함께한 곳을 남겨보세요.", title: "어디에 다녀왔나요?" },
   what: { description: "가장 기억하고 싶은 일을 남겨보세요.", title: "어떤 하루였나요?" },
 };
 

@@ -1,21 +1,23 @@
-import type { KeyboardEvent } from "react";
+import { type KeyboardEvent, useEffect, useRef } from "react";
 
+import { CheckIcon, type CheckIconHandle } from "@animateicons/react/lucide";
+
+import { PlaceIconTile } from "@/entities/place";
+import type { PlaceClassification } from "@/entities/place/model/place-kind";
 import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Spinner } from "@/shared/ui/spinner";
 
 type SelectablePlaceCardProps = {
   added: boolean;
   address: string;
-  checkboxDisabled: boolean;
   disabled: boolean;
   label?: string;
   name: string;
+  place?: PlaceClassification;
+  saved?: boolean;
   onSelect: () => void;
-  /** 서버에서 이 장소를 확인하는 중. 체크 표시 대신 진행 표시를 보여준다. */
+  /** 서버 확인 중에도 낙관적으로 선택한 체크 표시를 유지한다. */
   resolving?: boolean;
   selected: boolean;
 };
@@ -23,14 +25,24 @@ type SelectablePlaceCardProps = {
 export function SelectablePlaceCard({
   added,
   address,
-  checkboxDisabled,
   disabled,
   label,
   name,
+  place,
+  saved = false,
   onSelect,
   resolving = false,
   selected,
 }: SelectablePlaceCardProps) {
+  const checkRef = useRef<CheckIconHandle>(null);
+  useEffect(() => {
+    if (selected && !added && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      checkRef.current?.startAnimation();
+    } else {
+      checkRef.current?.stopAnimation();
+    }
+  }, [added, selected]);
+
   const select = () => {
     if (!disabled) onSelect();
   };
@@ -46,7 +58,7 @@ export function SelectablePlaceCard({
       aria-checked={added || selected}
       aria-disabled={disabled}
       className={cn(
-        "w-full min-w-0 rounded-xl transition-transform duration-200 active:scale-[0.99]",
+        "group/location w-full min-w-0 border-border/70 border-b py-2",
         FOCUS_RING,
         disabled ? "cursor-default" : "cursor-pointer",
         // 눌러도 반응하지 않는 동안에는 흐리게 보여 말없이 무시되는 것처럼 보이지 않게 한다.
@@ -57,38 +69,40 @@ export function SelectablePlaceCard({
       role="checkbox"
       tabIndex={disabled ? -1 : 0}
     >
-      <Card
-        className={cn(
-          "w-full min-w-0 transition-[background-color,box-shadow] duration-200",
-          selected && "bg-secondary ring-2 ring-primary/40 dark:bg-pressed dark:ring-foreground/15",
-        )}
-        data-selected={selected}
-        size="sm"
-      >
-        <CardHeader className="min-w-0 grid-cols-[minmax(0,1fr)_auto]">
-          <CardTitle className="min-w-0 truncate">{name}</CardTitle>
-          {label ? <CardDescription>{label}</CardDescription> : null}
-          <CardAction>
-            {added ? (
-              <Badge>추가됨</Badge>
-            ) : resolving ? (
-              <Spinner aria-hidden="true" className="size-6 text-muted-foreground" />
-            ) : (
-              <Checkbox
-                aria-hidden="true"
-                checked={selected}
-                className="pointer-events-none size-6"
-                disabled={checkboxDisabled}
-                tabIndex={-1}
-                variant="circle"
-              />
+      <div className="flex min-w-0 items-center gap-3">
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 origin-left items-center gap-3 transition-transform duration-200 motion-reduce:transition-none",
+            !disabled && "group-active/location:scale-[0.99] motion-reduce:group-active/location:scale-100",
+          )}
+        >
+          <PlaceIconTile className="size-11 rounded-xl [&_svg]:size-5" place={place ?? {}} />
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <p className="truncate font-medium text-sm">{name}</p>
+              {saved ? <Badge className="shrink-0 px-1.5 py-0 text-[10px]">저장됨</Badge> : null}
+            </div>
+            <p className="mt-0.5 truncate text-muted-foreground text-xs">
+              {label ? `${label} · ` : ""}
+              {address}
+            </p>
+          </div>
+        </div>
+        {added ? (
+          <Badge>추가됨</Badge>
+        ) : (
+          <CheckIcon
+            aria-hidden="true"
+            className={cn(
+              "size-5 shrink-0 transition-colors duration-150",
+              selected ? "text-accent-text" : "text-muted-foreground opacity-35",
             )}
-          </CardAction>
-        </CardHeader>
-        <CardContent>
-          <p className="wrap-break-word text-muted-foreground text-sm">{address}</p>
-        </CardContent>
-      </Card>
+            duration={0.7}
+            isAnimated={false}
+            ref={checkRef}
+          />
+        )}
+      </div>
     </li>
   );
 }
