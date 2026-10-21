@@ -1,4 +1,6 @@
 import {
+  createPlacePickerDraft,
+  getRecordLocationSelectionError,
   removeRecordLocationRegion,
   toExistingRecordLocationPlace,
   toRecentRegions,
@@ -156,4 +158,27 @@ test("같은 지역의 다른 항목이 남으면 항목 하나만 제거하고 
 test("최근 지역도 같은 지역과 표시명이면 한 번만 남긴다", () => {
   const row = regionRow("1144000000", "난지 한강공원", "서울 마포구");
   assert.equal(toRecentRegions([record(row), record(row)]).length, 1);
+});
+
+test("장소에서 따라오는 지역까지 합쳐 상한을 검사하고 기존 지역의 장소는 허용한다", () => {
+  const regions = Array.from({ length: 10 }, (_, index) => region(String(index).padStart(10, "0"), `지역 ${index}`));
+  assert.equal(getRecordLocationSelectionError(regions, [{ key: "same", region: regions[0] }]), undefined);
+  const extra = { key: "extra", region: region("9999999999", "새 지역") };
+  assert.match(getRecordLocationSelectionError(regions, [extra]), /방문 지역은 10곳/);
+  assert.equal(getRecordLocationSelectionError(regions.slice(0, 9), [extra]), undefined);
+});
+
+test("같은 지역이어도 방문 장소 수 상한은 따로 검사한다", () => {
+  const places = Array.from({ length: 11 }, (_, index) => ({
+    key: String(index),
+    region: region("1144000000", "마포구"),
+  }));
+  assert.equal(getRecordLocationSelectionError([], places.slice(0, 10)), undefined);
+  assert.match(getRecordLocationSelectionError([], places), /방문 장소는 10곳/);
+});
+
+test("새 기록의 임시 선택은 이전 기록의 선택과 공유하지 않는다", () => {
+  const first = createPlacePickerDraft();
+  first.selectedPlaces.set("one", { key: "one", region: region("1144000000", "마포구") });
+  assert.equal(createPlacePickerDraft().selectedPlaces.size, 0);
 });

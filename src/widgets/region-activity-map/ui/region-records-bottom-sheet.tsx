@@ -284,7 +284,12 @@ export function RegionRecordsBottomSheet({
               {/* 기록이 없는 지역에서는 바로 첫 기록을 남길 수 있게 한다. */}
               {region && regionRecords.length === 0 ? (
                 <BottomSheet.Footer className="pt-3">
-                  <Button fullWidth nativeButton={false} render={<PressLink href="/records/new" />} size="xlarge">
+                  <Button
+                    fullWidth
+                    nativeButton={false}
+                    render={<PressLink href={`/records/new?region=${region.code}`} />}
+                    size="xlarge"
+                  >
                     기록 남기기
                   </Button>
                 </BottomSheet.Footer>

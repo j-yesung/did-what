@@ -14,10 +14,11 @@ type RegionPickerDialogProps = {
   "aria-describedby"?: string;
   "aria-invalid"?: boolean;
   disabled?: boolean;
+  searchRegionName?: string;
   onSelect: (region: RecordLocationRegion) => void;
 };
 
-export function RegionPickerDialog({ disabled, onSelect, ...ariaProps }: RegionPickerDialogProps) {
+export function RegionPickerDialog({ disabled, onSelect, searchRegionName, ...ariaProps }: RegionPickerDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -31,6 +32,7 @@ export function RegionPickerDialog({ disabled, onSelect, ...ariaProps }: RegionP
       </BottomSheet.Trigger>
       <BottomSheet.VirtualKeyboardProvider>
         <RegionSearchContent
+          initialQuery={searchRegionName}
           onSelect={(region) => {
             onSelect(region);
             setOpen(false);

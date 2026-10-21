@@ -1,5 +1,6 @@
 import type { PlaceOption } from "@/entities/place";
 import type { RecordPlaceReference, RecordRegionLocationRow } from "@/entities/record";
+import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
 import { getRecordRegionKey, mergeVisitedRegions } from "@/entities/record/model/record-region";
 import type { KakaoRegion } from "@/shared/api/kakao-local";
 
@@ -13,6 +14,24 @@ export type RecordLocationPlace = {
   /** 장소가 속한 지역. 장소를 담으면 이 지역도 방문 지역에 따라 들어간다. */
   region: RecordLocationRegion;
 };
+
+export type PlacePickerTab = "search" | "saved";
+
+export type PlacePickerDraft = {
+  keyword: string;
+  query: string;
+  scopeCode: string | null;
+  selectedPlaces: Map<string, RecordLocationPlace>;
+  tab: PlacePickerTab;
+};
+
+export const createPlacePickerDraft = (): PlacePickerDraft => ({
+  keyword: "",
+  query: "",
+  scopeCode: null,
+  selectedPlaces: new Map(),
+  tab: "search",
+});
 
 /** "서울 마포구 망원동"에서 "망원동"처럼 전체 지역명의 마지막 마디. */
 export const toShortRegionName = (fullName: string) => fullName.split(" ").at(-1) ?? fullName;
@@ -85,6 +104,17 @@ export const toVisitedRegions = (
     regions,
     places.map((place) => place.region),
   );
+};
+
+export const getRecordLocationSelectionError = (
+  regions: readonly RecordLocationRegion[],
+  places: readonly RecordLocationPlace[],
+): string | undefined => {
+  if (places.length > MAX_VISITED_PLACES)
+    return `방문 장소는 ${MAX_VISITED_PLACES}곳까지 담을 수 있어요. 선택한 장소를 줄여 주세요.`;
+  if (toVisitedRegions(regions, places).length > MAX_VISITED_REGIONS) {
+    return `방문 지역은 ${MAX_VISITED_REGIONS}곳까지 담을 수 있어요. 선택한 장소를 줄이거나 작성 화면에서 지역을 정리해 주세요.`;
+  }
 };
 
 export type ResolveRecordPlaceResult = { error: string } | { place: RecordLocationPlace };

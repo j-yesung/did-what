@@ -17,12 +17,13 @@ import type { RecordLocationRegion } from "../model/location-picker";
 import { toRecentRegions } from "../model/location-picker";
 
 type RegionSearchContentProps = {
+  initialQuery?: string;
   onSelect: (region: RecordLocationRegion) => void;
 };
 
-export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
-  const [keyword, setKeyword] = useState("");
-  const [query, setQuery] = useState("");
+export function RegionSearchContent({ initialQuery = "", onSelect }: RegionSearchContentProps) {
+  const [keyword, setKeyword] = useState(initialQuery);
+  const [query, setQuery] = useState(initialQuery);
   const search = useRegionSearch(query);
 
   const records = useQuery({ ...recordLocationsQueryOptions, enabled: true });
@@ -112,7 +113,9 @@ export function RegionSearchContent({ onSelect }: RegionSearchContentProps) {
                 <Button
                   className="h-auto justify-start whitespace-normal px-3 py-3 text-left"
                   fullWidth
-                  onClick={() => onSelect({ ...region, label: search.data.query })}
+                  onClick={() =>
+                    onSelect({ ...region, label: search.data.query === initialQuery ? region.name : search.data.query })
+                  }
                   type="button"
                   variant="outline"
                 >
