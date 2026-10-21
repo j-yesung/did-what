@@ -264,9 +264,10 @@
 
   /* 배경과 카드 */
   --fill-base: var(--grey-900);
-  --fill-segmented: var(--grey-700);
-  --fill-segmented-active: var(--grey-200);
-  --text-segmented: var(--grey-50);
+  --fill-segmented: var(--grey-800);
+  --fill-segmented-active: var(--grey-700);
+  --text-segmented: var(--grey-400);
+  --text-segmented-active: var(--grey-50);
   --fill-surface: var(--grey-850);
   --fill-elevated: var(--grey-800);
   /* 배경(grey-900)과 같으면 빈 화면 아이콘 바탕이나 불러오는 자리 표시가 보이지 않는다. */
@@ -315,9 +316,10 @@
 
     /* 배경과 카드 */
     --fill-base: var(--grey-900);
-    --fill-segmented: var(--grey-700);
-    --fill-segmented-active: var(--grey-200);
-    --text-segmented: var(--grey-50);
+    --fill-segmented: var(--grey-800);
+    --fill-segmented-active: var(--grey-700);
+    --text-segmented: var(--grey-400);
+    --text-segmented-active: var(--grey-50);
     --fill-surface: var(--grey-850);
     --fill-elevated: var(--grey-800);
     /* 배경(grey-900)과 같으면 빈 화면 아이콘 바탕이나 불러오는 자리 표시가 보이지 않는다. */

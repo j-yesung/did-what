@@ -192,7 +192,7 @@ export function RegionActivityMap({
                 <button
                   aria-label={`${label}, 기록 ${regionMap.recordCount}개, 지역 기록 보기`}
                   aria-haspopup="dialog"
-                  className="flex w-full cursor-pointer flex-col gap-3 rounded-2xl border border-border bg-surface px-3 py-4 text-left transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 active:bg-muted"
+                  className="relative flex w-full cursor-pointer flex-col gap-3 rounded-2xl border border-border bg-surface px-3 py-4 text-left after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-dark-weak after:opacity-0 after:transition-opacity hover:after:opacity-100 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 active:after:opacity-100"
                   onClick={() => openRegion(regionMap)}
                   type="button"
                 >

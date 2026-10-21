@@ -27,13 +27,7 @@ export function RecordDetailHeader({ heading: Heading = "h2", record, regionText
   const category = normalizeRecordCategory(record.category);
   const Icon = CATEGORY_ICONS[category];
   return (
-    <div
-      className={cn(
-        "w-full min-w-0 rounded-3xl p-6",
-        RECORD_CATEGORY_BADGE[category],
-        category === "travel" && "bg-secondary",
-      )}
-    >
+    <div className={cn("w-full min-w-0 rounded-3xl p-6", RECORD_CATEGORY_BADGE[category])}>
       <div className="flex items-start justify-between gap-3">
         <Heading
           className="min-w-0 text-balance font-bold text-3xl text-foreground leading-tight tracking-[-0.045em]"
