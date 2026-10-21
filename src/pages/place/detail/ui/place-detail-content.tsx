@@ -1,24 +1,16 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 
 import { MapPinIcon, TrashIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { placeQueryOptions, placeRecordsQueryOptions, placesQueryOptions } from "@/entities/place";
-import {
-  EmptyRecords,
-  formatRecordTimelineMonth,
-  getRecordTimelineItemState,
-  RecordCard,
-  RecordCreateButton,
-  RecordTimeline,
-} from "@/entities/record";
+import { EmptyRecords, RecordCreateButton, RecordTimeline, RecordTimelineItems } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { DeletePlaceConfirm } from "@/features/place/delete-place/ui/delete-place-confirm";
 import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
-import { cn } from "@/shared/lib/utils";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -45,7 +37,6 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
   const records = (recordsQuery.data ?? [])
     .map(({ record }) => record)
     .toSorted((a, b) => b.recorded_at.localeCompare(a.recorded_at));
-  let monthStartIndex = 0;
   const isPlacePending = !place && !placeQuery.isError && (placesQuery.isPending || placeQuery.isPending);
 
   return (
@@ -107,32 +98,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                     <p className="text-muted-foreground text-xs">{records.length}개</p>
                   </div>
 
-                  {records.map((record, index) => {
-                    const { startsMonth } = getRecordTimelineItemState(records, index);
-                    if (startsMonth) monthStartIndex = index;
-                    const endsMonth = record.recorded_at.slice(0, 7) !== records[index + 1]?.recorded_at.slice(0, 7);
-
-                    return (
-                      <Fragment key={record.id}>
-                        {startsMonth ? (
-                          <p
-                            className={cn(
-                              "pb-6 text-center font-semibold text-lg tracking-tight",
-                              index > 0 && "mt-6 border-border border-t border-dashed pt-7",
-                            )}
-                          >
-                            {formatRecordTimelineMonth(record.recorded_at)}
-                          </p>
-                        ) : null}
-                        <RecordCard
-                          endsMonth={endsMonth}
-                          onDetailPrefetch={prefetchComments}
-                          record={record}
-                          side={(index - monthStartIndex) % 2 === 0 ? "left" : "right"}
-                        />
-                      </Fragment>
-                    );
-                  })}
+                  <RecordTimelineItems records={records} onDetailPrefetch={prefetchComments} />
                 </RecordTimeline>
               ) : (
                 <div className="flex flex-col items-center gap-6 py-8">

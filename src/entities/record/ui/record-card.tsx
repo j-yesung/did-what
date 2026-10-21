@@ -8,7 +8,7 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
-import { recordPlacesQueryOptions, recordSummaryQueryKey } from "../api/queries";
+import { recordDetailQueryOptions, recordSummaryQueryKey } from "../api/queries";
 import { normalizeRecordCategory, RECORD_CATEGORY_DOT } from "../model/category";
 import { formatRecordRegionLabels } from "../model/record-region";
 import { formatRecordTimelineDate } from "../model/record-timeline";
@@ -58,7 +58,7 @@ export function RecordCard({ endsMonth, onDetailPrefetch, record, side }: Record
               if (event.button !== 0) return;
               cacheRecordSummary();
               router.prefetch(href);
-              void queryClient.prefetchQuery(recordPlacesQueryOptions(record.id));
+              void queryClient.prefetchQuery(recordDetailQueryOptions(record.id));
               onDetailPrefetch?.(record.id);
             }}
             prefetch={false}

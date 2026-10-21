@@ -1,5 +1,6 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
+import { KAKAO_SEARCH_MAX_PAGE } from "@/shared/api/kakao-local";
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
 import { fetchPlace, fetchPlaceRecords, fetchPlaces } from "./client-queries";
@@ -34,11 +35,14 @@ export const placeRecordsQueryOptions = (placeId: string) => {
   });
 };
 
-export const placeSearchQueryOptions = (params: PlaceSearchParams) => {
-  return queryOptions({
-    enabled: params.query.trim().length > 0,
-    queryFn: ({ signal }) => searchPlaces(params, signal),
-    queryKey: [...PLACE_SEARCH_KEY, params],
+export const placeSearchInfiniteQueryOptions = (params: Omit<PlaceSearchParams, "page">) => {
+  return infiniteQueryOptions({
+    enabled: params.query.trim().length > 0 && params.query.length <= 100,
+    queryFn: ({ pageParam, signal }) => searchPlaces({ ...params, page: pageParam }, signal),
+    queryKey: [...PLACE_SEARCH_KEY, params, "infinite"],
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.isEnd || lastPage.page >= KAKAO_SEARCH_MAX_PAGE ? undefined : lastPage.page + 1,
     staleTime: 60_000,
   });
 };

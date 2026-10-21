@@ -4,9 +4,9 @@ import { useState } from "react";
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { placesQueryOptions, type SavedPlaceRow, searchPlaces } from "@/entities/place";
+import { placeSearchInfiniteQueryOptions, placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/place/save-place";
-import { KAKAO_SEARCH_MAX_PAGE, type KakaoPlace } from "@/shared/api/kakao-local";
+import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { Badge } from "@/shared/ui/badge";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -27,13 +27,7 @@ type PlaceSearchResultsProps = {
 
 export function PlaceSearchResults({ onReset, initialPlaces, query }: PlaceSearchResultsProps) {
   const savedPlacesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
-  const resultsQuery = useInfiniteQuery({
-    queryKey: ["place-search", query],
-    queryFn: ({ pageParam, signal }) => searchPlaces({ page: pageParam, query }, signal),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) =>
-      lastPage.isEnd || lastPage.page >= KAKAO_SEARCH_MAX_PAGE ? undefined : lastPage.page + 1,
-  });
+  const resultsQuery = useInfiniteQuery(placeSearchInfiniteQueryOptions({ query }));
 
   const [selectedPlaces, setSelectedPlaces] = useState<Map<string, CreatePlaceInput>>(() => new Map());
 

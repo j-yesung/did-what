@@ -19,6 +19,8 @@ export const useRecordListQuery = (filters: RecordFilters) => {
 
   return useInfiniteQuery({
     ...recordListQueryOptions(filters),
-    ...(completeAlternateData ? { initialData: completeAlternateData } : {}),
+    ...(completeAlternateData
+      ? { initialData: completeAlternateData, initialDataUpdatedAt: alternateQueryState?.dataUpdatedAt }
+      : {}),
   });
 };
