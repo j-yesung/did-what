@@ -1,5 +1,11 @@
 export type RecordView = "calendar" | "list";
 
+export const getRecordViewHref = (view: RecordView, search: string) => {
+  const params = new URLSearchParams(search);
+  params.set("view", view);
+  return `/records?${params}`;
+};
+
 // 서버가 /records를 그릴 때 읽어야 해서 쿠키에 둔다. 브라우저 저장소는 첫 화면을 그린 뒤에야 읽을 수 있다.
 export const RECORD_VIEW_COOKIE = "did-what-records-view";
 

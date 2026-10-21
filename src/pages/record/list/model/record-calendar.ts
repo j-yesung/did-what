@@ -33,8 +33,13 @@ export const parseCalendarDate = (value: string | null | undefined, month: strin
   return range.from <= value && value <= range.to ? value : null;
 };
 
-export const getCalendarHref = (month: string, date?: string | null) => {
-  return `/records?view=calendar&month=${month}${date ? `&date=${date}` : ""}`;
+export const getCalendarHref = (month: string, date?: string | null, search = "") => {
+  const params = new URLSearchParams(search);
+  params.set("view", "calendar");
+  params.set("month", month);
+  if (date) params.set("date", date);
+  else params.delete("date");
+  return `/records?${params}`;
 };
 
 export const shiftMonth = (month: string, amount: number) => {

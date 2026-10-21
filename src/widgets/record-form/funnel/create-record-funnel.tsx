@@ -17,6 +17,7 @@ import {
   type RecordWeather,
 } from "@/entities/record";
 import {
+  createPlacePickerDraft,
   RecordLocationFields,
   type RecordLocationPlace,
   type RecordLocationRegion,
@@ -51,6 +52,7 @@ type RecordCreateFunnelProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
   /** 장소 상세에서 시작하면 그 장소를 미리 담는다. 지역은 장소가 데려온다. */
   defaultPlace?: RecordLocationPlace;
+  searchRegionName?: string;
   defaultRecordedAt: string;
   returnTo: string;
   savedTo: string;
@@ -89,6 +91,7 @@ function RecordCreateFunnelClient({
   defaultRecordedAt,
   returnTo,
   savedTo,
+  searchRegionName,
 }: RecordCreateFunnelProps) {
   const initial = useMemo(
     () => ({
@@ -109,12 +112,13 @@ function RecordCreateFunnelClient({
   );
   const funnel = useFunnel<RecordCreateStepMap>({ id: FUNNEL_ID, initial });
   const [draft, setDraft] = useState<RecordCreateContext>(() => funnel.context);
+  const [pickerDraft, setPickerDraft] = useState(createPlacePickerDraft);
   const placesQuery = useQuery(placesQueryOptions);
   const busyRef = useRef(false);
   const [fieldErrors, setFieldErrors] = useState<RecordFieldErrors>({});
   const navigation = useRecordCreateNavigation({
     busyRef,
-    dirty: draft.dirty,
+    dirty: draft.dirty || pickerDraft.selectedPlaces.size > 0 || pickerDraft.selectedRegions.size > 0,
     fallbackHref: returnTo,
     funnelIndex: funnel.index,
   });
@@ -209,6 +213,9 @@ function RecordCreateFunnelClient({
       return (
         <FieldGroup className="gap-10">
           <RecordLocationFields
+            pickerDraft={pickerDraft}
+            onPickerDraftChange={setPickerDraft}
+            searchRegionName={searchRegionName}
             initialPlaces={draft.places}
             initialRegions={draft.regions}
             onValueChange={(regions: RecordLocationRegion[], places: RecordLocationPlace[]) =>
