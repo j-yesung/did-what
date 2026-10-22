@@ -46,3 +46,29 @@ test("서버 필드 오류는 가장 앞 단계로 보낸다", () => {
   assert.equal(getRecordCreateErrorStep({ category: "오류" }), "what");
   assert.equal(getRecordCreateErrorStep({}), null);
 });
+
+test("단계 검증과 최종 저장 검증은 날짜·제목·메모 경계에서 같은 오류를 반환한다", async () => {
+  const { validateRecordInput } = await import("@/entities/record/model/record-form");
+  const cases = [
+    { recordedAt: "2026-02-30", recordedUntil: "" },
+    { recordedUntil: "2026-09-06" },
+    { recordedUntil: "2026-02-30" },
+    { recordedUntil: "" },
+    { activity: "   " },
+    { activity: "가".repeat(120), memo: "나".repeat(500) },
+    { activity: "가".repeat(121), memo: "나".repeat(501) },
+    { activity: ` ${"가".repeat(120)} `, memo: ` ${"나".repeat(500)} ` },
+  ];
+  for (const overrides of cases) {
+    const input = { ...context, activity: "산책", ...overrides };
+    const result = validateRecordInput({
+      ...input,
+      regions: JSON.stringify([{ code: "1144000000", label: "마포구", name: "서울 마포구" }]),
+      places: "[]",
+    });
+    const errors = { ...validateRecordCreateStep("when", input), ...validateRecordCreateStep("what", input) };
+    for (const key of ["recordedAt", "recordedUntil", "activity", "memo"]) {
+      assert.equal(errors[key], result.fieldErrors?.[key], JSON.stringify(overrides));
+    }
+  }
+});
