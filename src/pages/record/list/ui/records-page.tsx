@@ -3,7 +3,7 @@ import type { RecordSearchParams } from "@/entities/record";
 import { RecordViewToggle } from "@/features/record/switch-record-view";
 import { getRecordView } from "@/features/record/switch-record-view/server";
 import { cn } from "@/shared/lib/utils";
-import { PageShell } from "@/shared/ui/layouts";
+import { FixedToolbar, PageShell } from "@/shared/ui/layouts";
 
 import { RecordCalendar } from "./record-calendar";
 import { RecordListContent } from "./record-list-content";
@@ -23,11 +23,9 @@ export async function RecordsPage({ searchParams }: RecordsPageProps) {
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
-        <div className="mx-auto flex w-full max-w-(--app-width) items-start px-5 pt-(--page-top)">
-          <RecordViewToggle view={view} />
-        </div>
-      </div>
+      <FixedToolbar className="items-start">
+        <RecordViewToggle view={view} />
+      </FixedToolbar>
       <PageShell className={cn("gap-4", view === "calendar" && "h-(--screen-height)")} withBottomNavigation>
         <header className="min-h-13">
           <h1 className="sr-only">우리의 기록</h1>
