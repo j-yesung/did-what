@@ -17,11 +17,7 @@ import {
 } from "@/entities/region";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 import { readMapUrlState, toMapSearch } from "@/widgets/region-activity-map/model/map-url-state";
-import {
-  type MapRecord,
-  REGION_BADGE_ANCHORS,
-  toRecordMapPoints,
-} from "@/widgets/region-activity-map/model/record-map-points";
+import { type MapRecord, toRecordMapPoints } from "@/widgets/region-activity-map/model/record-map-points";
 import { getRegionRecordCounts } from "@/widgets/region-activity-map/model/region-visit-summary";
 import { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 import { MapControls } from "@/widgets/region-activity-map/ui/map-controls";
@@ -186,7 +182,7 @@ export function RegionActivityMap({
         </div>
         <ul className="grid grid-cols-3 gap-2.5" id="region-shortcuts">
           {visibleRegions.map((regionMap) => {
-            const label = REGION_BADGE_ANCHORS[regionMap.code].label;
+            const label = regionMap.label;
             return (
               <li className="min-w-0" key={regionMap.code}>
                 <button

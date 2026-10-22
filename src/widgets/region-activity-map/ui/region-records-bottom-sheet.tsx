@@ -17,7 +17,7 @@ import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 
-import { getSubregionName, type MapRecord, REGION_BADGE_ANCHORS } from "../model/record-map-points";
+import { getSubregionName, type MapRecord } from "../model/record-map-points";
 
 const SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
 
@@ -122,7 +122,7 @@ export function RegionRecordsBottomSheet({
     [null, "전체", regionRecords.length],
     ...subregionCounts.map(([name, count]): [string, string, number] => [name, name, count]),
   ];
-  const regionLabel = region ? REGION_BADGE_ANCHORS[region.code].label : "";
+  const regionLabel = region?.label ?? "";
 
   return (
     <BottomSheet
