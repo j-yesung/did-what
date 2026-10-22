@@ -6,16 +6,10 @@ import { useSearchParams } from "next/navigation";
 
 import { AppNotFound } from "@/app/ui/app-not-found";
 import type { SavedPlaceRow } from "@/entities/place";
-import {
-  normalizeRecordCategory,
-  normalizeRecordWeather,
-  sortPrimaryRecordRegions,
-  sortPrimaryRegionFirst,
-} from "@/entities/record";
 import { LogoutButton } from "@/features/auth";
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
-import { toExistingRecordLocationPlace, toShortRegionName } from "@/features/record/select-record-location";
+import { toExistingRecordLocationPlace } from "@/features/record/select-record-location";
 import { RecordViewToggle } from "@/features/record/switch-record-view";
 import { ThemeSelect } from "@/features/switch-theme";
 import { HomeContent } from "@/pages/home/ui/home-content";
@@ -36,6 +30,7 @@ import { OverscrollBack } from "@/shared/ui/overscroll-back";
 import { AppToolbar } from "@/widgets/app-toolbar";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 import { RecordCreateFunnel } from "@/widgets/record-form/funnel/create-record-funnel";
+import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
 import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
 
 import { toDemoHref } from "../lib/demo-href";
@@ -170,29 +165,7 @@ export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
         <RecordEditForm
           action={(formData) => updateRecord(recordId, formData)}
           initialSavedPlaces={savedPlaces as SavedPlaceRow[]}
-          initialValues={{
-            activity: record.activity,
-            category: normalizeRecordCategory(record.category),
-            memo: record.memo ?? "",
-            places: sortPrimaryRegionFirst(
-              record.record_places,
-              record.region_code,
-              ({ place }) => place.region_code,
-            ).map(({ place }) => toExistingRecordLocationPlace(place)),
-            recordedAt: record.recorded_at,
-            recordedUntil: record.recorded_until,
-            regions: sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label)
-              .filter(({ selected_directly: selectedDirectly }) => selectedDirectly)
-              .map((region) => ({
-                code: region.region_code,
-                fullName: region.region_name,
-                label: region.region_label,
-                latitude: region.region_latitude,
-                longitude: region.region_longitude,
-                name: toShortRegionName(region.region_name),
-              })),
-            weather: normalizeRecordWeather(record.weather),
-          }}
+          initialValues={toRecordEditValues(record)}
           returnTo={backHref}
           savedTo={backHref}
         />
