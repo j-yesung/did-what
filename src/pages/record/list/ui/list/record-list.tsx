@@ -17,7 +17,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/em
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 
-import { useRecordListQuery } from "../model/use-record-list-query";
+import { useRecordListQuery } from "../../model/use-record-list-query";
 
 type RecordListProps = {
   filters: RecordFilters;

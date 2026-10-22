@@ -18,8 +18,8 @@ import { PlaceDetailContent } from "@/pages/place/detail/ui/place-detail-content
 import { PlaceSearchBottomSheet } from "@/pages/place/list/ui/place-search-bottom-sheet";
 import { SavedPlaceList } from "@/pages/place/list/ui/saved-place-list";
 import { RecordDetailContent } from "@/pages/record/detail/ui/record-detail-content";
-import { RecordCalendar } from "@/pages/record/list/ui/record-calendar";
-import { RecordListContent } from "@/pages/record/list/ui/record-list-content";
+import { RecordCalendar } from "@/pages/record/list/ui/calendar/record-calendar";
+import { RecordListContent } from "@/pages/record/list/ui/list/record-list-content";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { cn } from "@/shared/lib/utils";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";

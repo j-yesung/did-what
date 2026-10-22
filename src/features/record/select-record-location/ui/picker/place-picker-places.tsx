@@ -12,9 +12,9 @@ import { Button } from "@/shared/ui/button";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 import { SearchField } from "@/shared/ui/search-field";
 
-import type { PlacePickerDraft } from "../model/location-picker";
-import type { getPlacePickerResults } from "../model/place-picker-results";
-import type { usePlacePickerSelection } from "../model/use-place-picker-selection";
+import type { PlacePickerDraft } from "../../model/location-picker";
+import type { getPlacePickerResults } from "../../model/place-picker-results";
+import type { usePlacePickerSelection } from "../../model/use-place-picker-selection";
 import { SelectablePlaceCard } from "./selectable-place-card";
 
 type PlacePickerPlacesProps = {

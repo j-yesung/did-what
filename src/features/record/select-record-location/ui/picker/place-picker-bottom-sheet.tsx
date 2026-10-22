@@ -13,7 +13,7 @@ import {
   type PlacePickerDraft,
   type RecordLocationPlace,
   type RecordLocationRegion,
-} from "../model/location-picker";
+} from "../../model/location-picker";
 import { PlacePickerPanel } from "./place-picker-panel";
 
 type PlacePickerBottomSheetProps = {

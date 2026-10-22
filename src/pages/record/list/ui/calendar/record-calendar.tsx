@@ -26,7 +26,7 @@ import {
   parseCalendarDate,
   parseCalendarMonth,
   shiftMonth,
-} from "../model/record-calendar";
+} from "../../model/record-calendar";
 import { CalendarMonth } from "./calendar-month";
 import { RecordDayList } from "./record-day-list";
 import { RecordDetailBottomSheet } from "./record-detail-bottom-sheet";

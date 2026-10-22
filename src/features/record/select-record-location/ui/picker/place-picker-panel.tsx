@@ -21,9 +21,9 @@ import {
   type RecordLocationPlace,
   type RecordLocationRegion,
   toRecentRegions,
-} from "../model/location-picker";
-import { getPlacePickerResults } from "../model/place-picker-results";
-import { usePlacePickerSelection } from "../model/use-place-picker-selection";
+} from "../../model/location-picker";
+import { getPlacePickerResults } from "../../model/place-picker-results";
+import { usePlacePickerSelection } from "../../model/use-place-picker-selection";
 import { PlacePickerPlaces } from "./place-picker-places";
 import { PlacePickerRegions } from "./place-picker-regions";
 

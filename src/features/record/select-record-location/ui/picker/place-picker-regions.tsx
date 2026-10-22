@@ -10,8 +10,8 @@ import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { SearchField } from "@/shared/ui/search-field";
 
-import type { PlacePickerDraft, RecordLocationRegion } from "../model/location-picker";
-import type { usePlacePickerSelection } from "../model/use-place-picker-selection";
+import type { PlacePickerDraft, RecordLocationRegion } from "../../model/location-picker";
+import type { usePlacePickerSelection } from "../../model/use-place-picker-selection";
 import { SelectablePlaceCard } from "./selectable-place-card";
 
 type PlacePickerRegionsProps = {

@@ -15,8 +15,8 @@ import {
   type RecordLocationRegion,
   removeRecordLocationRegion,
   toVisitedRegions,
-} from "../model/location-picker";
-import { PlacePickerBottomSheet } from "./place-picker-bottom-sheet";
+} from "../../model/location-picker";
+import { PlacePickerBottomSheet } from "../picker/place-picker-bottom-sheet";
 import { SelectedLocationCard } from "./selected-location-card";
 
 type RecordLocationFieldsProps = {
