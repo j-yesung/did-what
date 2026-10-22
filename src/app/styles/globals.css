@@ -425,7 +425,6 @@
    * JSX 텍스트의 줄바꿈은 컴파일 때 공백으로 합쳐지므로 코드 포매팅에는 영향받지 않는다.
    */
   [data-slot="alert-description"],
-  [data-slot="card-description"],
   [data-slot="confirm-dialog-description"],
   [data-slot="dialog-description"],
   [data-slot="empty-description"],

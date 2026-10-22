@@ -113,8 +113,8 @@ export function SavedPlaceList({
           title="저장한 장소를 불러오지 못했어요"
         />
       ) : visiblePlaces.length === 0 ? (
-        <Empty className="flex-1 border-0 py-10">
-          <EmptyHeader className="gap-1">
+        <Empty className="flex-1 py-10">
+          <EmptyHeader>
             <EmptyTitle className="font-semibold text-base">
               {query.trim() ? "검색 결과가 없어요" : "저장한 장소가 없어요"}
             </EmptyTitle>

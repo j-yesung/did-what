@@ -88,7 +88,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
               </section>
 
               {recordsQuery.isPending ? null : records.length ? (
-                <RecordTimeline aria-labelledby="place-records-title" className="gap-0">
+                <RecordTimeline aria-labelledby="place-records-title">
                   <div className="mb-2 flex items-center justify-between gap-3 px-1">
                     <h2 className="font-semibold text-base" id="place-records-title">
                       이곳의 기록

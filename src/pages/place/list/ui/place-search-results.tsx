@@ -123,8 +123,8 @@ export function PlaceSearchResults({ onReset, initialPlaces, query }: PlaceSearc
             <p className="px-1 pt-2 text-muted-foreground text-xs">Kakao 장소 검색</p>
           </div>
         ) : (
-          <Empty className="flex-1 border-0 py-10">
-            <EmptyHeader className="gap-1">
+          <Empty className="flex-1 py-10">
+            <EmptyHeader>
               <EmptyTitle className="font-semibold text-base">검색 결과가 없어요</EmptyTitle>
               <EmptyDescription className="text-sm/normal">지역명이나 장소 이름을 바꿔 보세요.</EmptyDescription>
             </EmptyHeader>

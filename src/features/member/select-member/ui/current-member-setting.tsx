@@ -19,7 +19,7 @@ export function CurrentMemberSetting({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <FieldSet className="gap-4">
+    <FieldSet>
       <FieldLegend>현재 사용자</FieldLegend>
       <div className="flex items-center gap-3">
         <span

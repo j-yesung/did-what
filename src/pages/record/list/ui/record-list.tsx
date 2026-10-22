@@ -52,8 +52,8 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
 
   if (records.length === 0) {
     return isFiltered ? (
-      <Empty className="flex-1 gap-3 rounded-none border-0 px-1 py-10">
-        <EmptyHeader className="gap-1">
+      <Empty className="flex-1 px-1 py-10">
+        <EmptyHeader>
           <EmptyTitle className="font-semibold text-base">조건에 맞는 기록이 없어요</EmptyTitle>
           <EmptyDescription className="text-sm/normal">검색어나 기간을 조정해 보세요.</EmptyDescription>
         </EmptyHeader>
@@ -71,7 +71,7 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
       aria-busy={recordsQuery.isPlaceholderData || undefined}
       aria-label={`불러온 기록 ${records.length}개`}
       className={cn(
-        "gap-0 transition-opacity duration-200 motion-reduce:transition-none",
+        "transition-opacity duration-200 motion-reduce:transition-none",
         recordsQuery.isPlaceholderData && "opacity-50",
       )}
     >
