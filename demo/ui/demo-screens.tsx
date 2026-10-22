@@ -29,7 +29,7 @@ import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { cn } from "@/shared/lib/utils";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
-import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
+import { FixedToolbar, PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
 import { ListHeader } from "@/shared/ui/list-header";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -85,11 +85,9 @@ export function DemoRecordsScreen({ member }: { member: Member }) {
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
-        <div className="mx-auto flex w-full max-w-(--app-width) items-start px-5 pt-(--page-top)">
-          <RecordViewToggle view={view} />
-        </div>
-      </div>
+      <FixedToolbar className="items-start">
+        <RecordViewToggle view={view} />
+      </FixedToolbar>
       <PageShell className={cn("gap-4", view === "calendar" && "h-(--screen-height)")} withBottomNavigation>
         <header className="min-h-13">
           <h1 className="sr-only">우리의 기록</h1>

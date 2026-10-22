@@ -4,26 +4,14 @@ import { revalidatePath } from "next/cache";
 
 import {
   normalizeKakaoPage,
-  resolveKakaoRegion,
-  searchKakaoPlaces,
   validateKakaoPlaceId,
   validateKakaoQuery,
+  verifyKakaoPlaces,
 } from "@/shared/api/kakao-local/server";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 import type { CreatePlaceInput, PlaceActionState } from "../model/place-form";
-
-type VerifiedPlace = {
-  place: NonNullable<Awaited<ReturnType<typeof searchKakaoPlaces>>["places"]>[number];
-  region: NonNullable<Awaited<ReturnType<typeof resolveKakaoRegion>>>;
-};
-
-type PlaceSearchGroup = {
-  inputs: CreatePlaceInput[];
-  page: number;
-  query: string;
-};
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
@@ -43,49 +31,6 @@ const normalizeCreatePlaceInput = (value: unknown): CreatePlaceInput | null => {
   };
 };
 
-const verifyPlaceSearchGroup = async (group: PlaceSearchGroup): Promise<VerifiedPlace[] | null> => {
-  const searchResult = await searchKakaoPlaces(group.query, group.page);
-  if (!searchResult.places) return null;
-
-  const placesById = new Map(searchResult.places.map((place) => [place.id, place]));
-  const verifiedPlaces = await Promise.all(
-    group.inputs.map(async (input): Promise<VerifiedPlace | null> => {
-      const place = placesById.get(input.placeId);
-      if (!place) return null;
-
-      const region = await resolveKakaoRegion(place.longitude, place.latitude);
-      return region ? { place, region } : null;
-    }),
-  );
-
-  return verifiedPlaces.some((place) => place === null)
-    ? null
-    : verifiedPlaces.filter((place): place is VerifiedPlace => place !== null);
-};
-
-const verifyPlaces = async (inputs: CreatePlaceInput[]): Promise<VerifiedPlace[] | null> => {
-  const groups = new Map<string, PlaceSearchGroup>();
-
-  for (const input of inputs) {
-    const key = JSON.stringify([input.query, input.page]);
-    const group = groups.get(key);
-    if (group) {
-      group.inputs.push(input);
-    } else {
-      groups.set(key, { inputs: [input], page: input.page, query: input.query });
-    }
-  }
-
-  const results = await Promise.all([...groups.values()].map(verifyPlaceSearchGroup));
-  const verifiedPlaces: VerifiedPlace[] = [];
-  for (const result of results) {
-    if (!result) return null;
-    verifiedPlaces.push(...result);
-  }
-
-  return verifiedPlaces;
-};
-
 export const createPlaces = async (inputs: CreatePlaceInput[]): Promise<PlaceActionState> => {
   const normalizedInputs = Array.isArray(inputs) ? inputs.map(normalizeCreatePlaceInput) : [];
   if (!normalizedInputs.length || normalizedInputs.some((input) => !input)) {
@@ -95,13 +40,21 @@ export const createPlaces = async (inputs: CreatePlaceInput[]): Promise<PlaceAct
   const validInputs = normalizedInputs.filter((input): input is CreatePlaceInput => input !== null);
   const uniqueInputs = [...new Map(validInputs.map((input) => [input.placeId, input])).values()];
   const { supabase } = await requireUser();
-  const verifiedPlaces = await verifyPlaces(uniqueInputs);
-  if (!verifiedPlaces) {
+  const groups = new Map<string, CreatePlaceInput[]>();
+  for (const input of uniqueInputs) {
+    const key = JSON.stringify([input.query, input.page]);
+    const group = groups.get(key);
+    if (group) group.push(input);
+    else groups.set(key, [input]);
+  }
+  const verifiedPlaces = await verifyKakaoPlaces([...groups.values()].flat());
+  if (verifiedPlaces.some((result) => result.error)) {
     return { message: "선택한 장소를 확인할 수 없습니다. 다시 검색해 주세요.", status: "error" };
   }
 
+  const places = verifiedPlaces.filter((result) => !result.error);
   const { data: saved, error } = await supabase.rpc("save_owned_places", {
-    p_places: verifiedPlaces.map(({ place, region }) => ({
+    p_places: places.map(({ place, region }) => ({
       address: place.address,
       category_group_code: place.categoryGroupCode,
       category_name: place.categoryName,

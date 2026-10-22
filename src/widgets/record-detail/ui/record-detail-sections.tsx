@@ -2,7 +2,6 @@ import type { ComponentProps } from "react";
 
 import { PlaceIconTile } from "@/entities/place";
 import { PlaceSaveButton } from "@/features/place/save-place";
-import { PageSection } from "@/shared/ui/layouts";
 
 type RecordDetailSectionsProps = {
   heading?: "h2" | "h3";
@@ -29,7 +28,7 @@ export function RecordDetailSections({
   return (
     <>
       {placeCount > 0 ? (
-        <PageSection aria-labelledby={`${idPrefix}-places-title`} className="mx-0 border-0 px-1 pt-1">
+        <section aria-labelledby={`${idPrefix}-places-title`} className="px-1 pt-1">
           <div className="mb-3 flex items-center justify-between gap-3">
             <Heading className="font-semibold text-base" id={`${idPrefix}-places-title`}>
               우리 어디 갔지?
@@ -58,10 +57,10 @@ export function RecordDetailSections({
                   />
                 ))}
           </ul>
-        </PageSection>
+        </section>
       ) : null}
       {memo ? (
-        <PageSection aria-labelledby={`${idPrefix}-memo-title`} className="mx-0 border-0 px-1 pt-1">
+        <section aria-labelledby={`${idPrefix}-memo-title`} className="px-1 pt-1">
           <Heading className="mb-3 font-semibold text-base" id={`${idPrefix}-memo-title`}>
             우리 뭐했지?
           </Heading>
@@ -72,7 +71,7 @@ export function RecordDetailSections({
               </p>
             ))}
           </div>
-        </PageSection>
+        </section>
       ) : null}
     </>
   );

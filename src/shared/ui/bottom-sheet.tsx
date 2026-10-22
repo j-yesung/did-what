@@ -159,7 +159,7 @@ function BottomSheetHeader({
     <div
       data-slot="bottom-sheet-header"
       className={cn(
-        "flex shrink-0 flex-col gap-0.5 px-5 pt-4 pb-0 group-data-[swipe-axis=y]/bottom-sheet-popup:text-center md:gap-0.5 md:text-left",
+        "flex shrink-0 flex-col gap-0.5 px-5 pt-4 pb-0 group-data-[swipe-axis=y]/bottom-sheet-popup:text-center md:text-left",
         glass && "sticky top-0 z-10",
         className,
       )}

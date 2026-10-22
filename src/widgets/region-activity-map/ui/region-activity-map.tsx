@@ -228,7 +228,7 @@ export function RegionActivityMap({
         onSubregionChange={setSubregion}
         open={bottomSheetOpen}
         records={records}
-        region={selectedRegion}
+        region={regionMaps.find(({ code }) => code === selectedRegion?.code) ?? null}
         renderRecordDetail={renderRecordDetail}
         subregion={subregion}
       />

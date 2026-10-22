@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import { useActionOverride } from "@/shared/lib/action-override";
 import { FieldLegend, FieldSet } from "@/shared/ui/field";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 
-import { setTheme } from "../api/update-theme";
-import { THEME_OPTIONS, type Theme } from "../model/theme";
+import { parseTheme, THEME_OPTIONS, type Theme } from "../model/theme";
+import { applyTheme, getAppliedTheme, saveTheme } from "../model/theme-preference";
 
 type ThemeSelectProps = {
   value: Theme;
@@ -15,21 +15,20 @@ type ThemeSelectProps = {
 
 export function ThemeSelect({ value }: ThemeSelectProps) {
   const [selectedTheme, setSelectedTheme] = useState(value);
-  const [isPending, startTransition] = useTransition();
-  const saveTheme = useActionOverride(setTheme);
+  const persistTheme = useActionOverride(saveTheme);
 
   useEffect(() => setSelectedTheme(value), [value]);
+  useEffect(() => setSelectedTheme(getAppliedTheme()), []);
 
   const handleValueChange = (nextValue: string) => {
-    const nextTheme = nextValue as Theme;
-    const formData = new FormData();
-    formData.set("theme", nextTheme);
+    const nextTheme = parseTheme(nextValue);
+    applyTheme(nextTheme);
+    persistTheme(nextTheme);
     setSelectedTheme(nextTheme);
-    startTransition(() => saveTheme(formData));
   };
 
   return (
-    <FieldSet className="gap-2" disabled={isPending}>
+    <FieldSet className="gap-2">
       <FieldLegend>화면 모드</FieldLegend>
       <SegmentedControl name="theme" size="large" onValueChange={handleValueChange} value={selectedTheme}>
         {THEME_OPTIONS.map((option) => (

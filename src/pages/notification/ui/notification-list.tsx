@@ -109,8 +109,8 @@ export function NotificationList({ memberId }: NotificationListProps) {
           title="알림을 불러오지 못했어요"
         />
       ) : notifications.length === 0 ? (
-        <Empty className="flex-1 border-0 py-12">
-          <EmptyHeader className="gap-1">
+        <Empty className="flex-1 py-12">
+          <EmptyHeader>
             <EmptyTitle className="font-semibold text-base">새 알림이 없어요</EmptyTitle>
             <EmptyDescription className="text-sm/normal">새 기록과 댓글을 여기서 확인해요.</EmptyDescription>
           </EmptyHeader>

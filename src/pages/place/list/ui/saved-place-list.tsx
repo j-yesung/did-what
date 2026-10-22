@@ -102,10 +102,7 @@ export function SavedPlaceList({
         placeholder="저장한 장소 이름 또는 주소"
         value={query}
       />
-      <div className="flex min-h-11 items-center justify-between gap-2">
-        <p className="text-muted-foreground text-xs">저장한 장소 {places.length}곳</p>
-        <PlaceSearchBottomSheet initialPlaces={initialPlaces} initialQuery={initialSearchQuery} />
-      </div>
+      <PlaceSearchBottomSheet initialPlaces={initialPlaces} initialQuery={initialSearchQuery} />
       {placesQuery.isError ? (
         <LoadErrorAlert
           onRetry={() => void placesQuery.refetch()}
@@ -113,8 +110,8 @@ export function SavedPlaceList({
           title="저장한 장소를 불러오지 못했어요"
         />
       ) : visiblePlaces.length === 0 ? (
-        <Empty className="flex-1 border-0 py-10">
-          <EmptyHeader className="gap-1">
+        <Empty className="flex-1 py-10">
+          <EmptyHeader>
             <EmptyTitle className="font-semibold text-base">
               {query.trim() ? "검색 결과가 없어요" : "저장한 장소가 없어요"}
             </EmptyTitle>
@@ -124,11 +121,11 @@ export function SavedPlaceList({
           </EmptyHeader>
         </Empty>
       ) : (
-        <section aria-label={`저장한 장소 ${visiblePlaces.length}곳`} className="flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-semibold text-base">저장한 장소</h2>
-            <span className="text-muted-foreground text-xs">최근 저장순</span>
-          </div>
+        <section
+          aria-label={`저장한 장소 ${visiblePlaces.length}곳`}
+          className="flex flex-col gap-4 pb-[calc(var(--toolbar-height)+--spacing(4))]"
+        >
+          <h2 className="font-semibold text-base">저장한 장소</h2>
           <ul className="grid grid-cols-4 items-start gap-x-2.5 gap-y-4">
             {visiblePlaces.map((place) => (
               <SavedPlaceListItem key={place.id} onDetailPrefetch={prefetchDetail} place={place} />

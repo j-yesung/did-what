@@ -8,3 +8,4 @@ export {
   validateKakaoPlaceId,
   validateKakaoQuery,
 } from "./validation.ts";
+export { verifyKakaoPlaces } from "./verify-places.ts";

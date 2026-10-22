@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { PlusIcon } from "@phosphor-icons/react";
 
 import type { SavedPlaceRow } from "@/entities/place";
 import { validateKakaoQuery } from "@/shared/api/kakao-local/validation";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
-import { Button } from "@/shared/ui/button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 
 import { PlaceSearchForm } from "./place-search-form";
 import { PlaceSearchResults } from "./place-search-results";
@@ -18,19 +19,32 @@ type PlaceSearchBottomSheetProps = {
 };
 
 export function PlaceSearchBottomSheet({ initialPlaces, initialQuery }: PlaceSearchBottomSheetProps) {
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(initialQuery !== undefined);
   const [keyword, setKeyword] = useState(initialQuery ?? "");
   const [submitted, setSubmitted] = useState(Boolean(initialQuery));
   const result = validateKakaoQuery(keyword);
   const query = result.valid ? result.query : "";
 
+  useEffect(() => setMounted(true), []);
+
+  const trigger = (
+    <div className="pointer-events-none fixed inset-x-0 bottom-(--nav-clearance) z-30">
+      <div className="mx-auto flex w-full max-w-(--app-width) justify-end px-5">
+        <BottomSheet.Trigger
+          render={<LiquidGlassButton aria-label="새 장소 찾기" shape="circle" title="새 장소 찾기" />}
+        >
+          <PlusIcon aria-hidden="true" weight="bold" />
+        </BottomSheet.Trigger>
+      </div>
+    </div>
+  );
+
   return (
     <BottomSheet onOpenChange={setOpen} open={open} showSwipeHandle>
-      <BottomSheet.Trigger render={<Button className="shrink-0" size="small" type="button" variant="ghost" />}>
-        <PlusIcon aria-hidden="true" data-icon="inline-start" />새 장소 찾기
-      </BottomSheet.Trigger>
+      {mounted ? createPortal(trigger, document.body) : trigger}
       <BottomSheet.VirtualKeyboardProvider>
-        <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))] [--drawer-height:min(82dvh,var(--drawer-content-max-height))]">
+        <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--drawer-content-max-height)]">
           <BottomSheet.Header>
             <BottomSheet.Title className="text-left font-bold text-xl">새 장소 찾기</BottomSheet.Title>
             <BottomSheet.Description className="text-left">

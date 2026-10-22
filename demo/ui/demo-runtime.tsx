@@ -1,12 +1,13 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
 import { AppLoading } from "@/app/ui/app-loading";
 import { THEME_OPTIONS } from "@/features/switch-theme/model/theme";
+import { applyTheme } from "@/features/switch-theme/model/theme-preference";
 import { ActionOverrideProvider } from "@/shared/lib/action-override";
 
 import { createDemoOverrides, createDemoRecordActions, getCurrentDemoMember } from "../lib/demo-actions";
@@ -133,11 +134,7 @@ function DemoRuntime({ children }: { children: ReactNode }) {
   }, [state, search]);
 
   // 앱의 화면 모드는 실제 쿠키 대신 체험 데이터로 정한다. 부모 패널은 그대로 둔다.
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    if (state.theme !== "system") root.classList.add(state.theme);
-  }, [state.theme]);
+  useLayoutEffect(() => applyTheme(state.theme), [state.theme]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -2,12 +2,11 @@ import type { ReactNode } from "react";
 
 import type { Metadata, Viewport } from "next";
 
+import { ThemeMeta } from "@/features/switch-theme";
 import { getTheme } from "@/features/switch-theme/server";
 import { PreventForwardSwipe } from "@/shared/ui/prevent-forward-swipe";
 
 import "@/app/styles/globals.css";
-
-const THEME_COLOR = { dark: "#191f28", light: "#f9fafb" };
 
 const IOS_SPLASH_SCREENS = [
   { height: 568, scale: 2, width: 320 },
@@ -38,23 +37,12 @@ export const metadata: Metadata = {
   },
 };
 
-export const generateViewport = async (): Promise<Viewport> => {
-  const theme = await getTheme();
-
-  return {
-    themeColor:
-      theme === "system"
-        ? [
-            { color: THEME_COLOR.light, media: "(prefers-color-scheme: light)" },
-            { color: THEME_COLOR.dark, media: "(prefers-color-scheme: dark)" },
-          ]
-        : THEME_COLOR[theme],
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  };
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default async function Layout({ children }: { children: ReactNode }) {
@@ -63,6 +51,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <html className={theme === "system" ? undefined : theme} lang="ko">
       <head>
+        <ThemeMeta initialTheme={theme} />
         {IOS_SPLASH_SCREENS.map(({ height, scale, width }) => (
           <link
             href={`/splash/${width * scale}x${height * scale}.png`}

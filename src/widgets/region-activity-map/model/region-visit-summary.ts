@@ -1,4 +1,4 @@
-import { getRegionCode, type Region } from "@/entities/region/model/korea-map";
+import { getRegionCode, type Region } from "@/entities/region/model/region";
 
 import type { MapRecord } from "./record-map-points";
 

@@ -259,7 +259,6 @@ export function PlacePickerPanel({
                   <li key={region.code || "nationwide"}>
                     <Button
                       aria-pressed={region.code === scopeCode}
-                      className="rounded-lg"
                       onClick={() => updateDraft({ scopeCode: region.code })}
                       size="small"
                       type="button"

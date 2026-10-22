@@ -1,4 +1,4 @@
-import { getRegion } from "@/entities/region";
+import { getRegion } from "@/entities/region/model/region";
 import { createRecord } from "@/features/record/create-record/api/create-record";
 import { resolveSavedRecordLocation } from "@/features/record/select-record-location/server";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";

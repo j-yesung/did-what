@@ -15,8 +15,8 @@ import { resolveRecordPlace } from "@/features/record/select-record-location/api
 import type { ResolveRecordPlaceResult } from "@/features/record/select-record-location/model/location-picker";
 import { type RecordView, saveRecordView } from "@/features/record/switch-record-view/model/record-view-preference";
 import { createComment, deleteComment } from "@/features/record-comment/api/comment-actions";
-import { setTheme } from "@/features/switch-theme/api/update-theme";
-import { parseTheme } from "@/features/switch-theme/model/theme";
+import type { Theme } from "@/features/switch-theme/model/theme";
+import { saveTheme } from "@/features/switch-theme/model/theme-preference";
 import type { ActionOverrides } from "@/shared/lib/action-override";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { showToast } from "@/shared/lib/toast";
@@ -182,7 +182,7 @@ export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): Ac
         return undefined;
       },
     ],
-    [setTheme, async (formData: FormData) => update({ theme: parseTheme(String(formData.get("theme") ?? "")) })],
+    [saveTheme, (theme: Theme) => update({ theme })],
     [saveRecordView, (view: RecordView) => update({ recordView: view })],
     // 실제 알림 권한을 묻지 않도록 알림을 지원하지 않는 기기로 보인다. 설정에는 홈 화면 설치 안내가 나온다.
     [isPushSupported, () => false],

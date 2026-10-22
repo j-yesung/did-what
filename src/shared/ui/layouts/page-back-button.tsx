@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { BackButton } from "../back-button";
+import { FixedToolbar } from "./fixed-toolbar";
 
 const PAGE_BACK_SLOT_ID = "page-back-slot";
 
@@ -28,13 +29,11 @@ export function PageBackButton({ fallbackHref }: { fallbackHref: string }) {
   useEffect(() => setMounted(true), []);
 
   const layer = (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
-      <div className="mx-auto flex w-full max-w-(--app-width) px-5 pt-(--page-top)">
-        <div className="pointer-events-auto">
-          <BackButton fallbackHref={fallbackHref} />
-        </div>
+    <FixedToolbar>
+      <div className="pointer-events-auto">
+        <BackButton fallbackHref={fallbackHref} />
       </div>
-    </div>
+    </FixedToolbar>
   );
 
   return mounted ? createPortal(layer, document.getElementById(PAGE_BACK_SLOT_ID) ?? document.body) : layer;

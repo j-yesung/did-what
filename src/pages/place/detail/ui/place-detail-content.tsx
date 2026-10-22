@@ -11,7 +11,7 @@ import { EmptyRecords, RecordCreateButton, RecordTimeline, RecordTimelineItems }
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { DeletePlaceConfirm } from "@/features/place/delete-place/ui/delete-place-confirm";
 import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
-import { PageHeader, PageShell } from "@/shared/ui/layouts";
+import { FixedToolbar, PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -41,11 +41,9 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
-        <div className="mx-auto flex w-full max-w-(--app-width) justify-end gap-2 px-5 pt-(--page-top)">
-          <RecordCreateButton className="pointer-events-auto" href={`/records/new?placeId=${placeId}`} />
-        </div>
-      </div>
+      <FixedToolbar className="justify-end gap-2">
+        <RecordCreateButton className="pointer-events-auto" href={`/records/new?placeId=${placeId}`} />
+      </FixedToolbar>
       <OverscrollBack fallbackHref="/places">
         <PageShell>
           <PageHeader back="/places" />
@@ -90,7 +88,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
               </section>
 
               {recordsQuery.isPending ? null : records.length ? (
-                <RecordTimeline aria-labelledby="place-records-title" className="gap-0">
+                <RecordTimeline aria-labelledby="place-records-title">
                   <div className="mb-2 flex items-center justify-between gap-3 px-1">
                     <h2 className="font-semibold text-base" id="place-records-title">
                       이곳의 기록

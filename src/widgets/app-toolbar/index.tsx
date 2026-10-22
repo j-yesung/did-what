@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 
 import { RecordCreateButton } from "@/entities/record";
+import { FixedToolbar } from "@/shared/ui/layouts";
 import { PressScale } from "@/shared/ui/press-scale";
 import { NotificationBell } from "@/widgets/app-toolbar/notification-bell";
 
@@ -27,24 +28,22 @@ export function AppToolbar({ memberId }: { memberId: string }) {
   );
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-30">
-      <div className="mx-auto flex w-full max-w-(--app-width) items-start px-5 pt-(--page-top)">
-        {recordId ? (
-          <div className="ml-auto">
-            <RecordToolbarActions key={recordId} recordId={recordId}>
-              {primaryActions}
-            </RecordToolbarActions>
-          </div>
-        ) : (
-          <PressScale
-            aria-label="빠른 작업"
-            className="app-toolbar liquid-glass-control pointer-events-auto ml-auto flex items-center gap-1.5 rounded-full p-0.5"
-            role="group"
-          >
+    <FixedToolbar className="items-start">
+      {recordId ? (
+        <div className="ml-auto">
+          <RecordToolbarActions key={recordId} recordId={recordId}>
             {primaryActions}
-          </PressScale>
-        )}
-      </div>
-    </div>
+          </RecordToolbarActions>
+        </div>
+      ) : (
+        <PressScale
+          aria-label="빠른 작업"
+          className="app-toolbar liquid-glass-control pointer-events-auto ml-auto flex items-center gap-1.5 rounded-full p-0.5"
+          role="group"
+        >
+          {primaryActions}
+        </PressScale>
+      )}
+    </FixedToolbar>
   );
 }
