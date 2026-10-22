@@ -15,6 +15,7 @@ import { ThemeSelect } from "@/features/switch-theme";
 import { HomeContent } from "@/pages/home/ui/home-content";
 import { NotificationList } from "@/pages/notification/ui/notification-list";
 import { PlaceDetailContent } from "@/pages/place/detail/ui/place-detail-content";
+import { PlaceSearchBottomSheet } from "@/pages/place/list/ui/place-search-bottom-sheet";
 import { SavedPlaceList } from "@/pages/place/list/ui/saved-place-list";
 import { RecordDetailContent } from "@/pages/record/detail/ui/record-detail-content";
 import { RecordCalendar } from "@/pages/record/list/ui/record-calendar";
@@ -180,12 +181,15 @@ export function DemoPlacesScreen() {
   const state = useDemoState();
   const initialPlaces = getSavedPlaceRows(state) as SavedPlaceRow[];
   return (
-    <PageShell className="gap-4" withBottomNavigation>
-      <header className="min-h-13">
-        <h1 className="sr-only">내 장소</h1>
-      </header>
-      <SavedPlaceList initialPlaces={initialPlaces} initialSearchQuery={searchParams?.get("q") ?? undefined} />
-    </PageShell>
+    <>
+      <PageShell className="gap-4" withBottomNavigation>
+        <header className="min-h-13">
+          <h1 className="sr-only">내 장소</h1>
+        </header>
+        <SavedPlaceList initialPlaces={initialPlaces} />
+      </PageShell>
+      <PlaceSearchBottomSheet initialPlaces={initialPlaces} initialQuery={searchParams?.get("q") ?? undefined} />
+    </>
   );
 }
 

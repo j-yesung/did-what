@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 
 import { PlusIcon } from "@phosphor-icons/react";
 
@@ -19,30 +18,23 @@ type PlaceSearchBottomSheetProps = {
 };
 
 export function PlaceSearchBottomSheet({ initialPlaces, initialQuery }: PlaceSearchBottomSheetProps) {
-  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(initialQuery !== undefined);
   const [keyword, setKeyword] = useState(initialQuery ?? "");
   const [submitted, setSubmitted] = useState(Boolean(initialQuery));
   const result = validateKakaoQuery(keyword);
   const query = result.valid ? result.query : "";
 
-  useEffect(() => setMounted(true), []);
-
-  const trigger = (
-    <div className="pointer-events-none fixed inset-x-0 bottom-(--nav-clearance) z-30">
-      <div className="mx-auto flex w-full max-w-(--app-width) justify-end px-5">
-        <BottomSheet.Trigger
-          render={<LiquidGlassButton aria-label="새 장소 찾기" shape="circle" title="새 장소 찾기" />}
-        >
-          <PlusIcon aria-hidden="true" weight="bold" />
-        </BottomSheet.Trigger>
-      </div>
-    </div>
-  );
-
   return (
     <BottomSheet onOpenChange={setOpen} open={open} showSwipeHandle>
-      {mounted ? createPortal(trigger, document.body) : trigger}
+      <div className="pointer-events-none fixed inset-x-0 bottom-(--nav-clearance) z-30">
+        <div className="mx-auto flex w-full max-w-(--app-width) justify-end px-5">
+          <BottomSheet.Trigger
+            render={<LiquidGlassButton aria-label="새 장소 찾기" shape="circle" title="새 장소 찾기" />}
+          >
+            <PlusIcon aria-hidden="true" weight="bold" />
+          </BottomSheet.Trigger>
+        </div>
+      </div>
       <BottomSheet.VirtualKeyboardProvider>
         <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--drawer-content-max-height)]">
           <BottomSheet.Header>
