@@ -5,8 +5,6 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
-import { Button } from "@/shared/ui/button";
-import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 
 const EXIT_SENTINEL = "recordCreateExitSentinel";
 const EXIT_CAN_GO_BACK = "recordCreateCanGoBack";
@@ -126,31 +124,14 @@ export const useRecordCreateNavigation = ({
   }, [busyRef, fallbackHref, router]);
 
   return {
-    confirmDialog: (
-      <ConfirmDialog
-        cancelButton={
-          <ConfirmDialogCancelButton onClick={() => setConfirmOpen(false)}>계속 작성</ConfirmDialogCancelButton>
-        }
-        confirmButton={
-          <Button
-            color="danger"
-            onClick={() => {
-              leavingRef.current = true;
-              intentRef.current = { type: "cancel" };
-              setConfirmOpen(false);
-              window.history.go(couldGoBackRef.current ? -2 : -1);
-            }}
-            variant="fill"
-          >
-            나가기
-          </Button>
-        }
-        description="이 화면을 나가면 입력한 내용이 저장되지 않아요."
-        onClose={() => setConfirmOpen(false)}
-        open={confirmOpen}
-        title="작성 중인 내용이 사라져요"
-      />
-    ),
+    confirmOpen,
+    cancelExit: () => setConfirmOpen(false),
+    confirmExit: () => {
+      leavingRef.current = true;
+      intentRef.current = { type: "cancel" };
+      setConfirmOpen(false);
+      window.history.go(couldGoBackRef.current ? -2 : -1);
+    },
     exit: () => window.history.back(),
     finish: (href: string) => {
       leavingRef.current = true;
