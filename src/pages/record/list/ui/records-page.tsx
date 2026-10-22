@@ -5,8 +5,8 @@ import { getRecordView } from "@/features/record/switch-record-view/server";
 import { cn } from "@/shared/lib/utils";
 import { FixedToolbar, PageShell } from "@/shared/ui/layouts";
 
-import { RecordCalendar } from "./record-calendar";
-import { RecordListContent } from "./record-list-content";
+import { RecordCalendar } from "./calendar/record-calendar";
+import { RecordListContent } from "./list/record-list-content";
 
 type RecordsPageProps = {
   searchParams: Promise<RecordSearchParams>;

@@ -1,20 +1,14 @@
 import { notFound } from "next/navigation";
 
 import { getSavedPlaces } from "@/entities/place/server";
-import {
-  normalizeRecordCategory,
-  normalizeRecordWeather,
-  sortPrimaryRecordRegions,
-  sortPrimaryRegionFirst,
-} from "@/entities/record";
 import { getRecord } from "@/entities/record/server";
 import { updateRecord } from "@/features/record/edit-record/api/update-record";
-import { toExistingRecordLocationPlace, toShortRegionName } from "@/features/record/select-record-location";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
+import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
 import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
 
 type RecordEditPageProps = {
@@ -67,34 +61,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
         ) : (
           <RecordEditForm
             action={updateRecord.bind(null, recordId)}
-            initialValues={{
-              activity: record.activity,
-              category: normalizeRecordCategory(record.category),
-              memo: record.memo ?? "",
-              /**
-               * 저장하면 첫 방문 지역이 대표 지역이 된다. 지금 대표 지역의 장소와 지역을 앞에 둬야
-               * 지역을 건드리지 않고 저장했을 때 대표 지역이 바뀌지 않는다.
-               */
-              places: sortPrimaryRegionFirst(
-                record.record_places,
-                record.region_code,
-                ({ place }) => place.region_code,
-              ).map(({ place }) => toExistingRecordLocationPlace(place)),
-              recordedAt: record.recorded_at,
-              recordedUntil: record.recorded_until,
-              weather: normalizeRecordWeather(record.weather),
-              // 장소에서 따라온 지역은 장소가 다시 데려오므로, 직접 고른 지역만 되살린다.
-              regions: sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label)
-                .filter(({ selected_directly: selectedDirectly }) => selectedDirectly)
-                .map((region) => ({
-                  code: region.region_code,
-                  fullName: region.region_name,
-                  label: region.region_label,
-                  latitude: region.region_latitude,
-                  longitude: region.region_longitude,
-                  name: toShortRegionName(region.region_name),
-                })),
-            }}
+            initialValues={toRecordEditValues(record)}
             initialSavedPlaces={savedPlaces}
             returnTo={`/records/${recordId}`}
             savedTo={`/records/${recordId}`}

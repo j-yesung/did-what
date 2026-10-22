@@ -1,6 +1,7 @@
 import { getRegion } from "@/entities/region/model/region";
 import { createRecord } from "@/features/record/create-record/api/create-record";
 import { resolveSavedRecordLocation } from "@/features/record/select-record-location/server";
+import { getToday } from "@/shared/lib/date/get-today";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageShell } from "@/shared/ui/layouts";
@@ -13,7 +14,7 @@ type RecordNewPageProps = {
 export async function RecordNewPage({ searchParams }: RecordNewPageProps) {
   const { date, placeId: rawPlaceId, region: rawRegion } = await searchParams;
   const searchRegion = typeof rawRegion === "string" ? getRegion(rawRegion) : undefined;
-  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
+  const today = getToday();
   const defaultRecordedAt = typeof date === "string" && isIsoDate(date) ? date : today;
   const calendarHref = defaultRecordedAt === date ? `/records?view=calendar&month=${date.slice(0, 7)}` : "/records";
   const placeId = typeof rawPlaceId === "string" && isUuid(rawPlaceId) ? rawPlaceId : null;

@@ -1,8 +1,8 @@
 import type { RecordCategory, RecordFieldErrors, RecordWeather } from "@/entities/record";
 import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
+import { validateRecordContent, validateRecordDates } from "@/entities/record/model/record-validation";
 import type { RecordLocationPlace, RecordLocationRegion } from "@/features/record/select-record-location";
 import { toVisitedRegions } from "@/features/record/select-record-location/model/location-picker";
-import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 
 export const RECORD_CREATE_STEPS = ["when", "where", "what"] as const;
 
@@ -30,10 +30,7 @@ export const validateRecordCreateStep = (step: RecordCreateStep, context: Record
   const fieldErrors: RecordFieldErrors = {};
 
   if (step === "when") {
-    if (!isIsoDate(context.recordedAt)) fieldErrors.recordedAt = "올바른 날짜를 입력해 주세요.";
-    if (context.recordedUntil && (!isIsoDate(context.recordedUntil) || context.recordedUntil < context.recordedAt)) {
-      fieldErrors.recordedUntil = "종료일은 시작일과 같거나 이후여야 해요.";
-    }
+    Object.assign(fieldErrors, validateRecordDates(context));
   }
 
   if (step === "where") {
@@ -48,11 +45,7 @@ export const validateRecordCreateStep = (step: RecordCreateStep, context: Record
   }
 
   if (step === "what") {
-    const activity = context.activity.trim();
-    if (activity.length < 1 || activity.length > 120) {
-      fieldErrors.activity = "기록 제목은 1자 이상 120자 이하로 입력해 주세요.";
-    }
-    if (context.memo.trim().length > 500) fieldErrors.memo = "메모는 500자 이하로 입력해 주세요.";
+    Object.assign(fieldErrors, validateRecordContent(context));
   }
 
   return fieldErrors;

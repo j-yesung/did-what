@@ -24,6 +24,7 @@ import {
 } from "@/features/record/select-record-location";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
+import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { FieldGroup } from "@/shared/ui/field";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
@@ -258,7 +259,18 @@ function RecordCreateFunnelClient({
       }}
       onSubmit={submit}
     >
-      {navigation.confirmDialog}
+      <ConfirmDialog
+        cancelButton={<ConfirmDialogCancelButton onClick={navigation.cancelExit}>계속 작성</ConfirmDialogCancelButton>}
+        confirmButton={
+          <Button color="danger" onClick={navigation.confirmExit} variant="fill">
+            나가기
+          </Button>
+        }
+        description="이 화면을 나가면 입력한 내용이 저장되지 않아요."
+        onClose={navigation.cancelExit}
+        open={navigation.confirmOpen}
+        title="작성 중인 내용이 사라져요"
+      />
       <RecordFunnelLayout
         backDisabled={busy}
         footer={

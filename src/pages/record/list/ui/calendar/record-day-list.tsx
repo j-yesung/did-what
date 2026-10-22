@@ -21,7 +21,7 @@ import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 
-import { isMultiDayRecord } from "../model/record-calendar";
+import { isMultiDayRecord } from "../../model/record-calendar";
 
 const DAY_TITLE = new Intl.DateTimeFormat("ko-KR", { day: "numeric", month: "long", weekday: "long" });
 

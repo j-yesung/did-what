@@ -1,9 +1,9 @@
 import { isRecordCategory, type RecordCategory } from "@/entities/record/model/category";
 import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
 import { getRecordRegionKey } from "@/entities/record/model/record-region";
+import { validateRecordContent, validateRecordDates } from "@/entities/record/model/record-validation";
 import { isRecordWeather, type RecordWeather } from "@/entities/record/model/weather";
 import type { KakaoSearchScope } from "@/shared/api/kakao-local";
-import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 export type RecordPlaceReference =
@@ -185,19 +185,11 @@ const parseRegions = (value: string): RecordRegionReference[] | null => {
 export const validateRecordInput = (
   values: RecordInputValues,
 ): { data: RecordInput; fieldErrors?: never } | { data?: never; fieldErrors: RecordFieldErrors } => {
-  const fieldErrors: RecordFieldErrors = {};
+  const fieldErrors: RecordFieldErrors = { ...validateRecordDates(values), ...validateRecordContent(values) };
   const regions = parseRegions(values.regions);
   const places = parsePlaces(values.places);
   const activity = values.activity.trim();
   const memo = values.memo.trim();
-
-  if (!isIsoDate(values.recordedAt)) {
-    fieldErrors.recordedAt = "올바른 날짜를 입력해 주세요.";
-  }
-
-  if (values.recordedUntil && (!isIsoDate(values.recordedUntil) || values.recordedUntil < values.recordedAt)) {
-    fieldErrors.recordedUntil = "종료일은 시작일과 같거나 이후여야 해요.";
-  }
 
   if (!regions) {
     fieldErrors.regions = `방문 지역은 ${MAX_VISITED_REGIONS}곳까지 선택할 수 있어요.`;
@@ -212,14 +204,6 @@ export const validateRecordInput = (
 
   if (!isRecordWeather(values.weather)) {
     fieldErrors.weather = "날씨를 선택해 주세요.";
-  }
-
-  if (activity.length < 1 || activity.length > 120) {
-    fieldErrors.activity = "기록 제목은 1자 이상 120자 이하로 입력해 주세요.";
-  }
-
-  if (memo.length > 500) {
-    fieldErrors.memo = "메모는 500자 이하로 입력해 주세요.";
   }
 
   if (!isRecordCategory(values.category)) {

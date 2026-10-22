@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import { getToday } from "@/pages/record/list/model/record-calendar";
+import { getToday } from "@/shared/lib/date/get-today";
 
 import { createSeedState, DEMO_STATE_VERSION } from "./seed.ts";
 import type { DemoState } from "./types.ts";

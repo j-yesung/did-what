@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import { parseRecordFilters, type RecordFilters, setRecordFilterParams } from "@/entities/record";
 
-import { RecordFilterForm } from "./record-filter-form";
+import { RecordFilterForm } from "../filter/record-filter-form";
 import { RecordList } from "./record-list";
 
 // router.push는 서버에 화면을 다시 요청하므로 필터는 searchParams만 바꾸고 지금 주소에서 읽는다.

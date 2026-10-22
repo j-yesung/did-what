@@ -17,7 +17,7 @@ import { normalizeRecordCategory, RECORD_CATEGORY_FILL, type RecordSummary } fro
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 
-import { getCalendarRange, getCalendarWeekLayout, groupRecordsByDate } from "../model/record-calendar";
+import { getCalendarRange, getCalendarWeekLayout, groupRecordsByDate } from "../../model/record-calendar";
 
 const TITLE_LINES = 1;
 const EMPTY_RECORDS_BY_DATE: ReadonlyMap<string, readonly RecordSummary[]> = new Map();

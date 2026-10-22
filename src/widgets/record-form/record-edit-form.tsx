@@ -8,18 +8,12 @@ import { useQuery } from "@tanstack/react-query";
 import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
 import {
   RECORDS_QUERY_KEY,
-  type RecordCategory,
   type RecordFieldErrors,
   type RecordFormState,
-  type RecordWeather,
   readRecordInput,
   validateRecordInput,
 } from "@/entities/record";
-import {
-  RecordLocationFields,
-  type RecordLocationPlace,
-  type RecordLocationRegion,
-} from "@/features/record/select-record-location";
+import { RecordLocationFields } from "@/features/record/select-record-location";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { FieldGroup, FieldSeparator } from "@/shared/ui/field";
@@ -31,19 +25,11 @@ import { RecordCategoryField } from "./field/category-field";
 import { RecordDateField } from "./field/date-field";
 import { RecordMemoField } from "./field/memo-field";
 import { RecordWeatherField } from "./field/weather-field";
+import type { toRecordEditValues } from "./model/record-edit-values";
 
 type RecordEditFormProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
-  initialValues: {
-    activity: string;
-    category: RecordCategory;
-    memo: string;
-    places: RecordLocationPlace[];
-    recordedAt: string;
-    recordedUntil: string | null;
-    regions: RecordLocationRegion[];
-    weather: RecordWeather;
-  };
+  initialValues: ReturnType<typeof toRecordEditValues>;
   initialSavedPlaces?: SavedPlaceRow[];
   returnTo: string;
   savedTo: string;

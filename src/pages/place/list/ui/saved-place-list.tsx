@@ -21,8 +21,6 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
 import { SearchField } from "@/shared/ui/search-field";
 
-import { PlaceSearchBottomSheet } from "./place-search-bottom-sheet";
-
 type SavedPlaceListItemProps = {
   onDetailPrefetch: (place: SavedPlaceRow) => void;
   place: SavedPlaceRow;
@@ -66,13 +64,7 @@ function SavedPlaceListItem({ onDetailPrefetch, place }: SavedPlaceListItemProps
   );
 }
 
-export function SavedPlaceList({
-  initialPlaces,
-  initialSearchQuery,
-}: {
-  initialPlaces: SavedPlaceRow[];
-  initialSearchQuery?: string;
-}) {
+export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
   const [query, setQuery] = useState("");
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -102,7 +94,6 @@ export function SavedPlaceList({
         placeholder="저장한 장소 이름 또는 주소"
         value={query}
       />
-      <PlaceSearchBottomSheet initialPlaces={initialPlaces} initialQuery={initialSearchQuery} />
       {placesQuery.isError ? (
         <LoadErrorAlert
           onRetry={() => void placesQuery.refetch()}

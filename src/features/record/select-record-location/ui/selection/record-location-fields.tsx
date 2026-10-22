@@ -2,14 +2,11 @@
 
 import { type Dispatch, type SetStateAction, useState } from "react";
 
-import { XIcon } from "@phosphor-icons/react";
-
 import { PlaceIconTile, type PlaceOption } from "@/entities/place";
 import { getRecordRegionKey, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { Field, FieldError } from "@/shared/ui/field";
-import { IconButton } from "@/shared/ui/icon-button";
 
 import {
   getRecordLocationSelectionError,
@@ -18,8 +15,9 @@ import {
   type RecordLocationRegion,
   removeRecordLocationRegion,
   toVisitedRegions,
-} from "../model/location-picker";
-import { PlacePickerBottomSheet } from "./place-picker-bottom-sheet";
+} from "../../model/location-picker";
+import { PlacePickerBottomSheet } from "../picker/place-picker-bottom-sheet";
+import { SelectedLocationCard } from "./selected-location-card";
 
 type RecordLocationFieldsProps = {
   initialPlaces?: RecordLocationPlace[];
@@ -110,8 +108,11 @@ export function RecordLocationFields({
         {places.length || regions.length ? (
           <ul aria-label="방문한 곳 목록" className="flex flex-col gap-2">
             {places.map((place) => (
-              <li className="rounded-xl border bg-card px-3 py-2" key={place.key}>
-                <div className="flex min-h-11 items-center gap-3">
+              <SelectedLocationCard
+                key={place.key}
+                name={place.name}
+                description={place.region.label}
+                icon={
                   <PlaceIconTile
                     place={
                       savedPlaces.find(
@@ -119,41 +120,24 @@ export function RecordLocationFields({
                       ) ?? place
                     }
                   />
-                  <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 break-words font-medium text-sm">{place.name}</p>
-                    <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.region.label}</p>
-                  </div>
-                  <IconButton
-                    aria-label={`${place.name} 방문 장소에서 제거`}
-                    icon={XIcon}
-                    iconSize={18}
-                    onClick={() => removePlace(place.key)}
-                    type="button"
-                  />
-                </div>
-              </li>
+                }
+                removeLabel={`${place.name} 방문 장소에서 제거`}
+                onRemove={() => removePlace(place.key)}
+              />
             ))}
             {regions
               .filter(
                 (region) => !places.some((place) => getRecordRegionKey(place.region) === getRecordRegionKey(region)),
               )
               .map((region) => (
-                <li className="rounded-xl border bg-card px-3 py-2" key={getRecordRegionKey(region)}>
-                  <div className="flex min-h-11 items-center gap-3">
-                    <PlaceIconTile className="bg-muted text-muted-foreground" place={{}} />
-                    <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 break-words font-medium text-sm">{region.label}</p>
-                      <p className="mt-0.5 truncate text-muted-foreground text-xs">지역만 기록</p>
-                    </div>
-                    <IconButton
-                      aria-label={`${region.label} 방문 지역에서 제거`}
-                      icon={XIcon}
-                      iconSize={18}
-                      onClick={() => requestRemoveRegion(region)}
-                      type="button"
-                    />
-                  </div>
-                </li>
+                <SelectedLocationCard
+                  key={getRecordRegionKey(region)}
+                  name={region.label}
+                  description="지역만 기록"
+                  icon={<PlaceIconTile className="bg-muted text-muted-foreground" place={{}} />}
+                  removeLabel={`${region.label} 방문 지역에서 제거`}
+                  onRemove={() => requestRemoveRegion(region)}
+                />
               ))}
           </ul>
         ) : null}

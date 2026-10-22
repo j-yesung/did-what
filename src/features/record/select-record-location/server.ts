@@ -1,3 +1,4 @@
 import "server-only";
 
-export { resolveSavedRecordLocation, validateRecordSelections } from "./api/resolve-record-location";
+export { resolveSavedRecordLocation } from "./api/resolve-record-location";
+export { validateRecordSelections } from "./api/validate-record-selections";
