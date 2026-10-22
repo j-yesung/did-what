@@ -3,20 +3,16 @@
 import type { Dispatch, SetStateAction, SubmitEvent } from "react";
 
 import { CheckIcon } from "@animateicons/react/lucide";
-import { ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { type PlaceOption, placeSearchInfiniteQueryOptions } from "@/entities/place";
-import { getRecordRegionKey, recordLocationsQueryOptions } from "@/entities/record";
+import { recordLocationsQueryOptions } from "@/entities/record";
 import { useRegionSearch } from "@/entities/region";
-import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
-import { Button } from "@/shared/ui/button";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
-import { LoadMoreButton } from "@/shared/ui/load-more-button";
-import { SearchField } from "@/shared/ui/search-field";
 import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -28,7 +24,8 @@ import {
 } from "../model/location-picker";
 import { getPlacePickerResults } from "../model/place-picker-results";
 import { usePlacePickerSelection } from "../model/use-place-picker-selection";
-import { SelectablePlaceCard } from "./selectable-place-card";
+import { PlacePickerPlaces } from "./place-picker-places";
+import { PlacePickerRegions } from "./place-picker-regions";
 
 type PlacePickerPanelProps = {
   maxSelectionCount: number;
@@ -54,7 +51,7 @@ export function PlacePickerPanel({
   onDraftChange,
   searchRegionName,
 }: PlacePickerPanelProps) {
-  const { tab, keyword, query, regionKeyword, regionQuery, selectedPlaces } = draft;
+  const { tab, keyword, query, regionKeyword, regionQuery } = draft;
   const updateDraft = (patch: Partial<PlacePickerDraft>) => onDraftChange((current) => ({ ...current, ...patch }));
   const scopeCode = draft.scopeCode ?? regions[0]?.code ?? (searchRegionName ? "map" : NATIONWIDE_CODE);
   const scope = regions.find((region) => region.code === scopeCode);
@@ -65,34 +62,17 @@ export function PlacePickerPanel({
     ...placeSearchInfiniteQueryOptions(searchParams),
     enabled: tab === "places" && Boolean(query) && !queryTooLong,
   });
-  const { savedByProviderId, searchScopes, savedMatches, uniqueSearchResults } = getPlacePickerResults(
-    savedPlaces,
-    regions,
-    query,
-    search.data?.pages ?? [],
-  );
-  const {
-    addQueued,
-    addSelection,
-    isSavedPlaceAdded,
-    optimisticSelectedKeys,
-    pendingPlaceKeys,
-    selectedCount,
-    selectedRegionKeys,
-    selectPlace,
-    selectionError,
-    setSelectionError,
-    toggleRegion,
-    toggleSavedPlace,
-  } = usePlacePickerSelection({
+  const results = getPlacePickerResults(savedPlaces, regions, query, search.data?.pages ?? []);
+  const selection = usePlacePickerSelection({
     maxSelectionCount,
     onAdd,
     draft,
     onDraftChange,
     regions,
     selectedKeys,
-    savedByProviderId,
+    savedByProviderId: results.savedByProviderId,
   });
+  const { addQueued, addSelection, selectedCount, selectionError, setSelectionError } = selection;
   const showFloatingButton = selectedCount > 0 || (tab === "places" && Boolean(query));
   const regionSearch = useRegionSearch(regionQuery);
   const regionRecords = useQuery({ ...recordLocationsQueryOptions, enabled: tab === "regions" });
@@ -162,202 +142,28 @@ export function PlacePickerPanel({
           </SegmentedControlItem>
         </SegmentedControl>
         {tab === "regions" ? (
-          <>
-            <form aria-label="지역 검색" onSubmit={handleRegionSearch} role="search">
-              <SearchField
-                aria-label="지역 이름"
-                loading={regionSearch.isFetching}
-                maxLength={100}
-                onClear={() => updateDraft({ regionKeyword: "", regionQuery: "" })}
-                onValueChange={(regionKeyword) => updateDraft({ regionKeyword })}
-                placeholder="예: 망원동, 홍대"
-                value={regionKeyword}
-              />
-            </form>
-            {!regionQuery && recentRegions.length ? (
-              <section
-                aria-label="최근 간 지역"
-                className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pb-(--picker-bottom-space)"
-              >
-                <h3 className="flex items-center gap-1.5 font-semibold text-muted-foreground text-xs">
-                  <ClockCounterClockwiseIcon aria-hidden="true" className="size-3.5 text-foreground" />
-                  최근 간 지역
-                </h3>
-                <ul className="flex flex-col">
-                  {recentRegions.map((region) => {
-                    const key = getRecordRegionKey(region);
-                    const selected = selectedRegionKeys.has(key);
-                    const added = regions.some((item) => getRecordRegionKey(item) === key);
-                    return (
-                      <SelectablePlaceCard
-                        added={added}
-                        address={region.fullName}
-                        disabled={added || addQueued}
-                        key={key}
-                        label="최근 간 지역"
-                        name={region.label}
-                        onSelect={() => toggleRegion(region)}
-                        selected={selected}
-                      />
-                    );
-                  })}
-                </ul>
-              </section>
-            ) : null}
-            {regionSearch.isError ? (
-              <Alert variant="destructive">
-                <WarningCircleIcon aria-hidden="true" />
-                <AlertDescription>{getErrorMessage(regionSearch.error)}</AlertDescription>
-              </Alert>
-            ) : null}
-            {regionSearch.data?.related && regionSearch.data.regions.length ? (
-              <p className="text-muted-foreground text-xs">입력한 검색어와 연관된 지역이에요.</p>
-            ) : null}
-            {regionSearch.data?.regions.length === 0 ? (
-              <p className="py-8 text-center text-muted-foreground text-sm">선택할 수 있는 지역이 없어요.</p>
-            ) : null}
-            {regionSearch.data?.regions.length ? (
-              <ul
-                aria-label="지역 검색 결과"
-                className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-(--picker-bottom-space)"
-              >
-                {regionSearch.data.regions.map((region) => {
-                  const selectedRegion = {
-                    ...region,
-                    label:
-                      regionSearch.data?.query === regionQuery
-                        ? region.name
-                        : (regionSearch.data?.query ?? region.name),
-                  };
-                  const key = getRecordRegionKey(selectedRegion);
-                  const selected = selectedRegionKeys.has(key);
-                  const added = regions.some((item) => getRecordRegionKey(item) === key);
-                  return (
-                    <SelectablePlaceCard
-                      added={added}
-                      address={selectedRegion.fullName}
-                      disabled={added || addQueued}
-                      key={key}
-                      name={selectedRegion.label}
-                      onSelect={() => toggleRegion(selectedRegion)}
-                      selected={selected}
-                    />
-                  );
-                })}
-              </ul>
-            ) : null}
-          </>
+          <PlacePickerRegions
+            draft={draft}
+            updateDraft={updateDraft}
+            onSearch={handleRegionSearch}
+            search={regionSearch}
+            recentRegions={recentRegions}
+            regions={regions}
+            selection={selection}
+          />
         ) : (
-          <>
-            {searchScopes.length || searchRegionName ? (
-              <ul aria-label="검색 기준 지역" className="flex flex-wrap gap-1.5">
-                {[
-                  ...searchScopes.map((region) => ({ code: region.code, label: `${region.label} 주변` })),
-                  ...(searchRegionName ? [{ code: "map", label: `${searchRegionName} 기준` }] : []),
-                  { code: NATIONWIDE_CODE, label: "전국" },
-                ].map((region) => (
-                  <li key={region.code || "nationwide"}>
-                    <Button
-                      aria-pressed={region.code === scopeCode}
-                      onClick={() => updateDraft({ scopeCode: region.code })}
-                      size="small"
-                      type="button"
-                      variant={region.code === scopeCode ? "fill" : "outline"}
-                    >
-                      {region.label}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-
-            <form aria-label="방문 장소 검색" onSubmit={handleSearch} role="search">
-              <SearchField
-                aria-label="방문 장소 이름"
-                loading={search.isFetching}
-                maxLength={100}
-                onClear={() => {
-                  updateDraft({ query: "" });
-                  setSelectionError(undefined);
-                }}
-                onValueChange={(keyword) => updateDraft({ keyword })}
-                placeholder="예: 메가커피"
-                value={keyword}
-              />
-            </form>
-
-            {(search.isError && !search.data) || queryTooLong ? (
-              <Alert variant="destructive">
-                <WarningCircleIcon aria-hidden="true" />
-                <AlertDescription>
-                  {queryTooLong
-                    ? "지역명을 포함해 100자까지 검색할 수 있어요. 검색어를 줄여 주세요."
-                    : getErrorMessage(search.error)}
-                </AlertDescription>
-              </Alert>
-            ) : null}
-
-            {search.data && !savedMatches.length && !uniqueSearchResults.length ? (
-              <p className="py-8 text-center text-muted-foreground text-sm">검색 결과가 없어요.</p>
-            ) : null}
-
-            {savedMatches.length || uniqueSearchResults.length ? (
-              <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-1 pb-(--picker-bottom-space)">
-                <ul aria-label="장소 검색 결과" className="flex flex-col">
-                  {savedMatches.map((place) => {
-                    const key = `existing:${place.id}`;
-                    const added = isSavedPlaceAdded(place);
-                    const selected = selectedPlaces.has(key);
-                    return (
-                      <SelectablePlaceCard
-                        added={added}
-                        address={place.address ?? "주소 정보 없음"}
-                        disabled={added || addQueued}
-                        key={place.id}
-                        name={place.name}
-                        onSelect={() => toggleSavedPlace(place)}
-                        place={place}
-                        saved
-                        selected={selected}
-                      />
-                    );
-                  })}
-                  {uniqueSearchResults.map(({ page, place }) => {
-                    const saved = savedByProviderId.get(place.id);
-                    const key = saved ? `existing:${saved.id}` : `kakao:${place.id}`;
-                    const added = saved ? isSavedPlaceAdded(saved) : selectedKeys.has(key);
-                    const selected = optimisticSelectedKeys.has(key);
-                    const pending = pendingPlaceKeys.has(key);
-                    const disabled = added || addQueued;
-
-                    return (
-                      <SelectablePlaceCard
-                        added={added}
-                        address={place.address ?? "주소 정보 없음"}
-                        disabled={disabled}
-                        key={place.id}
-                        name={place.name}
-                        onSelect={() => selectPlace(place, page)}
-                        place={{
-                          category_group_code: place.categoryGroupCode,
-                          category_name: place.categoryName,
-                        }}
-                        resolving={pending}
-                        selected={selected}
-                      />
-                    );
-                  })}
-                </ul>
-                {search.hasNextPage ? (
-                  <LoadMoreButton
-                    error={search.isFetchNextPageError ? "검색 결과를 더 불러오지 못했어요." : undefined}
-                    loading={search.isFetchingNextPage}
-                    onClick={() => void search.fetchNextPage()}
-                  />
-                ) : null}
-              </div>
-            ) : null}
-          </>
+          <PlacePickerPlaces
+            draft={draft}
+            updateDraft={updateDraft}
+            onSearch={handleSearch}
+            search={search}
+            results={results}
+            scopeCode={scopeCode}
+            searchRegionName={searchRegionName}
+            queryTooLong={queryTooLong}
+            selectedKeys={selectedKeys}
+            selection={selection}
+          />
         )}
       </div>
 
