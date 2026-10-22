@@ -6,7 +6,7 @@ import {
   type RecordInput,
   type RecordPlaceReference,
 } from "@/entities/record";
-import { getRegionCode } from "@/entities/region";
+import { getRegionCode } from "@/entities/region/model/region";
 import type { KakaoSearchScope } from "@/shared/api/kakao-local";
 import {
   normalizeKakaoPage,

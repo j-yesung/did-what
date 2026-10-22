@@ -1,16 +1,13 @@
+import { filterRecordsByRegion, getRegion, getRegionCode, REGIONS } from "./region.ts";
 import assert from "node:assert/strict";
 
 const {
   createKoreaMap,
   createRegionActivityMaps,
-  filterRecordsByRegion,
   getActivityLevel,
   getKoreaMapFrame,
   getKoreaMapPosition,
   getLocationRegionCode,
-  getRegion,
-  getRegionCode,
-  REGIONS,
 } = await import("./korea-map.ts");
 
 assert.deepEqual([0, 1, 2, 4, 7].map(getActivityLevel), [0, 1, 2, 3, 4]);

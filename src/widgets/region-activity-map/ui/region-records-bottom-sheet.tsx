@@ -7,9 +7,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
-import { RecordCategoryBadge, recordDetailQueryOptions, toRegionLocations } from "@/entities/record";
+import { RecordCategoryBadge, recordDetailQueryOptions } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
-import { createRegionActivityMaps, getRegionCode, type Region, RegionMiniMap } from "@/entities/region";
+import { getRegionCode, type RegionActivityMap, RegionMiniMap } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, buttonVariants } from "@/shared/ui/button";
@@ -38,7 +38,7 @@ type RegionRecordsBottomSheetProps = {
   onSubregionChange: (subregion: string | null) => void;
   open: boolean;
   records: readonly MapRecord[];
-  region: Region | null;
+  region: RegionActivityMap | null;
   renderRecordDetail: RegionRecordDetailRenderer;
   subregion: string | null;
 };
@@ -68,14 +68,6 @@ export function RegionRecordsBottomSheet({
     setPreviousIsDetail(isDetail);
     setDirection(open ? (isDetail ? "forward" : "backward") : null);
   }
-  const regionMap = useMemo(
-    () =>
-      region
-        ? createRegionActivityMaps(toRegionLocations(records)).find(({ code }) => code === region.code)
-        : undefined,
-    [records, region],
-  );
-
   const handleOpenChangeComplete = (nextOpen: boolean) => {
     if (nextOpen) return;
     setDrafts({});
@@ -159,9 +151,9 @@ export function RegionRecordsBottomSheet({
             >
               <BottomSheet.Header className="text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
                 <div className="flex items-center gap-3">
-                  {regionMap ? (
+                  {region ? (
                     <div className="size-15 shrink-0">
-                      <RegionMiniMap label={`${regionMap.name}의 방문 지역 지도`} map={regionMap} />
+                      <RegionMiniMap label={`${region.name}의 방문 지역 지도`} map={region} />
                     </div>
                   ) : null}
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
