@@ -13,15 +13,9 @@ type DatedRecord = {
 };
 
 const MONTH_PATTERN = /^[1-9]\d{3}-(0[1-9]|1[0-2])$/;
-const KST_OFFSET = 9 * 60 * 60 * 1000;
 const SWIPE_HYSTERESIS = 10;
 const SWIPE_DISTANCE = 48;
 const SWIPE_VELOCITY = 500;
-
-// 서버 렌더링과 브라우저가 같은 날을 그리도록 기기 시간대 대신 한국 시간(서머타임 없음)으로 정한다.
-export const getToday = (now = new Date()) => {
-  return new Date(now.getTime() + KST_OFFSET).toISOString().slice(0, 10);
-};
 
 export const parseCalendarMonth = (value: string | null | undefined, today: string) => {
   return value && MONTH_PATTERN.test(value) ? value : today.slice(0, 7);

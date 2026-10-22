@@ -12,6 +12,7 @@ import { motion, type PanInfo, useMotionTemplate, useMotionValue, useReducedMoti
 import { useSearchParams } from "next/navigation";
 
 import { type RecordSummary, recordCalendarQueryOptions, recordMonthBoundsQueryOptions } from "@/entities/record";
+import { getToday } from "@/shared/lib/date/get-today";
 import { Button } from "@/shared/ui/button";
 import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -21,7 +22,6 @@ import {
   getCalendarRange,
   getCalendarSwipeMonthShift,
   getDefaultCalendarDate,
-  getToday,
   groupRecordsByDate,
   parseCalendarDate,
   parseCalendarMonth,
