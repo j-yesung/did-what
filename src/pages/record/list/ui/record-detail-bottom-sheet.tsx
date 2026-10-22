@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import type { RecordSummary } from "@/entities/record";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
-import { RecordSheetDetail } from "@/widgets/record-sheet-detail";
+import { RecordSheetDetail } from "@/widgets/record-detail";
 
 const SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
 

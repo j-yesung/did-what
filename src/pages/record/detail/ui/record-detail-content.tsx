@@ -22,7 +22,7 @@ import { showToast } from "@/shared/lib/toast";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { RecordDetailSections } from "@/widgets/record-detail-sections";
+import { RecordDetailSections } from "@/widgets/record-detail";
 
 type RecordDetailContentProps = {
   member: { id: string; name: string };

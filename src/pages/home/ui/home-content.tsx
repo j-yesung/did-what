@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { recordLocationsQueryOptions } from "@/entities/record";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { RecordSheetDetail } from "@/widgets/record-sheet-detail";
+import { RecordSheetDetail } from "@/widgets/record-detail";
 import { RegionActivityMap } from "@/widgets/region-activity-map/ui/region-activity-map";
 
 const EMPTY_RECORDS: [] = [];
