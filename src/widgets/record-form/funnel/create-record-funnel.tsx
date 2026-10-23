@@ -128,6 +128,7 @@ function RecordCreateFunnelClient({
     error: "기록을 저장하지 못했어요",
     invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey, NOTIFICATIONS_QUERY_KEY],
     success: "함께한 순간을 기록했어요",
+    waitForRouter: true,
     onSuccess: () => navigation.finish(savedTo),
     onFail: (result) => {
       const nextErrors = result.fieldErrors ?? {};
