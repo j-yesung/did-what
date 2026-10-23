@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { RecordCategoryBadge, recordDetailQueryOptions } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
-import { getRegionCode, type RegionActivityMap, RegionMiniMap } from "@/entities/region";
+import { type RegionActivityMap, RegionMiniMap } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, buttonVariants } from "@/shared/ui/button";
@@ -15,7 +15,8 @@ import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 
-import { getSubregionName, type MapRecord } from "../model/record-map-points";
+import type { MapRecord } from "../model/record-map-points";
+import { getRegionRecords, getSubregionCounts } from "../model/region-record-list";
 
 type RegionRecordListProps = {
   records: readonly MapRecord[];
@@ -36,23 +37,8 @@ export function RegionRecordList({
 }: RegionRecordListProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const regionRecords = region
-    ? records.flatMap((record) => {
-        const subregions = [
-          ...new Set(
-            record.record_regions
-              .filter(({ region_code }) => getRegionCode(region_code) === region.code)
-              .map(({ region_name }) => getSubregionName(region_name)),
-          ),
-        ];
-        return subregions.length > 0 ? [{ record, subregions }] : [];
-      })
-    : [];
-  const counts = new Map<string, number>();
-  for (const { subregions } of regionRecords) {
-    for (const name of subregions) counts.set(name, (counts.get(name) ?? 0) + 1);
-  }
-  const subregionCounts = [...counts].sort(([, first], [, second]) => second - first);
+  const regionRecords = getRegionRecords(records, region?.code);
+  const subregionCounts = getSubregionCounts(regionRecords);
   // 주소로 되살린 칩이 지금 기록에 없는 이름이면 전체로 본다.
   const selectedSubregion =
     subregionCounts.length > 1 && subregionCounts.some(([name]) => name === subregion) ? subregion : null;
