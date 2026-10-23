@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  reactCompiler: true,
   experimental: {
     /**
      * 하단 탭이 미리 받은 전체 RSC 화면 구조를 300초 동안 재사용한다. 메인 데이터는 TanStack Query가

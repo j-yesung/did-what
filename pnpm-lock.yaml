@@ -93,6 +93,9 @@ importers:
       '@types/web-push':
         specifier: ^3.6.4
         version: 3.6.4
+      babel-plugin-react-compiler:
+        specifier: 1.0.0
+        version: 1.0.0
       postcss:
         specifier: ^8.5.26
         version: 8.5.26
@@ -3038,7 +3041,6 @@ snapshots:
   babel-plugin-react-compiler@1.0.0:
     dependencies:
       '@babel/types': 7.29.8
-    optional: true
 
   balanced-match@4.0.4: {}
 

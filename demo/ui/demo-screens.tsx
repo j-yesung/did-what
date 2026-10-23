@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { useSearchParams } from "next/navigation";
 
@@ -75,7 +75,7 @@ export function DemoRecordsScreen({ member }: { member: Member }) {
   const searchParams = useSearchParams();
   const { recordView } = useDemoState();
   const search = searchParams?.toString() ?? "";
-  const params = useMemo(() => Object.fromEntries(new URLSearchParams(search)), [search]);
+  const params = Object.fromEntries(new URLSearchParams(search));
   const view =
     params.view === "calendar" || (Object.keys(params).length === 0 && recordView === "calendar") ? "calendar" : "list";
 

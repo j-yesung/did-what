@@ -47,6 +47,8 @@ export const navigateDemo = (href: string, { replace = false, scroll = true } = 
  * ponytail: Next 내부 context(app-router-context, hooks-client-context)를 쓴다. Next를 올릴 때 이 파일을 먼저 확인한다.
  */
 export function DemoRouterBridge({ children }: { children: ReactNode }) {
+  "use no memo";
+
   const router = useContext(AppRouterContext);
   // Next가 바뀐 주소를 반영하면 다시 그리도록 구독만 하고, 값은 지금 주소에서 읽는다.
   // Next의 값은 전환이 끝난 뒤에야 바뀌어, 그 사이 체험 상태만 먼저 바뀌면 화면이 옛 경로로 판단한다.
