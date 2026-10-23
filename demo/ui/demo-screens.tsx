@@ -5,7 +5,6 @@ import { type ReactNode, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { AppNotFound } from "@/app/ui/app-not-found";
-import type { SavedPlaceRow } from "@/entities/place";
 import { LogoutButton } from "@/features/auth";
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
@@ -35,7 +34,7 @@ import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-valu
 import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
 
 import { toDemoHref } from "../lib/demo-href";
-import { getSavedPlaceRows, toDetailRow } from "../model/queries";
+import { toDetailRow } from "../model/queries";
 import { demoStore, useDemoState } from "../model/store";
 import { useDemo } from "./demo-context";
 
@@ -134,15 +133,14 @@ export function DemoRecordDetailScreen({ member, recordId }: { member: Member; r
 /** pages/record/edit. 초기값을 만드는 규칙도 실제 화면과 같다. */
 export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
   const { updateRecord } = useDemo();
-  const [initial] = useState(() => {
+  const [record] = useState(() => {
     const state = demoStore.get();
     const record = state.records.find(({ id }) => id === recordId);
-    return record ? { record: toDetailRow(state, record), savedPlaces: getSavedPlaceRows(state) } : null;
+    return record ? toDetailRow(state, record) : null;
   });
 
-  if (!isUuid(recordId) || !initial) return <AppNotFound />;
+  if (!isUuid(recordId) || !record) return <AppNotFound />;
 
-  const { record, savedPlaces } = initial;
   const backHref = toDemoHref(`/records/${recordId}`);
 
   return (
@@ -165,7 +163,6 @@ export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
 
         <RecordEditForm
           action={(formData) => updateRecord(recordId, formData)}
-          initialSavedPlaces={savedPlaces as SavedPlaceRow[]}
           initialValues={toRecordEditValues(record)}
           returnTo={backHref}
           savedTo={backHref}
@@ -178,17 +175,15 @@ export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
 /** pages/place/list. 카카오 검색 대신 샘플 장소에서 찾는다. */
 export function DemoPlacesScreen() {
   const searchParams = useSearchParams();
-  const state = useDemoState();
-  const initialPlaces = getSavedPlaceRows(state) as SavedPlaceRow[];
   return (
     <>
       <PageShell className="gap-4" withBottomNavigation>
         <header className="min-h-13">
           <h1 className="sr-only">내 장소</h1>
         </header>
-        <SavedPlaceList initialPlaces={initialPlaces} />
+        <SavedPlaceList />
       </PageShell>
-      <PlaceSearchBottomSheet initialPlaces={initialPlaces} initialQuery={searchParams?.get("q") ?? undefined} />
+      <PlaceSearchBottomSheet initialQuery={searchParams?.get("q") ?? undefined} />
     </>
   );
 }

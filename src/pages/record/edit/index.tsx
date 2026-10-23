@@ -1,9 +1,11 @@
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 
-import { getSavedPlaces } from "@/entities/place/server";
+import { fetchPlaces, placesQueryOptions } from "@/entities/place";
 import { getRecord } from "@/entities/record/server";
 import { updateRecord } from "@/features/record/edit-record/api/update-record";
 import { requireUser } from "@/shared/api/supabase/require-user";
+import { createQueryClient } from "@/shared/lib/react-query/query-client";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -22,13 +24,14 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
     notFound();
   }
 
-  const { user } = await requireUser();
+  const { supabase, user } = await requireUser();
+  const queryClient = createQueryClient();
 
-  // 저장한 장소는 '내 장소에서 추가'에만 쓴다. 폼이 그걸 기다리며 가려지지 않게 함께 받아 넘기고,
-  // 실패하면 화면에서 다시 받는다.
-  const [recordResult, savedPlaces] = await Promise.all([
+  // 저장한 장소는 '내 장소에서 추가'에만 쓴다. 폼이 그걸 기다리며 가려지지 않게 함께 받아 두고,
+  // 실패하면 화면에서 다시 받는다(prefetchQuery는 실패를 던지지 않는다).
+  const [recordResult] = await Promise.all([
     getRecord(recordId, user.id),
-    getSavedPlaces(user.id).catch(() => undefined),
+    queryClient.prefetchQuery({ ...placesQueryOptions, queryFn: () => fetchPlaces(supabase) }),
   ]);
 
   if (!recordResult.data && !recordResult.error) {
@@ -59,13 +62,14 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
         {hasLoadError || !record ? (
           <LoadErrorAlert title="수정할 기록을 불러오지 못했어요" />
         ) : (
-          <RecordEditForm
-            action={updateRecord.bind(null, recordId)}
-            initialValues={toRecordEditValues(record)}
-            initialSavedPlaces={savedPlaces}
-            returnTo={`/records/${recordId}`}
-            savedTo={`/records/${recordId}`}
-          />
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <RecordEditForm
+              action={updateRecord.bind(null, recordId)}
+              initialValues={toRecordEditValues(record)}
+              returnTo={`/records/${recordId}`}
+              savedTo={`/records/${recordId}`}
+            />
+          </HydrationBoundary>
         )}
       </PageShell>
     </OverscrollBack>

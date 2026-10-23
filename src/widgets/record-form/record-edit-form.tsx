@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
+import { placesQueryOptions } from "@/entities/place";
 import {
   RECORDS_QUERY_KEY,
   type RecordFieldErrors,
@@ -30,13 +30,12 @@ import type { toRecordEditValues } from "./model/record-edit-values";
 type RecordEditFormProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
   initialValues: ReturnType<typeof toRecordEditValues>;
-  initialSavedPlaces?: SavedPlaceRow[];
   returnTo: string;
   savedTo: string;
 };
 
-export function RecordEditForm({ action, initialSavedPlaces, initialValues, returnTo, savedTo }: RecordEditFormProps) {
-  const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialSavedPlaces });
+export function RecordEditForm({ action, initialValues, returnTo, savedTo }: RecordEditFormProps) {
+  const placesQuery = useQuery(placesQueryOptions);
   const formRef = useRef<HTMLFormElement>(null);
   const dirtyRef = useRef(false);
   const [clientErrors, setClientErrors] = useState<RecordFieldErrors>();

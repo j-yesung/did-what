@@ -1,5 +1,6 @@
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 
+import { createClient } from "@/shared/api/supabase/client";
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
 import type { RecordFilters } from "../model/record-filters";
@@ -30,7 +31,7 @@ export const recordDetailQueryOptions = (recordId: string) => {
 export const recordLocationsQueryOptions = queryOptions({
   ...MAIN_QUERY_OPTIONS,
   queryKey: [...RECORDS_QUERY_KEY, "locations"],
-  queryFn: fetchRecordLocations,
+  queryFn: () => fetchRecordLocations(createClient()),
 });
 
 export const recordMonthBoundsQueryOptions = queryOptions({

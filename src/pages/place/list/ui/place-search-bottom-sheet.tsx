@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { PlusIcon } from "@phosphor-icons/react";
 
-import type { SavedPlaceRow } from "@/entities/place";
 import { validateKakaoQuery } from "@/shared/api/kakao-local/validation";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
@@ -12,12 +11,7 @@ import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { PlaceSearchForm } from "./place-search-form";
 import { PlaceSearchResults } from "./place-search-results";
 
-type PlaceSearchBottomSheetProps = {
-  initialPlaces: SavedPlaceRow[];
-  initialQuery?: string;
-};
-
-export function PlaceSearchBottomSheet({ initialPlaces, initialQuery }: PlaceSearchBottomSheetProps) {
+export function PlaceSearchBottomSheet({ initialQuery }: { initialQuery?: string }) {
   const [open, setOpen] = useState(initialQuery !== undefined);
   const [keyword, setKeyword] = useState(initialQuery ?? "");
   const [submitted, setSubmitted] = useState(Boolean(initialQuery));
@@ -55,7 +49,6 @@ export function PlaceSearchBottomSheet({ initialPlaces, initialQuery }: PlaceSea
           </div>
           {submitted && query ? (
             <PlaceSearchResults
-              initialPlaces={initialPlaces}
               key={query}
               onReset={() => {
                 setKeyword("");

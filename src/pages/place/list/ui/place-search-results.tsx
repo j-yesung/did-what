@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { placeSearchInfiniteQueryOptions, placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
+import { placeSearchInfiniteQueryOptions, placesQueryOptions } from "@/entities/place";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/place/save-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { Badge } from "@/shared/ui/badge";
@@ -21,12 +21,11 @@ import { getSavedKakaoPlaces } from "../model/get-saved-kakao-places";
 
 type PlaceSearchResultsProps = {
   onReset: () => void;
-  initialPlaces: SavedPlaceRow[];
   query: string;
 };
 
-export function PlaceSearchResults({ onReset, initialPlaces, query }: PlaceSearchResultsProps) {
-  const savedPlacesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
+export function PlaceSearchResults({ onReset, query }: PlaceSearchResultsProps) {
+  const savedPlacesQuery = useQuery(placesQueryOptions);
   const resultsQuery = useInfiniteQuery(placeSearchInfiniteQueryOptions({ query }));
 
   const [selectedPlaces, setSelectedPlaces] = useState<Map<string, CreatePlaceInput>>(() => new Map());
