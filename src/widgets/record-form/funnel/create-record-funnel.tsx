@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { useFunnel } from "@use-funnel/browser";
@@ -22,10 +22,11 @@ import {
   type RecordLocationPlace,
   type RecordLocationRegion,
 } from "@/features/record/select-record-location";
+import { useLeaveGuard } from "@/shared/lib/navigation/use-leave-guard";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
-import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { FieldGroup } from "@/shared/ui/field";
+import { LeaveConfirmDialog } from "@/shared/ui/leave-confirm-dialog";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -45,7 +46,6 @@ import {
   validateRecordCreateStep,
 } from "../model/create-record-funnel";
 import { RecordFunnelLayout } from "./funnel-layout";
-import { useRecordCreateNavigation } from "./use-record-create-navigation";
 
 const FUNNEL_ID = "record-create";
 
@@ -115,14 +115,7 @@ function RecordCreateFunnelClient({
   const [draft, setDraft] = useState<RecordCreateContext>(() => funnel.context);
   const [pickerDraft, setPickerDraft] = useState(createPlacePickerDraft);
   const placesQuery = useQuery(placesQueryOptions);
-  const busyRef = useRef(false);
   const [fieldErrors, setFieldErrors] = useState<RecordFieldErrors>({});
-  const navigation = useRecordCreateNavigation({
-    busyRef,
-    dirty: draft.dirty || pickerDraft.selectedPlaces.size > 0 || pickerDraft.selectedRegions.size > 0,
-    fallbackHref: returnTo,
-    funnelIndex: funnel.index,
-  });
 
   const save = useActionMutation(action, {
     error: "기록을 저장하지 못했어요",
@@ -138,7 +131,13 @@ function RecordCreateFunnelClient({
     },
   });
   const busy = save.isPending;
-  busyRef.current = busy;
+  const dirty = draft.dirty || pickerDraft.selectedPlaces.size > 0 || pickerDraft.selectedRegions.size > 0;
+  const navigation = useLeaveGuard({
+    busy,
+    extraEntries: funnel.index,
+    fallbackHref: returnTo,
+    isDirty: () => dirty,
+  });
 
   // 입력값은 draft가 들고, history에는 단계를 옮길 때만 남긴다. Safari는 history 쓰기가 30초에 100번을 넘으면 예외를 던진다.
   const updateContext = (patch: Partial<RecordCreateContext>) => {
@@ -259,18 +258,7 @@ function RecordCreateFunnelClient({
       }}
       onSubmit={submit}
     >
-      <ConfirmDialog
-        cancelButton={<ConfirmDialogCancelButton onClick={navigation.cancelExit}>계속 작성</ConfirmDialogCancelButton>}
-        confirmButton={
-          <Button color="danger" onClick={navigation.confirmExit} variant="fill">
-            나가기
-          </Button>
-        }
-        description="이 화면을 나가면 입력한 내용이 저장되지 않아요."
-        onClose={navigation.cancelExit}
-        open={navigation.confirmOpen}
-        title="작성 중인 내용이 사라져요"
-      />
+      <LeaveConfirmDialog onLeave={navigation.confirmLeave} onStay={navigation.stay} open={navigation.confirmOpen} />
       <RecordFunnelLayout
         backDisabled={busy}
         footer={
