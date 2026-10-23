@@ -140,11 +140,10 @@ function RecordCreateFunnelClient({
   const busy = save.isPending;
   busyRef.current = busy;
 
+  // 입력값은 draft가 들고, history에는 단계를 옮길 때만 남긴다. Safari는 history 쓰기가 30초에 100번을 넘으면 예외를 던진다.
   const updateContext = (patch: Partial<RecordCreateContext>) => {
-    const next = { ...draft, ...patch, dirty: true };
     setFieldErrors({});
-    setDraft(next);
-    void funnel.history.replace(funnel.step, next);
+    setDraft((current) => ({ ...current, ...patch, dirty: true }));
   };
 
   const goNext = () => {
