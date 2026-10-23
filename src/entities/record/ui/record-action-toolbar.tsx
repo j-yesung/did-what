@@ -43,7 +43,7 @@ export function RecordActionToolbar({ children, disabled, onDelete, recordId }: 
         <div aria-hidden={toolbarHidden} className={toolbarHidden ? "invisible" : undefined} inert={toolbarHidden}>
           <PressScale
             aria-label="상세 도구"
-            className="app-toolbar liquid-glass-control pointer-events-auto flex items-center gap-1.5 rounded-full p-0.5"
+            className="app-toolbar liquid-glass-control pointer-events-auto flex items-center gap-1 rounded-full p-0.5"
             role="group"
           >
             {children}
