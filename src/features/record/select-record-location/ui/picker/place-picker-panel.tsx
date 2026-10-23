@@ -8,7 +8,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { type PlaceOption, placeSearchInfiniteQueryOptions } from "@/entities/place";
 import { recordLocationsQueryOptions } from "@/entities/record";
-import { useRegionSearch } from "@/entities/region";
+import { regionSearchQueryOptions } from "@/entities/region/api/queries";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -78,7 +78,7 @@ export function PlacePickerPanel({
   });
   const { addQueued, addSelection, selectedCount, selectionError, setSelectionError } = selection;
   const showFloatingButton = selectedCount > 0 || Boolean(mode === "regions" ? regionQuery : query);
-  const regionSearch = useRegionSearch(mode === "regions" ? regionQuery : "");
+  const regionSearch = useQuery(regionSearchQueryOptions(mode === "regions" ? regionQuery : ""));
   const regionRecords = useQuery({ ...recordLocationsQueryOptions, enabled: mode === "regions" });
   const recentRegions = toRecentRegions(regionRecords.data ?? []);
   const handleSearch = (event: SubmitEvent<HTMLFormElement>) => {

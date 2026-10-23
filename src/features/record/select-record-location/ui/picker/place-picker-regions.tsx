@@ -3,9 +3,10 @@
 import type { SubmitEvent } from "react";
 
 import { ClockCounterClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import type { UseQueryResult } from "@tanstack/react-query";
 
 import { getRecordRegionKey } from "@/entities/record";
-import type { useRegionSearch } from "@/entities/region";
+import type { RegionSearchResult } from "@/entities/region/api/queries";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { SearchField } from "@/shared/ui/search-field";
@@ -22,7 +23,7 @@ type PlacePickerRegionsProps = {
   draft: Pick<PlacePickerDraft, "regionKeyword" | "regionQuery">;
   updateDraft: (patch: Partial<PlacePickerDraft>) => void;
   onSearch: (event: SubmitEvent<HTMLFormElement>) => void;
-  search: ReturnType<typeof useRegionSearch>;
+  search: UseQueryResult<RegionSearchResult>;
   recentRegions: RecordLocationRegion[];
   regions: RecordLocationRegion[];
   selection: Pick<ReturnType<typeof usePlacePickerSelection>, "addQueued" | "selectedRegionKeys" | "toggleRegion">;

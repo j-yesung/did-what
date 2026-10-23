@@ -10,5 +10,4 @@ export {
   type RegionActivityMap,
 } from "./model/korea-map";
 export { getRegion, getRegionCode, type Region } from "./model/region";
-export { useRegionSearch } from "./model/use-region-search";
 export { RegionMiniMap } from "./ui/region-mini-map";

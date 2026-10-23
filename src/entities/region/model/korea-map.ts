@@ -297,7 +297,13 @@ const mapRecordsToCells = (cells: KoreaMapCell[], records: RecordLocation[]) => 
 };
 
 const KOREA_MAP_BOUNDS = getBounds(BOUNDARIES.map(({ geometry }) => geometry));
-const REGION_MAP_GRIDS = new Map(REGIONS.map(({ code }) => [code, generateRegionCells(code)]));
+/** 처음 쓸 때 한 번만 만든다. 모듈을 불러오기만 하는 화면(서버 렌더 포함)이 그리드 계산 비용을 내지 않게 한다. */
+const once = <T>(create: () => T) => {
+  let value: T | undefined;
+  return () => (value ??= create());
+};
+
+const getRegionMapGrids = once(() => new Map(REGIONS.map(({ code }) => [code, generateRegionCells(code)])));
 
 const projectPosition = ([longitude, latitude]: Position) => {
   const { minLongitude, maxLongitude, maxLatitude } = KOREA_MAP_BOUNDS;
@@ -345,7 +351,7 @@ const projectDisplayPosition = (position: Position) => {
   return projectPosition(inset ? [position[0] + inset.longitudeShift, position[1] + inset.latitudeShift] : position);
 };
 
-const KOREA_MAP_GRID: KoreaMapGrid = (() => {
+const getKoreaMapGrid = once((): KoreaMapGrid => {
   const grid = generateCells(GRID_COLUMNS);
   const cells = grid.cells.map((cell) => {
     if (!findIslandInset([cell.longitude, cell.latitude])) return cell;
@@ -353,7 +359,7 @@ const KOREA_MAP_GRID: KoreaMapGrid = (() => {
     return { ...cell, x: x - CELL_SIZE / 2, y: y - CELL_SIZE / 2 };
   });
   return { ...grid, cells };
-})();
+});
 
 export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation, "latitude" | "longitude">) => {
   if (
@@ -392,7 +398,8 @@ export const getKoreaMapFrame = ({
 };
 
 export const createKoreaMap = (records: RecordLocation[]): KoreaMapGrid => {
-  return { ...KOREA_MAP_GRID, cells: mapRecordsToCells(KOREA_MAP_GRID.cells, records) };
+  const grid = getKoreaMapGrid();
+  return { ...grid, cells: mapRecordsToCells(grid.cells, records) };
 };
 
 export const createRegionActivityMaps = (records: RegionRecordLocation[]): RegionActivityMap[] => {
@@ -403,7 +410,7 @@ export const createRegionActivityMaps = (records: RegionRecordLocation[]): Regio
   }
 
   return REGIONS.map((region) => {
-    const grid = REGION_MAP_GRIDS.get(region.code);
+    const grid = getRegionMapGrids().get(region.code);
     const regionRecords = recordsByRegion.get(region.code) ?? [];
     const visitedSubdivisions = new Set(
       regionRecords.map(({ administrativeCode }) =>
