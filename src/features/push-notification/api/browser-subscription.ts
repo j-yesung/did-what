@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
+import { getPushEndpoint, unsubscribePush } from "@/shared/lib/push/get-push-endpoint";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
@@ -75,15 +75,4 @@ export const enablePush = async (): Promise<EnablePushResult> => {
 };
 
 /** 브라우저 구독을 해지하고 서버에서 지울 endpoint를 돌려준다. */
-export const disablePush = async () => {
-  if (!isPushSupported()) return null;
-
-  const registration = await navigator.serviceWorker.getRegistration();
-  const subscription = await registration?.pushManager.getSubscription();
-  if (!subscription) return null;
-
-  const { endpoint } = subscription;
-  await subscription.unsubscribe();
-
-  return endpoint;
-};
+export const disablePush = async () => (isPushSupported() ? unsubscribePush() : null);

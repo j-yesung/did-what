@@ -19,6 +19,7 @@ import type { Theme } from "@/features/switch-theme/model/theme";
 import { saveTheme } from "@/features/switch-theme/model/theme-preference";
 import type { DemoOverrides } from "@/shared/lib/demo-override";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
+import { unsubscribePush } from "@/shared/lib/push/get-push-endpoint";
 import { showToast } from "@/shared/lib/toast";
 
 import * as actions from "../model/actions";
@@ -186,6 +187,8 @@ export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): De
     [saveRecordView, (view: RecordView) => update({ recordView: view })],
     // 실제 알림 권한을 묻지 않도록 알림을 지원하지 않는 기기로 보인다. 설정에는 홈 화면 설치 안내가 나온다.
     [isPushSupported, () => false],
+    // 같은 브라우저에서 실제 앱에 켜 둔 알림 구독을 체험 로그아웃이 끊지 않게 한다.
+    [unsubscribePush, async () => null],
     [
       resolveRecordPlace,
       async (input: {

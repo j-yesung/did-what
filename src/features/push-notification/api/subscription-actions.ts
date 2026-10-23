@@ -4,13 +4,12 @@ import { requireMember } from "@/entities/member/server";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import type { ActionState } from "@/shared/lib/server-action/action-state";
 
-import type { PushSubscriptionInput } from "../model/push-subscription";
+import { isPushEndpoint, type PushSubscriptionInput } from "../model/push-subscription";
 
-const MAX_ENDPOINT_LENGTH = 1000;
 const MAX_KEY_LENGTH = 200;
 
 const isValid = ({ auth, endpoint, p256dh }: PushSubscriptionInput) => {
-  if (!endpoint.startsWith("https://") || endpoint.length > MAX_ENDPOINT_LENGTH) return false;
+  if (!isPushEndpoint(endpoint)) return false;
   if (!p256dh || p256dh.length > MAX_KEY_LENGTH) return false;
   if (!auth || auth.length > MAX_KEY_LENGTH) return false;
 

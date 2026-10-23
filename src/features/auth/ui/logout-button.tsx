@@ -6,6 +6,7 @@ import { SignOutIcon } from "@phosphor-icons/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useDemoOverride } from "@/shared/lib/demo-override";
+import { unsubscribePush } from "@/shared/lib/push/get-push-endpoint";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
@@ -17,8 +18,13 @@ export function LogoutButton() {
   const queryClient = useQueryClient();
 
   const logoutAction = useDemoOverride(logout);
+  const unsubscribe = useDemoOverride(unsubscribePush);
   const signOut = useMutation({
-    mutationFn: () => runServerAction(logoutAction),
+    mutationFn: async () => {
+      // 브라우저 구독을 먼저 끊고, 서버는 세션이 살아 있는 동안 그 행을 지운다.
+      const endpoint = await unsubscribe().catch(() => null);
+      return runServerAction(() => logoutAction(endpoint));
+    },
     onSuccess: () => queryClient.clear(),
   });
 

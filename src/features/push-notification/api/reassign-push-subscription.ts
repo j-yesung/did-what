@@ -4,6 +4,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/shared/api/supabase/database.types";
 
+import { isPushEndpoint } from "../model/push-subscription";
+
 type ReassignPushSubscriptionInput = {
   endpoint: string | null | undefined;
   memberId: string;
@@ -18,7 +20,7 @@ export const reassignPushSubscription = async ({
   supabase,
 }: ReassignPushSubscriptionInput) => {
   if (!endpoint) return null;
-  if (!endpoint.startsWith("https://") || endpoint.length > 1000) return new Error("Invalid push endpoint");
+  if (!isPushEndpoint(endpoint)) return new Error("Invalid push endpoint");
 
   const { error } = await supabase
     .from("push_subscriptions")
