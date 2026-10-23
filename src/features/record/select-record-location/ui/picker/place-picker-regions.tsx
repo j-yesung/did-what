@@ -10,7 +10,11 @@ import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { SearchField } from "@/shared/ui/search-field";
 
-import type { PlacePickerDraft, RecordLocationRegion } from "../../model/location-picker";
+import {
+  type PlacePickerDraft,
+  type RecordLocationRegion,
+  toSearchedRecordLocationRegion,
+} from "../../model/location-picker";
 import type { usePlacePickerSelection } from "../../model/use-place-picker-selection";
 import { SelectablePlaceCard } from "./selectable-place-card";
 
@@ -96,10 +100,7 @@ export function PlacePickerRegions({
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-(--picker-bottom-space)"
         >
           {regionSearch.data.regions.map((region) => {
-            const selectedRegion = {
-              ...region,
-              label: regionSearch.data?.query === regionQuery ? region.name : (regionSearch.data?.query ?? region.name),
-            };
+            const selectedRegion = toSearchedRecordLocationRegion(region, regionSearch.data?.query ?? regionQuery);
             const key = getRecordRegionKey(selectedRegion);
             const selected = selectedRegionKeys.has(key);
             const added = regions.some((item) => getRecordRegionKey(item) === key);

@@ -14,12 +14,14 @@ import { resolveRecordPlace } from "../api/resolve-record-location";
 import {
   getRecordLocationSelectionError,
   type PlacePickerDraft,
+  type PlacePickerMode,
   type RecordLocationPlace,
   type RecordLocationRegion,
   toExistingRecordLocationPlace,
 } from "./location-picker";
 
 type PlacePickerSelectionProps = {
+  mode: PlacePickerMode;
   maxSelectionCount: number;
   onAdd: (places: RecordLocationPlace[], regions: RecordLocationRegion[]) => string | undefined;
   draft: PlacePickerDraft;
@@ -33,6 +35,7 @@ const showPlaceLimitToast = () =>
   showToast({ title: `장소는 ${MAX_VISITED_PLACES}곳까지 추가할 수 있어요.`, variant: "warning" });
 
 export const usePlacePickerSelection = ({
+  mode,
   maxSelectionCount,
   onAdd,
   draft,
@@ -53,7 +56,7 @@ export const usePlacePickerSelection = ({
     [pendingPlaceKeys, selectedPlaces],
   );
   const selectedRegionKeys = useMemo(() => new Set(selectedRegions.keys()), [selectedRegions]);
-  const selectedCount = optimisticSelectedKeys.size + selectedRegions.size;
+  const selectedCount = mode === "regions" ? selectedRegions.size : optimisticSelectedKeys.size;
   const resolvePlace = useActionOverride(resolveRecordPlace);
   const resolve = useMutation({ mutationFn: resolvePlace });
   const resolving = pendingPlaceKeys.size > 0;
@@ -63,8 +66,8 @@ export const usePlacePickerSelection = ({
     if (!addQueued || resolving) return;
     setAddQueued(false);
     if (selectionError) return;
-    if (selectedCount > 0) setSelectionError(onAdd([...selectedPlaces.values()], [...selectedRegions.values()]));
-  }, [addQueued, onAdd, resolving, selectedCount, selectedPlaces, selectedRegions, selectionError]);
+    if (selectedCount > 0) setSelectionError(onAdd([...selectedPlaces.values()], []));
+  }, [addQueued, onAdd, resolving, selectedCount, selectedPlaces, selectionError]);
 
   const isSavedPlaceAdded = (place: PlaceOption) =>
     selectedKeys.has(`existing:${place.id}`) ||
@@ -92,7 +95,7 @@ export const usePlacePickerSelection = ({
     const next = new Map(selectedRegions);
     if (next.has(key)) next.delete(key);
     else next.set(key, region);
-    const error = getRecordLocationSelectionError([...regions, ...next.values()], [...selectedPlaces.values()]);
+    const error = getRecordLocationSelectionError([...regions, ...next.values()], []);
     if (error) {
       showToast({ title: error, variant: "warning" });
       return;
@@ -189,7 +192,9 @@ export const usePlacePickerSelection = ({
       setAddQueued(true);
       return;
     }
-    setSelectionError(onAdd([...selectedPlaces.values()], [...selectedRegions.values()]));
+    setSelectionError(
+      mode === "regions" ? onAdd([], [...selectedRegions.values()]) : onAdd([...selectedPlaces.values()], []),
+    );
   };
 
   return {

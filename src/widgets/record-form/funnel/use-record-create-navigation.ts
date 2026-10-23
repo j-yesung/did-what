@@ -4,12 +4,11 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { getAppPathname } from "@/shared/lib/navigation/app-pathname";
 import { canGoBack } from "@/shared/lib/navigation/use-go-back";
 
 const EXIT_SENTINEL = "recordCreateExitSentinel";
 const EXIT_CAN_GO_BACK = "recordCreateCanGoBack";
-
-type ExitIntent = { href: string; type: "save" } | { type: "cancel" };
 
 /** 퍼널 단계 히스토리와 작성 화면 이탈용 보초 항목을 함께 정리한다. */
 export const useRecordCreateNavigation = ({
@@ -28,7 +27,7 @@ export const useRecordCreateNavigation = ({
   const couldGoBackRef = useRef(false);
   const dirtyRef = useRef(dirty);
   const funnelIndexRef = useRef(funnelIndex);
-  const intentRef = useRef<ExitIntent | null>(null);
+  const cancelingRef = useRef(false);
   const leavingRef = useRef(false);
   const restoringRef = useRef(false);
   dirtyRef.current = dirty;
@@ -52,27 +51,21 @@ export const useRecordCreateNavigation = ({
       );
     }
 
-    const pushDestination = (intent: ExitIntent) => {
+    const finishLeaving = () => {
+      if (!cancelingRef.current) return;
+      cancelingRef.current = false;
       if (couldGoBackRef.current) {
-        const href = intent.type === "save" ? intent.href : window.location.pathname + window.location.search;
-        router.push(href);
+        router.push(window.location.pathname + window.location.search);
         return;
       }
 
-      const href = intent.type === "save" ? intent.href : fallbackHref;
-      router.replace(href);
-      requestAnimationFrame(() => router.push(href));
-    };
-
-    const finishLeaving = () => {
-      const intent = intentRef.current;
-      intentRef.current = null;
-      if (intent) pushDestination(intent);
+      router.replace(fallbackHref);
+      requestAnimationFrame(() => router.push(fallbackHref));
     };
 
     const leaveFromBase = () => {
       leavingRef.current = true;
-      intentRef.current = { type: "cancel" };
+      cancelingRef.current = true;
       if (couldGoBackRef.current) {
         window.history.back();
       } else {
@@ -128,14 +121,25 @@ export const useRecordCreateNavigation = ({
     cancelExit: () => setConfirmOpen(false),
     confirmExit: () => {
       leavingRef.current = true;
-      intentRef.current = { type: "cancel" };
+      cancelingRef.current = true;
       setConfirmOpen(false);
       window.history.go(couldGoBackRef.current ? -2 : -1);
     },
     exit: () => window.history.back(),
     finish: (href: string) => {
       leavingRef.current = true;
-      intentRef.current = { href, type: "save" };
+      window.addEventListener(
+        "popstate",
+        () => {
+          if (!couldGoBackRef.current) {
+            router.replace(href);
+            requestAnimationFrame(() => router.push(href));
+          } else if (getAppPathname() !== getAppPathname(href)) {
+            router.push(href);
+          }
+        },
+        { once: true },
+      );
       // 작성 화면 기본 항목, 보초, 현재까지 쌓인 퍼널 단계를 한 번에 걷어낸다.
       window.history.go(-(funnelIndexRef.current + (couldGoBackRef.current ? 2 : 1)));
     },

@@ -3,7 +3,7 @@
 import type { Dispatch, SetStateAction, SubmitEvent } from "react";
 
 import { CheckIcon } from "@animateicons/react/lucide";
-import { WarningCircleIcon } from "@phosphor-icons/react";
+import { WarningCircleIcon, XIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { type PlaceOption, placeSearchInfiniteQueryOptions } from "@/entities/place";
@@ -12,12 +12,13 @@ import { useRegionSearch } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
+import { IconButton } from "@/shared/ui/icon-button";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
-import { SegmentedControl, SegmentedControlItem } from "@/shared/ui/segmented-control";
 import { Spinner } from "@/shared/ui/spinner";
 
 import {
   type PlacePickerDraft,
+  type PlacePickerMode,
   type RecordLocationPlace,
   type RecordLocationRegion,
   toRecentRegions,
@@ -28,6 +29,7 @@ import { PlacePickerPlaces } from "./place-picker-places";
 import { PlacePickerRegions } from "./place-picker-regions";
 
 type PlacePickerPanelProps = {
+  mode: PlacePickerMode;
   maxSelectionCount: number;
   onAdd: (places: RecordLocationPlace[], regions: RecordLocationRegion[]) => string | undefined;
   draft: PlacePickerDraft;
@@ -42,6 +44,7 @@ type PlacePickerPanelProps = {
 const NATIONWIDE_CODE = "";
 
 export function PlacePickerPanel({
+  mode,
   maxSelectionCount,
   onAdd,
   regions,
@@ -51,7 +54,7 @@ export function PlacePickerPanel({
   onDraftChange,
   searchRegionName,
 }: PlacePickerPanelProps) {
-  const { tab, keyword, query, regionKeyword, regionQuery } = draft;
+  const { keyword, query, regionKeyword, regionQuery } = draft;
   const updateDraft = (patch: Partial<PlacePickerDraft>) => onDraftChange((current) => ({ ...current, ...patch }));
   const scopeCode = draft.scopeCode ?? regions[0]?.code ?? (searchRegionName ? "map" : NATIONWIDE_CODE);
   const scope = regions.find((region) => region.code === scopeCode);
@@ -60,10 +63,11 @@ export function PlacePickerPanel({
   const searchParams = { latitude: scope?.latitude, longitude: scope?.longitude, query: searchQuery };
   const search = useInfiniteQuery({
     ...placeSearchInfiniteQueryOptions(searchParams),
-    enabled: tab === "places" && Boolean(query) && !queryTooLong,
+    enabled: mode === "places" && Boolean(query) && !queryTooLong,
   });
   const results = getPlacePickerResults(savedPlaces, regions, query, search.data?.pages ?? []);
   const selection = usePlacePickerSelection({
+    mode,
     maxSelectionCount,
     onAdd,
     draft,
@@ -73,9 +77,9 @@ export function PlacePickerPanel({
     savedByProviderId: results.savedByProviderId,
   });
   const { addQueued, addSelection, selectedCount, selectionError, setSelectionError } = selection;
-  const showFloatingButton = selectedCount > 0 || (tab === "places" && Boolean(query));
-  const regionSearch = useRegionSearch(regionQuery);
-  const regionRecords = useQuery({ ...recordLocationsQueryOptions, enabled: tab === "regions" });
+  const showFloatingButton = selectedCount > 0 || Boolean(mode === "regions" ? regionQuery : query);
+  const regionSearch = useRegionSearch(mode === "regions" ? regionQuery : "");
+  const regionRecords = useQuery({ ...recordLocationsQueryOptions, enabled: mode === "regions" });
   const recentRegions = toRecentRegions(regionRecords.data ?? []);
   const handleSearch = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -108,9 +112,14 @@ export function PlacePickerPanel({
   return (
     <>
       <BottomSheet.Header>
-        <BottomSheet.Title className="text-left font-bold text-xl">방문한 곳 추가</BottomSheet.Title>
+        <div className="flex items-center justify-between gap-3">
+          <BottomSheet.Title className="text-left font-bold text-xl">
+            {mode === "regions" ? "방문한 지역" : "방문한 곳"}
+          </BottomSheet.Title>
+          <BottomSheet.Close render={<IconButton aria-label="닫기" icon={XIcon} type="button" />} />
+        </div>
         <BottomSheet.Description className="text-left">
-          장소를 검색하거나 특정 장소 없이 지역만 남길 수 있어요.
+          {mode === "regions" ? "어느 동네에서 시간을 보냈나요?" : "함께 다녀온 카페나 식당을 찾아보세요."}
         </BottomSheet.Description>
       </BottomSheet.Header>
 
@@ -123,25 +132,7 @@ export function PlacePickerPanel({
         )}
         data-error={selectionError ? "" : undefined}
       >
-        <SegmentedControl
-          aria-label="방문한 곳 종류"
-          name="visit-location-tab"
-          size="large"
-          onValueChange={(tab) => {
-            if (tab !== "places" && tab !== "regions") return;
-            setSelectionError(undefined);
-            updateDraft({ tab });
-          }}
-          value={tab}
-        >
-          <SegmentedControlItem disabled={addQueued} value="places">
-            장소
-          </SegmentedControlItem>
-          <SegmentedControlItem disabled={addQueued} value="regions">
-            지역
-          </SegmentedControlItem>
-        </SegmentedControl>
-        {tab === "regions" ? (
+        {mode === "regions" ? (
           <PlacePickerRegions
             draft={draft}
             updateDraft={updateDraft}

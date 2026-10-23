@@ -4,6 +4,7 @@ import {
   removeRecordLocationRegion,
   toExistingRecordLocationPlace,
   toRecentRegions,
+  toSearchedRecordLocationRegion,
   toVisitedRegions,
 } from "./location-picker.ts";
 import assert from "node:assert/strict";
@@ -26,6 +27,16 @@ const region = (code, label) => ({
   latitude: 37.5,
   longitude: 127,
   name: label,
+});
+
+test("문래 검색은 영등포구 위치 정보와 문래 표시명을 함께 보존한다", () => {
+  const district = { ...region("1156000000", "영등포구"), fullName: "서울특별시 영등포구" };
+  const selected = toSearchedRecordLocationRegion(district, " 문래 ");
+  assert.equal(selected.label, "문래");
+  assert.equal(selected.name, "영등포구");
+  assert.equal(selected.fullName, "서울특별시 영등포구");
+  assert.equal(selected.code, "1156000000");
+  assert.equal(toSearchedRecordLocationRegion(district, " ").label, "영등포구");
 });
 
 test("최근 순서를 유지하면서 같은 지역과 표시명만 중복으로 거른다", () => {

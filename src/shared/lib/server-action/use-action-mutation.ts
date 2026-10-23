@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useTransition } from "react";
+
 import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { showToast } from "@/shared/lib/toast";
@@ -12,6 +14,7 @@ type ActionMutationOptions<TResult> = {
   error: string;
   invalidate?: readonly QueryKey[];
   success?: string;
+  waitForRouter?: boolean;
   onSuccess?: (result: TResult | undefined) => void;
   onFail?: (result: TResult) => void;
 };
@@ -24,12 +27,43 @@ type ActionMutationOptions<TResult> = {
  */
 export const useActionMutation = <TResult extends ActionResult, TArgs = void>(
   action: (args: TArgs) => Promise<TResult>,
-  { error, invalidate = [], success, onFail, onSuccess }: ActionMutationOptions<TResult>,
+  { error, invalidate = [], success, waitForRouter = false, onFail, onSuccess }: ActionMutationOptions<TResult>,
 ) => {
   const queryClient = useQueryClient();
+  const [routerPending, startRouterTransition] = useTransition();
+  const waitingRef = useRef<(() => void)[] | null>(null);
+
+  useEffect(() => {
+    waitingRef.current = [];
+    return () => {
+      for (const settle of waitingRef.current?.splice(0) ?? []) settle();
+      waitingRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (routerPending) return;
+    for (const settle of waitingRef.current?.splice(0) ?? []) settle();
+  }, [routerPending]);
+
+  const run = (args: TArgs) => runServerAction(() => action(args));
 
   return useMutation({
-    mutationFn: (args: TArgs) => runServerAction(() => action(args)),
+    mutationFn: waitForRouter
+      ? (args: TArgs) =>
+          new Promise<TResult | undefined>((resolve, reject) => {
+            startRouterTransition(async () => {
+              try {
+                const result = await run(args);
+                const settle = () => resolve(result);
+                if (waitingRef.current) waitingRef.current.push(settle);
+                else settle();
+              } catch (cause) {
+                reject(cause);
+              }
+            });
+          })
+      : run,
     onSuccess: async (result) => {
       if (result?.status === "error") {
         if (result.message) showToast({ description: result.message, title: error, variant: "warning" });

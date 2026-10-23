@@ -52,8 +52,8 @@ function SavedPlaceListItem({ onDetailPrefetch, place }: SavedPlaceListItemProps
         <PlaceGridItemContent
           badge={
             recordCount > 0 ? (
-              <Badge className="absolute top-1.5 right-1.5 h-4.5 min-w-4.5 rounded-md bg-surface/80 px-1 py-0 text-[10px] tabular-nums leading-none">
-                {recordCount}
+              <Badge className="absolute -top-1.25 -right-1.25 h-4.5 min-w-4.5 items-center justify-center rounded-full bg-surface px-1 py-0 text-[10px] text-dark-weak-foreground tabular-nums leading-none ring-2 ring-background">
+                {recordCount > 99 ? "99+" : recordCount}
               </Badge>
             ) : null
           }
@@ -117,7 +117,7 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
           className="flex flex-col gap-4 pb-[calc(var(--toolbar-height)+--spacing(4))]"
         >
           <h2 className="font-semibold text-base">저장한 장소</h2>
-          <ul className="grid grid-cols-4 items-start gap-x-2.5 gap-y-4">
+          <ul className="grid grid-cols-3 items-start gap-x-3 gap-y-6">
             {visiblePlaces.map((place) => (
               <SavedPlaceListItem key={place.id} onDetailPrefetch={prefetchDetail} place={place} />
             ))}

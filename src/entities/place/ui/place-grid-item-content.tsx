@@ -14,11 +14,11 @@ type PlaceGridItemContentProps = {
 
 export function PlaceGridItemContent({ badge, place, selected }: PlaceGridItemContentProps) {
   return (
-    <span className="flex w-full min-w-0 flex-col items-center gap-1.5">
-      <span aria-hidden="true" className="relative block w-[84%]">
+    <span className="flex w-full min-w-0 flex-col items-center gap-2.5">
+      <span aria-hidden="true" className="relative block size-11 shrink-0">
         <PlaceIconTile
           className={cn(
-            "aspect-square size-auto w-full rounded-2xl [&_svg]:size-6.5",
+            "size-full rounded-2xl [&_svg]:size-5.5",
             selected !== undefined && "border-2 border-transparent",
             selected && "border-accent-text",
           )}
@@ -27,8 +27,8 @@ export function PlaceGridItemContent({ badge, place, selected }: PlaceGridItemCo
         {badge}
       </span>
       <span className="flex w-full min-w-0 flex-col gap-0.5 text-center">
-        <span className="line-clamp-2 font-semibold text-[11px] leading-3.5">{place.name}</span>
-        <span className="w-full truncate text-[10px] text-muted-foreground leading-3">
+        <span className="line-clamp-2 break-words font-semibold text-[13px] leading-4.75">{place.name}</span>
+        <span className="w-full truncate text-[11px] text-muted-foreground leading-4">
           {getPlaceRegionLabel(place.region_name, place.address)}
         </span>
       </span>

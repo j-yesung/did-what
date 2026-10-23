@@ -19,10 +19,9 @@ type RecordCardProps = {
   endsMonth: boolean;
   onDetailPrefetch?: (recordId: string) => void;
   record: RecordSummary;
-  side: "left" | "right";
 };
 
-export function RecordCard({ endsMonth, onDetailPrefetch, record, side }: RecordCardProps) {
+export function RecordCard({ endsMonth, onDetailPrefetch, record }: RecordCardProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const href = `/records/${record.id}`;
@@ -32,22 +31,22 @@ export function RecordCard({ endsMonth, onDetailPrefetch, record, side }: Record
   const cacheRecordSummary = () => queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
 
   return (
-    <article
-      className="relative grid min-w-0 grid-cols-[minmax(0,1fr)_2rem_minmax(0,1fr)] pb-6"
-      data-timeline-side={side}
-    >
-      <span aria-hidden="true" className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+    <article className="relative ml-1.5 min-w-0 border-border border-l pb-7 pl-5">
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute top-1.5 -left-px z-10 size-2.25 -translate-x-1/2 rounded-full ring-3 ring-background",
+          RECORD_CATEGORY_DOT[category],
+        )}
+      />
       {endsMonth ? (
         <span
           aria-hidden="true"
-          className="absolute bottom-0 left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-border"
+          className="absolute bottom-0 -left-px size-1.5 -translate-x-1/2 rounded-full bg-border"
         />
       ) : null}
       <Button
-        className={cn(
-          "row-start-1 h-auto min-h-18 min-w-0 justify-start whitespace-normal rounded-md p-0 font-normal after:hidden [&>span]:block [&>span]:w-full",
-          side === "left" ? "col-start-1 text-right" : "col-start-3 text-left",
-        )}
+        className="h-auto min-h-18 min-w-0 justify-start whitespace-normal rounded-md p-0 text-left font-normal after:hidden [&>span]:block [&>span]:w-full"
         fullWidth
         nativeButton={false}
         render={
@@ -66,38 +65,25 @@ export function RecordCard({ endsMonth, onDetailPrefetch, record, side }: Record
         }
         variant="ghost"
       >
-        <span className="min-w-0">
+        <span className="block min-w-0">
           <time
-            className="mb-1.5 block text-[11px] text-muted-foreground tabular-nums leading-normal"
+            className="mb-1 block text-muted-foreground text-xs tabular-nums leading-normal"
             dateTime={record.recorded_at}
           >
             {formatRecordTimelineDate(record.recorded_at, record.recorded_until)}
           </time>
-          <h3 className="relative min-w-0 break-words font-semibold text-base leading-relaxed tracking-[-0.035em]">
+          <h3 className="min-w-0 break-words font-semibold text-[17px] leading-normal tracking-[-0.025em]">
             {record.activity}
-            <span
-              aria-hidden="true"
-              className={cn(
-                "pointer-events-none absolute top-2 z-10 size-2 rounded-full ring-3 ring-background",
-                RECORD_CATEGORY_DOT[category],
-                side === "left" ? "-right-5" : "-left-5",
-              )}
-            />
           </h3>
           {record.memo?.trim() ? (
-            <p className="mt-1.5 line-clamp-2 break-words text-dark-weak-foreground text-xs leading-relaxed">
+            <p className="mt-1.5 line-clamp-2 break-words text-[13px] text-dark-weak-foreground leading-relaxed">
               {record.memo}
             </p>
           ) : null}
           {regionLabels ? (
-            <p className="mt-1.5 break-words text-[11px] text-muted-foreground leading-relaxed">{regionLabels}</p>
+            <p className="mt-1.5 break-words text-muted-foreground text-xs leading-relaxed">{regionLabels}</p>
           ) : null}
-          <span
-            className={cn(
-              "mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground text-xs",
-              side === "left" && "justify-end",
-            )}
-          >
+          <span className="mt-2 flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 text-muted-foreground text-xs">
             <RecordCategoryBadge category={record.category} />
             {commentCount > 0 ? (
               <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] tabular-nums">

@@ -45,13 +45,14 @@ const setup = () => {
     },
   };
   const props = {
+    mode: "places",
     draft: locations.createPlacePickerDraft(),
     onDraftChange: (update) => {
       props.draft = update(props.draft);
     },
     maxSelectionCount: 2,
-    onAdd: (places) => {
-      added.push(places);
+    onAdd: (places, regions) => {
+      added.push({ places, regions });
     },
     regions: [],
     selectedKeys: new Set(),
@@ -125,7 +126,7 @@ test("확인 중 추가를 누르면 요청 완료 뒤 한 번만 추가한다",
   assert.equal(run.render().pendingPlaceKeys.size, 0);
   run.render();
   assert.equal(run.added.length, 1);
-  assert.equal(run.added[0][0].name, "확인된 장소");
+  assert.equal(run.added[0].places[0].name, "확인된 장소");
 });
 
 test("확인 실패 시 일괄 추가를 멈추고 시트를 닫은 후 응답은 무시한다", async () => {
@@ -142,4 +143,22 @@ test("확인 실패 시 일괄 추가를 멈추고 시트를 닫은 후 응답�
   run.requests[1].resolve(result("닫힌 뒤 응답"));
   await settle();
   assert.equal(run.props.draft.selectedPlaces.size, 0);
+});
+
+test("지역과 장소 시트는 각자의 선택만 세고 추가한다", () => {
+  const run = setup();
+  const region = { code: "1156000000", label: "문래" };
+  const place = { key: "existing:1", name: "카페" };
+  run.props.draft.selectedRegions.set(getRecordRegionKey(region), region);
+  run.props.draft.selectedPlaces.set(place.key, place);
+  assert.equal(run.render().selectedCount, 1);
+  run.render().addSelection();
+  assert.deepEqual(Array.from(run.added[0].places), [place]);
+  assert.equal(run.added[0].regions.length, 0);
+
+  run.props.mode = "regions";
+  assert.equal(run.render().selectedCount, 1);
+  run.render().addSelection();
+  assert.equal(run.added[1].places.length, 0);
+  assert.deepEqual(Array.from(run.added[1].regions), [region]);
 });

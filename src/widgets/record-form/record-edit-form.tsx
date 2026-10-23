@@ -47,6 +47,7 @@ export function RecordEditForm({ action, initialSavedPlaces, initialValues, retu
     error: "기록을 수정하지 못했어요",
     invalidate: [RECORDS_QUERY_KEY, placesQueryOptions.queryKey],
     success: "기록을 수정했어요",
+    waitForRouter: true,
     onSuccess: () => {
       if (formRef.current) formRef.current.dataset.dirty = "false";
       guardRef.current?.finish(savedTo);

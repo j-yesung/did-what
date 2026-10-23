@@ -1,3 +1,5 @@
+import { validateRecordInput } from "@/entities/record/model/record-form";
+import { toSearchedRecordLocationRegion } from "@/features/record/select-record-location/model/location-picker";
 import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
 
 import assert from "node:assert/strict";
@@ -58,4 +60,37 @@ test("대표 지역과 표시명을 먼저 복원하고 장소에서 따라온 �
   const fallback = toRecordEditValues({ ...record, category: "legacy", weather: "legacy" });
   assert.equal(fallback.category, "uncategorized");
   assert.equal(fallback.weather, "sunny");
+});
+
+test("문래 검색의 표시명은 저장 입력 검증과 수정 화면 복원에서도 유지된다", () => {
+  const selected = toSearchedRecordLocationRegion(
+    { code: "1156000000", fullName: "서울특별시 영등포구", name: "영등포구", latitude: 37.52, longitude: 126.9 },
+    "문래",
+  );
+  const { data } = validateRecordInput({
+    activity: "문래 산책",
+    category: "daily",
+    memo: "",
+    places: "[]",
+    recordedAt: "2026-10-23",
+    recordedUntil: "",
+    regions: JSON.stringify([{ code: selected.code, label: selected.label, name: selected.fullName }]),
+    weather: "sunny",
+  });
+  assert.ok(data);
+  const [saved] = data.regions;
+  const restored = toRecordEditValues({
+    activity: data.activity,
+    category: data.category,
+    memo: data.memo,
+    weather: data.weather,
+    recorded_at: data.recordedAt,
+    recorded_until: null,
+    region_code: saved.code,
+    region_label: saved.label,
+    record_places: [],
+    record_regions: [{ ...region(saved.code, saved.label), region_name: saved.name }],
+  });
+  assert.equal(restored.regions[0].label, "문래");
+  assert.equal(restored.regions[0].fullName, "서울특별시 영등포구");
 });

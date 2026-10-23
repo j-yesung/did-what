@@ -40,7 +40,12 @@ export function NotificationRow({ notification, onOpen }: NotificationRowProps) 
           <span className="text-foreground text-sm leading-5">
             {notification.sender_name}님이 {message}
           </span>
-          <span className={cn("truncate text-base text-foreground", unread ? "font-semibold" : "font-normal")}>
+          <span
+            className={cn(
+              "line-clamp-2 text-base text-foreground leading-normal",
+              unread ? "font-semibold" : "font-normal",
+            )}
+          >
             {notification.record_title}
           </span>
           <span className="flex items-center gap-2 text-muted-foreground text-xs">

@@ -1,1 +1,1 @@
-export { AppLoading as default } from "@/app/ui/app-loading";
+export { AppLoadingFallback as default } from "@/app/ui/app-loading-fallback";
