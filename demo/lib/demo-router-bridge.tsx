@@ -11,6 +11,7 @@ import {
   SearchParamsContext,
 } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 
+import { setAppPathnameReader } from "@/shared/lib/navigation/app-pathname";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 
 import { isDemoAppHref, readAppLocation, toDemoHref } from "./demo-href";
@@ -91,6 +92,7 @@ export function DemoRouterBridge({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 앱의 이동 기록 패치가 Next 패치보다 먼저 걸리게 해서, 아래 데모 패치가 바꾼 주소를 그대로 받게 한다.
     getPageNavigation(window);
+    const restoreAppPathname = setAppPathnameReader((url) => readAppLocation(url.search).pathname);
 
     let restoreHistory = () => {};
     // Next는 루트 effect에서 history를 감싼다. 그보다 바깥에서 주소를 바꿔야 라우터 상태도 데모 경로를 갖는다.
@@ -155,6 +157,7 @@ export function DemoRouterBridge({ children }: { children: ReactNode }) {
       window.removeEventListener("click", keepLongPressMenu, true);
       window.clearTimeout(timer);
       restoreHistory();
+      restoreAppPathname();
       window.removeEventListener("click", redirectLink, true);
       window.removeEventListener("auxclick", redirectLink, true);
     };
