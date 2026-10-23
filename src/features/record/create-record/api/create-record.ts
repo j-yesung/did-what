@@ -4,17 +4,11 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 
 import { requireMember } from "@/entities/member/server";
-import { type RecordFieldErrors, readRecordInput, validateRecordInput } from "@/entities/record";
+import { type RecordFormState, readRecordInput, validateRecordInput } from "@/entities/record";
 import { sendRecordPush } from "@/features/push-notification/server";
 import { validateRecordSelections } from "@/features/record/select-record-location/server";
 
-type CreateRecordState = {
-  fieldErrors?: RecordFieldErrors;
-  message?: string;
-  status: "error" | "success";
-};
-
-export const createRecord = async (formData: FormData): Promise<CreateRecordState> => {
+export const createRecord = async (formData: FormData): Promise<RecordFormState> => {
   const { member, supabase, user } = await requireMember();
   const result = validateRecordInput(readRecordInput(formData));
   if (!result.data) return { fieldErrors: result.fieldErrors, status: "error" };

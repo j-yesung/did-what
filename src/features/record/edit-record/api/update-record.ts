@@ -2,18 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
-import { type RecordFieldErrors, readRecordInput, validateRecordInput } from "@/entities/record";
+import { type RecordFormState, readRecordInput, validateRecordInput } from "@/entities/record";
 import { validateRecordSelections } from "@/features/record/select-record-location/server";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-type UpdateRecordState = {
-  fieldErrors?: RecordFieldErrors;
-  message?: string;
-  status: "error" | "success";
-};
-
-export const updateRecord = async (recordId: string, formData: FormData): Promise<UpdateRecordState> => {
+export const updateRecord = async (recordId: string, formData: FormData): Promise<RecordFormState> => {
   if (!isUuid(recordId)) return { message: "수정할 기록을 확인할 수 없습니다.", status: "error" };
 
   const { supabase, user } = await requireUser();

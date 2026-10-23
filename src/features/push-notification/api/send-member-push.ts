@@ -1,8 +1,8 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import webpush from "web-push";
 
-import type { requireMember } from "@/entities/member/server";
-
-type SupabaseClient = Awaited<ReturnType<typeof requireMember>>["supabase"];
+import { getRecordNotificationHref } from "@/entities/notification/model/notification-page";
+import type { Database } from "@/shared/api/supabase/database.types";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
@@ -41,7 +41,7 @@ const GONE_STATUS_CODES = new Set([404, 410]);
 type SendMemberPushInput = {
   ownerId: string;
   senderMemberId: string;
-  supabase: SupabaseClient;
+  supabase: SupabaseClient<Database>;
   tag: string;
   title: string;
   url: string;
@@ -106,8 +106,8 @@ export const sendRecordPush = async ({ recordId, senderName, ...input }: SendRec
   return sendMemberPush({
     ...input,
     tag: `record-${recordId}`,
-    title: `${senderName}이가 기록을 추가했어요`,
-    url: `/records/${recordId}?from=notification`,
+    title: `${senderName}님이 새 기록을 남겼어요`,
+    url: getRecordNotificationHref(recordId),
   });
 };
 
@@ -123,6 +123,6 @@ export const sendCommentPush = async ({ commentId, recordId, senderName, ...inpu
     ...input,
     tag: `comment-${commentId}`,
     title: `${senderName}님이 댓글을 남겼어요`,
-    url: `/records/${recordId}?from=notification#comment-${commentId}`,
+    url: getRecordNotificationHref(recordId, commentId),
   });
 };

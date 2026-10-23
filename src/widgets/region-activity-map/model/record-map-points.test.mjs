@@ -21,13 +21,10 @@ test("장소 좌표를 우선하고 장소가 없는 기록만 지역 좌표로 
     },
   ];
 
-  assert.deepEqual(
-    toRecordMapPoints(records).map(({ id, kind, label }) => ({ id, kind, label })),
-    [
-      { id: "place:a:p", kind: "place", label: "카페" },
-      { id: "region:b:26", kind: "region", label: "부산" },
-    ],
-  );
+  assert.deepEqual(toRecordMapPoints(records), [
+    { id: "place:a:p", latitude: 37.54, longitude: 127.05 },
+    { id: "region:b:26", latitude: 35.18, longitude: 129.08 },
+  ]);
 });
 
 test("지역명에서 시·도 약칭을 떼고 시·군·구만 남긴다", () => {

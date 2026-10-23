@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 
-import { type AccountMember, getMemberAvatarTone, getMemberInitial } from "@/entities/member";
-import { cn } from "@/shared/lib/utils";
+import { type AccountMember, MemberAvatar } from "@/entities/member";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { FieldLegend, FieldSet } from "@/shared/ui/field";
@@ -22,15 +21,7 @@ export function CurrentMemberSetting({
     <FieldSet>
       <FieldLegend>현재 사용자</FieldLegend>
       <div className="flex items-center gap-3">
-        <span
-          aria-hidden="true"
-          className={cn(
-            "flex size-11 shrink-0 items-center justify-center rounded-2xl font-semibold text-lg",
-            getMemberAvatarTone(member.id),
-          )}
-        >
-          {getMemberInitial(member.name)}
-        </span>
+        <MemberAvatar className="size-11 rounded-2xl text-lg" memberId={member.id} name={member.name} />
         <p className="min-w-0 flex-1 truncate font-semibold text-base">{member.name}</p>
         <BottomSheet onOpenChange={setOpen} open={open} showSwipeHandle>
           <BottomSheet.Trigger render={<Button size="small" type="button" variant="outline" />}>

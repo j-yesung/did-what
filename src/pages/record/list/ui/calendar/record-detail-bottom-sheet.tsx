@@ -3,10 +3,8 @@
 import { useState } from "react";
 
 import type { RecordSummary } from "@/entities/record";
-import { BottomSheet } from "@/shared/ui/bottom-sheet";
+import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { RecordSheetDetail } from "@/widgets/record-detail";
-
-const SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
 
 type RecordDetailBottomSheetProps = {
   member: { id: string; name: string };
@@ -32,7 +30,7 @@ export function RecordDetailBottomSheet({ member, onOpenChange, open, record }: 
         <BottomSheet.Content
           overlayHandle
           className="bottom-(--drawer-keyboard-inset,0px) [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]"
-          style={{ height: SHEET_HEIGHT }}
+          style={{ height: FULL_SHEET_HEIGHT }}
         >
           {record ? (
             <RecordSheetDetail

@@ -1,4 +1,4 @@
-export type { SavedPlaceRow } from "./api/client-queries";
+export { fetchPlaces, type SavedPlaceRow } from "./api/client-queries";
 export {
   placeQueryKey,
   placeQueryOptions,

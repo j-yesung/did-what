@@ -9,14 +9,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
 import {
   formatRecordRegionLabels,
+  getRecordSummary,
+  pickNewerRecord,
   RecordDetailHeader,
-  type RecordSummary,
   recordDetailQueryOptions,
-  recordSummaryQueryKey,
 } from "@/entities/record";
 import { readRecordNotifications } from "@/features/notification/read-record-notifications";
 import { RecordComments } from "@/features/record-comment";
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
@@ -35,21 +35,18 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   const redirectedMissingRecord = useRef(false);
   const readNotifications = useRef(false);
   const queryClient = useQueryClient();
-  const markRecordRead = useActionOverride(readRecordNotifications);
+  const markRecordRead = useDemoOverride(readRecordNotifications);
   const fromNotification = searchParams?.get("from") === "notification";
-  const summaryQueryKey = recordSummaryQueryKey(recordId);
-  const summaryState = queryClient.getQueryState<RecordSummary>(summaryQueryKey);
-  const cachedSummary = summaryState?.isInvalidated ? undefined : summaryState?.data;
+  const summary = getRecordSummary(queryClient, recordId);
   const recordQuery = useQuery({
     ...recordDetailQueryOptions(recordId),
     refetchOnMount: "always",
   });
   const recordMissing = recordQuery.isSuccess && !recordQuery.data;
-  const summaryIsNewer = cachedSummary && (summaryState?.dataUpdatedAt ?? 0) > recordQuery.dataUpdatedAt;
-  const record = recordMissing ? null : summaryIsNewer ? cachedSummary : (recordQuery.data ?? cachedSummary);
+  const record = recordMissing ? null : pickNewerRecord(summary, recordQuery.data, recordQuery.dataUpdatedAt);
   const regionText = record ? formatRecordRegionLabels(record, Number.POSITIVE_INFINITY) : "";
   const recordPlaces = recordQuery.data?.record_places;
-  const placeCount = recordPlaces?.length ?? cachedSummary?.record_places?.[0]?.count ?? 0;
+  const placeCount = recordPlaces?.length ?? summary?.data.record_places?.[0]?.count ?? 0;
 
   // 푸시와 알림 목록 모두 이 주소로 들어온다. 읽음 처리를 여기 한 곳에서 해서 알림을 연 곳과 상관없이 점이 사라진다.
   useEffect(() => {

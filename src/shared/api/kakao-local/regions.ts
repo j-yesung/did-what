@@ -1,13 +1,11 @@
+import { isRecord } from "@/shared/lib/validation/is-record";
+
 import { searchKakaoPlaces } from "./places.ts";
 import type { KakaoPlace, KakaoRegion, KakaoRegionSearchResult } from "./types.ts";
 import { validateKakaoQuery } from "./validation.ts";
 
 const KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json";
 const KAKAO_COORD_REGION_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json";
-
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null;
-};
 
 /** 주소에서 잘라낼 지점을 찾을 때 쓴다. "72-1" 같은 지번과 구분해야 해서 여기서는 접미사로 좁혀 본다. */
 const isLocalityName = (name: string): boolean => {

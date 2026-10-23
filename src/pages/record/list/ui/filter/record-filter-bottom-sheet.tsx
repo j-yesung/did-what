@@ -5,7 +5,7 @@ import { useState } from "react";
 import { SlidersHorizontalIcon } from "@phosphor-icons/react";
 
 import type { RecordSort } from "@/entities/record";
-import { formatRecordDate } from "@/shared/lib/date/format-date";
+import { formatDateRange, formatRecordDate } from "@/shared/lib/date/format-date";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { DateInput } from "@/shared/ui/date-input";
@@ -23,12 +23,7 @@ type RecordPeriodFilterProps = RecordPeriod & {
   sort: RecordSort;
 };
 
-const getPeriodLabel = ({ from, to }: RecordPeriod) => {
-  if (from && to) return from === to ? formatRecordDate(from) : `${formatRecordDate(from)} ~ ${formatRecordDate(to)}`;
-  if (from) return `${formatRecordDate(from)}부터`;
-  if (to) return `${formatRecordDate(to)}까지`;
-  return "전체 기간";
-};
+const getPeriodLabel = (period: RecordPeriod) => formatDateRange(period, formatRecordDate) || "전체 기간";
 
 export function RecordFilterBottomSheet({ from, onApply, sort, to }: RecordPeriodFilterProps) {
   const [open, setOpen] = useState(false);

@@ -84,12 +84,12 @@ export const toDetailRow = (state: DemoState, record: DemoRecord) => ({
 const toPlaceDetailRow = ({ ...place }: DemoPlace) => place;
 
 /** SAVED_PLACE_COLUMNS와 같은 모양. 기록 수는 이 장소를 쓰는 기록을 센다. */
-export const toSavedPlaceRow = (state: DemoState, place: DemoPlace) => ({
+const toSavedPlaceRow = (state: DemoState, place: DemoPlace) => ({
   ...toPlaceDetailRow(place),
   record_places: [{ count: state.records.filter((record) => record.placeIds.includes(place.id)).length }],
 });
 
-export const getSavedPlaceRows = (state: DemoState) =>
+const getSavedPlaceRows = (state: DemoState) =>
   state.places
     .filter((place) => place.saved_at)
     .toSorted((a, b) => (b.saved_at ?? "").localeCompare(a.saved_at ?? "") || a.name.localeCompare(b.name, "ko"))

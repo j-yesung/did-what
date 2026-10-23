@@ -1,6 +1,7 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { KAKAO_SEARCH_MAX_PAGE } from "@/shared/api/kakao-local";
+import { createClient } from "@/shared/api/supabase/client";
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
 import { fetchPlace, fetchPlaceRecords, fetchPlaces } from "./client-queries";
@@ -12,7 +13,7 @@ const PLACE_SEARCH_KEY = ["places", "search"] as const;
 export const placesQueryOptions = queryOptions({
   ...MAIN_QUERY_OPTIONS,
   queryKey: PLACES_QUERY_KEY,
-  queryFn: fetchPlaces,
+  queryFn: () => fetchPlaces(createClient()),
 });
 
 export const placeQueryKey = (placeId: string) => {

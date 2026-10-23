@@ -1,4 +1,7 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { createClient } from "@/shared/api/supabase/client";
+import type { Database } from "@/shared/api/supabase/database.types";
 
 import { PLACE_DETAIL_COLUMNS, SAVED_PLACE_COLUMNS } from "./place-columns";
 
@@ -23,8 +26,9 @@ export const fetchPlaceRecords = async (placeId: string) => {
   return data;
 };
 
-export const fetchPlaces = async () => {
-  const { data, error } = await createClient()
+// 서버 화면이 첫 화면에 쓸 목록을 미리 받을 수 있게 클라이언트를 받는다.
+export const fetchPlaces = async (client: SupabaseClient<Database>) => {
+  const { data, error } = await client
     .from("places")
     .select(SAVED_PLACE_COLUMNS)
     .not("saved_at", "is", null)

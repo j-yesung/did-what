@@ -6,7 +6,7 @@ import { BookmarkIcon, type BookmarkIconHandle } from "@animateicons/react/lucid
 
 import { placesQueryOptions } from "@/entities/place";
 import { RECORD_DETAILS_QUERY_KEY } from "@/entities/record";
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -23,7 +23,7 @@ export function PlaceSaveButton({ placeId, placeName, saved }: PlaceSaveButtonPr
   const bookmarkRef = useRef<BookmarkIconHandle>(null);
   const [optimisticSaved, setOptimisticSaved] = useOptimistic(saved);
 
-  const savePlace = useActionOverride(setPlaceSaved);
+  const savePlace = useDemoOverride(setPlaceSaved);
   const toggle = useActionMutation((nextSaved: boolean) => savePlace(placeId, nextSaved), {
     error: "장소 저장 상태를 변경하지 못했어요",
     invalidate: [placesQueryOptions.queryKey, RECORD_DETAILS_QUERY_KEY],

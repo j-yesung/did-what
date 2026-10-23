@@ -80,8 +80,6 @@
   --fill-segmented-active: var(--grey-0);
   --text-segmented: var(--text-secondary);
   --text-segmented-active: var(--grey-900);
-  /* 눌린 표면. 라이트는 표면보다 어둡게, 다크는 밝게 가야 눌림으로 읽힌다. */
-  --fill-pressed: var(--grey-100);
   --fill-brand: var(--blue-600);
   --fill-brand-weak: var(--blue-50);
   --fill-danger: var(--red-600);
@@ -100,7 +98,6 @@
   --text-danger: var(--red-700);
   --text-success: var(--green-700);
   --text-warning: var(--yellow-500);
-  --text-info: var(--blue-600);
   /* 파란 글자 전용. 버튼 배경인 --fill-brand(blue-600)는 흰 배경에서 4.49:1이라 글자에는 한 단계 진하게 쓴다. */
   --text-accent: var(--blue-700);
   --text-on-brand: var(--grey-0);
@@ -136,7 +133,6 @@
   --destructive: var(--text-danger);
   --success: var(--text-success);
   --warning: var(--text-warning);
-  --info: var(--text-info);
   --bookmark: var(--yellow-500);
   --border: var(--border-default);
   --input: var(--grey-300);
@@ -215,7 +211,6 @@
   --color-segmented-active-foreground: var(--text-segmented-active);
   --color-toast: var(--fill-toast);
   --color-toast-foreground: var(--text-on-toast);
-  --color-pressed: var(--fill-pressed);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -231,7 +226,6 @@
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-warning: var(--warning);
-  --color-info: var(--info);
   --color-accent-text: var(--text-accent);
   --color-bookmark: var(--bookmark);
   --color-muted-foreground: var(--muted-foreground);
@@ -272,7 +266,6 @@
   --fill-elevated: var(--grey-800);
   /* 배경(grey-900)과 같으면 빈 화면 아이콘 바탕이나 불러오는 자리 표시가 보이지 않는다. */
   --fill-muted: var(--grey-850);
-  --fill-pressed: var(--grey-800);
   --fill-danger: var(--red-500);
   --fill-dark-weak: rgb(217 217 255 / 0.11);
   --fill-dimmed: rgb(0 0 0 / 0.56);
@@ -286,7 +279,6 @@
   --text-dark-weak: #c3c3c6;
   --text-danger: var(--red-300);
   --text-success: var(--green-400);
-  --text-info: var(--blue-400);
   /* 시트(grey-800) 위에서도 4.5:1을 넘는 가장 진한 파랑. */
   --text-accent: var(--blue-300);
   --border-default: var(--grey-800);
@@ -324,7 +316,6 @@
     --fill-elevated: var(--grey-800);
     /* 배경(grey-900)과 같으면 빈 화면 아이콘 바탕이나 불러오는 자리 표시가 보이지 않는다. */
     --fill-muted: var(--grey-850);
-    --fill-pressed: var(--grey-800);
     --fill-danger: var(--red-500);
     --fill-dark-weak: rgb(217 217 255 / 0.11);
     --fill-dimmed: rgb(0 0 0 / 0.56);
@@ -338,7 +329,6 @@
     --text-dark-weak: #c3c3c6;
     --text-danger: var(--red-300);
     --text-success: var(--green-400);
-    --text-info: var(--blue-400);
     /* 시트(grey-800) 위에서도 4.5:1을 넘는 가장 진한 파랑. */
     --text-accent: var(--blue-300);
     --border-default: var(--grey-800);
@@ -426,7 +416,6 @@
    */
   [data-slot="alert-description"],
   [data-slot="confirm-dialog-description"],
-  [data-slot="dialog-description"],
   [data-slot="empty-description"],
   [data-slot="field-description"],
   [data-slot="field-error"] {

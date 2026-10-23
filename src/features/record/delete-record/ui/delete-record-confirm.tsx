@@ -3,7 +3,7 @@
 import { placesQueryOptions } from "@/entities/place";
 import { RECORDS_QUERY_KEY } from "@/entities/record";
 import { RECORD_COMMENTS_QUERY_KEY } from "@/entities/record-comment";
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
@@ -19,7 +19,7 @@ type DeleteRecordConfirmProps = {
 };
 
 export function DeleteRecordConfirm({ activity, onClose, onDeleted, open, recordId }: DeleteRecordConfirmProps) {
-  const removeRecord = useActionOverride(deleteRecord);
+  const removeRecord = useDemoOverride(deleteRecord);
   const remove = useActionMutation(() => removeRecord(recordId), {
     error: "기록을 삭제하지 못했어요",
     invalidate: [RECORDS_QUERY_KEY, RECORD_COMMENTS_QUERY_KEY, placesQueryOptions.queryKey],

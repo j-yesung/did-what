@@ -59,8 +59,6 @@ const CELL_SIZE = 4.4;
 const CELL_GAP = 1.1;
 const CELL_PITCH = CELL_SIZE + CELL_GAP;
 const LONGITUDE_SCALE = Math.cos((36 * Math.PI) / 180);
-// 기록 점 반지름(지도 단위). 농도가 짙을수록 크게 그려 홈 지도와 지역 지도가 같은 모양으로 보인다.
-export const KOREA_MAP_DOT_RADIUS = { 1: 1.9, 2: 2.6, 3: 3.3, 4: 4 } as const;
 
 export const KOREA_MAP_CELL_STYLE = {
   size: CELL_SIZE,
@@ -297,7 +295,13 @@ const mapRecordsToCells = (cells: KoreaMapCell[], records: RecordLocation[]) => 
 };
 
 const KOREA_MAP_BOUNDS = getBounds(BOUNDARIES.map(({ geometry }) => geometry));
-const REGION_MAP_GRIDS = new Map(REGIONS.map(({ code }) => [code, generateRegionCells(code)]));
+/** 처음 쓸 때 한 번만 만든다. 모듈을 불러오기만 하는 화면(서버 렌더 포함)이 그리드 계산 비용을 내지 않게 한다. */
+const once = <T>(create: () => T) => {
+  let value: T | undefined;
+  return () => (value ??= create());
+};
+
+const getRegionMapGrids = once(() => new Map(REGIONS.map(({ code }) => [code, generateRegionCells(code)])));
 
 const projectPosition = ([longitude, latitude]: Position) => {
   const { minLongitude, maxLongitude, maxLatitude } = KOREA_MAP_BOUNDS;
@@ -311,14 +315,12 @@ const projectPosition = ([longitude, latitude]: Position) => {
 
 /**
  * 본토에서 먼 섬은 첫 화면 틀 안의 빈 바다로 당겨 그린다. 흔히 쓰는 울릉도 박스처럼 실제 자리가 아니다.
- * 백령도·대청도는 경계 데이터에 경기로 들어 있지만 실제로는 인천 옹진군이라 누르면 인천으로 연다.
  */
 const ISLAND_INSETS: {
   east: number;
   latitudeShift: number;
   longitudeShift: number;
   north: number;
-  regionCode?: RegionCode;
   south: number;
   west: number;
 }[] = [
@@ -328,7 +330,6 @@ const ISLAND_INSETS: {
     latitudeShift: 0.2,
     longitudeShift: 1.55,
     north: 38.05,
-    regionCode: "KR-28",
     south: 37.75,
     west: 124.5,
   },
@@ -345,7 +346,7 @@ const projectDisplayPosition = (position: Position) => {
   return projectPosition(inset ? [position[0] + inset.longitudeShift, position[1] + inset.latitudeShift] : position);
 };
 
-const KOREA_MAP_GRID: KoreaMapGrid = (() => {
+const getKoreaMapGrid = once((): KoreaMapGrid => {
   const grid = generateCells(GRID_COLUMNS);
   const cells = grid.cells.map((cell) => {
     if (!findIslandInset([cell.longitude, cell.latitude])) return cell;
@@ -353,7 +354,7 @@ const KOREA_MAP_GRID: KoreaMapGrid = (() => {
     return { ...cell, x: x - CELL_SIZE / 2, y: y - CELL_SIZE / 2 };
   });
   return { ...grid, cells };
-})();
+});
 
 export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation, "latitude" | "longitude">) => {
   if (
@@ -364,14 +365,6 @@ export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation
     return null;
 
   return projectDisplayPosition([longitude, latitude]);
-};
-
-export const getLocationRegionCode = ({ latitude, longitude }: Pick<RecordLocation, "latitude" | "longitude">) => {
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
-  const feature = BOUNDARIES.find(({ geometry }) => containsPoint(geometry, [longitude, latitude]));
-  return feature
-    ? getBoundaryRegionCode(findIslandInset([longitude, latitude])?.regionCode ?? feature.properties.shapeISO)
-    : null;
 };
 
 // 바다 위 모서리도 지도 좌표로 옮겨야 해서 육지 검사 없이 투영한다. 첫 화면에 담을 틀을 잡을 때 쓴다.
@@ -392,7 +385,8 @@ export const getKoreaMapFrame = ({
 };
 
 export const createKoreaMap = (records: RecordLocation[]): KoreaMapGrid => {
-  return { ...KOREA_MAP_GRID, cells: mapRecordsToCells(KOREA_MAP_GRID.cells, records) };
+  const grid = getKoreaMapGrid();
+  return { ...grid, cells: mapRecordsToCells(grid.cells, records) };
 };
 
 export const createRegionActivityMaps = (records: RegionRecordLocation[]): RegionActivityMap[] => {
@@ -403,7 +397,7 @@ export const createRegionActivityMaps = (records: RegionRecordLocation[]): Regio
   }
 
   return REGIONS.map((region) => {
-    const grid = REGION_MAP_GRIDS.get(region.code);
+    const grid = getRegionMapGrids().get(region.code);
     const regionRecords = recordsByRegion.get(region.code) ?? [];
     const visitedSubdivisions = new Set(
       regionRecords.map(({ administrativeCode }) =>

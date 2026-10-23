@@ -8,13 +8,13 @@ import {
   formatRecordRegionLabels,
   formatRecordTimelineDate,
   normalizeRecordCategory,
+  prefetchRecordDetail,
   RECORD_CATEGORY_DOT,
   RecordCategoryBadge,
   type RecordSummary,
-  recordDetailQueryOptions,
-  recordSummaryQueryKey,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
+import { isPlainLeftClick } from "@/shared/lib/navigation/use-press-navigate";
 import { cn } from "@/shared/lib/utils";
 import { Button, buttonVariants } from "@/shared/ui/button";
 import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
@@ -34,13 +34,8 @@ type RecordDayListProps = {
 export function RecordDayList({ date, onRecordOpen, records }: RecordDayListProps) {
   const queryClient = useQueryClient();
 
-  const cacheRecordSummary = (record: RecordSummary) => {
-    queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
-  };
-
   const prefetchDetail = (record: RecordSummary) => {
-    cacheRecordSummary(record);
-    void queryClient.prefetchQuery(recordDetailQueryOptions(record.id));
+    prefetchRecordDetail(queryClient, record.id, record);
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(record.id));
   };
 
@@ -76,17 +71,8 @@ export function RecordDayList({ date, onRecordOpen, records }: RecordDayListProp
                     )}
                     href={`/records/${record.id}`}
                     onClick={(event) => {
-                      if (
-                        event.defaultPrevented ||
-                        event.button !== 0 ||
-                        event.altKey ||
-                        event.ctrlKey ||
-                        event.metaKey ||
-                        event.shiftKey
-                      )
-                        return;
+                      if (!isPlainLeftClick(event)) return;
                       event.preventDefault();
-                      cacheRecordSummary(record);
                       onRecordOpen(record);
                     }}
                     onPointerDown={(event) => {

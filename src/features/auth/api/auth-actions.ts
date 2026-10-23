@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { RedirectType, redirect } from "next/navigation";
 
 import { ensureProfile } from "@/entities/profile";
+import { deletePushSubscription } from "@/features/push-notification/server";
 import { createClient } from "@/shared/api/supabase/server";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 
@@ -34,11 +35,16 @@ export const login = async (formData: FormData): Promise<AuthActionState> => {
   redirect(toSafeReturnTo(formData.get("returnTo")), RedirectType.replace);
 };
 
-export const logout = async () => {
+/** 이 기기의 푸시 구독도 함께 지운다. 남겨 두면 로그아웃한 기기로 이전 계정의 알림이 가고, 다른 계정은 이 기기로 알림을 켤 수 없다. */
+export const logout = async (endpoint?: string | null) => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
 
-  if (data.user) await supabase.auth.signOut();
+  if (data.user) {
+    // 구독 삭제는 부가 작업이라 실패해도 로그아웃은 진행한다. 남은 행은 발송 때 만료(404·410)로 정리된다.
+    await deletePushSubscription({ endpoint, supabase });
+    await supabase.auth.signOut();
+  }
   redirect("/login");
 };
 

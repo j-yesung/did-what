@@ -1,6 +1,6 @@
 "use client";
 
-import { type SubmitEvent, useEffect, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { SearchField } from "@/shared/ui/search-field";
@@ -13,8 +13,13 @@ type PlaceSearchFormProps = {
 
 export function PlaceSearchForm({ query, searchError, onSearch }: PlaceSearchFormProps) {
   const [keyword, setKeyword] = useState(query);
+  const [syncedQuery, setSyncedQuery] = useState(query);
+  // 바깥에서 검색어를 바꾸면(초기화 등) 입력칸도 따라간다.
+  if (query !== syncedQuery) {
+    setSyncedQuery(query);
+    setKeyword(query);
+  }
   const fieldError = keyword === query ? searchError : undefined;
-  useEffect(() => setKeyword(query), [query]);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();

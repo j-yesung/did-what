@@ -1,12 +1,12 @@
 import { ArrowUpIcon } from "@phosphor-icons/react";
 
 import { MemberAvatar } from "@/entities/member";
+import { MAX_COMMENT_LENGTH } from "@/entities/record-comment";
 import { Button } from "@/shared/ui/button";
 import { Textarea } from "@/shared/ui/textarea";
 
-const MAX_COMMENT_LENGTH = 1000;
 // 한도에 가까워졌을 때만 글자 수를 보여준다. 그 전에는 짧은 댓글에 숫자가 방해가 된다.
-const COUNTER_FROM = 900;
+const COUNTER_FROM = MAX_COMMENT_LENGTH - 100;
 
 type CommentCreateFormProps = {
   disabled: boolean;

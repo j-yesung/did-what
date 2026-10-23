@@ -1,3 +1,3 @@
 import "server-only";
 
-export { getRecord, getRecordLocations } from "./api/server-queries";
+export { getRecord } from "./api/server-queries";

@@ -4,12 +4,10 @@ import { type Dispatch, type ReactNode, type SetStateAction, useState } from "re
 
 import type { RegionActivityMap } from "@/entities/region";
 import { cn } from "@/shared/lib/utils";
-import { BottomSheet } from "@/shared/ui/bottom-sheet";
+import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 
 import type { MapRecord } from "../model/record-map-points";
 import { RegionRecordList } from "./region-record-list";
-
-const SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
 
 export type RegionRecordDetailRenderer = (props: {
   draft: string;
@@ -20,7 +18,6 @@ export type RegionRecordDetailRenderer = (props: {
 
 type RegionRecordsBottomSheetProps = {
   detailRecordId: string | null;
-  onBeforeDetailOpen: () => void;
   onCloseComplete: () => void;
   onDetailBack: () => void;
   onOpenChange: (open: boolean) => void;
@@ -35,7 +32,6 @@ type RegionRecordsBottomSheetProps = {
 
 export function RegionRecordsBottomSheet({
   detailRecordId,
-  onBeforeDetailOpen,
   onCloseComplete,
   onDetailBack,
   onOpenChange,
@@ -62,11 +58,6 @@ export function RegionRecordsBottomSheet({
     setDirection(null);
     onCloseComplete();
   };
-  const handleRecordOpen = (recordId: string) => {
-    onBeforeDetailOpen();
-    onRecordOpen(recordId);
-  };
-
   return (
     <BottomSheet
       onOpenChange={onOpenChange}
@@ -81,7 +72,7 @@ export function RegionRecordsBottomSheet({
             "[--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
             isDetail && "bottom-(--drawer-keyboard-inset,0px)",
           )}
-          style={{ height: SHEET_HEIGHT }}
+          style={{ height: FULL_SHEET_HEIGHT }}
         >
           <div className="relative flex min-h-0 flex-1 flex-col">
             {/* 상세에 있는 동안에도 목록을 그대로 두어, 돌아왔을 때 보던 스크롤 위치에서 이어 본다. */}
@@ -97,7 +88,7 @@ export function RegionRecordsBottomSheet({
                 region={region}
                 subregion={subregion}
                 onSubregionChange={onSubregionChange}
-                onRecordOpen={handleRecordOpen}
+                onRecordOpen={onRecordOpen}
                 isDetail={isDetail}
               />
             </div>

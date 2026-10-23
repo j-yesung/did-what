@@ -23,7 +23,6 @@ const buttonVariants = cva(
       color: {
         primary: "",
         danger: "",
-        light: "",
         dark: "",
       },
       size: {
@@ -53,11 +52,6 @@ const buttonVariants = cva(
         class: "bg-danger-fill text-danger-fill-foreground focus-visible:ring-danger-fill/30",
       },
       {
-        color: "light",
-        variant: "fill",
-        class: "bg-light text-light-foreground",
-      },
-      {
         color: "dark",
         variant: "fill",
         class: "bg-dark text-dark-foreground",
@@ -71,11 +65,6 @@ const buttonVariants = cva(
         color: "danger",
         variant: "weak",
         class: "bg-destructive/10 text-destructive aria-expanded:bg-destructive/15",
-      },
-      {
-        color: "light",
-        variant: "weak",
-        class: "bg-light/10 text-light aria-expanded:bg-light/15",
       },
       {
         color: "dark",

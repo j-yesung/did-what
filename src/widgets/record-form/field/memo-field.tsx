@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { MAX_MEMO_LENGTH } from "@/entities/record";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Textarea } from "@/shared/ui/textarea";
 
@@ -22,7 +23,7 @@ export function RecordMemoField({ initialMemo = "", memoError }: RecordMemoField
         className="min-h-24 resize-none"
         defaultValue={initialMemo}
         id="memo"
-        maxLength={500}
+        maxLength={MAX_MEMO_LENGTH}
         name="memo"
         onChange={(event) => setMemoLength(event.currentTarget.value.length)}
         placeholder="더 남기고 싶은 이야기가 있다면 적어 주세요."
@@ -35,7 +36,7 @@ export function RecordMemoField({ initialMemo = "", memoError }: RecordMemoField
           className="invisible text-right tabular-nums group-focus-within/field:visible"
           id="memo-count"
         >
-          {memoLength}/500
+          {memoLength}/{MAX_MEMO_LENGTH}
         </FieldDescription>
       </div>
       <FieldError id="memo-error">{memoError}</FieldError>

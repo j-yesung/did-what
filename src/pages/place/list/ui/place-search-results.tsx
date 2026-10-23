@@ -2,31 +2,31 @@
 
 import { useState } from "react";
 
+import { ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { placeSearchInfiniteQueryOptions, placesQueryOptions, type SavedPlaceRow } from "@/entities/place";
+import { placeSearchInfiniteQueryOptions, placesQueryOptions } from "@/entities/place";
 import { type CreatePlaceInput, PlaceSearchSaveButton } from "@/features/place/save-place";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
 import { Badge } from "@/shared/ui/badge";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
+import { IconButton } from "@/shared/ui/icon-button";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
-import { ResetButton } from "@/shared/ui/reset-button";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { getSavedKakaoPlaces } from "../model/get-saved-kakao-places";
 
 type PlaceSearchResultsProps = {
   onReset: () => void;
-  initialPlaces: SavedPlaceRow[];
   query: string;
 };
 
-export function PlaceSearchResults({ onReset, initialPlaces, query }: PlaceSearchResultsProps) {
-  const savedPlacesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
+export function PlaceSearchResults({ onReset, query }: PlaceSearchResultsProps) {
+  const savedPlacesQuery = useQuery(placesQueryOptions);
   const resultsQuery = useInfiniteQuery(placeSearchInfiniteQueryOptions({ query }));
 
   const [selectedPlaces, setSelectedPlaces] = useState<Map<string, CreatePlaceInput>>(() => new Map());
@@ -60,13 +60,16 @@ export function PlaceSearchResults({ onReset, initialPlaces, query }: PlaceSearc
           <h2 className="min-w-0 font-bold text-lg" id="place-search-results-title">
             ‘{query}’ 검색 결과 {resultsQuery.data?.pages[0]?.pageableCount ?? 0}곳
           </h2>
-          <ResetButton
+          <IconButton
             aria-label="장소 검색 초기화"
             className="mt-0.5"
-            onReset={() => {
+            icon={ArrowCounterClockwiseIcon}
+            onClick={() => {
               setSelectedPlaces(new Map());
               onReset();
             }}
+            size="sm"
+            type="button"
           />
         </div>
 

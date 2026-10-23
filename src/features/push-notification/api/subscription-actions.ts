@@ -2,21 +2,21 @@
 
 import { requireMember } from "@/entities/member/server";
 import { requireUser } from "@/shared/api/supabase/require-user";
+import type { ActionState } from "@/shared/lib/server-action/action-state";
 
-import type { PushActionState, PushSubscriptionInput } from "../model/push-subscription";
+import { isPushEndpoint, type PushSubscriptionInput } from "../model/push-subscription";
 
-const MAX_ENDPOINT_LENGTH = 1000;
 const MAX_KEY_LENGTH = 200;
 
 const isValid = ({ auth, endpoint, p256dh }: PushSubscriptionInput) => {
-  if (!endpoint.startsWith("https://") || endpoint.length > MAX_ENDPOINT_LENGTH) return false;
+  if (!isPushEndpoint(endpoint)) return false;
   if (!p256dh || p256dh.length > MAX_KEY_LENGTH) return false;
   if (!auth || auth.length > MAX_KEY_LENGTH) return false;
 
   return true;
 };
 
-export const saveSubscription = async (input: PushSubscriptionInput): Promise<PushActionState> => {
+export const saveSubscription = async (input: PushSubscriptionInput): Promise<ActionState> => {
   if (!isValid(input)) return { message: "알림 정보를 확인할 수 없습니다.", status: "error" };
 
   const { member, supabase, user } = await requireMember();
@@ -35,7 +35,7 @@ export const saveSubscription = async (input: PushSubscriptionInput): Promise<Pu
   return { status: "success" };
 };
 
-export const removeSubscription = async (endpoint: string): Promise<PushActionState> => {
+export const removeSubscription = async (endpoint: string): Promise<ActionState> => {
   const { supabase } = await requireUser();
   const { error } = await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
 

@@ -4,7 +4,7 @@ import { useEffect, useOptimistic, useRef, useState, useTransition } from "react
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 
@@ -13,7 +13,7 @@ import { removeSubscription, saveSubscription } from "../api/subscription-action
 
 export const usePushToggle = () => {
   const queryClient = useQueryClient();
-  const isSupported = useActionOverride(isPushSupported);
+  const isSupported = useDemoOverride(isPushSupported);
 
   const [hydrated, setHydrated] = useState(false);
   const [unsupported, setUnsupported] = useState(false);

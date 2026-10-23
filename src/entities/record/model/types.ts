@@ -1,3 +1,5 @@
+import type { ActionState } from "@/shared/lib/server-action/action-state";
+
 import type { RecordFieldErrors } from "./record-form";
 
 export type RecordSummary = {
@@ -18,8 +20,4 @@ export type RecordSummary = {
   weather: string;
 };
 
-export type RecordFormState = {
-  fieldErrors?: RecordFieldErrors;
-  message?: string;
-  status: "error" | "success";
-};
+export type RecordFormState = ActionState<{ fieldErrors?: RecordFieldErrors }>;

@@ -1,3 +1,5 @@
+import { isRecord } from "@/shared/lib/validation/is-record";
+
 import type { KakaoPlace, KakaoSearchScope } from "./types.ts";
 import { normalizeKakaoPage, validateKakaoPlaceId, validateKakaoQuery } from "./validation.ts";
 
@@ -5,10 +7,6 @@ import { normalizeKakaoPage, validateKakaoPlaceId, validateKakaoQuery } from "./
 const KAKAO_SEARCH_RADIUS = 20_000;
 const KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
 const SEARCH_ERROR_MESSAGE = "장소를 검색하지 못했습니다. 잠시 후 다시 시도해 주세요.";
-
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null;
-};
 
 export const parseKakaoSearchResponse = (
   payload: unknown,

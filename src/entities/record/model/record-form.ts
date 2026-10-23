@@ -4,6 +4,7 @@ import { getRecordRegionKey } from "@/entities/record/model/record-region";
 import { validateRecordContent, validateRecordDates } from "@/entities/record/model/record-validation";
 import { isRecordWeather, type RecordWeather } from "@/entities/record/model/weather";
 import type { KakaoSearchScope } from "@/shared/api/kakao-local";
+import { KAKAO_SEARCH_MAX_PAGE, validateKakaoPlaceId, validateKakaoQuery } from "@/shared/api/kakao-local/validation";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 export type RecordPlaceReference =
@@ -65,7 +66,6 @@ export const readRecordInput = (formData: FormData): RecordInputValues => {
 };
 
 const REGION_CODE_PATTERN = /^\d{10}$/;
-const KAKAO_PLACE_ID_PATTERN = /^\d{1,100}$/;
 
 /** 지역을 고르기 전에 검색했다면 기준점이 없다. 없는 경우와 형태가 깨진 경우를 구분해야 해서 실패는 false로 돌려준다. */
 const parseScope = (value: unknown): KakaoSearchScope | null | false => {
@@ -111,14 +111,13 @@ const parsePlaces = (value: string): RecordPlaceReference[] | null => {
         "query" in item &&
         "page" in item &&
         typeof item.providerPlaceId === "string" &&
-        KAKAO_PLACE_ID_PATTERN.test(item.providerPlaceId) &&
+        validateKakaoPlaceId(item.providerPlaceId).valid &&
         typeof item.query === "string" &&
-        item.query.trim().length >= 1 &&
-        item.query.trim().length <= 100 &&
+        validateKakaoQuery(item.query).valid &&
         typeof item.page === "number" &&
         Number.isInteger(item.page) &&
         item.page >= 1 &&
-        item.page <= 45
+        item.page <= KAKAO_SEARCH_MAX_PAGE
       ) {
         const scope = parseScope("scope" in item ? item.scope : null);
         if (scope === false) return null;

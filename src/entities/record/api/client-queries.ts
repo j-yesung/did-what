@@ -1,4 +1,7 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { createClient } from "@/shared/api/supabase/client";
+import type { Database } from "@/shared/api/supabase/database.types";
 
 import type { RecordFilters } from "../model/record-filters";
 import {
@@ -23,8 +26,9 @@ export const fetchRecord = async (recordId: string) => {
   return data;
 };
 
-export const fetchRecordLocations = async () => {
-  const { data, error } = await createClient()
+// 지도 레이아웃이 서버에서 미리 받을 수 있게 클라이언트를 받는다.
+export const fetchRecordLocations = async (client: SupabaseClient<Database>) => {
+  const { data, error } = await client
     .from("records")
     .select(RECORD_LOCATION_COLUMNS)
     .order("recorded_at", { ascending: false })

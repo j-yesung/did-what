@@ -4,3 +4,7 @@
  */
 export const MAX_VISITED_REGIONS = 10;
 export const MAX_VISITED_PLACES = 10;
+
+/** 기록 제목과 메모의 글자 수. 입력칸의 maxLength와 서버 검증이 같은 값을 쓴다. */
+export const MAX_ACTIVITY_LENGTH = 120;
+export const MAX_MEMO_LENGTH = 500;

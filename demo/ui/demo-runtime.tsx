@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { AppLoading } from "@/app/ui/app-loading";
 import { THEME_OPTIONS } from "@/features/switch-theme/model/theme";
 import { applyTheme } from "@/features/switch-theme/model/theme-preference";
-import { ActionOverrideProvider } from "@/shared/lib/action-override";
+import { DemoOverrideProvider } from "@/shared/lib/demo-override";
 
 import { createDemoOverrides, createDemoRecordActions, getCurrentDemoMember } from "../lib/demo-actions";
 import { toAppHref } from "../lib/demo-href";
@@ -138,12 +138,12 @@ function DemoRuntime({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ActionOverrideProvider overrides={overrides}>
+      <DemoOverrideProvider overrides={overrides}>
         <DemoContext.Provider value={recordActions}>
           <DemoRouterBridge>{children}</DemoRouterBridge>
           {embedded ? null : <DemoBadge />}
         </DemoContext.Provider>
-      </ActionOverrideProvider>
+      </DemoOverrideProvider>
     </QueryClientProvider>
   );
 }

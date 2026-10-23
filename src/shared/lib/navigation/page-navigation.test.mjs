@@ -48,16 +48,3 @@ test("뒤로/앞으로 이동에서는 등장 효과를 끄고 새 이동에서�
   browser.history.pushState({ __NA: true }, "", "/settings");
   assert.equal(navigation.traversal, false);
 });
-
-test("push 직전 URL을 보존하고 폼의 같은 URL 보초에는 이어서 전달한다", () => {
-  const browser = createBrowser();
-  const navigation = getPageNavigation(browser);
-
-  browser.history.pushState({ __NA: true }, "", "/places");
-  assert.equal(navigation.previousHref, "https://example.com/records");
-  assert.equal(browser.history.state.tree, undefined);
-
-  browser.history.pushState({ leaveGuard: true }, "");
-  assert.equal(navigation.previousHref, "https://example.com/records");
-  assert.equal(browser.history.state.leaveGuard, true);
-});

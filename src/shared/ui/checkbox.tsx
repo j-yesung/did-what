@@ -5,11 +5,9 @@ import { CheckIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
 
-type CheckboxVariant = "check" | "circle" | "square";
+type CheckboxVariant = "circle" | "square";
 
 const CHECKBOX_VARIANT: Record<CheckboxVariant, string> = {
-  check:
-    "border-0! bg-transparent! text-foreground! data-checked:border-transparent! data-checked:bg-transparent! data-checked:text-foreground! dark:bg-transparent! dark:data-checked:bg-transparent!",
   circle: "rounded-full",
   square: "rounded-[4px]",
 };

@@ -15,7 +15,7 @@ import { Input } from "@/shared/ui/input";
 import { TextButton } from "@/shared/ui/text-button";
 
 import { setupMembers } from "../api/setup-members";
-import { MIN_MEMBER_COUNT } from "../model/member-setup";
+import { MAX_MEMBER_NAME_LENGTH, MIN_MEMBER_COUNT } from "../model/member-setup";
 
 export function MemberSetupForm() {
   const [members, setMembers] = useState([
@@ -66,7 +66,7 @@ export function MemberSetupForm() {
                     autoComplete="name"
                     className="mt-2 h-11"
                     id={`member-${index}`}
-                    maxLength={100}
+                    maxLength={MAX_MEMBER_NAME_LENGTH}
                     name="memberName"
                     onChange={(event) =>
                       setMembers((current) =>

@@ -1,3 +1,4 @@
+export { fetchRecordLocations } from "./api/client-queries";
 export {
   RECORD_DETAILS_QUERY_KEY,
   RECORDS_QUERY_KEY,
@@ -6,8 +7,8 @@ export {
   recordListQueryOptions,
   recordLocationsQueryOptions,
   recordMonthBoundsQueryOptions,
-  recordSummaryQueryKey,
 } from "./api/queries";
+export { getRecordSummary, pickNewerRecord, prefetchRecordDetail } from "./api/record-summary";
 export {
   DEFAULT_RECORD_CATEGORY,
   getRecordCategoryLabel,
@@ -18,7 +19,7 @@ export {
   RECORD_CATEGORY_OPTIONS,
   type RecordCategory,
 } from "./model/category";
-export { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";
+export { MAX_ACTIVITY_LENGTH, MAX_MEMO_LENGTH, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";
 export {
   hasRecordFilters,
   parseRecordFilters,
@@ -62,6 +63,5 @@ export { RecordBadges, RecordCategoryBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RecordCreateButton } from "./ui/record-create-button";
 export { RecordDetailHeader } from "./ui/record-detail-header";
-export { RecordTimeline } from "./ui/record-timeline";
 export { RecordTimelineItems } from "./ui/record-timeline-items";
 export { WeatherIcon } from "./ui/weather-icon";

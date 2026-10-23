@@ -9,6 +9,13 @@ export const getAppliedTheme = (): Theme => {
   return "system";
 };
 
+/** 화면 모드는 html 클래스에 있다. 바뀌면 다시 읽는다. */
+export const subscribeTheme = (onChange: () => void) => {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributeFilter: ["class"] });
+  return () => observer.disconnect();
+};
+
 export const applyTheme = (theme: Theme) => {
   const root = document.documentElement;
   root.classList.remove("light", "dark");

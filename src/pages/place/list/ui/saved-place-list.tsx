@@ -64,11 +64,11 @@ function SavedPlaceListItem({ onDetailPrefetch, place }: SavedPlaceListItemProps
   );
 }
 
-export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow[] }) {
+export function SavedPlaceList() {
   const [query, setQuery] = useState("");
   const router = useRouter();
   const queryClient = useQueryClient();
-  const placesQuery = useQuery({ ...placesQueryOptions, initialData: initialPlaces });
+  const placesQuery = useQuery(placesQueryOptions);
 
   const prefetchDetail = (place: SavedPlaceRow) => {
     queryClient.setQueryData(placeQueryKey(place.id), place);
@@ -77,7 +77,7 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
     void queryClient.prefetchQuery(placeRecordsQueryOptions(place.id));
   };
 
-  const places = placesQuery.data;
+  const places = placesQuery.data ?? [];
   const normalizedQuery = query.trim().toLocaleLowerCase("ko-KR");
   const visiblePlaces = places.filter((place) =>
     [place.name, place.address, place.region_name].some((value) =>
@@ -94,7 +94,7 @@ export function SavedPlaceList({ initialPlaces }: { initialPlaces: SavedPlaceRow
         placeholder="저장한 장소 이름 또는 주소"
         value={query}
       />
-      {placesQuery.isError ? (
+      {placesQuery.isPending ? null : placesQuery.isError ? (
         <LoadErrorAlert
           onRetry={() => void placesQuery.refetch()}
           retrying={placesQuery.isFetching}

@@ -22,7 +22,7 @@ import {
   recordCommentListQueryOptions,
   reduceOptimisticComments,
 } from "@/entities/record-comment";
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { showToast } from "@/shared/lib/toast";
 
 import { createComment, deleteComment } from "../api/comment-actions";
@@ -82,8 +82,8 @@ export const useRecordComments = ({
   const submittingRef = useRef(false);
   const scrolledHashRef = useRef("");
   const queryClient = useQueryClient();
-  const createCommentAction = useActionOverride(createComment);
-  const deleteCommentAction = useActionOverride(deleteComment);
+  const createCommentAction = useDemoOverride(createComment);
+  const deleteCommentAction = useDemoOverride(deleteComment);
   const queryOptions = recordCommentListQueryOptions(recordId);
   const commentsQuery = useInfiniteQuery(queryOptions);
   const comments = useMemo(

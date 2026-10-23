@@ -3,12 +3,11 @@
 import { CheckIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 
-import { type AccountMember, getMemberAvatarTone, getMemberInitial } from "@/entities/member";
-import { useActionOverride } from "@/shared/lib/action-override";
+import { type AccountMember, MemberAvatar } from "@/entities/member";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
-import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -22,7 +21,7 @@ type MemberSelectProps = {
 };
 
 export function MemberSelect({ currentMemberId, destination, members, onSelected }: MemberSelectProps) {
-  const selectMemberAction = useActionOverride(selectMember);
+  const selectMemberAction = useDemoOverride(selectMember);
 
   const select = useMutation({
     mutationFn: async (memberId: string) => {
@@ -71,15 +70,7 @@ export function MemberSelect({ currentMemberId, destination, members, onSelected
                 onClick={() => select.mutate(member.id)}
                 type="button"
               >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "flex size-13 shrink-0 items-center justify-center rounded-2xl font-semibold text-xl",
-                    getMemberAvatarTone(member.id),
-                  )}
-                >
-                  {getMemberInitial(member.name)}
-                </span>
+                <MemberAvatar className="size-13 rounded-2xl text-xl" memberId={member.id} name={member.name} />
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="truncate font-semibold text-base">{member.name}</span>
                   {selected ? <span className="text-muted-foreground text-xs">현재 사용 중</span> : null}

@@ -59,6 +59,7 @@ src/shared/     # 도메인에 의존하지 않는 공용 코드 (ui, lib, api)
 
 - `@/` alias를 쓴다: `@/shared/ui/button`.
 - Node 테스트도 `pnpm test`의 alias loader를 통해 같은 `@/` alias를 사용한다.
+- 테스트하는 `model/` 파일은 `.tsx`가 섞인 slice의 `index.ts` 대신 순수 모듈 경로로 import한다. `node --test`는 JSX를 읽지 못한다.
 
 ## 주석
 
