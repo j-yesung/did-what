@@ -35,8 +35,8 @@ export function CommentCreateForm({
         onSubmit();
       }}
     >
-      <div className="flex min-h-14 items-center gap-3 rounded-3xl bg-surface p-1.5">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div className="flex min-h-14 items-start gap-3 rounded-3xl bg-surface p-1.5">
+        <div className="flex min-w-0 flex-1 items-start gap-3 pt-1">
           <MemberAvatar memberId={memberId} name={memberName} />
           <label className="sr-only" htmlFor="record-comment-body">
             {memberName}으로 댓글 남기기
