@@ -3,8 +3,3 @@ export type CreatePlaceInput = {
   placeId: string;
   query: string;
 };
-
-export type PlaceActionState = {
-  status: "idle" | "error" | "success";
-  message?: string;
-};

@@ -8,6 +8,7 @@ import { XIcon } from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
 
 import { hasRecordFilters, isRecordCategory, RECORD_CATEGORY_OPTIONS, type RecordFilters } from "@/entities/record";
+import { formatDateRange } from "@/shared/lib/date/format-date";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { SearchField } from "@/shared/ui/search-field";
@@ -21,20 +22,19 @@ type RecordFilterFormProps = {
 
 const formatFilterDate = (value: string) => format(parseISO(value), "M/d");
 
-const getPeriodChipLabel = ({ from, to }: Pick<RecordFilters, "from" | "to">) => {
-  if (from && to) return from === to ? formatFilterDate(from) : `${formatFilterDate(from)} ~ ${formatFilterDate(to)}`;
-  if (from) return `${formatFilterDate(from)}부터`;
-  return `${formatFilterDate(to)}까지`;
-};
+const getPeriodChipLabel = (period: Pick<RecordFilters, "from" | "to">) => formatDateRange(period, formatFilterDate);
 
 export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormProps) {
   const [query, setQuery] = useState(filters.query);
+  const [syncedQuery, setSyncedQuery] = useState(filters.query);
+  // 뒤로가기나 '전체 기록 보기'로 주소의 검색어가 바뀌면 입력칸도 따라간다.
+  if (filters.query !== syncedQuery) {
+    setSyncedQuery(filters.query);
+    setQuery(filters.query);
+  }
   const updateFilters = (overrides: Partial<RecordFilters>) => onFiltersChange({ ...filters, ...overrides });
 
-  useEffect(() => {
-    setQuery(filters.query);
-  }, [filters.query]);
-
+  // 앱을 떠났다 돌아오면 필터 없는 목록에서 시작한다.
   useEffect(() => {
     if (!hasRecordFilters(filters)) return;
 

@@ -6,6 +6,7 @@ import type { Database } from "@/shared/api/supabase/database.types";
 
 import {
   getNotificationCursorFilter,
+  getRecordNotificationHref,
   NOTIFICATION_PAGE_SIZE,
   type NotificationCursor,
 } from "../model/notification-page";
@@ -45,9 +46,7 @@ export const fetchNotificationPage = async (
 export type NotificationItem = Awaited<ReturnType<typeof fetchNotificationPage>>["notifications"][number];
 
 export const getNotificationHref = (notification: NotificationItem) => {
-  if (!notification.record_id) return null;
-  const recordHref = `/records/${notification.record_id}?from=notification`;
-  return notification.comment_id ? `${recordHref}#comment-${notification.comment_id}` : recordHref;
+  return notification.record_id ? getRecordNotificationHref(notification.record_id, notification.comment_id) : null;
 };
 
 export const notificationListQueryOptions = (memberId: string) => {

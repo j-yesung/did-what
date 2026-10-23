@@ -5,14 +5,10 @@ import { after } from "next/server";
 import { requireMember } from "@/entities/member/server";
 import { normalizeCommentBody, type RecordComment } from "@/entities/record-comment";
 import { sendCommentPush } from "@/features/push-notification/server";
+import type { ActionState } from "@/shared/lib/server-action/action-state";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-type CommentActionState = {
-  comment?: RecordComment;
-  commentId?: string;
-  message?: string;
-  status: "error" | "success";
-};
+type CommentActionState = ActionState<{ comment?: RecordComment; commentId?: string }>;
 
 type CreateCommentInput = {
   body: string;

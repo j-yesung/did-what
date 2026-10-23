@@ -3,11 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/shared/api/supabase/require-user";
+import type { ActionState } from "@/shared/lib/server-action/action-state";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-type DeleteRecordState = { message?: string; status: "error" | "success" };
-
-export const deleteRecord = async (recordId: string): Promise<DeleteRecordState> => {
+export const deleteRecord = async (recordId: string): Promise<ActionState> => {
   if (!isUuid(recordId)) return { message: "삭제할 기록을 확인할 수 없습니다.", status: "error" };
 
   const { supabase } = await requireUser();

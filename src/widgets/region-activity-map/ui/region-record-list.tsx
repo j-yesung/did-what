@@ -5,9 +5,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
-import { RecordCategoryBadge, recordDetailQueryOptions } from "@/entities/record";
+import { prefetchRecordDetail, RecordCategoryBadge } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { type RegionActivityMap, RegionMiniMap } from "@/entities/region";
+import { isPlainLeftClick } from "@/shared/lib/navigation/use-press-navigate";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, buttonVariants } from "@/shared/ui/button";
@@ -46,7 +47,7 @@ export function RegionRecordList({
   // 누르는 순간 다음 화면 데이터를 받기 시작해, 넘어갔을 때 빈 화면이 잠깐 보이지 않게 한다.
   const prefetchRecord = (recordId: string) => {
     router.prefetch(`/records/${recordId}`);
-    void queryClient.prefetchQuery(recordDetailQueryOptions(recordId));
+    prefetchRecordDetail(queryClient, recordId);
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   };
   const visibleRecords = selectedSubregion
@@ -133,8 +134,7 @@ export function RegionRecordList({
                       )}
                       href={`/records/${record.id}`}
                       onClick={(event) => {
-                        if (event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
-                          return;
+                        if (!isPlainLeftClick(event)) return;
                         event.preventDefault();
                         onRecordOpen(record.id);
                       }}

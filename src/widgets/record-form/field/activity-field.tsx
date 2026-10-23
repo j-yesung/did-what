@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_ACTIVITY_LENGTH } from "@/entities/record";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 
@@ -18,7 +19,7 @@ export function RecordActivityField({ activityError, initialActivity }: RecordAc
         className="h-12"
         defaultValue={initialActivity}
         id="activity"
-        maxLength={120}
+        maxLength={MAX_ACTIVITY_LENGTH}
         name="activity"
         // 한 줄 제목에서 Return은 저장이 아니라 메모로 넘어가는 뜻이다. 한글 조합 중 Enter는 글자 확정이라 건드리지 않는다.
         enterKeyHint="next"

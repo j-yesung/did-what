@@ -9,13 +9,11 @@ import {
   verifyKakaoPlaces,
 } from "@/shared/api/kakao-local/server";
 import { requireUser } from "@/shared/api/supabase/require-user";
+import type { ActionState } from "@/shared/lib/server-action/action-state";
+import { isRecord } from "@/shared/lib/validation/is-record";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-import type { CreatePlaceInput, PlaceActionState } from "../model/place-form";
-
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null;
-};
+import type { CreatePlaceInput } from "../model/place-form";
 
 const normalizeCreatePlaceInput = (value: unknown): CreatePlaceInput | null => {
   if (!isRecord(value) || typeof value.placeId !== "string" || typeof value.query !== "string") return null;
@@ -31,7 +29,7 @@ const normalizeCreatePlaceInput = (value: unknown): CreatePlaceInput | null => {
   };
 };
 
-export const createPlaces = async (inputs: CreatePlaceInput[]): Promise<PlaceActionState> => {
+export const createPlaces = async (inputs: CreatePlaceInput[]): Promise<ActionState> => {
   const normalizedInputs = Array.isArray(inputs) ? inputs.map(normalizeCreatePlaceInput) : [];
   if (!normalizedInputs.length || normalizedInputs.some((input) => !input)) {
     return { message: "저장할 장소를 다시 선택해 주세요.", status: "error" };
@@ -40,14 +38,8 @@ export const createPlaces = async (inputs: CreatePlaceInput[]): Promise<PlaceAct
   const validInputs = normalizedInputs.filter((input): input is CreatePlaceInput => input !== null);
   const uniqueInputs = [...new Map(validInputs.map((input) => [input.placeId, input])).values()];
   const { supabase } = await requireUser();
-  const groups = new Map<string, CreatePlaceInput[]>();
-  for (const input of uniqueInputs) {
-    const key = JSON.stringify([input.query, input.page]);
-    const group = groups.get(key);
-    if (group) group.push(input);
-    else groups.set(key, [input]);
-  }
-  const verifiedPlaces = await verifyKakaoPlaces([...groups.values()].flat());
+  // 같은 검색 조건은 verifyKakaoPlaces가 한 번만 조회한다.
+  const verifiedPlaces = await verifyKakaoPlaces(uniqueInputs);
   if (verifiedPlaces.some((result) => result.error)) {
     return { message: "선택한 장소를 확인할 수 없습니다. 다시 검색해 주세요.", status: "error" };
   }
@@ -75,7 +67,7 @@ export const createPlaces = async (inputs: CreatePlaceInput[]): Promise<PlaceAct
   return { status: "success" };
 };
 
-export const setPlaceSaved = async (placeId: string, saved: boolean): Promise<PlaceActionState> => {
+export const setPlaceSaved = async (placeId: string, saved: boolean): Promise<ActionState> => {
   if (!isUuid(placeId)) return { message: "장소를 확인할 수 없어요.", status: "error" };
 
   const { supabase, user } = await requireUser();

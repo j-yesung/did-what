@@ -62,7 +62,7 @@ const setup = () => {
     react,
     "@tanstack/react-query": { useMutation: ({ mutationFn }) => ({ mutateAsync: mutationFn }) },
     "@/entities/record": { getRecordRegionKey, MAX_VISITED_PLACES: 20 },
-    "@/shared/lib/action-override": { useActionOverride: (action) => action },
+    "@/shared/lib/demo-override": { useDemoOverride: (action) => action },
     "@/shared/lib/toast": { showToast() {} },
     "../api/resolve-record-location": {
       resolveRecordPlace: () => new Promise((resolve, reject) => requests.push({ resolve, reject })),

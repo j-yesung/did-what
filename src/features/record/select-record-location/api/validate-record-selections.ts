@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import {
   MAX_VISITED_REGIONS,
   mergeVisitedRegions,
@@ -8,11 +10,9 @@ import {
 } from "@/entities/record";
 import { getRegionCode } from "@/entities/region/model/region";
 import { searchKakaoRegions, verifyKakaoPlaces } from "@/shared/api/kakao-local/server";
-import type { requireUser } from "@/shared/api/supabase/require-user";
+import type { Database } from "@/shared/api/supabase/database.types";
 
 import { toShortRegionName } from "../model/location-picker";
-
-type SupabaseClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
 
 type ExistingPlaceRow = {
   id: string;
@@ -65,7 +65,11 @@ const verifyRegion = async (code: string, name: string) => {
   );
 };
 
-const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: string, supabase: SupabaseClient) => {
+const verifyRecordPlaces = async (
+  references: RecordPlaceReference[],
+  ownerId: string,
+  supabase: SupabaseClient<Database>,
+) => {
   const existingReferences = references.filter(
     (reference): reference is Extract<RecordPlaceReference, { kind: "existing" }> => reference.kind === "existing",
   );
@@ -166,7 +170,11 @@ const verifyRecordPlaces = async (references: RecordPlaceReference[], ownerId: s
   };
 };
 
-export const validateRecordSelections = async (data: RecordInput, ownerId: string, supabase: SupabaseClient) => {
+export const validateRecordSelections = async (
+  data: RecordInput,
+  ownerId: string,
+  supabase: SupabaseClient<Database>,
+) => {
   const [verifiedRegions, verifiedPlaces] = await Promise.all([
     Promise.all(data.regions.map((region) => verifyRegion(region.code, region.name))),
     verifyRecordPlaces(data.places, ownerId, supabase),

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { SignOutIcon } from "@phosphor-icons/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
@@ -16,7 +16,7 @@ export function LogoutButton() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const logoutAction = useActionOverride(logout);
+  const logoutAction = useDemoOverride(logout);
   const signOut = useMutation({
     mutationFn: () => runServerAction(logoutAction),
     onSuccess: () => queryClient.clear(),

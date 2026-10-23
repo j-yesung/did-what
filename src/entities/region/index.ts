@@ -9,4 +9,4 @@ export {
   type RegionActivityMap,
 } from "./model/korea-map";
 export { getRegion, getRegionCode, type Region } from "./model/region";
-export { RegionMiniMap } from "./ui/region-mini-map";
+export { MAP_LEVEL_CLASS_NAMES, RegionMiniMap } from "./ui/region-mini-map";

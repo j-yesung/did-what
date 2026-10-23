@@ -3,11 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/shared/api/supabase/require-user";
+import type { ActionState } from "@/shared/lib/server-action/action-state";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-type PlaceActionState = { message?: string; status: "error" | "success" };
-
-export const deletePlace = async (placeId: string): Promise<PlaceActionState> => {
+export const deletePlace = async (placeId: string): Promise<ActionState> => {
   if (!isUuid(placeId)) return { message: "삭제할 장소를 확인할 수 없어요.", status: "error" };
 
   const { supabase } = await requireUser();

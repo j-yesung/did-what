@@ -1,13 +1,9 @@
 "use server";
 
 import { requireMember } from "@/entities/member/server";
+import type { ActionState } from "@/shared/lib/server-action/action-state";
 
-type ReadAllNotificationsState = {
-  message?: string;
-  status: "error" | "success";
-};
-
-export const readAllNotifications = async (): Promise<ReadAllNotificationsState> => {
+export const readAllNotifications = async (): Promise<ActionState> => {
   const { member, supabase } = await requireMember();
   const { error } = await supabase.rpc("mark_all_notifications_read", {
     p_recipient_member_id: member.id,

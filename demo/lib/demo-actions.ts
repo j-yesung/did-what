@@ -17,7 +17,7 @@ import { type RecordView, saveRecordView } from "@/features/record/switch-record
 import { createComment, deleteComment } from "@/features/record-comment/api/comment-actions";
 import type { Theme } from "@/features/switch-theme/model/theme";
 import { saveTheme } from "@/features/switch-theme/model/theme-preference";
-import type { ActionOverrides } from "@/shared/lib/action-override";
+import type { DemoOverrides } from "@/shared/lib/demo-override";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { showToast } from "@/shared/lib/toast";
 
@@ -85,7 +85,7 @@ export const createDemoRecordActions = ({ queryClient }: Dependencies) => {
 };
 
 /** 서버 액션을 샘플 데이터를 바꾸는 함수로 바꿔 끼운다. 실제 서버·푸시 서비스는 부르지 않는다. */
-export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): ActionOverrides => {
+export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): DemoOverrides => {
   const save = createSave(queryClient);
   const memberId = () => getCurrentDemoMember(demoStore.get())?.id ?? "";
   const update = (change: Partial<DemoState>) => demoStore.update((state) => ({ ...state, ...change, changed: true }));
@@ -218,5 +218,5 @@ export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): Ac
     ],
   ];
 
-  return new Map(entries) as unknown as ActionOverrides;
+  return new Map(entries) as unknown as DemoOverrides;
 };

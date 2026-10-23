@@ -3,7 +3,7 @@
 import { CalendarDotsIcon, ListBulletsIcon } from "@phosphor-icons/react";
 import { useSearchParams } from "next/navigation";
 
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
@@ -15,7 +15,7 @@ export function RecordViewToggle({ view }: { view: RecordView }) {
   const searchParams = useSearchParams();
   const calendar = view !== "calendar";
   const nextView: RecordView = calendar ? "calendar" : "list";
-  const saveView = useActionOverride(saveRecordView);
+  const saveView = useDemoOverride(saveRecordView);
 
   return (
     <LiquidGlassButton

@@ -3,7 +3,7 @@
 import { useRef } from "react";
 
 import { placesQueryOptions } from "@/entities/place";
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Button } from "@/shared/ui/button";
 
@@ -17,7 +17,7 @@ type PlaceSearchSaveButtonProps = {
 
 export function PlaceSearchSaveButton({ onSaved, selections }: PlaceSearchSaveButtonProps) {
   const pendingPlaceIds = useRef<string[]>([]);
-  const savePlaces = useActionOverride(createPlaces);
+  const savePlaces = useDemoOverride(createPlaces);
   const save = useActionMutation(savePlaces, {
     error: "저장하지 못했어요",
     invalidate: [placesQueryOptions.queryKey],

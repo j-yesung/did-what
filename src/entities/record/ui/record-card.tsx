@@ -8,7 +8,7 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
-import { recordDetailQueryOptions, recordSummaryQueryKey } from "../api/queries";
+import { cacheRecordSummary, prefetchRecordDetail } from "../api/record-summary";
 import { normalizeRecordCategory, RECORD_CATEGORY_DOT } from "../model/category";
 import { formatRecordRegionLabels } from "../model/record-region";
 import { formatRecordTimelineDate } from "../model/record-timeline";
@@ -28,7 +28,7 @@ export function RecordCard({ endsMonth, onDetailPrefetch, record }: RecordCardPr
   const commentCount = record.record_comments?.[0]?.count ?? 0;
   const regionLabels = formatRecordRegionLabels(record);
   const category = normalizeRecordCategory(record.category);
-  const cacheRecordSummary = () => queryClient.setQueryData(recordSummaryQueryKey(record.id), record);
+  const cacheSummary = () => cacheRecordSummary(queryClient, record);
 
   return (
     <article className="relative ml-1.5 min-w-0 border-border border-l pb-7 pl-5">
@@ -52,12 +52,11 @@ export function RecordCard({ endsMonth, onDetailPrefetch, record }: RecordCardPr
         render={
           <PressLink
             href={href}
-            onClick={cacheRecordSummary}
+            onClick={cacheSummary}
             onPointerDown={(event) => {
               if (event.button !== 0) return;
-              cacheRecordSummary();
               router.prefetch(href);
-              void queryClient.prefetchQuery(recordDetailQueryOptions(record.id));
+              prefetchRecordDetail(queryClient, record.id, record);
               onDetailPrefetch?.(record.id);
             }}
             prefetch={false}

@@ -18,6 +18,9 @@ const useBottomSheet = () => {
   }
   return context;
 };
+/** 키보드가 올라와도 상단 안전 영역 아래를 꽉 채우는 시트 높이. */
+export const FULL_SHEET_HEIGHT = "calc(100dvh - env(safe-area-inset-top) - 16px - var(--drawer-keyboard-inset, 0px))";
+
 function BottomSheetRoot({
   modal = true,
   showSwipeHandle = false,

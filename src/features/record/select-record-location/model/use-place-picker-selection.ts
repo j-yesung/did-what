@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import type { PlaceOption, PlaceSearchResult } from "@/entities/place";
 import { getRecordRegionKey, MAX_VISITED_PLACES } from "@/entities/record";
 import type { KakaoPlace } from "@/shared/api/kakao-local";
-import { useActionOverride } from "@/shared/lib/action-override";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { showToast } from "@/shared/lib/toast";
 
 import { resolveRecordPlace } from "../api/resolve-record-location";
@@ -57,7 +57,7 @@ export const usePlacePickerSelection = ({
   );
   const selectedRegionKeys = useMemo(() => new Set(selectedRegions.keys()), [selectedRegions]);
   const selectedCount = mode === "regions" ? selectedRegions.size : optimisticSelectedKeys.size;
-  const resolvePlace = useActionOverride(resolveRecordPlace);
+  const resolvePlace = useDemoOverride(resolveRecordPlace);
   const resolve = useMutation({ mutationFn: resolvePlace });
   const resolving = pendingPlaceKeys.size > 0;
   const [addQueued, setAddQueued] = useState(false);

@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 
 import { waitForPressRelease } from "@/shared/lib/navigation/wait-for-press-release";
 
+/** 새 탭·다운로드처럼 브라우저에 맡겨야 하는 클릭이 아닌, 보통의 왼쪽 클릭인지. */
+export const isPlainLeftClick = (event: MouseEvent) =>
+  !event.defaultPrevented && event.button === 0 && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
+
 export const usePressNavigate = () => {
   const router = useRouter();
   const pending = useRef<AbortController | null>(null);
@@ -15,13 +19,8 @@ export const usePressNavigate = () => {
   return (event: MouseEvent<HTMLAnchorElement>) => {
     const element = event.currentTarget;
     if (
-      event.defaultPrevented ||
+      !isPlainLeftClick(event) ||
       event.detail === 0 ||
-      event.button !== 0 ||
-      event.altKey ||
-      event.ctrlKey ||
-      event.metaKey ||
-      event.shiftKey ||
       element.hasAttribute("download") ||
       (element.target && element.target !== "_self")
     )

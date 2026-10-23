@@ -3,7 +3,7 @@
 import { Fragment } from "react";
 
 import { WarningCircleIcon } from "@phosphor-icons/react";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   NOTIFICATIONS_QUERY_KEY,
@@ -12,9 +12,8 @@ import {
   unreadNotificationCountQueryOptions,
 } from "@/entities/notification";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
-import { useActionOverride } from "@/shared/lib/action-override";
-import { runServerAction } from "@/shared/lib/server-action/run-server-action";
-import { showToast } from "@/shared/lib/toast";
+import { useDemoOverride } from "@/shared/lib/demo-override";
+import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { PageHeader } from "@/shared/ui/layouts/page-header";
 import { PageShell } from "@/shared/ui/layouts/page-shell";
@@ -35,17 +34,10 @@ export function NotificationList({ memberId }: NotificationListProps) {
   const unreadOptions = unreadNotificationCountQueryOptions(memberId);
   const listQuery = useInfiniteQuery(listOptions);
   const unreadQuery = useQuery(unreadOptions);
-  const markAllRead = useActionOverride(readAllNotifications);
-  const readAll = useMutation({
-    mutationFn: () => runServerAction(markAllRead),
-    onSuccess: async (result) => {
-      if (result?.status === "error") {
-        showToast({ description: result.message, title: "모두 읽지 못했어요", variant: "warning" });
-        return;
-      }
-      await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
-    },
-    onError: () => showToast({ title: "모두 읽지 못했어요", variant: "error" }),
+  const markAllRead = useDemoOverride(readAllNotifications);
+  const readAll = useActionMutation(markAllRead, {
+    error: "모두 읽지 못했어요",
+    invalidate: [NOTIFICATIONS_QUERY_KEY],
   });
 
   /**

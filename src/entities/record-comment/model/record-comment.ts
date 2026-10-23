@@ -1,6 +1,7 @@
 export { getCreatedAtCursorFilter as getRecordCommentCursorFilter } from "@/shared/lib/pagination/get-created-at-cursor-filter";
 
 export const RECORD_COMMENT_PAGE_SIZE = 20;
+export const MAX_COMMENT_LENGTH = 1000;
 
 const COMMENT_DATE_TIME = new Intl.DateTimeFormat("ko-KR", {
   day: "numeric",
@@ -62,7 +63,7 @@ export const normalizeCommentBody = (value: unknown) => {
   if (typeof value !== "string") return null;
 
   const body = value.trim();
-  return body.length > 0 && [...body].length <= 1000 ? body : null;
+  return body.length > 0 && [...body].length <= MAX_COMMENT_LENGTH ? body : null;
 };
 
 export const reduceOptimisticComments = (comments: RecordComment[], action: OptimisticCommentAction) => {

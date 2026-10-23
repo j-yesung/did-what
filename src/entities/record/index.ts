@@ -7,8 +7,8 @@ export {
   recordListQueryOptions,
   recordLocationsQueryOptions,
   recordMonthBoundsQueryOptions,
-  recordSummaryQueryKey,
 } from "./api/queries";
+export { getRecordSummary, pickNewerRecord, prefetchRecordDetail } from "./api/record-summary";
 export {
   DEFAULT_RECORD_CATEGORY,
   getRecordCategoryLabel,
@@ -19,7 +19,7 @@ export {
   RECORD_CATEGORY_OPTIONS,
   type RecordCategory,
 } from "./model/category";
-export { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";
+export { MAX_ACTIVITY_LENGTH, MAX_MEMO_LENGTH, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";
 export {
   hasRecordFilters,
   parseRecordFilters,

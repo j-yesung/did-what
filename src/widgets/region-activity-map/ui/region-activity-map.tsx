@@ -12,6 +12,7 @@ import {
   getKoreaMapFrame,
   getRegion,
   KOREA_MAP_CELL_STYLE,
+  MAP_LEVEL_CLASS_NAMES,
   type Region,
   RegionMiniMap,
 } from "@/entities/region";
@@ -26,13 +27,6 @@ import {
   RegionRecordsBottomSheet,
 } from "@/widgets/region-activity-map/ui/region-records-bottom-sheet";
 
-const LEVEL_CLASS_NAMES = {
-  0: "fill-map-empty",
-  1: "fill-map-level-1",
-  2: "fill-map-level-2",
-  3: "fill-map-level-3",
-  4: "fill-map-level-4",
-} as const;
 // 첫 화면은 본토와 제주 주변에 한 단계 여백을 두어 지도의 전체 윤곽을 보기 쉽게 한다.
 const HOME_FRAME = getKoreaMapFrame({ east: 130.2, north: 39.4, south: 32.4, west: 125.5 });
 const FUNNEL_ID = "map-record-sheet";
@@ -79,7 +73,7 @@ export function RegionActivityMap({
     () =>
       map.cells.map((cell) => (
         <rect
-          className={LEVEL_CLASS_NAMES[cell.level]}
+          className={MAP_LEVEL_CLASS_NAMES[cell.level]}
           height={KOREA_MAP_CELL_STYLE.size}
           key={cell.id}
           rx={KOREA_MAP_CELL_STYLE.radius}
@@ -95,6 +89,8 @@ export function RegionActivityMap({
   const urlRegion = bottomSheetOpen ? (selectedRegion?.code ?? null) : null;
   const urlSubregion = urlRegion ? subregion : null;
 
+  // 주소는 여기 한 곳에서만 고친다. 시트·칩·상세 이동이 모두 지역과 시·군·구 상태를 거치므로 그 값만 따라가면 된다.
+  // 퍼널이 다음 단계를 쌓을 때 지금 주소를 복사하므로, 상세로 넘어가도 목록의 지역과 칩이 그 항목에 남는다.
   useEffect(() => {
     const search = toMapSearch(window.location.search, { region: urlRegion, subregion: urlSubregion });
     if (search === window.location.search) return;
@@ -106,18 +102,7 @@ export function RegionActivityMap({
     // 다른 시·도를 열면 이전 시·도에서 고른 시·군·구는 버린다.
     if (region.code !== selectedRegion?.code) setSubregion(null);
     setSelectedRegion(region);
-    if (funnel.step === "map") {
-      void funnel.history.push("list", { recordId: null });
-      saveMapUrl(region.code, null);
-    }
-  };
-
-  const saveMapUrl = (regionCode: string | null, nextSubregion: string | null) => {
-    const search = toMapSearch(window.location.search, {
-      region: regionCode,
-      subregion: nextSubregion,
-    });
-    window.history.replaceState(window.history.state, "", `${window.location.pathname}${search}`);
+    if (funnel.step === "map") void funnel.history.push("list", { recordId: null });
   };
 
   return (
@@ -209,11 +194,9 @@ export function RegionActivityMap({
       </section>
       <RegionRecordsBottomSheet
         detailRecordId={funnel.step === "detail" ? funnel.context.recordId : null}
-        onBeforeDetailOpen={() => saveMapUrl(selectedRegion?.code ?? null, subregion)}
         onCloseComplete={() => {
           if (!sheetClosing) return;
           void funnel.history.replace("map", { recordId: null });
-          saveMapUrl(null, null);
           setSheetClosing(false);
         }}
         onDetailBack={() => void funnel.history.back()}
