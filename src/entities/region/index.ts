@@ -4,7 +4,6 @@ export {
   getKoreaMapFrame,
   getKoreaMapPosition,
   KOREA_MAP_CELL_STYLE,
-  KOREA_MAP_DOT_RADIUS,
   type KoreaMapCell,
   type RecordLocation,
   type RegionActivityMap,

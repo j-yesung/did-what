@@ -100,7 +100,7 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
       <div className="px-1 py-1">
         <FieldGroup>
           <RecordDateField
-            defaultRecordedAt={initialValues.recordedAt}
+            initialRecordedAt={initialValues.recordedAt}
             initialRecordedUntil={initialValues.recordedUntil}
             onValueChange={markDirty}
             recordedAtError={fieldErrors?.recordedAt}

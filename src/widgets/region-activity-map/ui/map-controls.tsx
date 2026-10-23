@@ -5,19 +5,13 @@ import { GpsFixIcon } from "@phosphor-icons/react";
 
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
-import { LiquidGlassButton, type LiquidGlassButtonProps } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { Spinner } from "@/shared/ui/spinner";
 import type { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 
 type MapControlsProps = {
   currentLocation: ReturnType<typeof useCurrentMapLocation>;
 };
-
-type MapControlButtonProps = Omit<LiquidGlassButtonProps, "aria-label" | "shape" | "title"> & { label: string };
-
-function MapControlButton({ label, ...props }: MapControlButtonProps) {
-  return <LiquidGlassButton aria-label={label} shape="circle" title={label} {...props} />;
-}
 
 export function MapControls({ currentLocation }: MapControlsProps) {
   const [mounted, setMounted] = useState(false);
@@ -33,15 +27,17 @@ export function MapControls({ currentLocation }: MapControlsProps) {
       >
         <div className="pointer-events-auto">
           {/* 위치 확인은 최대 10초가 걸린다. 흐리게만 두면 고장 난 버튼처럼 보여 진행 표시로 바꾼다. */}
-          <MapControlButton
+          <LiquidGlassButton
             aria-busy={currentLocation.isPending || undefined}
-            label="현재 위치 표시"
+            aria-label="현재 위치 표시"
+            shape="circle"
+            title="현재 위치 표시"
             onClick={() => {
               if (!currentLocation.isPending) currentLocation.locate();
             }}
           >
             {currentLocation.isPending ? <Spinner aria-hidden="true" /> : <GpsFixIcon aria-hidden="true" />}
-          </MapControlButton>
+          </LiquidGlassButton>
         </div>
         <span className="sr-only" role="status">
           {currentLocation.isPending

@@ -42,10 +42,3 @@ export const getRegionCode = (administrativeCode: string): RegionCode | null => 
   const prefix = administrativeCode.slice(0, 2);
   return REGIONS.find((region) => (region.administrativeCodes as readonly string[]).includes(prefix))?.code ?? null;
 };
-
-export const filterRecordsByRegion = <T extends { region_code: string }>(
-  records: readonly T[],
-  regionCode: RegionCode,
-) => {
-  return records.filter((record) => getRegionCode(record.region_code) === regionCode);
-};

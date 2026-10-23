@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { placeQueryOptions, placeRecordsQueryOptions, placesQueryOptions } from "@/entities/place";
-import { EmptyRecords, RecordCreateButton, RecordTimeline, RecordTimelineItems } from "@/entities/record";
+import { EmptyRecords, RecordCreateButton, RecordTimelineItems } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { DeletePlaceConfirm } from "@/features/place/delete-place/ui/delete-place-confirm";
 import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
@@ -88,7 +88,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
               </section>
 
               {recordsQuery.isPending ? null : records.length ? (
-                <RecordTimeline aria-labelledby="place-records-title">
+                <section aria-labelledby="place-records-title" className="flex flex-col">
                   <div className="mb-2 flex items-center justify-between gap-3 px-1">
                     <h2 className="font-semibold text-base" id="place-records-title">
                       이곳의 기록
@@ -97,7 +97,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                   </div>
 
                   <RecordTimelineItems records={records} onDetailPrefetch={prefetchComments} />
-                </RecordTimeline>
+                </section>
               ) : (
                 <div className="flex flex-col items-center gap-6 py-8">
                   <EmptyRecords title={`${place.name}에서 남긴 기록이 없어요`} />

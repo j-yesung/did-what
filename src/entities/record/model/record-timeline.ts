@@ -3,13 +3,11 @@ type TimelineRecord = {
 };
 
 export const getRecordTimelineItemState = (records: readonly TimelineRecord[], index: number) => {
-  const date = records[index]?.recorded_at;
-  const previousDate = records[index - 1]?.recorded_at;
+  const month = records[index]?.recorded_at.slice(0, 7);
 
   return {
-    endsDate: date !== records[index + 1]?.recorded_at,
-    startsDate: date !== previousDate,
-    startsMonth: date?.slice(0, 7) !== previousDate?.slice(0, 7),
+    endsMonth: month !== records[index + 1]?.recorded_at.slice(0, 7),
+    startsMonth: month !== records[index - 1]?.recorded_at.slice(0, 7),
   };
 };
 

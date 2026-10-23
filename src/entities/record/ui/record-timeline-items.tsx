@@ -17,8 +17,7 @@ export function RecordTimelineItems({ records, onDetailPrefetch }: RecordTimelin
   return (
     <>
       {records.map((record, index) => {
-        const { startsMonth } = getRecordTimelineItemState(records, index);
-        const endsMonth = record.recorded_at.slice(0, 7) !== records[index + 1]?.recorded_at.slice(0, 7);
+        const { endsMonth, startsMonth } = getRecordTimelineItemState(records, index);
 
         return (
           <Fragment key={record.id}>

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 
-import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 
 type SegmentedControlSize = "small" | "large";
@@ -92,11 +91,10 @@ type SegmentedControlItemProps = Omit<
 > & {
   children: React.ReactNode;
   className?: string;
-  render?: React.ReactElement<Record<string, unknown>>;
   value: string;
 };
 
-function SegmentedControlItem({ children, className, disabled, render, value, ...props }: SegmentedControlItemProps) {
+function SegmentedControlItem({ children, className, disabled, value, ...props }: SegmentedControlItemProps) {
   const context = React.useContext(SegmentedControlContext);
 
   if (!context) {
@@ -104,23 +102,6 @@ function SegmentedControlItem({ children, className, disabled, render, value, ..
   }
 
   const checked = context.value === value;
-
-  if (render) {
-    return React.cloneElement(render, {
-      "aria-current": checked ? "page" : undefined,
-      children,
-      className: cn(
-        SEGMENTED_CONTROL_ITEM,
-        SEGMENTED_CONTROL_ITEM_SURFACE,
-        SEGMENTED_CONTROL_ITEM_SIZE[context.size],
-        "touch-manipulation select-none [-webkit-tap-highlight-color:transparent] active:scale-[0.98]",
-        checked && "text-segmented-active-foreground",
-        FOCUS_RING,
-        className,
-      ),
-      "data-slot": "segmented-control-item",
-    });
-  }
 
   return (
     <label

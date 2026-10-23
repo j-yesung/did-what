@@ -11,8 +11,7 @@ import { Switch } from "@/shared/ui/switch";
 const DATE_FIELD_TRANSITION = { duration: 0.2, ease: [0.23, 1, 0.32, 1] as const };
 
 type RecordDateFieldProps = {
-  defaultRecordedAt: string;
-  initialRecordedAt?: string;
+  initialRecordedAt: string;
   initialRecordedUntil?: string | null;
   onValueChange?: (recordedAt: string, recordedUntil: string) => void;
   recordedAtError?: string;
@@ -20,18 +19,15 @@ type RecordDateFieldProps = {
 };
 
 export function RecordDateField({
-  defaultRecordedAt,
   initialRecordedAt,
   initialRecordedUntil,
   onValueChange,
   recordedAtError,
   recordedUntilError,
 }: RecordDateFieldProps) {
-  const [recordedAt, setRecordedAt] = useState(initialRecordedAt ?? defaultRecordedAt);
-  const [recordedUntil, setRecordedUntil] = useState(initialRecordedUntil ?? initialRecordedAt ?? defaultRecordedAt);
-  const [isSingleDay, setIsSingleDay] = useState(
-    (initialRecordedUntil ?? initialRecordedAt ?? defaultRecordedAt) === recordedAt,
-  );
+  const [recordedAt, setRecordedAt] = useState(initialRecordedAt);
+  const [recordedUntil, setRecordedUntil] = useState(initialRecordedUntil ?? initialRecordedAt);
+  const [isSingleDay, setIsSingleDay] = useState(recordedUntil === recordedAt);
   const shouldReduceMotion = useReducedMotion();
   const transition = shouldReduceMotion ? { duration: 0 } : DATE_FIELD_TRANSITION;
 

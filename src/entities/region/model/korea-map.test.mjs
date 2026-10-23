@@ -1,14 +1,8 @@
-import { filterRecordsByRegion, getRegion, getRegionCode, REGIONS } from "./region.ts";
+import { getRegion, getRegionCode, REGIONS } from "./region.ts";
 import assert from "node:assert/strict";
 
-const {
-  createKoreaMap,
-  createRegionActivityMaps,
-  getActivityLevel,
-  getKoreaMapFrame,
-  getKoreaMapPosition,
-  getLocationRegionCode,
-} = await import("./korea-map.ts");
+const { createKoreaMap, createRegionActivityMaps, getActivityLevel, getKoreaMapFrame, getKoreaMapPosition } =
+  await import("./korea-map.ts");
 
 assert.deepEqual([0, 1, 2, 4, 7].map(getActivityLevel), [0, 1, 2, 3, 4]);
 
@@ -96,13 +90,6 @@ assert.equal(getRegionCode("2911010100"), "KR-12");
 assert.equal(getRegionCode("4611010100"), "KR-12");
 assert.equal(getRegion("KR-29")?.code, "KR-12");
 assert.equal(getRegion("KR-46")?.code, "KR-12");
-assert.deepEqual(
-  filterRecordsByRegion(regionalRecords, "KR-11").map(({ id }) => id),
-  ["seoul"],
-);
-
-const mokpoRecord = { id: "mokpo", region_code: "1211000000" };
-assert.deepEqual(filterRecordsByRegion([mokpoRecord], "KR-12"), [mokpoRecord]);
 assert.equal(
   createRegionActivityMaps([
     {
@@ -159,6 +146,5 @@ assert.ok(
     .every((cell) => isInside({ x: cell.x + 2.2, y: cell.y + 2.2 })),
   "두 섬의 칸도 틀 안으로 옮긴다.",
 );
-assert.equal(getLocationRegionCode({ latitude: 37.96, longitude: 124.68 }), "KR-28", "백령도 기록은 인천으로 센다.");
 
 process.stdout.write(`${map.cells.length} cells, ${map.columns} × ${map.rows} grid\n`);

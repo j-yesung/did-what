@@ -37,10 +37,7 @@ export function RecordBadges({ className, record }: RecordBadgesProps) {
   return (
     <>
       <RecordCategoryBadge category={record.category} className={className} />
-      <Badge
-        className={cn("gap-1 rounded-full border border-border bg-surface px-1.5 py-0.5 font-medium", className)}
-        tone="neutral"
-      >
+      <Badge className={cn("gap-1 rounded-full border border-border bg-surface px-1.5 py-0.5 font-medium", className)}>
         <WeatherIcon aria-hidden="true" className="size-3.5" weather={weather} />
         {getRecordWeatherLabel(weather)}
       </Badge>

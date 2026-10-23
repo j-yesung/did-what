@@ -24,5 +24,5 @@ export const requireUser = cache(async () => {
     redirect(withReturnTo("/login", (await headers()).get(RETURN_TO_HEADER)));
   }
 
-  return { supabase, user: { email: claims.email, id: claims.sub } };
+  return { supabase, user: { id: claims.sub } };
 });

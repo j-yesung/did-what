@@ -63,6 +63,5 @@ export { RecordBadges, RecordCategoryBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RecordCreateButton } from "./ui/record-create-button";
 export { RecordDetailHeader } from "./ui/record-detail-header";
-export { RecordTimeline } from "./ui/record-timeline";
 export { RecordTimelineItems } from "./ui/record-timeline-items";
 export { WeatherIcon } from "./ui/weather-icon";

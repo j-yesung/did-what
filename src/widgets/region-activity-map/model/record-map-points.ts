@@ -1,7 +1,3 @@
-import type { Region } from "@/entities/region";
-
-export type RegionCode = Region["code"];
-
 export type MapRecord = {
   activity: string;
   category: string;
@@ -12,15 +8,11 @@ export type MapRecord = {
   record_regions: { region_code: string; region_latitude: number; region_longitude: number; region_name: string }[];
 };
 
+/** 지도 셀 농도만 정하므로 좌표와 중복을 가를 id만 둔다. */
 export type RecordMapPoint = {
-  activity: string;
   id: string;
-  kind: "place" | "region";
-  label: string;
   latitude: number;
   longitude: number;
-  recordedAt: string;
-  recordId: string;
 };
 
 export const toRecordMapPoints = (records: readonly MapRecord[]): RecordMapPoint[] =>
@@ -28,28 +20,18 @@ export const toRecordMapPoints = (records: readonly MapRecord[]): RecordMapPoint
     const places = record.record_places.flatMap(({ place }) => (place ? [place] : []));
     if (places.length > 0) {
       return places.map((place) => ({
-        activity: record.activity,
         id: `place:${record.id}:${place.id}`,
-        kind: "place" as const,
-        label: place.name,
         latitude: place.latitude,
         longitude: place.longitude,
-        recordedAt: record.recorded_at,
-        recordId: record.id,
       }));
     }
 
     return record.record_regions
       .filter((region, index, all) => all.findIndex((item) => item.region_code === region.region_code) === index)
       .map((region) => ({
-        activity: record.activity,
         id: `region:${record.id}:${region.region_code}`,
-        kind: "region" as const,
-        label: region.region_name,
         latitude: region.region_latitude,
         longitude: region.region_longitude,
-        recordedAt: record.recorded_at,
-        recordId: record.id,
       }));
   });
 

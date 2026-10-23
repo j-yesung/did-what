@@ -173,7 +173,6 @@ function RecordCreateFunnelClient({
       return (
         <FieldGroup className="gap-0">
           <RecordDateField
-            defaultRecordedAt={defaultRecordedAt}
             initialRecordedAt={draft.recordedAt}
             initialRecordedUntil={draft.recordedUntil}
             onValueChange={(recordedAt, recordedUntil) => updateContext({ recordedAt, recordedUntil })}

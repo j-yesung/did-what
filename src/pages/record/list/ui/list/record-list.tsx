@@ -1,14 +1,14 @@
 "use client";
 
 import { NotePencilIcon } from "@phosphor-icons/react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   EmptyRecords,
   hasRecordFilters,
   type RecordFilters,
-  RecordTimeline,
   RecordTimelineItems,
+  recordListQueryOptions,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { cn } from "@/shared/lib/utils";
@@ -17,8 +17,6 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/em
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 
-import { useRecordListQuery } from "../../model/use-record-list-query";
-
 type RecordListProps = {
   filters: RecordFilters;
   onFiltersReset: () => void;
@@ -26,7 +24,7 @@ type RecordListProps = {
 
 export function RecordList({ filters, onFiltersReset }: RecordListProps) {
   const queryClient = useQueryClient();
-  const recordsQuery = useRecordListQuery(filters);
+  const recordsQuery = useInfiniteQuery(recordListQueryOptions(filters));
   const prefetchComments = (recordId: string) => {
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   };
@@ -67,11 +65,11 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
   }
 
   return (
-    <RecordTimeline
+    <section
       aria-busy={recordsQuery.isPlaceholderData || undefined}
       aria-label={`불러온 기록 ${records.length}개`}
       className={cn(
-        "transition-opacity duration-200 motion-reduce:transition-none",
+        "flex flex-col transition-opacity duration-200 motion-reduce:transition-none",
         recordsQuery.isPlaceholderData && "opacity-50",
       )}
     >
@@ -83,6 +81,6 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
           onClick={() => recordsQuery.fetchNextPage()}
         />
       ) : null}
-    </RecordTimeline>
+    </section>
   );
 }
