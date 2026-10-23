@@ -15,7 +15,7 @@ export type RecordLocationPlace = Pick<PlaceOption, "category_group_code" | "cat
   region: RecordLocationRegion;
 };
 
-export type PlacePickerTab = "places" | "regions";
+export type PlacePickerMode = "places" | "regions";
 
 export type PlacePickerDraft = {
   keyword: string;
@@ -25,7 +25,6 @@ export type PlacePickerDraft = {
   scopeCode: string | null;
   selectedPlaces: Map<string, RecordLocationPlace>;
   selectedRegions: Map<string, RecordLocationRegion>;
-  tab: PlacePickerTab;
 };
 
 export const createPlacePickerDraft = (): PlacePickerDraft => ({
@@ -36,7 +35,11 @@ export const createPlacePickerDraft = (): PlacePickerDraft => ({
   scopeCode: null,
   selectedPlaces: new Map(),
   selectedRegions: new Map(),
-  tab: "places",
+});
+
+export const toSearchedRecordLocationRegion = (region: KakaoRegion, query: string): RecordLocationRegion => ({
+  ...region,
+  label: query.trim() || region.name,
 });
 
 /** "서울 마포구 망원동"에서 "망원동"처럼 전체 지역명의 마지막 마디. */

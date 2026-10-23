@@ -6,7 +6,7 @@ import { PlaceIconTile, type PlaceOption } from "@/entities/place";
 import { getRecordRegionKey, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
-import { Field, FieldError } from "@/shared/ui/field";
+import { Field, FieldDescription, FieldError, FieldTitle } from "@/shared/ui/field";
 
 import {
   getRecordLocationSelectionError,
@@ -104,8 +104,45 @@ export function RecordLocationFields({
       />
       <input name="places" type="hidden" value={JSON.stringify(places.map((place) => place.reference))} />
 
-      <Field aria-label="방문한 곳" data-invalid={Boolean(regionError || placeError)}>
-        {places.length || regions.length ? (
+      <Field aria-label="방문한 지역" data-invalid={Boolean(regionError)}>
+        <FieldTitle>방문한 지역</FieldTitle>
+        <FieldDescription>문래, 성수처럼 다녀온 동네를 찾아보세요.</FieldDescription>
+        {visitedRegions.length ? (
+          <ul aria-label="방문한 지역 목록" className="flex flex-col gap-2">
+            {visitedRegions.map((region) => (
+              <SelectedLocationCard
+                key={getRecordRegionKey(region)}
+                name={region.label}
+                description={region.fullName}
+                icon={<PlaceIconTile className="bg-muted text-muted-foreground" place={{}} />}
+                removeLabel={`${region.label} 방문 지역에서 제거`}
+                onRemove={() => requestRemoveRegion(region)}
+              />
+            ))}
+          </ul>
+        ) : null}
+        <PlacePickerBottomSheet
+          mode="regions"
+          triggerLabel={visitedRegions.length ? "다른 지역도 추가" : "지역 추가"}
+          error={regionError}
+          draft={pickerDraft}
+          onDraftChange={onPickerDraftChange}
+          disabled={visitedRegions.length >= MAX_VISITED_REGIONS}
+          maxSelectionCount={MAX_VISITED_PLACES - places.length}
+          onAdd={addPlaces}
+          regions={visitedRegions}
+          savedPlaces={savedPlaces}
+          selectedKeys={selectedKeys}
+        />
+        <FieldError id="regions-error">{regionError}</FieldError>
+      </Field>
+
+      <Field aria-label="방문한 곳" data-invalid={Boolean(placeError)}>
+        <FieldTitle>
+          방문한 곳 <span className="font-normal text-muted-foreground text-xs">선택</span>
+        </FieldTitle>
+        <FieldDescription>기억해 두고 싶은 카페나 식당이 있나요?</FieldDescription>
+        {places.length ? (
           <ul aria-label="방문한 곳 목록" className="flex flex-col gap-2">
             {places.map((place) => (
               <SelectedLocationCard
@@ -125,35 +162,27 @@ export function RecordLocationFields({
                 onRemove={() => removePlace(place.key)}
               />
             ))}
-            {regions
-              .filter(
-                (region) => !places.some((place) => getRecordRegionKey(place.region) === getRecordRegionKey(region)),
-              )
-              .map((region) => (
-                <SelectedLocationCard
-                  key={getRecordRegionKey(region)}
-                  name={region.label}
-                  description="지역만 기록"
-                  icon={<PlaceIconTile className="bg-muted text-muted-foreground" place={{}} />}
-                  removeLabel={`${region.label} 방문 지역에서 제거`}
-                  onRemove={() => requestRemoveRegion(region)}
-                />
-              ))}
           </ul>
         ) : null}
 
         <PlacePickerBottomSheet
+          mode="places"
+          triggerLabel={places.length ? "다른 장소도 추가" : "방문한 곳 추가"}
+          error={placeError}
           draft={pickerDraft}
           onDraftChange={onPickerDraftChange}
           searchRegionName={searchRegionName}
-          disabled={places.length >= MAX_VISITED_PLACES && visitedRegions.length >= MAX_VISITED_REGIONS}
+          disabled={places.length >= MAX_VISITED_PLACES}
           maxSelectionCount={MAX_VISITED_PLACES - places.length}
           onAdd={addPlaces}
           regions={visitedRegions}
           savedPlaces={savedPlaces}
           selectedKeys={selectedKeys}
         />
-        <FieldError id="places-error">{placeError ?? regionError}</FieldError>
+        <FieldDescription>
+          장소 이름이 기억나지 않아도 괜찮아요. 지역만 남기고 다음으로 넘어갈 수 있어요.
+        </FieldDescription>
+        <FieldError id="places-error">{placeError}</FieldError>
       </Field>
 
       <ConfirmDialog
