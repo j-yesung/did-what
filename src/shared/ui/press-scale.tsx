@@ -7,7 +7,7 @@ import { motion, useMotionTemplate, useReducedMotion, useSpring } from "motion/r
 
 import { cn } from "@/shared/lib/utils";
 
-const TAP_SPRING = { bounce: 0.2, duration: 0.5, type: "spring" } as const;
+const TAP_SPRING = { damping: 10, mass: 1, stiffness: 100, type: "spring" } as const;
 const TAP_SCALE = 1.15;
 const MIN_PRESS_DURATION = 160;
 

@@ -475,6 +475,10 @@
 }
 
 @media (min-width: 700px) {
+  :root {
+    --nav-bottom-gap: 24px;
+  }
+
   body {
     background: var(--muted);
   }
