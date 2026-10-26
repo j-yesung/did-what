@@ -16,6 +16,6 @@ export function AppShown() {
 }
 
 export function AppLoadingFallback({ hold = false }: { hold?: boolean }) {
-  if (hold || appShown) use(never);
+  if (typeof window !== "undefined" && (hold || appShown)) use(never);
   return <AppLoading />;
 }
