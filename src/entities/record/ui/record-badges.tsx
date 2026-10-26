@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 
-import { getRecordCategoryLabel, normalizeRecordCategory, RECORD_CATEGORY_BADGE } from "../model/category";
+import { getRecordCategoryLabel, normalizeRecordCategories, RECORD_CATEGORY_BADGE } from "../model/category";
 import type { RecordSummary } from "../model/types";
 import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
 import { WeatherIcon } from "./weather-icon";
@@ -19,15 +19,14 @@ export function RecordCategoryBadge({
   category: RecordSummary["category"];
   className?: string;
 }) {
-  const category = normalizeRecordCategory(value);
-  if (category === "uncategorized") return null;
-  return (
+  return normalizeRecordCategories(value).map((category) => (
     <Badge
       className={cn("shrink-0 rounded-full px-1.5 py-0.5 font-medium", RECORD_CATEGORY_BADGE[category], className)}
+      key={category}
     >
       {getRecordCategoryLabel(category)}
     </Badge>
-  );
+  ));
 }
 
 /** 카테고리와 날씨 배지. 카드·동작 시트·상세가 같은 표시를 써야 목록에서 본 기록과 바로 이어진다. */

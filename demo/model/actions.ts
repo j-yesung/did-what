@@ -345,7 +345,7 @@ export const addSampleRecord = (state: DemoState, authorId: string, context: Con
     state,
     {
       activity: sample.activity,
-      category: sample.category,
+      category: [sample.category],
       places: [],
       recordedAt: shiftDate(state.today, -sample.daysAgo),
       regions: [{ code: sample.region, label: toDemoRegion(sample.region, true).region_label, name: "" }],

@@ -4,7 +4,7 @@ import { test } from "node:test";
 
 const values = {
   activity: "마포 산책",
-  category: "daily",
+  category: '["daily"]',
   memo: "",
   places: "[]",
   recordedAt: "2026-10-19",
@@ -33,4 +33,24 @@ test("이름이 다른 동일 지역 항목도 10개 상한을 적용한다", ()
     validateRecordInput({ ...values, regions: JSON.stringify(regions.slice(0, 10)) }).data.regions.length,
     10,
   );
+});
+
+test("복수 카테고리를 저장하고 중복은 제거하며 미선택은 빈 배열로 저장한다", () => {
+  const input = { ...values, regions: JSON.stringify([region("마포구")]) };
+  assert.deepEqual(validateRecordInput({ ...input, category: '["date","travel","date"]' }).data.category, [
+    "date",
+    "travel",
+  ]);
+  assert.deepEqual(validateRecordInput({ ...input, category: "[]" }).data.category, []);
+  for (const category of [
+    "daily",
+    '"date"',
+    "{}",
+    "null",
+    '["date","invalid"]',
+    "[null]",
+    JSON.stringify(Array(6).fill("date")),
+  ]) {
+    assert.ok(validateRecordInput({ ...input, category }).fieldErrors.category, category);
+  }
 });

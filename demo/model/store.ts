@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
+import { normalizeRecordCategories } from "@/entities/record/model/category";
 import { getToday } from "@/shared/lib/date/get-today";
 
 import { createSeedState, DEMO_STATE_VERSION } from "./seed.ts";
@@ -19,7 +20,12 @@ const listeners = new Set<() => void>();
 const load = (): DemoState => {
   try {
     const saved = JSON.parse(sessionStorage.getItem(DEMO_STORAGE_KEY) ?? "null") as DemoState | null;
-    if (saved?.version === DEMO_STATE_VERSION) return saved;
+    if (saved?.version === DEMO_STATE_VERSION) {
+      return {
+        ...saved,
+        records: saved.records.map((record) => ({ ...record, category: normalizeRecordCategories(record.category) })),
+      };
+    }
   } catch {
     // 저장소를 못 쓰는 환경(비공개 창 등)에서는 메모리에만 두고 처음 샘플로 시작한다.
   }

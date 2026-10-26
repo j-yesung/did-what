@@ -1,6 +1,6 @@
 export type MapRecord = {
   activity: string;
-  category: string;
+  category: string[];
   id: string;
   recorded_at: string;
   recorded_until: string | null;

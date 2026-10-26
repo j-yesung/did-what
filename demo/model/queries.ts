@@ -129,7 +129,10 @@ export const getRecordPage = (state: DemoState, filters: RecordFilters, cursor: 
       (record) =>
         inPeriod(record, filters) &&
         matchesQuery(record, filters.query) &&
-        (!filters.category || record.category === filters.category),
+        (!filters.category ||
+          (filters.category === "uncategorized"
+            ? record.category.length === 0
+            : record.category.includes(filters.category))),
     ),
   );
   const ordered = ascending ? sorted.toReversed() : sorted;

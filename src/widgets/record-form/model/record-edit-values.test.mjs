@@ -26,7 +26,7 @@ const region = (code, label, direct = true) => ({
 test("대표 지역과 표시명을 먼저 복원하고 장소에서 따라온 지역은 제외한다", () => {
   const record = {
     activity: "산책",
-    category: "daily",
+    category: ["daily"],
     memo: null,
     weather: "rainy",
     recorded_at: "2026-10-22",
@@ -52,13 +52,13 @@ test("대표 지역과 표시명을 먼저 복원하고 장소에서 따라온 �
     ["난지 한강공원", "망원동", "중구"],
   );
   assert.equal(values.memo, "");
-  assert.equal(values.category, "daily");
+  assert.deepEqual(values.category, ["daily"]);
   assert.equal(values.weather, "rainy");
   assert.equal(values.recordedAt, "2026-10-22");
   assert.equal(values.recordedUntil, null);
   assert.deepEqual(record, original);
   const fallback = toRecordEditValues({ ...record, category: "legacy", weather: "legacy" });
-  assert.equal(fallback.category, "uncategorized");
+  assert.deepEqual(fallback.category, []);
   assert.equal(fallback.weather, "sunny");
 });
 
@@ -69,7 +69,7 @@ test("문래 검색의 표시명은 저장 입력 검증과 수정 화면 복원
   );
   const { data } = validateRecordInput({
     activity: "문래 산책",
-    category: "daily",
+    category: '["daily"]',
     memo: "",
     places: "[]",
     recordedAt: "2026-10-23",
@@ -93,4 +93,19 @@ test("문래 검색의 표시명은 저장 입력 검증과 수정 화면 복원
   });
   assert.equal(restored.regions[0].label, "문래");
   assert.equal(restored.regions[0].fullName, "서울특별시 영등포구");
+});
+
+test("수정 화면에서 복수 카테고리를 모두 복원하고 미분류는 선택하지 않는다", () => {
+  const record = {
+    activity: "기념일 여행",
+    category: ["anniversary", "travel"],
+    memo: null,
+    weather: "sunny",
+    recorded_at: "2026-10-24",
+    recorded_until: null,
+    record_places: [],
+    record_regions: [],
+  };
+  assert.deepEqual(toRecordEditValues(record).category, ["anniversary", "travel"]);
+  assert.deepEqual(toRecordEditValues({ ...record, category: [] }).category, []);
 });

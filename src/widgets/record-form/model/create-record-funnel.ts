@@ -10,7 +10,7 @@ export type RecordCreateStep = (typeof RECORD_CREATE_STEPS)[number];
 
 export type RecordCreateContext = {
   activity: string;
-  category: RecordCategory;
+  category: RecordCategory[];
   dirty: boolean;
   memo: string;
   places: RecordLocationPlace[];
@@ -62,7 +62,7 @@ export const toRecordCreateFormData = (context: RecordCreateContext) => {
   const formData = new FormData();
 
   formData.set("activity", context.activity);
-  formData.set("category", context.category);
+  formData.set("category", JSON.stringify(context.category));
   formData.set("memo", context.memo);
   formData.set("places", JSON.stringify(context.places.map((place) => place.reference)));
   formData.set("recordedAt", context.recordedAt);
