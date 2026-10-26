@@ -1,4 +1,4 @@
-import { isRecordCategory, type RecordCategory } from "@/entities/record/model/category";
+import { isRecordCategories, normalizeRecordCategories, type RecordCategory } from "@/entities/record/model/category";
 import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
 import { getRecordRegionKey } from "@/entities/record/model/record-region";
 import { validateRecordContent, validateRecordDates } from "@/entities/record/model/record-validation";
@@ -38,7 +38,7 @@ export type RecordInput = {
   weather: RecordWeather;
   activity: string;
   memo?: string;
-  category: RecordCategory;
+  category: RecordCategory[];
 };
 
 type RecordInputValues = {
@@ -55,7 +55,7 @@ type RecordInputValues = {
 export const readRecordInput = (formData: FormData): RecordInputValues => {
   return {
     activity: String(formData.get("activity") ?? ""),
-    category: String(formData.get("category") ?? ""),
+    category: String(formData.get("category") ?? "[]"),
     memo: String(formData.get("memo") ?? ""),
     places: String(formData.get("places") ?? "[]"),
     recordedAt: String(formData.get("recordedAt") ?? ""),
@@ -189,6 +189,12 @@ export const validateRecordInput = (
   const places = parsePlaces(values.places);
   const activity = values.activity.trim();
   const memo = values.memo.trim();
+  let category: unknown;
+  try {
+    category = JSON.parse(values.category);
+  } catch {
+    category = null;
+  }
 
   if (!regions) {
     fieldErrors.regions = `방문 지역은 ${MAX_VISITED_REGIONS}곳까지 선택할 수 있어요.`;
@@ -205,8 +211,8 @@ export const validateRecordInput = (
     fieldErrors.weather = "날씨를 선택해 주세요.";
   }
 
-  if (!isRecordCategory(values.category)) {
-    fieldErrors.category = "카테고리를 선택해 주세요.";
+  if (!isRecordCategories(category)) {
+    fieldErrors.category = "카테고리를 다시 선택해 주세요.";
   }
 
   if (
@@ -214,7 +220,7 @@ export const validateRecordInput = (
     !regions ||
     !places ||
     !isRecordWeather(values.weather) ||
-    !isRecordCategory(values.category)
+    !isRecordCategories(category)
   ) {
     return { fieldErrors };
   }
@@ -230,7 +236,7 @@ export const validateRecordInput = (
       weather: values.weather,
       activity,
       ...(memo ? { memo } : {}),
-      category: values.category,
+      category: normalizeRecordCategories(category),
     },
   };
 };

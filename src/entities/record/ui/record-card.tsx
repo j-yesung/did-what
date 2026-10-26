@@ -83,7 +83,9 @@ export function RecordCard({ endsMonth, onDetailPrefetch, record }: RecordCardPr
             <p className="mt-1.5 break-words text-muted-foreground text-xs leading-relaxed">{regionLabels}</p>
           ) : null}
           <span className="mt-2 flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 text-muted-foreground text-xs">
-            <RecordCategoryBadge category={record.category} />
+            <span className="flex flex-wrap items-center gap-1">
+              <RecordCategoryBadge category={record.category} />
+            </span>
             {commentCount > 0 ? (
               <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] tabular-nums">
                 <ChatCircleIcon className="size-4" aria-hidden="true" />

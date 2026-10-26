@@ -1,4 +1,4 @@
-import { normalizeRecordCategory } from "@/entities/record/model/category";
+import { normalizeRecordCategories } from "@/entities/record/model/category";
 import { sortPrimaryRecordRegions, sortPrimaryRegionFirst } from "@/entities/record/model/record-region";
 import type { RecordSummary } from "@/entities/record/model/types";
 import { normalizeRecordWeather } from "@/entities/record/model/weather";
@@ -24,7 +24,7 @@ type EditableRecord = Pick<
 
 export const toRecordEditValues = (record: EditableRecord) => ({
   activity: record.activity,
-  category: normalizeRecordCategory(record.category),
+  category: normalizeRecordCategories(record.category),
   memo: record.memo ?? "",
   places: sortPrimaryRegionFirst(record.record_places, record.region_code, ({ place }) => place.region_code).map(
     ({ place }) => toExistingRecordLocationPlace(place),

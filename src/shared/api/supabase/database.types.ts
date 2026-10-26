@@ -345,7 +345,7 @@ export type Database = {
         Row: {
           activity: string;
           author_member_id: string | null;
-          category: string;
+          category: string[];
           created_at: string;
           id: string;
           memo: string | null;
@@ -363,7 +363,7 @@ export type Database = {
         Insert: {
           activity: string;
           author_member_id?: string | null;
-          category?: string;
+          category?: string[];
           created_at?: string;
           id?: string;
           memo?: string | null;
@@ -381,7 +381,7 @@ export type Database = {
         Update: {
           activity?: string;
           author_member_id?: string | null;
-          category?: string;
+          category?: string[];
           created_at?: string;
           id?: string;
           memo?: string | null;
@@ -433,7 +433,7 @@ export type Database = {
         Args: {
           p_activity: string;
           p_author_member_id: string;
-          p_category: string;
+          p_category: string[];
           p_memo: string;
           p_places: Json;
           p_recorded_at: string;
@@ -454,7 +454,7 @@ export type Database = {
       update_owned_record_with_places: {
         Args: {
           p_activity: string;
-          p_category: string;
+          p_category: string[];
           p_memo: string;
           p_places: Json;
           p_record_id: string;

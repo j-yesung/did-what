@@ -2,78 +2,83 @@
 
 import { useState } from "react";
 
-import { CaretDownIcon } from "@phosphor-icons/react";
+import { Toggle } from "@base-ui/react/toggle";
+import { ToggleGroup } from "@base-ui/react/toggle-group";
 
 import {
   DEFAULT_RECORD_CATEGORY,
-  getRecordCategoryLabel,
-  isRecordCategory,
+  normalizeRecordCategories,
   RECORD_CATEGORY_DOT,
   RECORD_CATEGORY_OPTIONS,
+  RECORD_CATEGORY_SELECTED,
   type RecordCategory,
 } from "@/entities/record";
+import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
-import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
+import { Field, FieldDescription, FieldError, FieldTitle } from "@/shared/ui/field";
 
 type RecordCategoryFieldProps = {
   categoryError?: string;
-  initialCategory?: RecordCategory;
-  onChange?: (category: RecordCategory) => void;
+  initialCategory?: RecordCategory[];
+  onChange?: (category: RecordCategory[]) => void;
 };
 
-/** option에는 색을 넣을 수 없어 네이티브 select를 투명하게 덮고 보이는 부분만 그린다. DateInput과 같은 구성. */
-export function RecordCategoryField({
-  categoryError,
-  initialCategory = DEFAULT_RECORD_CATEGORY,
-  onChange,
-}: RecordCategoryFieldProps) {
-  const [category, setCategory] = useState<RecordCategory>(initialCategory);
+export function RecordCategoryField({ categoryError, initialCategory = [], onChange }: RecordCategoryFieldProps) {
+  const [category, setCategory] = useState(() => normalizeRecordCategories(initialCategory));
   const invalid = Boolean(categoryError);
 
-  const handleCategoryChange = (nextCategory: string) => {
-    if (!isRecordCategory(nextCategory)) return;
+  const handleCategoryChange = (values: string[]) => {
+    const nextCategory = normalizeRecordCategories(values);
     setCategory(nextCategory);
     onChange?.(nextCategory);
   };
 
   return (
     <Field data-invalid={invalid}>
-      <FieldLabel className="font-semibold text-base" htmlFor="category">
-        카테고리
-      </FieldLabel>
-      <div
-        className={cn(
-          // select는 클릭에도 focus-visible이 붙어 링이 남는다. 설치형 전용이라 생략.
-          "relative h-12 w-full rounded-lg border border-input transition-colors",
-          invalid &&
-            "border-destructive ring-3 ring-destructive/20 dark:border-destructive/50 dark:ring-destructive/40",
-        )}
-        data-slot="category-select-field"
-      >
-        <span aria-hidden="true" className="pointer-events-none flex h-full min-w-0 items-center gap-2 pr-10 pl-3">
-          <span className={cn("size-2.5 shrink-0 rounded-full", RECORD_CATEGORY_DOT[category])} />
-          <span className="truncate text-base md:text-sm">{getRecordCategoryLabel(category)}</span>
+      <div className="flex items-center justify-between gap-2">
+        <FieldTitle className="font-semibold text-base" id="record-category-label">
+          카테고리
+        </FieldTitle>
+        <span aria-live="polite" className="text-accent-text text-xs">
+          {category.length ? `${category.length}개 선택` : "여러 개 선택 가능"}
         </span>
-        <CaretDownIcon
-          aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-        />
-        <select
-          aria-describedby={categoryError ? "category-error" : undefined}
-          aria-invalid={invalid}
-          className="absolute inset-0 size-full cursor-pointer appearance-none opacity-0"
-          id="category"
-          name="category"
-          onChange={(event) => handleCategoryChange(event.currentTarget.value)}
-          value={category}
-        >
-          {RECORD_CATEGORY_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
       </div>
+      <FieldDescription id="record-category-description">이날에 어울리는 카테고리를 모두 골라주세요.</FieldDescription>
+      <input name="category" type="hidden" value={JSON.stringify(category)} />
+      <ToggleGroup
+        aria-describedby={cn("record-category-description record-category-hint", categoryError && "category-error")}
+        aria-invalid={invalid}
+        aria-labelledby="record-category-label"
+        className="mt-1 flex flex-wrap gap-2"
+        multiple
+        onValueChange={handleCategoryChange}
+        tabIndex={-1}
+        value={category}
+      >
+        {RECORD_CATEGORY_OPTIONS.filter((option) => option.value !== DEFAULT_RECORD_CATEGORY).map((option) => (
+          <Toggle
+            className={cn(
+              "inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 font-medium text-foreground text-sm after:inset-0 data-pressed:font-semibold",
+              FOCUS_RING,
+              PRESS_FEEDBACK,
+              RECORD_CATEGORY_SELECTED[option.value],
+              invalid && "border-destructive",
+            )}
+            key={option.value}
+            type="button"
+            value={option.value}
+          >
+            <span
+              aria-hidden="true"
+              className={cn("size-2 shrink-0 rounded-full", RECORD_CATEGORY_DOT[option.value])}
+            />
+            {option.label}
+          </Toggle>
+        ))}
+      </ToggleGroup>
+      <FieldDescription className="mt-1 text-xs" id="record-category-hint">
+        선택하지 않으면 미분류로 남아요.
+      </FieldDescription>
       <FieldError id="category-error">{categoryError}</FieldError>
     </Field>
   );

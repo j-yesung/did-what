@@ -130,7 +130,7 @@ export function RegionRecordList({
                     <PressLink
                       className={cn(
                         buttonVariants({ variant: "ghost" }),
-                        "h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
+                        "h-auto min-h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
                       )}
                       href={`/records/${record.id}`}
                       onClick={(event) => {
@@ -146,7 +146,9 @@ export function RegionRecordList({
                       <span className="min-w-0 flex-1">
                         <span className="flex min-w-0 items-center justify-between gap-2">
                           <span className="min-w-0 truncate font-semibold text-base leading-5">{record.activity}</span>
-                          <RecordCategoryBadge category={record.category} />
+                          <span className="flex max-w-1/2 flex-wrap justify-end gap-1">
+                            <RecordCategoryBadge category={record.category} />
+                          </span>
                         </span>
                         <span className="mt-1 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
                           <span className="shrink-0 tabular-nums">{period}</span>

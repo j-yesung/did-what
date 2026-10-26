@@ -89,7 +89,7 @@ export function RecordDayList({ date, onRecordOpen, records }: RecordDayListProp
                     />
                     <span className="min-w-0 flex-1">
                       <span className="block break-words font-semibold text-base leading-5">{record.activity}</span>
-                      <span className="mt-1.5 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
+                      <span className="mt-1.5 flex min-w-0 flex-wrap items-center gap-1.5 text-muted-foreground text-xs">
                         {period ? <span className="shrink-0 tabular-nums">{period}</span> : null}
                         {period && region ? <span aria-hidden="true">·</span> : null}
                         {region ? <span className="truncate">{region}</span> : null}

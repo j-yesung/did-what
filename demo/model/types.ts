@@ -16,7 +16,7 @@ export type DemoRegion = {
 export type DemoRecord = {
   activity: string;
   author_member_id: string;
-  category: string;
+  category: string[];
   created_at: string;
   id: string;
   memo: string | null;

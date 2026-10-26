@@ -15,8 +15,23 @@ export const isRecordCategory = (value: unknown): value is RecordCategory => {
   return RECORD_CATEGORY_OPTIONS.some((option) => option.value === value);
 };
 
+export const isRecordCategories = (value: unknown): value is RecordCategory[] => {
+  return Array.isArray(value) && value.length <= RECORD_CATEGORY_OPTIONS.length - 1 && value.every(isRecordCategory);
+};
+
+export const normalizeRecordCategories = (value: unknown): RecordCategory[] => {
+  const values = Array.isArray(value) ? value : [value];
+  return [
+    ...new Set(
+      values.filter(
+        (category): category is RecordCategory => isRecordCategory(category) && category !== DEFAULT_RECORD_CATEGORY,
+      ),
+    ),
+  ];
+};
+
 export const normalizeRecordCategory = (value: unknown): RecordCategory => {
-  return isRecordCategory(value) ? value : DEFAULT_RECORD_CATEGORY;
+  return normalizeRecordCategories(value)[0] ?? DEFAULT_RECORD_CATEGORY;
 };
 
 export const getRecordCategoryLabel = (category: RecordCategory) => {
@@ -49,4 +64,15 @@ export const RECORD_CATEGORY_BADGE: Record<RecordCategory, string> = {
   gathering: "bg-category-gathering/8 text-category-gathering",
   travel: "bg-primary/15 text-accent-text",
   uncategorized: "bg-muted text-muted-foreground",
+};
+
+export const RECORD_CATEGORY_SELECTED: Record<RecordCategory, string> = {
+  anniversary:
+    "data-pressed:border-category-anniversary data-pressed:bg-category-anniversary/8 data-pressed:text-category-anniversary",
+  daily: "data-pressed:border-category-daily data-pressed:bg-category-daily/8 data-pressed:text-category-daily",
+  date: "data-pressed:border-category-date data-pressed:bg-category-date/8 data-pressed:text-category-date",
+  gathering:
+    "data-pressed:border-category-gathering data-pressed:bg-category-gathering/8 data-pressed:text-category-gathering",
+  travel: "data-pressed:border-category-travel data-pressed:bg-category-travel/8 data-pressed:text-accent-text",
+  uncategorized: "",
 };

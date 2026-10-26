@@ -8,7 +8,6 @@ import { useFunnel } from "@use-funnel/browser";
 import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
 import { placesQueryOptions } from "@/entities/place";
 import {
-  DEFAULT_RECORD_CATEGORY,
   DEFAULT_RECORD_WEATHER,
   RECORDS_QUERY_KEY,
   type RecordCategory,
@@ -98,7 +97,7 @@ function RecordCreateFunnelClient({
     () => ({
       context: {
         activity: "",
-        category: DEFAULT_RECORD_CATEGORY,
+        category: [] as RecordCategory[],
         dirty: false,
         memo: "",
         places: defaultPlace ? [defaultPlace] : [],
@@ -234,7 +233,7 @@ function RecordCreateFunnelClient({
         <RecordCategoryField
           categoryError={fieldErrors.category}
           initialCategory={draft.category}
-          onChange={(category: RecordCategory) => updateContext({ category })}
+          onChange={(category: RecordCategory[]) => updateContext({ category })}
         />
         <RecordActivityField activityError={fieldErrors.activity} initialActivity={draft.activity} />
         <RecordMemoField initialMemo={draft.memo} memoError={fieldErrors.memo} />

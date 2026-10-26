@@ -5,7 +5,7 @@ import { test } from "node:test";
 
 const context = {
   activity: "",
-  category: "uncategorized",
+  category: [],
   dirty: false,
   memo: "",
   places: [],
@@ -63,6 +63,7 @@ test("단계 검증과 최종 저장 검증은 날짜·제목·메모 경계에�
     const input = { ...context, activity: "산책", ...overrides };
     const result = validateRecordInput({
       ...input,
+      category: JSON.stringify(input.category),
       regions: JSON.stringify([{ code: "1144000000", label: "마포구", name: "서울 마포구" }]),
       places: "[]",
     });
@@ -71,4 +72,17 @@ test("단계 검증과 최종 저장 검증은 날짜·제목·메모 경계에�
       assert.equal(errors[key], result.fieldErrors?.[key], JSON.stringify(overrides));
     }
   }
+});
+
+test("작성 단계에서 선택한 복수 카테고리는 최종 저장까지 유지된다", async () => {
+  const { toRecordCreateFormData } = await import("@/widgets/record-form/model/create-record-funnel");
+  const { readRecordInput, validateRecordInput } = await import("@/entities/record/model/record-form");
+  const input = {
+    ...context,
+    activity: "둘이서 떠난 여행",
+    category: ["date", "travel"],
+    regions: [{ code: "1144000000", label: "마포구", fullName: "서울 마포구" }],
+  };
+  const formData = toRecordCreateFormData(input);
+  assert.deepEqual(validateRecordInput(readRecordInput(formData)).data.category, ["date", "travel"]);
 });

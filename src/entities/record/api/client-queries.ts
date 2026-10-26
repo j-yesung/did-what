@@ -75,7 +75,8 @@ export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCurs
     .order("id", { ascending })
     .limit(RECORD_PAGE_SIZE + 1);
 
-  if (filters.category) query = query.eq("category", filters.category);
+  if (filters.category === "uncategorized") query = query.filter("category", "eq", "{}");
+  else if (filters.category) query = query.contains("category", [filters.category]);
   if (period.from) query = query.or(period.from);
   if (period.to) query = query.lte("recorded_at", period.to);
   if (filters.query) {

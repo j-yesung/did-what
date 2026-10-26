@@ -234,7 +234,7 @@ export const createSeedState = (today: string): DemoState => {
     return {
       activity: seed.activity,
       author_member_id: seed.author,
-      category: seed.category,
+      category: [seed.category],
       created_at: timestampOf(recordedAt, seed.index * 7),
       id: demoId("b", seed.index),
       memo: seed.memo ?? null,

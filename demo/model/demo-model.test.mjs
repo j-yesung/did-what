@@ -221,7 +221,7 @@ test("카테고리 필터는 검색·기간·정렬과 함께 다음 페이지�
   assert.equal(second.nextCursor, null);
   const rows = [...first.records, ...second.records];
   assert.equal(new Set(rows.map((row) => row.id)).size, 26);
-  assert.ok(rows.every((row) => row.category === "travel" && row.activity.includes("부산")));
+  assert.ok(rows.every((row) => row.category.includes("travel") && row.activity.includes("부산")));
   assert.equal(getRecordPage(state, { ...filters, category: "daily" }, null).records.length, 0);
 });
 
@@ -230,7 +230,7 @@ test("데모 생성·수정은 같은 지역의 다른 표시명을 보존하고
   const region = (label) => ({ code: "1144012000", label, name: "서울 마포구 망원동" });
   const input = {
     activity: "마포 산책",
-    category: "daily",
+    category: ["daily"],
     recordedAt: TODAY,
     weather: "sunny",
     regions: [region("마포구"), region("망원동"), region(" 망원동 ")],
@@ -267,7 +267,7 @@ test("데모도 표시명이 다른 방문 지역 항목은 최대 10개까지 �
   const state = createSeedState(TODAY);
   const input = {
     activity: "마포 산책",
-    category: "daily",
+    category: ["daily"],
     recordedAt: TODAY,
     weather: "sunny",
     places: [],
@@ -294,7 +294,7 @@ test("데모도 표시명이 다른 방문 지역 항목은 최대 10개까지 �
 test("조회 순서가 바뀐 기록의 메모만 수정해도 대표 표시명을 유지한다", () => {
   const input = {
     activity: "마포 산책",
-    category: "daily",
+    category: ["daily"],
     recordedAt: TODAY,
     weather: "sunny",
     places: [],
@@ -315,4 +315,35 @@ test("조회 순서가 바뀐 기록의 메모만 수정해도 대표 표시명�
   const after = resolveDemoQuery(updated.state, ["records", "detail", created.recordId], undefined);
   assert.equal(after.region_label, "난지 한강공원");
   assert.equal(after.memo, "메모만 수정");
+});
+
+test("복수 카테고리는 각 카테고리 필터에서 조회되고 수정 후 미분류로 바꿀 수 있다", () => {
+  const input = {
+    activity: "둘이서 떠난 여행",
+    category: ["date", "travel"],
+    recordedAt: TODAY,
+    weather: "sunny",
+    places: [],
+    regions: [{ code: "1144012000", label: "망원동", name: "서울 마포구 망원동" }],
+  };
+  const created = createRecord(createSeedState(TODAY), input, DEMO_MEMBER_IDS.jimin, context());
+  assert.equal(created.ok, true);
+  for (const category of input.category) {
+    assert.ok(
+      getRecordPage(created.state, { ...FILTERS, category }, null).records.some(({ id }) => id === created.recordId),
+    );
+  }
+  const updated = updateRecord(created.state, created.recordId, { ...input, category: [] }, context());
+  assert.equal(updated.ok, true);
+  assert.deepEqual(resolveDemoQuery(updated.state, ["records", "detail", created.recordId], undefined).category, []);
+  assert.ok(
+    getRecordPage(updated.state, { ...FILTERS, category: "uncategorized" }, null).records.some(
+      ({ id }) => id === created.recordId,
+    ),
+  );
+  assert.ok(
+    !getRecordPage(updated.state, { ...FILTERS, category: "date" }, null).records.some(
+      ({ id }) => id === created.recordId,
+    ),
+  );
 });
