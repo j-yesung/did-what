@@ -53,7 +53,8 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
     },
     onFail: () => setErrorFocusKey((key) => key + 1),
   });
-  const guard = useLeaveGuard({ busy: save.isPending, fallbackHref: returnTo, isDirty: () => dirtyRef.current });
+  const busy = save.isPending || save.data?.status === "success";
+  const guard = useLeaveGuard({ busy, fallbackHref: returnTo, isDirty: () => dirtyRef.current });
 
   const fieldErrors = clientErrors ?? save.data?.fieldErrors;
 
@@ -143,7 +144,7 @@ export function RecordEditForm({ action, initialValues, returnTo, savedTo }: Rec
           <RecordMemoField initialMemo={initialValues.memo} memoError={fieldErrors?.memo} />
         </FieldGroup>
 
-        <Button className="mt-5" fullWidth loading={save.isPending} size="xlarge" type="submit">
+        <Button className="mt-5" fullWidth loading={busy} size="xlarge" type="submit">
           수정 완료
         </Button>
       </div>
