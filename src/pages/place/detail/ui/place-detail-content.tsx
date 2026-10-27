@@ -10,7 +10,6 @@ import { placeQueryOptions, placeRecordsQueryOptions, placesQueryOptions } from 
 import { EmptyRecords, RecordCreateButton, RecordTimelineItems } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { DeletePlaceConfirm } from "@/features/place/delete-place/ui/delete-place-confirm";
-import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
 import { FixedToolbar, PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -24,20 +23,17 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const placesQuery = useQuery(placesQueryOptions);
   const prefetchComments = (recordId: string) =>
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
-  const cachedPlace = placesQuery.data?.find(({ id }) => id === placeId);
   const placeQuery = useQuery({
     ...placeQueryOptions(placeId),
-    enabled: !cachedPlace && !placesQuery.isPending,
+    initialData: () => queryClient.getQueryData(placesQueryOptions.queryKey)?.find(({ id }) => id === placeId),
   });
-  const place = cachedPlace ?? placeQuery.data;
+  const place = placeQuery.data;
   const recordsQuery = useQuery(placeRecordsQueryOptions(placeId));
   const records = (recordsQuery.data ?? [])
     .map(({ record }) => record)
     .toSorted((a, b) => b.recorded_at.localeCompare(a.recorded_at));
-  const isPlacePending = !place && !placeQuery.isError && (placesQuery.isPending || placeQuery.isPending);
 
   return (
     <>
@@ -48,7 +44,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
         <PageShell>
           <PageHeader back="/places" />
 
-          {isPlacePending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
+          {placeQuery.isPending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
             <LoadErrorAlert
               icon={<MapPinIcon aria-hidden="true" />}
               onRetry={
@@ -99,12 +95,8 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                   <RecordTimelineItems records={records} onDetailPrefetch={prefetchComments} />
                 </section>
               ) : (
-                <div className="flex flex-col items-center gap-6 py-8">
+                <div className="flex flex-col items-center py-8">
                   <EmptyRecords title={`${place.name}에서 남긴 기록이 없어요`} />
-                  <RecordCreateButton href={`/records/new?placeId=${place.id}`}>
-                    <NotePencilRoundedIcon aria-hidden="true" data-icon="inline-start" />
-                    이곳에서 기록하기
-                  </RecordCreateButton>
                 </div>
               )}
             </>

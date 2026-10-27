@@ -1,5 +1,7 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import { placesQueryOptions } from "@/entities/place";
 import { RECORDS_QUERY_KEY } from "@/entities/record";
 import { RECORD_COMMENTS_QUERY_KEY } from "@/entities/record-comment";
@@ -20,9 +22,22 @@ type DeleteRecordConfirmProps = {
 
 export function DeleteRecordConfirm({ activity, onClose, onDeleted, open, recordId }: DeleteRecordConfirmProps) {
   const removeRecord = useDemoOverride(deleteRecord);
-  const remove = useActionMutation(() => removeRecord(recordId), {
+  const queryClient = useQueryClient();
+  const removeAndRefresh = async () => {
+    const result = await removeRecord(recordId);
+    if (result.status === "error") return result;
+
+    await queryClient.invalidateQueries({ queryKey: RECORDS_QUERY_KEY, refetchType: "none" });
+    await queryClient.refetchQueries({
+      queryKey: RECORDS_QUERY_KEY,
+      type: "all",
+      predicate: ({ queryKey }) => queryKey[1] !== "detail" && queryKey[1] !== "summary",
+    });
+    return result;
+  };
+  const remove = useActionMutation(removeAndRefresh, {
     error: "기록을 삭제하지 못했어요",
-    invalidate: [RECORDS_QUERY_KEY, RECORD_COMMENTS_QUERY_KEY, placesQueryOptions.queryKey],
+    invalidate: [RECORD_COMMENTS_QUERY_KEY, placesQueryOptions.queryKey],
     success: "기록을 삭제했어요",
     onSuccess: () => {
       onClose();

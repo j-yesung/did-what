@@ -15,7 +15,7 @@ export function RecordToolbarActions({ children, recordId }: RecordToolbarAction
   const router = useRouter();
   const queryClient = useQueryClient();
   const summary = getRecordSummary(queryClient, recordId);
-  const recordQuery = useQuery({ ...recordDetailQueryOptions(recordId), enabled: !summary });
+  const recordQuery = useQuery({ ...recordDetailQueryOptions(recordId), enabled: false });
   const record = pickNewerRecord(summary, recordQuery.data, recordQuery.dataUpdatedAt);
 
   return (

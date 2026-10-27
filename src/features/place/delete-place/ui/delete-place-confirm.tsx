@@ -1,5 +1,7 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import { placesQueryOptions } from "@/entities/place";
 import { RECORD_DETAILS_QUERY_KEY } from "@/entities/record";
 import { useDemoOverride } from "@/shared/lib/demo-override";
@@ -20,9 +22,22 @@ type DeletePlaceConfirmProps = {
 
 export function DeletePlaceConfirm({ name, onClose, onDeleted, open, placeId, recordCount }: DeletePlaceConfirmProps) {
   const removePlace = useDemoOverride(deletePlace);
-  const remove = useActionMutation(() => removePlace(placeId), {
+  const queryClient = useQueryClient();
+  const removeAndRefresh = async () => {
+    const result = await removePlace(placeId);
+    if (result.status === "error") return result;
+
+    await queryClient.invalidateQueries({ queryKey: placesQueryOptions.queryKey, refetchType: "none" });
+    await queryClient.refetchQueries({
+      queryKey: placesQueryOptions.queryKey,
+      type: "all",
+      predicate: ({ queryKey }) => queryKey[1] !== "detail" || queryKey[2] !== placeId,
+    });
+    return result;
+  };
+  const remove = useActionMutation(removeAndRefresh, {
     error: "장소를 삭제하지 못했어요",
-    invalidate: [placesQueryOptions.queryKey, RECORD_DETAILS_QUERY_KEY],
+    invalidate: [RECORD_DETAILS_QUERY_KEY],
     onSuccess: () => {
       onClose();
       onDeleted?.();

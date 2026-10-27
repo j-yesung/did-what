@@ -27,15 +27,15 @@ export function RecordDetailHeader({ heading: Heading = "h2", record, regionText
   const category = normalizeRecordCategory(record.category);
   const Icon = CATEGORY_ICONS[category];
   return (
-    <div className={cn("w-full min-w-0 rounded-3xl p-6", RECORD_CATEGORY_BADGE[category])}>
-      <div className="flex items-start justify-between gap-3">
+    <div className={cn("w-full min-w-0 rounded-3xl p-5", RECORD_CATEGORY_BADGE[category])}>
+      <div className="flex items-start justify-between gap-2">
         <Heading
-          className="min-w-0 text-balance font-bold text-3xl text-foreground leading-tight tracking-[-0.045em]"
+          className="min-w-0 flex-1 break-words font-bold text-2xl text-foreground leading-tight tracking-[-0.045em]"
           id={titleId}
         >
           {record.activity}
         </Heading>
-        <span aria-hidden="true" className="flex size-9 shrink-0 -rotate-12 items-center justify-center">
+        <span aria-hidden="true" className="flex size-6 shrink-0 -rotate-12 items-center justify-center">
           <Icon className="size-5" />
         </span>
       </div>

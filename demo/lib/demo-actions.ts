@@ -92,8 +92,20 @@ export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): De
   const update = (change: Partial<DemoState>) => demoStore.update((state) => ({ ...state, ...change, changed: true }));
 
   const entries: [unknown, unknown][] = [
-    [deleteRecord, (recordId: string) => save(() => commit(actions.deleteRecord(demoStore.get(), recordId)))],
-    [deletePlace, (placeId: string) => save(() => commit(actions.deletePlace(demoStore.get(), placeId)))],
+    [
+      deleteRecord,
+      async (recordId: string) => {
+        await delay(350);
+        return commit(actions.deleteRecord(demoStore.get(), recordId));
+      },
+    ],
+    [
+      deletePlace,
+      async (placeId: string) => {
+        await delay(350);
+        return commit(actions.deletePlace(demoStore.get(), placeId));
+      },
+    ],
     [
       setPlaceSaved,
       (placeId: string, saved: boolean) =>
