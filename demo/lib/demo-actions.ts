@@ -99,7 +99,13 @@ export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): De
         return commit(actions.deleteRecord(demoStore.get(), recordId));
       },
     ],
-    [deletePlace, (placeId: string) => save(() => commit(actions.deletePlace(demoStore.get(), placeId)))],
+    [
+      deletePlace,
+      async (placeId: string) => {
+        await delay(350);
+        return commit(actions.deletePlace(demoStore.get(), placeId));
+      },
+    ],
     [
       setPlaceSaved,
       (placeId: string, saved: boolean) =>

@@ -24,20 +24,17 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const placesQuery = useQuery(placesQueryOptions);
   const prefetchComments = (recordId: string) =>
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
-  const cachedPlace = placesQuery.data?.find(({ id }) => id === placeId);
   const placeQuery = useQuery({
     ...placeQueryOptions(placeId),
-    enabled: !cachedPlace && !placesQuery.isPending,
+    initialData: () => queryClient.getQueryData(placesQueryOptions.queryKey)?.find(({ id }) => id === placeId),
   });
-  const place = cachedPlace ?? placeQuery.data;
+  const place = placeQuery.data;
   const recordsQuery = useQuery(placeRecordsQueryOptions(placeId));
   const records = (recordsQuery.data ?? [])
     .map(({ record }) => record)
     .toSorted((a, b) => b.recorded_at.localeCompare(a.recorded_at));
-  const isPlacePending = !place && !placeQuery.isError && (placesQuery.isPending || placeQuery.isPending);
 
   return (
     <>
@@ -48,7 +45,7 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
         <PageShell>
           <PageHeader back="/places" />
 
-          {isPlacePending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
+          {placeQuery.isPending ? null : placeQuery.isError || recordsQuery.isError || !place ? (
             <LoadErrorAlert
               icon={<MapPinIcon aria-hidden="true" />}
               onRetry={
