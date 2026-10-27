@@ -129,7 +129,8 @@ function RecordCreateFunnelClient({
       if (errorStep && errorStep !== funnel.step) void funnel.history.replace(errorStep, draft);
     },
   });
-  const busy = save.isPending;
+  const busy = save.isPending || save.data?.status === "success";
+  const step = busy ? "what" : funnel.step;
   const dirty = draft.dirty || pickerDraft.selectedPlaces.size > 0 || pickerDraft.selectedRegions.size > 0;
   const navigation = useLeaveGuard({
     busy,
@@ -241,7 +242,7 @@ function RecordCreateFunnelClient({
     );
   };
 
-  const nextDisabled = busy || (funnel.step === "where" && !placesQuery.isSuccess);
+  const nextDisabled = busy || (step === "where" && !placesQuery.isSuccess);
 
   return (
     <form
@@ -265,7 +266,7 @@ function RecordCreateFunnelClient({
             fullWidth
             loading={busy}
             onClick={
-              funnel.step === "what"
+              step === "what"
                 ? undefined
                 : (event) => {
                     event.preventDefault();
@@ -273,15 +274,15 @@ function RecordCreateFunnelClient({
                   }
             }
             size="xlarge"
-            type={funnel.step === "what" ? "submit" : "button"}
+            type={step === "what" ? "submit" : "button"}
           >
-            {funnel.step === "what" ? "기록 남기기" : "다음"}
+            {step === "what" ? "기록 남기기" : "다음"}
           </Button>
         }
-        onBack={funnel.step === "when" ? navigation.exit : () => void funnel.history.back()}
-        step={funnel.step}
+        onBack={step === "when" ? navigation.exit : () => void funnel.history.back()}
+        step={step}
       >
-        {renderStep(funnel.step)}
+        {renderStep(step)}
       </RecordFunnelLayout>
     </form>
   );
