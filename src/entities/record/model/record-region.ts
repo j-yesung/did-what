@@ -25,17 +25,20 @@ export const sortPrimaryRecordRegions = <T extends { region_code: string; region
 
 /**
  * 방문 지역 문구. 대표 지역을 앞에 두고 limit곳까지 적은 뒤 나머지는 "외 N곳"으로 줄인다.
- * 지역은 이름이 아니라 코드로 가린다. 서울 중구와 부산 중구처럼 이름이 같은 지역이 한 기록에 함께 있을 수 있다.
  */
 export const formatRecordRegionLabels = (
   record: Pick<RecordSummary, "record_regions" | "region_code" | "region_label">,
   limit = VISIBLE_REGION_LIMIT,
 ): string => {
-  const labels = record.record_regions?.length
-    ? sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label).map(
-        (region) => region.region_label,
-      )
-    : [record.region_label ?? ""].filter(Boolean);
+  const labels = [
+    ...new Set(
+      record.record_regions?.length
+        ? sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label).map(
+            (region) => region.region_label,
+          )
+        : [record.region_label ?? ""].filter(Boolean),
+    ),
+  ];
 
   if (labels.length <= limit) return labels.join(" · ");
   return `${labels.slice(0, limit).join(" · ")} 외 ${labels.length - limit}곳`;
