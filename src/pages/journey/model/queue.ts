@@ -3,13 +3,18 @@ export type JourneyQueue<T extends JourneyPlace> = {
   current: T | null;
   active: T | null;
   queue: T[];
+  segments: { target: T | null }[];
   status: "loading" | "drawing" | "idle" | "error";
 };
 
-/** Consecutive duplicate clicks do not add a zero-length leg; revisiting an older place remains possible. */
+/** A place is picked once: drawn, in-flight or queued places ignore further taps, so no leg or distance repeats. */
 export const enqueueJourneyPlace = <T extends JourneyPlace, S extends JourneyQueue<T>>(state: S, place: T): S => {
-  const last = state.queue.at(-1) ?? state.active ?? state.current;
-  if (last?.id === place.id) return state;
+  if (
+    state.active?.id === place.id ||
+    state.queue.some((queued) => queued.id === place.id) ||
+    state.segments.some((segment) => segment.target?.id === place.id)
+  )
+    return state;
   if (state.status === "idle") return { ...state, active: place, status: "loading" };
   return { ...state, queue: [...state.queue, place] };
 };

@@ -20,25 +20,8 @@ export const getJourneyDirections = async (request: Request) => {
     (from && (!target || !uuid.test(from)))
   )
     return Response.json({ error: "잘못된 요청입니다." }, { status: 400 });
-  const { data, error } = await supabase
-    .from("records")
-    .select(
-      "id, activity, recorded_at, record_regions(region_code, region_name, region_latitude, region_longitude), record_places(created_at, place:places(id, name, latitude, longitude))",
-    )
-    .eq("id", id)
-    .eq("owner_id", user.id)
-    .maybeSingle();
-  if (error) return Response.json({ error: "기록을 불러오지 못했어요." }, { status: 500 });
-  const record = data && groupTravelRecords([data])[region]?.records[0];
-  const destination = target ? record?.places.find((place) => place.id === target) : record?.destination;
-  if (!record || !destination) return Response.json({ error: "해당 장소를 찾을 수 없어요." }, { status: 404 });
-  let origin: { latitude: number; longitude: number } | null | undefined = from
-    ? record.places.find((place) => place.id === from)
-    : target
-      ? record.destination
-      : null;
-  if (from && !origin) return Response.json({ error: "출발 장소를 찾을 수 없어요." }, { status: 404 });
-  if (!target) {
+  // The home leg needs address → geocode; run that chain alongside the record lookup instead of after it.
+  const homeOrigin = async () => {
     const { data: home, error: homeError } = await supabase
       .from("member_home_addresses")
       .select("address")
@@ -52,11 +35,27 @@ export const getJourneyDirections = async (request: Request) => {
         { status: 400 },
       );
     try {
-      origin = await geocodeHomeAddress(home.address, request.signal);
+      return await geocodeHomeAddress(home.address, request.signal);
     } catch {
       return Response.json({ error: "집 주소를 확인하지 못했어요. 설정에서 주소를 확인해 주세요." }, { status: 502 });
     }
-  }
+  };
+  const recordQuery = supabase
+    .from("records")
+    .select(
+      "id, activity, recorded_at, record_regions(region_code, region_name, region_latitude, region_longitude), record_places(created_at, place:places(id, name, latitude, longitude))",
+    )
+    .eq("id", id)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  const [{ data, error }, home] = await Promise.all([recordQuery, target ? null : homeOrigin()]);
+  if (error) return Response.json({ error: "기록을 불러오지 못했어요." }, { status: 500 });
+  const record = data && groupTravelRecords([data])[region]?.records[0];
+  const destination = target ? record?.places.find((place) => place.id === target) : record?.destination;
+  if (!record || !destination) return Response.json({ error: "해당 장소를 찾을 수 없어요." }, { status: 404 });
+  if (home instanceof Response) return home;
+  const origin = from ? record.places.find((place) => place.id === from) : target ? record.destination : home;
+  if (from && !origin) return Response.json({ error: "출발 장소를 찾을 수 없어요." }, { status: 404 });
   if (!origin) return Response.json({ error: "출발지를 찾을 수 없어요." }, { status: 404 });
   const key = process.env.KAKAO_REST_API_KEY;
   if (!key) return Response.json({ error: "길찾기를 사용할 수 없어요." }, { status: 503 });

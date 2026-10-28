@@ -1,29 +1,36 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, memo, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { ArrowsInSimpleIcon, HouseIcon, ListBulletsIcon, MapTrifoldIcon, PlayIcon } from "@phosphor-icons/react";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { BottomSheet } from "@/shared/ui/bottom-sheet";
+import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/record";
+import { createRegionActivityMaps } from "@/entities/region";
+import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
+import { Button } from "@/shared/ui/button";
+import { FixedToolbar } from "@/shared/ui/layouts";
+import { PageBackButton } from "@/shared/ui/layouts/page-back-button";
+import { PressLink } from "@/shared/ui/press-link";
+import { RecordDetailBottomSheet } from "@/widgets/record-detail";
+import { RegionRecordList } from "@/widgets/region-activity-map/ui/region-record-list";
 
+import { durationParts } from "../model/duration";
 import boundaries from "../model/map-boundaries.json";
 import { enqueueJourneyPlace, skipJourneyPlace } from "../model/queue";
+import { type JourneyPlace, type JourneyRecord, toJourneyRecord } from "../model/record";
+import { JourneyActions } from "./journey-actions";
 import styles from "./journey-map.module.css";
 
 type Point = { latitude: number; longitude: number };
-type Place = Point & { id: string; name: string };
+type Place = JourneyPlace;
 type Region = Point & { code: string; name: string; count: number };
-type RecordItem = {
-  id: string;
-  title: string;
-  date: string;
-  memo: string | null;
-  places: Place[];
-  destination: Point & { name: string };
-};
+type RecordItem = JourneyRecord;
 type Route = { points: [number, number][]; distance: number; duration: number };
-type Segment = { route: Route; target: Place | null; key: number };
+/** `from` is null for the home leg: the home coordinate never reaches the browser. */
+type Segment = { route: Route; target: Place | null; from: Point | null; to: Point; key: number };
 type Session = {
   record: RecordItem;
   region: Region;
@@ -33,14 +40,32 @@ type Session = {
   status: "loading" | "drawing" | "idle" | "error";
   error: string;
   current: Place | null;
+  /** 다시 보기 in progress: the action buttons fade out until the last leg lands. */
+  replaying: boolean;
 };
 type Box = { x: number; y: number; width: number; height: number };
-const national: Box = { x: 90, y: 15, width: 260, height: 355 };
+const capitalArea: Box = { x: 137, y: 84, width: 70, height: 96 };
+const capitalCodes = ["KR-11", "KR-41", "KR-28"];
 const project = (longitude: number, latitude: number) => ({
   x: 110 + (longitude - 125.5) * 49 * Math.cos((36 * Math.PI) / 180),
   y: 23 + (39.4 - latitude) * 49,
 });
-const routeBox = (routes: Route[]): Box => {
+// Same longitude/latitude bounds as the home map's HOME_FRAME (same cos 36° projection), so the mainland and Jeju
+// sit centered. Baengnyeongdo to the west and Ulleungdo/Dokdo to the east fall outside and show on zoom out.
+const homeTopLeft = project(125.5, 39.4),
+  homeBottomRight = project(130.2, 32.4);
+const national: Box = {
+  x: homeTopLeft.x,
+  y: homeTopLeft.y,
+  width: homeBottomRight.x - homeTopLeft.x,
+  height: homeBottomRight.y - homeTopLeft.y,
+};
+// Dongdo and Seodo. The boundary data has no Dokdo, so it is drawn here (slightly enlarged to stay visible).
+const dokdo = [
+  { longitude: 131.8697, latitude: 37.2411 },
+  { longitude: 131.8636, latitude: 37.2425 },
+].map(({ longitude, latitude }) => project(longitude, latitude));
+const routeBounds = (routes: Route[]) => {
   let x = Infinity,
     y = Infinity,
     maxX = -Infinity,
@@ -53,25 +78,94 @@ const routeBox = (routes: Route[]): Box => {
       maxX = Math.max(maxX, point.x);
       maxY = Math.max(maxY, point.y);
     }
-  if (!Number.isFinite(x)) return national;
+  return Number.isFinite(x) ? { x, y, maxX, maxY } : null;
+};
+const routeBox = (routes: Route[]): Box => {
+  const bounds = routeBounds(routes);
+  if (!bounds) return national;
+  const { x, y, maxX, maxY } = bounds;
   const width = Math.max(0.5, maxX - x),
     height = Math.max(0.75, maxY - y);
   const paddedWidth = Math.max(width * 1.8, height * 0.75, 0.9),
     paddedHeight = Math.max(height * 1.8, width * 1.2, 1.4);
+  // Centered at 45% from the top: the title and buttons cover the top, the badges and distance the bottom.
   return {
     x: x + width / 2 - paddedWidth / 2,
-    y: y + height / 2 - paddedHeight / 2,
+    y: y + height / 2 - paddedHeight * 0.45,
     width: paddedWidth,
     height: paddedHeight,
   };
 };
+/**
+ * Camera for a place leg: stays put only when the leg is already in the open middle area (title and buttons cover
+ * the top, badges and distance the bottom) and big enough to read; otherwise fits it. After a long home leg (e.g. Seoul → Daegu) the first
+ * place leg is a speck, so this zooms in; later legs of a similar size then leave the camera alone.
+ */
+const followBox = (view: Box, route: Route): Box | null => {
+  const bounds = routeBounds([route]);
+  if (!bounds) return null;
+  const fit = routeBox([route]);
+  const left = view.x + view.width * 0.1,
+    top = view.y + view.height * 0.2;
+  const visible =
+    bounds.x >= left &&
+    bounds.maxX <= left + view.width * 0.8 &&
+    bounds.y >= top &&
+    bounds.maxY <= top + view.height * 0.5;
+  return visible && fit.width >= view.width * 0.3 ? null : fit;
+};
+const legParams = (record: RecordItem, region: Region, target: Place | null, from: Place | null) => {
+  const params = new URLSearchParams({ recordId: record.id, region: region.code });
+  if (target) {
+    params.set("placeId", target.id);
+    if (from) params.set("fromPlaceId", from.id);
+  }
+  return params;
+};
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const fetchRoute = async (params: URLSearchParams, signal: AbortSignal) => {
+  const response = await fetch(`/journey/directions?${params}`, { signal, cache: "no-store" });
+  const body = (await response.json()) as { route?: Route; error?: string };
+  if (!response.ok || !body.route) throw new Error(body.error ?? "경로를 불러오지 못했어요.");
+  return body.route;
+};
+/** Home (drawn as an icon) and place labels. A revisited place keeps one label; nearby labels stack upward by 14px. */
+const routeLabels = (
+  startPoint: { x: number; y: number } | null,
+  session: Session | null,
+  segments: Segment[],
+  unit: number,
+) => {
+  if (!session || !startPoint) return [];
+  const labels = new Map([["home", { ...startPoint, name: "내 집" }]]);
+  // The region's name is the page title instead of a map label.
+  for (const segment of segments) {
+    if (!segment.target) continue;
+    const name = segment.target.name;
+    labels.set(`${name}:${segment.to.longitude},${segment.to.latitude}`, {
+      ...project(segment.to.longitude, segment.to.latitude),
+      name,
+    });
+  }
+  const placed: { x: number; y: number; shift: number }[] = [];
+  return [...labels].map(([key, label]) => {
+    let shift = 0;
+    for (const other of placed)
+      if (Math.abs(label.x - other.x) < unit * 70 && Math.abs(label.y - other.y) < unit * 20)
+        shift = Math.max(shift, other.shift + 14);
+    placed.push({ ...label, shift });
+    return { key, ...label, shift };
+  });
+};
 
 const MapShapes = memo(function MapShapes() {
   return (
     <g className={styles.land}>
       {boundaries.regions.map((item) => (
         <path key={item.code} d={item.path} />
+      ))}
+      {dokdo.map((point) => (
+        <circle key={point.x} cx={point.x} cy={point.y} r={0.45} />
       ))}
       <path d={boundaries.coast} />
     </g>
@@ -89,13 +183,17 @@ const DistrictShapes = memo(function DistrictShapes() {
 function SegmentPath({ segment, drawing, unit }: { segment: Segment; drawing: boolean; unit: number }) {
   const path = useMemo(
     () =>
-      segment.route.points
-        .map(([longitude, latitude], index) => {
+      [
+        ...(segment.from ? [segment.from] : []),
+        ...segment.route.points.map(([longitude, latitude]) => ({ longitude, latitude })),
+        segment.to,
+      ]
+        .map(({ longitude, latitude }, index) => {
           const point = project(longitude, latitude);
           return `${index ? "L" : "M"}${point.x},${point.y}`;
         })
         .join(""),
-    [segment.route.points],
+    [segment],
   );
   return (
     <path
@@ -107,7 +205,7 @@ function SegmentPath({ segment, drawing, unit }: { segment: Segment; drawing: bo
   );
 }
 
-function AnimatedNumber({ value, decimals }: { value: number; decimals: number }) {
+function AnimatedNumber({ value, format }: { value: number; format: (value: number) => ReactNode }) {
   const [display, setDisplay] = useState(0);
   const previous = useRef(0);
   useEffect(() => {
@@ -120,8 +218,9 @@ function AnimatedNumber({ value, decimals }: { value: number; decimals: number }
     }
     let frame = 0;
     const tick = (now: number) => {
-      const t = Math.min(1, (now - started) / 600);
-      const current = start + (value - start) * (1 - (1 - t) ** 3);
+      // Same 900ms linear timing as the line's sketch animation, so the numbers climb while it draws.
+      const t = Math.min(1, (now - started) / 900);
+      const current = start + (value - start) * t;
       previous.current = current;
       setDisplay(current);
       if (t < 1) frame = requestAnimationFrame(tick);
@@ -129,33 +228,74 @@ function AnimatedNumber({ value, decimals }: { value: number; decimals: number }
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [value]);
-  return <>{display.toFixed(decimals)}</>;
+  return <>{format(display)}</>;
 }
 
 export function JourneyMap({
   regions,
   hasHome,
   homeUnavailable,
-  memberId,
+  member,
 }: {
   regions: Region[];
   hasHome: boolean;
   homeUnavailable: boolean;
-  memberId: string;
+  member: { id: string; name: string };
 }) {
   const [region, setRegion] = useState<Region | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const sessionRef = useRef<Session | null>(null);
   const generation = useRef(0);
-  const controller = useRef<AbortController | null>(null);
-  const [sheet, setSheet] = useState<"regions" | "records" | "memo" | null>(null);
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  /**
+   * One cache entry per leg (record, region, target, origin), kept while this page is open (removed on leave).
+   * No retry: a failed leg shows 재시도 instead.
+   */
+  const routeQuery = (params: URLSearchParams) =>
+    queryOptions({
+      queryKey: ["journey-route", member.id, params.toString()],
+      queryFn: ({ signal }) => fetchRoute(params, signal),
+      staleTime: Number.POSITIVE_INFINITY,
+      retry: false,
+    });
+  const [sheet, setSheet] = useState<"regions" | "capital" | "records" | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const sheetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [sheetHeader, setSheetHeader] = useState<HTMLDivElement | null>(null);
+  const [sheetBody, setSheetBody] = useState<HTMLDivElement | null>(null);
+  const compactHeightRef = useRef(360);
+  const [compactHeight, setCompactHeight] = useState(360);
+  const [snapPoint, setSnapPoint] = useState<number | string | null>(360);
+  const showSheet = (next: typeof sheet) => {
+    if (sheetTimer.current) clearTimeout(sheetTimer.current);
+    sheetTimer.current = null;
+    setSheet(next);
+    setSnapPoint(next === "records" ? 1 : compactHeightRef.current);
+  };
+  // Same measuring as the settings address sheet: the region lists open at their own height, then rise to full for records.
+  useLayoutEffect(() => {
+    if ((sheet !== "regions" && sheet !== "capital") || !sheetHeader || !sheetBody) return;
+    const measure = () => {
+      const height = Math.ceil(sheetHeader.offsetHeight + sheetBody.offsetHeight + 29);
+      if (height === compactHeightRef.current) return;
+      const previous = compactHeightRef.current;
+      compactHeightRef.current = height;
+      setCompactHeight(height);
+      setSnapPoint((current) => (current === previous ? height : current));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(sheetHeader);
+    observer.observe(sheetBody);
+    return () => observer.disconnect();
+  }, [sheet, sheetHeader, sheetBody]);
+  const capitalRegions = regions.filter((item) => capitalCodes.includes(item.code));
   const [box, setBox] = useState<Box>(national);
   const boxRef = useRef(box);
   const cameraAnimation = useRef(0);
   const svg = useRef<SVGSVGElement>(null);
-  const drag = useRef<{ x: number; y: number; box: Box } | null>(null);
-  const chips = useRef<HTMLDivElement>(null);
-  const chipDrag = useRef<{ x: number; scroll: number; moved: boolean } | null>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
   const [dimensions, setDimensions] = useState({ width: 390, height: 844 });
   const setSessionValue = (next: Session | null) => {
     sessionRef.current = next;
@@ -186,6 +326,25 @@ export function JourneyMap({
     };
     cameraAnimation.current = requestAnimationFrame(tick);
   };
+  /** Zooms by `factor` around a screen point, then pans by a screen delta (pinch midpoint movement). */
+  const zoomAt = (clientX: number, clientY: number, factor: number, panX = 0, panY = 0) => {
+    const rect = svg.current?.getBoundingClientRect();
+    if (!rect) return;
+    const b = boxRef.current;
+    const scale = Math.max(b.width / rect.width, b.height / rect.height);
+    const anchorX = b.x + b.width / 2 + (clientX - rect.left - rect.width / 2) * scale;
+    const anchorY = b.y + b.height / 2 + (clientY - rect.top - rect.height / 2) * scale;
+    const f = Math.max(10, Math.min(400, b.width * factor)) / b.width;
+    setView({
+      x: anchorX + (b.x - anchorX) * f - panX * scale * f,
+      y: anchorY + (b.y - anchorY) * f - panY * scale * f,
+      width: b.width * f,
+      height: b.height * f,
+    });
+  };
+  const releasePointer = (event: React.PointerEvent) => {
+    pointers.current.delete(event.pointerId);
+  };
   useEffect(() => {
     const element = svg.current;
     if (!element) return;
@@ -196,79 +355,86 @@ export function JourneyMap({
     return () => {
       observer.disconnect();
       cancelAnimationFrame(cameraAnimation.current);
-      controller.current?.abort();
+      if (sheetTimer.current) clearTimeout(sheetTimer.current);
       generation.current++;
     };
   }, []);
-  const query = useInfiniteQuery({
-    queryKey: ["journey-records", memberId, region?.code],
-    enabled: Boolean(region && sheet === "records"),
-    initialPageParam: 0,
-    queryFn: async ({ pageParam, signal }) => {
-      const params = new URLSearchParams({ region: region!.code, page: String(pageParam) });
-      const response = await fetch(`/journey/records?${params}`, { signal });
-      if (!response.ok) throw new Error("기록을 불러오지 못했어요.");
-      return (await response.json()) as { records: RecordItem[]; nextPage: number | null };
-    },
-    getNextPageParam: (last) => last.nextPage ?? undefined,
-    staleTime: 60_000,
-  });
+  // The app shares one query client, so drop routes on leaving: a home address changed in settings must not
+  // come back as a cached home leg.
+  useEffect(() => () => queryClient.removeQueries({ queryKey: ["journey-route"] }), [queryClient]);
+  // The home map's record cache: the records sheet is the home sheet's list, fed by the same data.
+  const locations = useQuery(recordLocationsQueryOptions);
+  const [subregion, setSubregion] = useState<string | null>(null);
+  const regionMaps = useMemo(
+    () => (locations.data ? createRegionActivityMaps(toRegionLocations(locations.data)) : []),
+    [locations.data],
+  );
+  const journeyRecord = (recordId: string) => {
+    const record = locations.data?.find((item) => item.id === recordId);
+    return record && region ? toJourneyRecord(record, region.code) : null;
+  };
   const run = async (initial: Session, token: number) => {
     let next = initial;
     while (token === generation.current) {
       const target = next.active;
-      const params = new URLSearchParams({ recordId: next.record.id, region: next.region.code });
-      if (target) {
-        params.set("placeId", target.id);
-        if (next.current) params.set("fromPlaceId", next.current.id);
-      }
-      const abort = new AbortController();
-      controller.current = abort;
       try {
-        const response = await fetch(`/journey/directions?${params}`, { signal: abort.signal, cache: "no-store" });
-        const body = (await response.json()) as { route?: Route; error?: string };
-        if (!response.ok || !body.route) throw new Error(body.error ?? "경로를 불러오지 못했어요.");
+        // Joins a prefetch already in flight for this leg, or returns the cached route.
+        const route = await queryClient.fetchQuery(
+          routeQuery(legParams(next.record, next.region, target, next.current)),
+        );
         if (token !== generation.current) return;
-        const segment = { route: body.route, target, key: Date.now() + Math.random() };
+        const segment = {
+          route,
+          target,
+          from: target ? (next.current ?? next.record.destination) : null,
+          to: target ?? next.record.destination,
+          key: Date.now() + Math.random(),
+        };
         next = { ...sessionRef.current!, segments: [...sessionRef.current!.segments, segment], status: "drawing" };
         setSessionValue(next);
-        moveCamera(routeBox([body.route]));
+        const camera = target ? followBox(boxRef.current, route) : routeBox([route]);
+        if (camera) moveCamera(camera);
         await sleep(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 900);
         if (token !== generation.current) return;
         next = { ...sessionRef.current!, current: target, active: null, status: "idle" };
         setSessionValue(next);
-        if (!next.queue.length) return;
+        if (!next.queue.length) {
+          if (next.replaying) setSessionValue({ ...next, replaying: false });
+          return;
+        }
         const [first, ...rest] = next.queue;
         next = { ...next, active: first, queue: rest, status: "loading" };
         setSessionValue(next);
       } catch (error) {
-        if (token !== generation.current || abort.signal.aborted) return;
+        if (token !== generation.current) return;
         next = {
           ...sessionRef.current!,
           status: "error",
           error: error instanceof Error ? error.message : "경로를 불러오지 못했어요.",
+          replaying: false,
         };
         setSessionValue(next);
         return;
       }
     }
   };
-  const begin = (record: RecordItem, selectedRegion: Region, replay: Place[] = []) => {
-    controller.current?.abort();
+  const begin = (record: RecordItem, selectedRegion: Region, replay?: Place[]) => {
     const token = ++generation.current;
     const next: Session = {
       record,
       region: selectedRegion,
       segments: [],
-      queue: replay,
+      queue: replay ?? [],
       active: null,
       status: "loading",
       error: "",
       current: null,
+      replaying: Boolean(replay),
     };
     setSessionValue(next);
-    setSheet(null);
+    showSheet(null);
     void run(next, token);
+    prefetchLegs(record, selectedRegion);
   };
   const selectPlace = (place: Place) => {
     const current = sessionRef.current;
@@ -291,24 +457,65 @@ export function JourneyMap({
     setSessionValue(next);
     if (next.status === "loading") void run(next, generation.current);
   };
+  /**
+   * Every leg a badge tap can ask for — region → place and place → place in both directions — fetched once when
+   * the record opens, so no tap waits or calls the API. ponytail: only the first 6 places (6 + 30 calls);
+   * legs touching later places are fetched on tap.
+   */
+  const prefetchLegs = (record: RecordItem, selectedRegion: Region) => {
+    const places = record.places.slice(0, 6);
+    for (const to of places)
+      for (const from of [null, ...places])
+        if (from?.id !== to.id) void queryClient.prefetchQuery(routeQuery(legParams(record, selectedRegion, to, from)));
+  };
   const reset = () => {
     generation.current++;
-    controller.current?.abort();
     setSessionValue(null);
     setRegion(null);
-    setSheet(null);
+    showSheet(null);
     moveCamera(national);
   };
+  const chooseRegion = (selected: Region) => {
+    if (capitalCodes.includes(selected.code) && capitalRegions.length > 1) {
+      showSheet("capital");
+      moveCamera(capitalArea);
+      return;
+    }
+    openRegion(selected);
+  };
   const openRegion = (selected: Region) => {
-    setRegion(selected);
-    setSheet("records");
+    if (selected.code !== region?.code) setSubregion(null);
     const p = project(selected.longitude, selected.latitude);
     moveCamera({ x: p.x - 32, y: p.y - 48, width: 64, height: 96 });
+    const rising = sheet === "regions" || sheet === "capital";
+    if (!rising || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setRegion(selected);
+      showSheet("records");
+      return;
+    }
+    // Rise first, then swap the content once the sheet has reached full height (settings 주소 찾기 does the same).
+    setSnapPoint(1);
+    if (sheetTimer.current) clearTimeout(sheetTimer.current);
+    sheetTimer.current = setTimeout(() => {
+      sheetTimer.current = null;
+      setRegion(selected);
+      setSheet("records");
+    }, 250);
   };
   const unit = Math.max(box.width / dimensions.width, box.height / dimensions.height);
   const completeSegments = session?.status === "drawing" ? session.segments.slice(0, -1) : (session?.segments ?? []);
-  const distance = completeSegments.reduce((sum, segment) => sum + segment.route.distance, 0);
-  const duration = completeSegments.reduce((sum, segment) => sum + segment.route.duration, 0);
+  // A tap shows at once: drawn, in-flight and queued places all stay selected.
+  const selectedPlaceIds = new Set([
+    ...(session?.segments.flatMap((segment) => (segment.target ? [segment.target.id] : [])) ?? []),
+    ...(session?.active ? [session.active.id] : []),
+    ...(session?.queue.map((place) => place.id) ?? []),
+  ]);
+  const start = session?.segments[0]?.route.points[0];
+  const startPoint = start ? project(start[0], start[1]) : null;
+  // Includes the leg being drawn: AnimatedNumber climbs to it over the same 900ms as the line.
+  const segments = session?.segments ?? [];
+  const distance = segments.reduce((sum, segment) => sum + segment.route.distance, 0);
+  const duration = segments.reduce((sum, segment) => sum + segment.route.duration, 0);
   return (
     <main className={styles.page}>
       <svg
@@ -319,27 +526,37 @@ export function JourneyMap({
         onPointerDown={(event) => {
           if (event.button !== 0) return;
           cancelAnimationFrame(cameraAnimation.current);
-          drag.current = { x: event.clientX, y: event.clientY, box: boxRef.current };
+          pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+          event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
-          if (!drag.current) return;
-          const dx = (event.clientX - drag.current.x) * unit,
-            dy = (event.clientY - drag.current.y) * unit;
-          setView({ ...drag.current.box, x: drag.current.box.x - dx, y: drag.current.box.y - dy });
+          const tracked = pointers.current;
+          if (!tracked.has(event.pointerId)) return;
+          const [a, b] = [...tracked.values()];
+          tracked.set(event.pointerId, { x: event.clientX, y: event.clientY });
+          const [nextA, nextB] = [...tracked.values()];
+          if (!b) {
+            zoomAt(0, 0, 1, nextA.x - a.x, nextA.y - a.y);
+            return;
+          }
+          const distance = Math.hypot(nextB.x - nextA.x, nextB.y - nextA.y);
+          if (!distance || tracked.size > 2) return;
+          const midX = (a.x + b.x) / 2,
+            midY = (a.y + b.y) / 2;
+          zoomAt(
+            midX,
+            midY,
+            Math.hypot(b.x - a.x, b.y - a.y) / distance,
+            (nextA.x + nextB.x) / 2 - midX,
+            (nextA.y + nextB.y) / 2 - midY,
+          );
         }}
-        onPointerUp={() => {
-          drag.current = null;
-        }}
-        onPointerCancel={() => {
-          drag.current = null;
-        }}
+        onPointerUp={releasePointer}
+        onPointerCancel={releasePointer}
         onWheel={(event) => {
           cancelAnimationFrame(cameraAnimation.current);
-          const factor = event.deltaY > 0 ? 1.2 : 1 / 1.2;
-          const b = boxRef.current;
-          const width = Math.max(10, Math.min(400, b.width * factor));
-          const height = (b.height * width) / b.width;
-          setView({ x: b.x + (b.width - width) / 2, y: b.y + (b.height - height) / 2, width, height });
+          // Proportional to deltaY like the prototype: trackpads fire many small events, a fixed step per event overshoots.
+          zoomAt(event.clientX, event.clientY, Math.exp(event.deltaY * 0.001));
         }}
       >
         <MapShapes />
@@ -365,32 +582,24 @@ export function JourneyMap({
                 aria-label={`${item.name} 기록 ${item.count}개`}
                 className={styles.node}
                 onPointerDown={(event) => event.stopPropagation()}
-                onClick={() => openRegion(item)}
+                onClick={() => chooseRegion(item)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    openRegion(item);
+                    chooseRegion(item);
                   }
                 }}
               >
                 <circle cx={p.x} cy={p.y} r={unit * 15} fill="transparent" />
-                <circle cx={p.x} cy={p.y} r={unit * 4} className={styles.regionNode} />
-                <text x={p.x + unit * 8} y={p.y + unit * 4} fontSize={unit * 12}>
-                  {item.name}
-                </text>
+                <circle cx={p.x} cy={p.y} r={unit * 7} className={styles.halo} />
+                <circle cx={p.x} cy={p.y} r={unit * 3.5} className={styles.previous} />
               </g>
             );
           })}
-        {session?.segments[0]?.route.points[0] &&
-          (() => {
-            const [longitude, latitude] = session.segments[0].route.points[0];
-            const point = project(longitude, latitude);
-            return <circle cx={point.x} cy={point.y} r={unit * 3.5} className={styles.previous} />;
-          })()}
+        {startPoint && <circle cx={startPoint.x} cy={startPoint.y} r={unit * 3.5} className={styles.previous} />}
         {session &&
           completeSegments.map((segment, index) => {
-            const point = segment.target ?? session.record.destination;
-            const p = project(point.longitude, point.latitude);
+            const p = project(segment.to.longitude, segment.to.latitude);
             const isCurrent = index === completeSegments.length - 1 && session.status !== "drawing";
             return (
               <g key={`point-${segment.key}`}>
@@ -399,116 +608,133 @@ export function JourneyMap({
               </g>
             );
           })}
-      </svg>
-      <header className={styles.header}>
-        <Link href="/" aria-label="홈으로">
-          ←
-        </Link>
-        <span>우리의 발자취</span>
-        {session ? (
-          <button type="button" onClick={reset}>
-            전국 지도
-          </button>
-        ) : (
-          <button type="button" onClick={() => setSheet("regions")}>
-            지역 목록
-          </button>
+        {routeLabels(startPoint, session, completeSegments, unit).map((label) =>
+          label.key === "home" ? (
+            <HouseIcon
+              key={label.key}
+              aria-label="내 집"
+              className={styles.homeIcon}
+              size={unit * 14}
+              weight="fill"
+              // Centered over the start dot (r 3.5) with a small gap.
+              x={label.x - unit * 7}
+              y={label.y - unit * (20 + label.shift)}
+            />
+          ) : (
+            <text
+              key={label.key}
+              className={styles.label}
+              x={label.x + unit * 7}
+              y={label.y - unit * (7 + label.shift)}
+              fontSize={unit * 11}
+              strokeWidth={unit * 3}
+            >
+              {label.name}
+            </text>
+          ),
         )}
-      </header>
-      {!session && (
-        <div className={styles.intro}>
-          <p>함께한 순간을 따라</p>
-          <strong>어디로 떠나볼까요?</strong>
-          <span>지도에서 방문한 지역을 선택해 주세요.</span>
-          {!regions.length && <span>아직 방문 지역이 있는 기록이 없어요.</span>}
+      </svg>
+      <PageBackButton fallbackHref="/" />
+      <FixedToolbar className="justify-end">
+        {session ? (
+          <JourneyActions
+            hidden={session.replaying}
+            actions={[
+              {
+                label: "전체 경로 보기",
+                icon: ArrowsInSimpleIcon,
+                onSelect: () => moveCamera(routeBox(session.segments.map((segment) => segment.route))),
+              },
+              {
+                label: "다시 보기",
+                icon: PlayIcon,
+                // Everything picked so far, including a leg still drawing or queued, in tap order.
+                onSelect: () =>
+                  begin(session.record, session.region, [
+                    ...session.segments.flatMap((segment) => (segment.target ? [segment.target] : [])),
+                    ...(session.active ? [session.active] : []),
+                    ...session.queue,
+                  ]),
+              },
+              {
+                label: "이 지역 기록 목록",
+                icon: ListBulletsIcon,
+                onSelect: () => {
+                  setRegion(session.region);
+                  showSheet("records");
+                },
+              },
+              { label: "전국 지도로 돌아가기", icon: MapTrifoldIcon, onSelect: reset },
+            ]}
+          />
+        ) : (
+          <div className={styles.actions}>
+            <button className={styles.pill} type="button" onClick={() => showSheet("regions")}>
+              지역 목록
+            </button>
+          </div>
+        )}
+      </FixedToolbar>
+      {session && (
+        <div className={styles.recordHeader}>
+          <h1>{session.region.name}의 기억</h1>
+          <div className={styles.tools} data-hidden={session.replaying ? "" : undefined} inert={session.replaying}>
+            <button className={styles.pill} type="button" onClick={() => setDetailOpen(true)}>
+              기록 읽기
+            </button>
+          </div>
         </div>
       )}
+      {!session && !regions.length && <p className={styles.empty}>아직 방문 지역이 있는 기록이 없어요.</p>}
       {session && (
         <div className={styles.details}>
-          <div className={styles.tools}>
-            <button
-              type="button"
-              onClick={() => moveCamera(routeBox(session.segments.map((segment) => segment.route)))}
-            >
-              전체 경로 보기
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                begin(
-                  session.record,
-                  session.region,
-                  completeSegments.flatMap((segment) => (segment.target ? [segment.target] : [])),
-                )
-              }
-            >
-              다시 보기
-            </button>
-            {session.record.memo && (
-              <button type="button" onClick={() => setSheet("memo")}>
-                기록 읽기
-              </button>
-            )}
-          </div>
-          <div
-            ref={chips}
-            className={styles.chips}
-            onPointerDown={(event) => {
-              if (event.pointerType !== "mouse") return;
-              chipDrag.current = { x: event.clientX, scroll: event.currentTarget.scrollLeft, moved: false };
-            }}
-            onPointerMove={(event) => {
-              const d = chipDrag.current;
-              if (!d) return;
-              if (Math.abs(event.clientX - d.x) > 5) d.moved = true;
-              event.currentTarget.scrollLeft = d.scroll - (event.clientX - d.x);
-            }}
-            onPointerLeave={() => {
-              chipDrag.current = null;
-            }}
-            onClickCapture={(event) => {
-              if (chipDrag.current?.moved) {
-                event.preventDefault();
-                event.stopPropagation();
-              }
-              chipDrag.current = null;
-            }}
-          >
+          <p className={styles.placesHeading}>
+            방문 장소 {session.record.places.length > 0 && <span>{session.record.places.length}</span>}
+          </p>
+          {!session.record.places.length && <p className={styles.placesEmpty}>등록된 장소가 없어요</p>}
+          <div className={styles.chips}>
             {session.record.places.map((place) => (
               <button
                 key={place.id}
                 type="button"
                 onClick={() => selectPlace(place)}
-                aria-pressed={session.current?.id === place.id}
+                aria-pressed={selectedPlaceIds.has(place.id)}
               >
                 {place.name}
-                {(session.active?.id === place.id || session.queue.some((p) => p.id === place.id)) && " · 대기"}
               </button>
             ))}
           </div>
           <div className={styles.metrics}>
-            <div>
-              <span>나의 집에서 이어진 거리</span>
-              <strong>
-                {completeSegments.length ? <AnimatedNumber value={distance / 1000} decimals={1} /> : "—"}
-                <small> km</small>
-              </strong>
-            </div>
-            <div>
-              <span>자동차 예상 시간</span>
-              <strong>
-                {completeSegments.length ? <AnimatedNumber value={duration / 60} decimals={0} /> : "—"}
-                <small> 분</small>
-              </strong>
-            </div>
+            <strong>
+              {segments.length ? <AnimatedNumber value={distance / 1000} format={(value) => value.toFixed(1)} /> : "—"}
+              <small> km</small>
+            </strong>
+            <em>
+              {segments.length ? (
+                <AnimatedNumber
+                  value={duration / 60}
+                  format={(value) =>
+                    durationParts(Math.round(value)).map(([amount, unit]) => (
+                      <span key={unit}>
+                        <b>{amount}</b>
+                        {unit}
+                      </span>
+                    ))
+                  }
+                />
+              ) : (
+                <>
+                  <b>—</b>분
+                </>
+              )}
+            </em>
           </div>
-          <p className={styles.note}>
-            {session.status === "loading"
-              ? "경로를 불러오고 있어요"
-              : session.status === "drawing"
-                ? "길을 그리고 있어요"
-                : "선택한 순서로 이은 자동차 추천 경로예요"}
-          </p>
+          {/* Floats above the panel so the badges and distance never shift; the drawing line is its own progress. */}
+          {session.status === "loading" && (
+            <p className={styles.status} role="status">
+              경로를 불러오고 있어요
+            </p>
+          )}
           {session.status === "error" && (
             <div role="alert" className={styles.error}>
               <span>{session.error}</span>
@@ -525,54 +751,6 @@ export function JourneyMap({
           )}
         </div>
       )}
-      <div className={styles.zoomControls}>
-        <button
-          type="button"
-          aria-label="지도 확대"
-          onClick={() => {
-            const b = boxRef.current;
-            moveCamera({
-              x: b.x + b.width * 0.125,
-              y: b.y + b.height * 0.125,
-              width: b.width * 0.75,
-              height: b.height * 0.75,
-            });
-          }}
-        >
-          +
-        </button>
-        <button
-          type="button"
-          aria-label="지도 축소"
-          onClick={() => {
-            const b = boxRef.current;
-            moveCamera({
-              x: b.x - b.width / 6,
-              y: b.y - b.height / 6,
-              width: (b.width * 4) / 3,
-              height: (b.height * 4) / 3,
-            });
-          }}
-        >
-          −
-        </button>
-      </div>
-      <details className={styles.attribution}>
-        <summary aria-label="지도 및 경로 출처">ⓘ</summary>
-        <div>
-          지도:{" "}
-          <a href="https://www.geoboundaries.org/api/current/gbOpen/KOR/ADM2/" target="_blank" rel="noreferrer">
-            geoBoundaries
-          </a>{" "}
-          /{" "}
-          <a href="https://www.citypopulation.de/en/southkorea/admin/" target="_blank" rel="noreferrer">
-            citypopulation.de
-          </a>{" "}
-          (2020 · CC BY 3.0)
-          <br />
-          경로: Kakao Mobility
-        </div>
-      </details>
       {!session && (!hasHome || homeUnavailable) && (
         <div className={styles.homeNotice}>
           {homeUnavailable ? "집 주소를 불러오지 못했어요." : "길을 따라가려면 집 주소를 등록해 주세요."}{" "}
@@ -580,84 +758,112 @@ export function JourneyMap({
         </div>
       )}
       <BottomSheet
-        snapPoints={sheet === "memo" ? [0.5, 0.9] : undefined}
-        defaultSnapPoint={sheet === "memo" ? 0.5 : undefined}
+        snapPoints={[compactHeight, 1]}
+        snapPoint={snapPoint}
+        onSnapPointChange={setSnapPoint}
         open={sheet !== null}
         onOpenChange={(open) => {
-          if (!open) setSheet(null);
+          if (open) return;
+          showSheet(null);
+          // Closed without opening a record: don't leave the map zoomed into the region with nothing to do.
+          if (!sessionRef.current) {
+            setRegion(null);
+            moveCamera(national);
+          }
         }}
         showSwipeHandle
       >
-        <BottomSheet.Content className="max-h-[85dvh]">
-          <BottomSheet.Header>
-            <BottomSheet.Title>
-              {sheet === "regions" ? "방문한 지역" : sheet === "memo" ? "기록 읽기" : region?.name}
-            </BottomSheet.Title>
-            <BottomSheet.Description>
-              {sheet === "records"
-                ? "함께했던 기록을 선택해 주세요."
-                : sheet === "regions"
-                  ? "다시 보고 싶은 지역을 선택해 주세요."
-                  : session?.record.title}
-            </BottomSheet.Description>
-          </BottomSheet.Header>
-          <div className="min-h-0 overflow-y-auto px-5 pt-4 pb-8">
-            {sheet === "regions" &&
-              regions.map((item) => (
-                <button className={styles.row} type="button" key={item.code} onClick={() => openRegion(item)}>
-                  <span>{item.name}</span>
-                  <span>{item.count}개 기록 →</span>
-                </button>
-              ))}
-            {sheet === "records" && (
-              <>
-                {query.isPending && (
+        <BottomSheet.Content
+          // Always dark, like the map behind it, whatever the app theme.
+          className="dark motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
+          style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
+        >
+          {sheet === "records" && hasHome && !homeUnavailable && locations.data && region ? (
+            <RegionRecordList
+              isDetail={false}
+              onRecordOpen={(recordId) => {
+                const record = journeyRecord(recordId);
+                if (record) begin(record, region);
+              }}
+              onRecordPress={(recordId) => {
+                // Head start for the home leg: the click's fetchQuery joins this request.
+                const record = journeyRecord(recordId);
+                if (record) void queryClient.prefetchQuery(routeQuery(legParams(record, region, null, null)));
+              }}
+              onSubregionChange={setSubregion}
+              records={locations.data}
+              region={regionMaps.find(({ code }) => code === region.code) ?? null}
+              subregion={subregion}
+            />
+          ) : (
+            <>
+              <BottomSheet.Header ref={setSheetHeader}>
+                <BottomSheet.Title>
+                  {sheet === "regions"
+                    ? "방문한 지역"
+                    : sheet === "capital"
+                      ? "어느 지역의 기록을 볼까요?"
+                      : `${region?.name ?? ""}의 기억`}
+                </BottomSheet.Title>
+                {sheet !== "records" && (
+                  <BottomSheet.Description>다시 보고 싶은 지역을 선택해 주세요.</BottomSheet.Description>
+                )}
+              </BottomSheet.Header>
+              <div ref={setSheetBody} className="min-h-0 overflow-y-auto px-5 pt-4 pb-8">
+                {(sheet === "regions" || sheet === "capital") &&
+                  (sheet === "capital" ? capitalRegions : regions).map((item) => (
+                    <button className={styles.row} type="button" key={item.code} onClick={() => openRegion(item)}>
+                      <span>{item.name}</span>
+                      <span>{item.count}개 기록 →</span>
+                    </button>
+                  ))}
+                {sheet === "records" && (!hasHome || homeUnavailable) && (
+                  <div className={styles.sheetNotice}>
+                    <p>
+                      {homeUnavailable
+                        ? "집 주소를 불러오지 못했어요. 잠시 후 다시 시도해 주세요."
+                        : "기록까지 이어지는 길은 내 집에서 출발해요. 설정에서 집 주소를 먼저 등록해 주세요."}
+                    </p>
+                    {!homeUnavailable && (
+                      <Button nativeButton={false} render={<PressLink href="/settings" />} size="large">
+                        집 주소 등록하기
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {sheet === "records" && hasHome && !homeUnavailable && locations.isPending && (
                   <div className={styles.skeleton} aria-label="기록을 불러오는 중">
                     <i />
                     <i />
                     <i />
                   </div>
                 )}
-                {query.isError && (
+                {sheet === "records" && hasHome && !homeUnavailable && locations.isError && (
                   <p>
                     기록을 불러오지 못했어요.{" "}
-                    <button type="button" onClick={() => void query.refetch()}>
+                    <button type="button" onClick={() => void locations.refetch()}>
                       다시 시도
                     </button>
                   </p>
                 )}
-                {query.data?.pages
-                  .flatMap((page) => page.records)
-                  .map((item) => (
-                    <button
-                      type="button"
-                      className={styles.row}
-                      key={item.id}
-                      onClick={() => region && begin(item, region)}
-                    >
-                      <span>
-                        <b>{item.title}</b>
-                        <small>{item.date}</small>
-                      </span>
-                      <span>→</span>
-                    </button>
-                  ))}
-                {query.hasNextPage && (
-                  <button
-                    className={styles.more}
-                    type="button"
-                    disabled={query.isFetchingNextPage}
-                    onClick={() => void query.fetchNextPage()}
-                  >
-                    {query.isFetchingNextPage ? "불러오는 중" : "더 보기"}
-                  </button>
-                )}
-              </>
-            )}
-            {sheet === "memo" && <p className="whitespace-pre-wrap leading-7">{session?.record.memo}</p>}
-          </div>
+              </div>
+            </>
+          )}
         </BottomSheet.Content>
       </BottomSheet>
+      <RecordDetailBottomSheet
+        backLabel="지도로"
+        className="dark"
+        member={member}
+        onDeleted={() => {
+          setDetailOpen(false);
+          reset();
+          router.refresh();
+        }}
+        onOpenChange={setDetailOpen}
+        open={detailOpen}
+        record={session?.record ?? null}
+      />
     </main>
   );
 }

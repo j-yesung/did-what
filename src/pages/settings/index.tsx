@@ -43,6 +43,27 @@ export async function SettingsPage() {
         </PageSection>
         <PageSection className="mt-auto pt-4">
           <LogoutButton />
+          <p className="mt-4 text-muted-foreground text-xs leading-relaxed">
+            지도:{" "}
+            <a
+              className="underline"
+              href="https://www.geoboundaries.org/api/current/gbOpen/KOR/ADM2/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              geoBoundaries
+            </a>{" "}
+            ·{" "}
+            <a
+              className="underline"
+              href="https://www.citypopulation.de/en/southkorea/admin/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              citypopulation.de
+            </a>{" "}
+            (2020 · CC BY 3.0) · 경로: Kakao Mobility
+          </p>
         </PageSection>
       </div>
     </PageShell>

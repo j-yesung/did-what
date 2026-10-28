@@ -1,5 +1,4 @@
 import { requireMember } from "@/entities/member/server";
-import { QueryProvider } from "@/shared/lib/react-query/query-provider";
 
 import { getJourneyRegions } from "./api/records";
 import { JourneyMap } from "./ui/journey-map";
@@ -13,8 +12,11 @@ export async function JourneyPage() {
     .eq("member_id", member.id)
     .maybeSingle();
   return (
-    <QueryProvider>
-      <JourneyMap regions={regions} hasHome={Boolean(home)} homeUnavailable={Boolean(error)} memberId={member.id} />
-    </QueryProvider>
+    <JourneyMap
+      regions={regions}
+      hasHome={Boolean(home)}
+      homeUnavailable={Boolean(error)}
+      member={{ id: member.id, name: member.name }}
+    />
   );
 }

@@ -25,6 +25,8 @@ type RegionRecordListProps = {
   subregion: string | null;
   onSubregionChange: (subregion: string | null) => void;
   onRecordOpen: (recordId: string) => void;
+  /** 기록을 누르는 순간(클릭 전) 불린다. 화면마다 필요한 조회를 미리 시작할 때 쓴다. */
+  onRecordPress?: (recordId: string) => void;
   isDetail: boolean;
 };
 
@@ -34,6 +36,7 @@ export function RegionRecordList({
   subregion,
   onSubregionChange,
   onRecordOpen,
+  onRecordPress,
   isDetail,
 }: RegionRecordListProps) {
   const router = useRouter();
@@ -139,7 +142,9 @@ export function RegionRecordList({
                         onRecordOpen(record.id);
                       }}
                       onPointerDown={(event) => {
-                        if (event.button === 0) prefetchRecord(record.id);
+                        if (event.button !== 0) return;
+                        prefetchRecord(record.id);
+                        onRecordPress?.(record.id);
                       }}
                       prefetch={false}
                     >
