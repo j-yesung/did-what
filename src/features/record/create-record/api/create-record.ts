@@ -50,5 +50,6 @@ export const createRecord = async (formData: FormData): Promise<RecordFormState>
   revalidatePath("/");
   revalidatePath("/records");
   revalidatePath("/places");
+  revalidatePath("/journey");
   return { status: "success" };
 };

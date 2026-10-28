@@ -1,10 +1,20 @@
 "use client";
 
-import { type CSSProperties, memo, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  memo,
+  type ReactNode,
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { ArrowsInSimpleIcon, HouseIcon, ListBulletsIcon, MapTrifoldIcon, PlayIcon } from "@phosphor-icons/react";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/record";
 import { createRegionActivityMaps } from "@/entities/region";
@@ -271,6 +281,13 @@ export function JourneyMap({
     });
   const [sheet, setSheet] = useState<"regions" | "capital" | "records" | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  // The URL at first render: a journey left for 기록 수정 resumes from it on the way back.
+  const searchParams = useSearchParams();
+  const [initialUrl] = useState(() => ({
+    region: searchParams?.get("region") ?? null,
+    record: searchParams?.get("record") ?? null,
+    places: searchParams?.get("places")?.split(",") ?? [],
+  }));
   // The address sheet opens right here instead of sending people to 설정: that tab has no way back to the map.
   const [addressOpen, setAddressOpen] = useState(false);
   const [homeSaved, setHomeSaved] = useState(false);
@@ -489,6 +506,39 @@ export function JourneyMap({
     setSessionValue(next);
     if (next.status === "loading") void run(next, generation.current);
   };
+  // The open record and the places drawn so far live in the URL, so returning from 수정 (or a reload) resumes.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    for (const key of ["region", "record", "places"]) params.delete(key);
+    if (session) {
+      params.set("region", session.region.code);
+      params.set("record", session.record.id);
+      const places = session.segments.flatMap((segment) => (segment.target ? [segment.target.id] : []));
+      if (places.length) params.set("places", places.join(","));
+    }
+    const query = params.toString();
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+  }, [session]);
+  // Once, when the records arrive: reopen the record from the URL and replay the places drawn before.
+  const restoreJourney = useEffectEvent((rows: NonNullable<typeof locations.data>) => {
+    const target = regions.find((item) => item.code === initialUrl.region);
+    const row = rows.find((item) => item.id === initialUrl.record);
+    const record = target && row && homeReady ? toJourneyRecord(row, target.code) : null;
+    if (!target || !record) return;
+    setRegion(target);
+    begin(
+      record,
+      target,
+      initialUrl.places.flatMap((id) => record.places.filter((place) => place.id === id)),
+    );
+  });
+  const restored = useRef(false);
+  useEffect(() => {
+    // Wait out a refetch: coming back from 수정, the cache still holds the record as it was before the edit.
+    if (restored.current || !locations.data || locations.isFetching) return;
+    restored.current = true;
+    restoreJourney(locations.data);
+  }, [locations.data, locations.isFetching]);
   /**
    * One call per picked place, from where the line is to that place: no combinations are fetched ahead. The request
    * starts as the finger lands; while legs are still queued the origin is not known yet, so those wait for their turn.
