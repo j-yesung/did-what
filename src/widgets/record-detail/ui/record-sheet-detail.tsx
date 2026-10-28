@@ -22,18 +22,22 @@ import { RecordDetailSections } from "./record-detail-sections";
 
 type RecordSheetDetailProps = {
   backLabel?: string;
+  confirmClassName?: string;
   draft: string;
   member: { id: string; name: string };
   onBack: () => void;
+  onDeleted?: () => void;
   onDraftChange: Dispatch<SetStateAction<string>>;
   recordId: string;
 };
 
 export function RecordSheetDetail({
   backLabel = "이전 화면으로",
+  confirmClassName,
   draft,
   member,
   onBack,
+  onDeleted = onBack,
   onDraftChange,
   recordId,
 }: RecordSheetDetailProps) {
@@ -87,8 +91,9 @@ export function RecordSheetDetail({
       </div>
       <DeleteRecordConfirm
         activity={record?.activity ?? ""}
+        className={confirmClassName}
         onClose={() => setDeleteOpen(false)}
-        onDeleted={onBack}
+        onDeleted={onDeleted}
         open={deleteOpen}
         recordId={recordId}
       />

@@ -16,6 +16,7 @@ import { getToday } from "@/shared/lib/date/get-today";
 import { Button } from "@/shared/ui/button";
 import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 
 import {
   getCalendarHref,
@@ -29,7 +30,6 @@ import {
 } from "../../model/record-calendar";
 import { CalendarMonth } from "./calendar-month";
 import { RecordDayList } from "./record-day-list";
-import { RecordDetailBottomSheet } from "./record-detail-bottom-sheet";
 
 // 앞뒤 달을 함께 그려 드래그 중에도 다음 달이 손가락을 따라 나타나게 한다.
 const MONTH_OFFSETS = [-1, 0, 1];
@@ -264,7 +264,13 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
         records={recordsByDate ? (recordsByDate.get(selectedDate) ?? []) : undefined}
       />
 
-      <RecordDetailBottomSheet member={member} onOpenChange={setDetailOpen} open={detailOpen} record={detailRecord} />
+      <RecordDetailBottomSheet
+        backLabel="달력으로"
+        member={member}
+        onOpenChange={setDetailOpen}
+        open={detailOpen}
+        record={detailRecord}
+      />
     </section>
   );
 }
