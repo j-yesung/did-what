@@ -48,9 +48,9 @@ type Point = { latitude: number; longitude: number };
 type Place = JourneyPlace;
 type Region = Point & { code: string; name: string; count: number };
 type RecordItem = JourneyRecord;
-/** `straight`: no road reached the region, so the home leg is a straight line with no distance or duration. */
+
 type Route = { points: [number, number][]; distance: number; duration: number; straight?: boolean };
-/** `from` is null for the home leg: the home coordinate never reaches the browser. */
+
 type Segment = { route: Route; target: Place | null; from: Point | null; to: Point; key: number };
 type Session = {
   record: RecordItem;
@@ -58,22 +58,20 @@ type Session = {
   segments: Segment[];
   queue: Place[];
   active: Place | null;
-  /** loading: fetching the leg · moving: framing it (sheet closing, camera flying) · drawing: sketching it. */
+
   status: "loading" | "moving" | "drawing" | "idle" | "error";
   error: string;
   current: Place | null;
-  /** 다시 보기 in progress: the action buttons fade out until the last leg lands. */
+
   replaying: boolean;
 };
 type Box = { x: number; y: number; width: number; height: number };
-/** A region dot answers taps within this many px (a 44px target). */
+
 const NODE_HIT_RADIUS = 22;
 const project = (longitude: number, latitude: number) => ({
   x: 110 + (longitude - 125.5) * 49 * Math.cos((36 * Math.PI) / 180),
   y: 23 + (39.4 - latitude) * 49,
 });
-// Same longitude/latitude bounds as the home map's HOME_FRAME (same cos 36° projection), so the mainland and Jeju
-// sit centered. Baengnyeongdo to the west and Ulleungdo/Dokdo to the east fall outside and show on zoom out.
 const homeTopLeft = project(125.5, 39.4),
   homeBottomRight = project(130.2, 32.4);
 const national: Box = {
@@ -82,7 +80,6 @@ const national: Box = {
   width: homeBottomRight.x - homeTopLeft.x,
   height: homeBottomRight.y - homeTopLeft.y,
 };
-// Dongdo and Seodo. The boundary data has no Dokdo, so it is drawn here (slightly enlarged to stay visible).
 const dokdo = [
   { longitude: 131.8697, latitude: 37.2411 },
   { longitude: 131.8636, latitude: 37.2425 },
@@ -110,7 +107,6 @@ const routeBox = (routes: Route[]): Box => {
     height = Math.max(0.75, maxY - y);
   const paddedWidth = Math.max(width * 1.8, height * 0.75, 0.9),
     paddedHeight = Math.max(height * 1.8, width * 1.2, 1.4);
-  // Centered at 45% from the top: the title and buttons cover the top, the badges and distance the bottom.
   return {
     x: x + width / 2 - paddedWidth / 2,
     y: y + height / 2 - paddedHeight * 0.45,
@@ -118,11 +114,7 @@ const routeBox = (routes: Route[]): Box => {
     height: paddedHeight,
   };
 };
-/**
- * Camera for a place leg: stays put only when the leg is already in the open middle area (title and buttons cover
- * the top, badges and distance the bottom) and big enough to read; otherwise fits it. After a long home leg (e.g. Seoul → Daegu) the first
- * place leg is a speck, so this zooms in; later legs of a similar size then leave the camera alone.
- */
+
 const followBox = (view: Box, route: Route): Box | null => {
   const bounds = routeBounds([route]);
   if (!bounds) return null;
@@ -145,7 +137,7 @@ const legParams = (record: RecordItem, region: Region, target: Place | null, fro
   return params;
 };
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-/** Which ends of a horizontal scroller still hide content (they get a fade). */
+
 const scrollEdges = (row: HTMLElement) => ({
   start: row.scrollLeft > 1,
   end: row.scrollLeft + row.clientWidth < row.scrollWidth - 1,
@@ -153,11 +145,11 @@ const scrollEdges = (row: HTMLElement) => ({
 const keepIfSame = (next: { start: boolean; end: boolean }) => (current: { start: boolean; end: boolean }) =>
   current.start === next.start && current.end === next.end ? current : next;
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-/** Narrower than the tightest auto-fit (routeBox's 0.9), so a pan or pinch never snaps out of an auto zoom. */
+
 const MIN_VIEW_WIDTH = 0.5;
-/** The camera eases out over 650ms and is ~90% there at 350ms: the sketch starts then, not while it still flies. */
+
 const CAMERA_SETTLE_MS = 350;
-/** Upper bound on waiting for the record sheet to finish closing, in case its close-complete event never comes. */
+
 const SHEET_CLOSE_FALLBACK_MS = 700;
 const fetchRoute = async (params: URLSearchParams, signal: AbortSignal) => {
   const response = await fetch(`/journey/directions?${params}`, { signal, cache: "no-store" });
@@ -165,7 +157,7 @@ const fetchRoute = async (params: URLSearchParams, signal: AbortSignal) => {
   if (!response.ok || !body.route) throw new Error(body.error ?? "경로를 불러오지 못했어요.");
   return body.route;
 };
-/** Home (drawn as an icon) and place labels. A revisited place keeps one label; nearby labels stack upward by 14px. */
+
 const routeLabels = (
   startPoint: { x: number; y: number } | null,
   session: Session | null,
@@ -174,7 +166,6 @@ const routeLabels = (
 ) => {
   if (!session || !startPoint) return [];
   const labels = new Map([["home", { ...startPoint, name: "내 집" }]]);
-  // The region's name is the page title instead of a map label.
   for (const segment of segments) {
     if (!segment.target) continue;
     const name = segment.target.name;
@@ -254,7 +245,6 @@ function AnimatedNumber({ value, format }: { value: number; format: (value: numb
     }
     let frame = 0;
     const tick = (now: number) => {
-      // Same 900ms linear timing as the line's sketch animation, so the numbers climb while it draws.
       const t = Math.min(1, (now - started) / 900);
       const current = start + (value - start) * t;
       previous.current = current;
@@ -284,11 +274,7 @@ export function JourneyMap({
   const generation = useRef(0);
   const queryClient = useQueryClient();
   const router = useRouter();
-  /**
-   * One cache entry per leg (record, region, target, origin), kept for as long as this page is open: never stale,
-   * never collected, and removed when the page unmounts (so an edited record or home address is fetched fresh).
-   * No retry: a failed leg shows 재시도 instead.
-   */
+
   const routeQuery = (params: URLSearchParams) =>
     queryOptions({
       queryKey: ["journey-route", member.id, params.toString()],
@@ -298,7 +284,6 @@ export function JourneyMap({
       retry: false,
     });
   const [sheet, setSheet] = useState<"regions" | "choices" | "records" | null>(null);
-  // Dots within one tap of each other: the tap opens a sheet to pick among them.
   const [choices, setChoices] = useState<Region[]>([]);
   const [detailOpen, setDetailOpen] = useState(false);
   const [chipRow, setChipRow] = useState<HTMLDivElement | null>(null);
@@ -312,24 +297,19 @@ export function JourneyMap({
     return () => observer.disconnect();
   }, [chipRow]);
   const main = useRef<HTMLElement>(null);
-  // Enters like a funnel step (as the record form does); coming back with the browser history it just appears.
   useLayoutEffect(() => {
     if (main.current && getPageNavigation(window).traversal) main.current.style.animation = "none";
   }, []);
-  // The URL at first render: a journey left for 기록 수정 resumes from it on the way back.
   const searchParams = useSearchParams();
   const [initialUrl] = useState(() => ({
     region: searchParams?.get("region") ?? null,
     record: searchParams?.get("record") ?? null,
     places: searchParams?.get("places")?.split(",") ?? [],
   }));
-  // The address sheet opens right here instead of sending people to 설정: that tab has no way back to the map.
   const [addressOpen, setAddressOpen] = useState(false);
   const [homeSaved, setHomeSaved] = useState(false);
-  // Saving refreshes the server props too; homeSaved bridges the moment until hasHome catches up.
   const homeReady = (hasHome || homeSaved) && !homeUnavailable;
   const sheetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Resolves once the record sheet has slid away after a record is picked; already resolved when no sheet was open.
   const sheetClosed = useRef<Promise<unknown>>(Promise.resolve());
   const resolveSheetClosed = useRef<(() => void) | null>(null);
   const [sheetHeader, setSheetHeader] = useState<HTMLDivElement | null>(null);
@@ -343,7 +323,6 @@ export function JourneyMap({
     setSheet(next);
     setSnapPoint(next === "records" ? 1 : compactHeightRef.current);
   };
-  // Same measuring as the settings address sheet: the region lists open at their own height, then rise to full for records.
   useLayoutEffect(() => {
     if ((sheet !== "regions" && sheet !== "choices") || !sheetHeader || !sheetBody) return;
     const measure = () => {
@@ -395,7 +374,7 @@ export function JourneyMap({
     };
     cameraAnimation.current = requestAnimationFrame(tick);
   };
-  /** Zooms by `factor` around a screen point, then pans by a screen delta (pinch midpoint movement). */
+
   const zoomAt = (clientX: number, clientY: number, factor: number, panX = 0, panY = 0) => {
     const rect = svg.current?.getBoundingClientRect();
     if (!rect) return;
@@ -428,10 +407,7 @@ export function JourneyMap({
       generation.current++;
     };
   }, []);
-  // The app shares one query client, so drop routes on leaving: a home address changed in settings must not
-  // come back as a cached home leg.
   useEffect(() => () => queryClient.removeQueries({ queryKey: ["journey-route"] }), [queryClient]);
-  // The home map's record cache: the records sheet is the home sheet's list, fed by the same data.
   const locations = useQuery(recordLocationsQueryOptions);
   const [subregion, setSubregion] = useState<string | null>(null);
   const regionMaps = useMemo(
@@ -447,14 +423,10 @@ export function JourneyMap({
     while (token === generation.current) {
       const target = next.active;
       try {
-        // Joins a prefetch already in flight for this leg, or returns the cached route.
         const route = await queryClient.fetchQuery(
           routeQuery(legParams(next.record, next.region, target, next.current)),
         );
         if (token !== generation.current) return;
-        // Frame the leg first and sketch only once the record sheet is down and the camera has mostly arrived.
-        // Otherwise the start of the line (leaving home) and of the climbing numbers plays behind the sheet or
-        // off-screen.
         const camera = target ? followBox(boxRef.current, route) : routeBox([route]);
         if (camera) moveCamera(camera);
         setSessionValue({ ...sessionRef.current!, status: "moving" });
@@ -520,7 +492,6 @@ export function JourneyMap({
     showSheet(null);
     void run(next, token);
   };
-  // A drawn place tapped again: bring it into view and ring it once. `key` restarts the ring on every tap.
   const [highlight, setHighlight] = useState<{ place: Place; key: number } | null>(null);
   const focusPlace = (place: Place) => {
     const p = project(place.longitude, place.latitude);
@@ -553,7 +524,6 @@ export function JourneyMap({
     setSessionValue(next);
     if (next.status === "loading") void run(next, generation.current);
   };
-  // The open record and the places drawn so far live in the URL, so returning from 수정 (or a reload) resumes.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     for (const key of ["region", "record", "places"]) params.delete(key);
@@ -566,7 +536,6 @@ export function JourneyMap({
     const query = params.toString();
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
   }, [session]);
-  // Once, when the records arrive: reopen the record from the URL and replay the places drawn before.
   const restoreJourney = useEffectEvent((rows: NonNullable<typeof locations.data>) => {
     const target = regions.find((item) => item.code === initialUrl.region);
     const row = rows.find((item) => item.id === initialUrl.record);
@@ -581,15 +550,11 @@ export function JourneyMap({
   });
   const restored = useRef(false);
   useEffect(() => {
-    // Wait out a refetch: coming back from 수정, the cache still holds the record as it was before the edit.
     if (restored.current || !locations.data || locations.isFetching) return;
     restored.current = true;
     restoreJourney(locations.data);
   }, [locations.data, locations.isFetching]);
-  /**
-   * One call per picked place, from where the line is to that place: no combinations are fetched ahead. The request
-   * starts as the finger lands; while legs are still queued the origin is not known yet, so those wait for their turn.
-   */
+
   const pressPlace = (place: Place) => {
     const current = sessionRef.current;
     if (current?.status !== "idle" || current.segments.some((segment) => segment.target?.id === place.id)) return;
@@ -603,7 +568,7 @@ export function JourneyMap({
     showSheet(null);
     moveCamera(national);
   };
-  /** Screen point → map point, under the viewBox's meet scaling. */
+
   const toMapPoint = (clientX: number, clientY: number) => {
     const rect = svg.current?.getBoundingClientRect();
     if (!rect) return null;
@@ -614,7 +579,7 @@ export function JourneyMap({
       y: b.y + b.height / 2 + (clientY - rect.top - rect.height / 2) * scale,
     };
   };
-  /** A tap near several dots (their hit areas overlap) asks which one; a keyboard press opens the focused dot. */
+
   const chooseRegion = (selected: Region, tap?: { clientX: number; clientY: number }) => {
     const point = tap && toMapPoint(tap.clientX, tap.clientY);
     const nearby = point
@@ -638,7 +603,6 @@ export function JourneyMap({
       showSheet("records");
       return;
     }
-    // Rise first, then swap the content once the sheet has reached full height (settings 주소 찾기 does the same).
     setSnapPoint(1);
     if (sheetTimer.current) clearTimeout(sheetTimer.current);
     sheetTimer.current = setTimeout(() => {
@@ -648,10 +612,8 @@ export function JourneyMap({
     }, 250);
   };
   const unit = Math.max(box.width / dimensions.width, box.height / dimensions.height);
-  // Region names stay hidden on the national view and fade in as the map is zoomed in, like the district lines.
   const nodeLabelOpacity = Math.max(0, Math.min(1, (150 - box.width) / 40));
   const completeSegments = session?.status === "drawing" ? session.segments.slice(0, -1) : (session?.segments ?? []);
-  // A tap shows at once: drawn, in-flight and queued places all stay selected.
   const selectedPlaceIds = new Set([
     ...(session?.segments.flatMap((segment) => (segment.target ? [segment.target.id] : [])) ?? []),
     ...(session?.active ? [session.active.id] : []),
@@ -659,12 +621,10 @@ export function JourneyMap({
   ]);
   const start = session?.segments[0]?.route.points[0];
   const startPoint = start ? project(start[0], start[1]) : null;
-  // Includes the leg being drawn: AnimatedNumber climbs to it over the same 900ms as the line.
   const segments = session?.segments ?? [];
   const distance = segments.reduce((sum, segment) => sum + segment.route.distance, 0);
   const duration = segments.reduce((sum, segment) => sum + segment.route.duration, 0);
   return (
-    // `dark`: the map is always dark, so buttons on it take the dark tokens whatever the app theme.
     <main ref={main} className={`${styles.page} dark`} data-direction="forward" data-funnel-step>
       <svg
         ref={svg}
@@ -703,7 +663,6 @@ export function JourneyMap({
         onPointerCancel={releasePointer}
         onWheel={(event) => {
           cancelAnimationFrame(cameraAnimation.current);
-          // Proportional to deltaY like the prototype: trackpads fire many small events, a fixed step per event overshoots.
           zoomAt(event.clientX, event.clientY, Math.exp(event.deltaY * 0.001));
         }}
       >
@@ -787,7 +746,6 @@ export function JourneyMap({
               className={styles.homeIcon}
               size={unit * 14}
               weight="fill"
-              // Centered over the start dot (r 3.5) with a small gap.
               x={label.x - unit * 7}
               y={label.y - unit * (20 + label.shift)}
             />
@@ -819,7 +777,6 @@ export function JourneyMap({
               {
                 label: "다시 보기",
                 icon: PlayIcon,
-                // Everything picked so far, including a leg still drawing or queued, in tap order.
                 onSelect: () =>
                   begin(session.record, session.region, [
                     ...session.segments.flatMap((segment) => (segment.target ? [segment.target] : [])),
@@ -885,7 +842,6 @@ export function JourneyMap({
             onScroll={(event) => setChipFade(keepIfSame(scrollEdges(event.currentTarget)))}
           >
             {session.record.places.map((place) => (
-              // Picking is one-way (a drawn place shows itself when tapped again), so no toggle aria-pressed.
               <button
                 key={place.id}
                 type="button"
@@ -928,7 +884,7 @@ export function JourneyMap({
           {segments.some((segment) => segment.route.straight) && (
             <p className={styles.note}>차로 갈 수 없는 구간은 직선으로 이었고 거리·시간에서 뺐어요</p>
           )}
-          {/* Floats above the panel so the badges and distance never shift; the drawing line is its own progress. */}
+
           {session.status === "loading" && (
             <p className={styles.status} role="status">
               경로를 불러오고 있어요
@@ -987,7 +943,6 @@ export function JourneyMap({
         showSwipeHandle
       >
         <BottomSheet.Content
-          // Always dark, like the map behind it, whatever the app theme.
           className="dark motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
           style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
         >
@@ -999,7 +954,6 @@ export function JourneyMap({
                 if (record) begin(record, region);
               }}
               onRecordPress={(recordId) => {
-                // Head start for the home leg: the click's fetchQuery joins this request.
                 const record = journeyRecord(recordId);
                 if (record) void queryClient.prefetchQuery(routeQuery(legParams(record, region, null, null)));
               }}
@@ -1044,8 +998,6 @@ export function JourneyMap({
                     {!homeUnavailable && (
                       <Button
                         onClick={() => {
-                          // Closed in code, so the "closed without a record" zoom-out does not run: the region stays
-                          // framed and its list comes back after saving.
                           showSheet(null);
                           setAddressOpen(true);
                         }}
@@ -1083,7 +1035,6 @@ export function JourneyMap({
         onOpenChange={setAddressOpen}
         onSaved={() => {
           setHomeSaved(true);
-          // Came from a region's list: bring it back, now with the records.
           if (region) showSheet("records");
         }}
         open={addressOpen}

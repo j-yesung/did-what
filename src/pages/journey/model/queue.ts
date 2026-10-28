@@ -7,7 +7,6 @@ export type JourneyQueue<T extends JourneyPlace> = {
   status: "loading" | "moving" | "drawing" | "idle" | "error";
 };
 
-/** A place is picked once: drawn, in-flight or queued places ignore further taps, so no leg or distance repeats. */
 export const enqueueJourneyPlace = <T extends JourneyPlace, S extends JourneyQueue<T>>(state: S, place: T): S => {
   if (
     state.active?.id === place.id ||
@@ -19,7 +18,6 @@ export const enqueueJourneyPlace = <T extends JourneyPlace, S extends JourneyQue
   return { ...state, queue: [...state.queue, place] };
 };
 
-/** A skipped place never becomes the origin of the following leg. */
 export const skipJourneyPlace = <T extends JourneyPlace, S extends JourneyQueue<T>>(state: S): S => {
   if (state.status !== "error" || !state.active) return state;
   const [first, ...rest] = state.queue;

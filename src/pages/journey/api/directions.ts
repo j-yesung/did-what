@@ -21,7 +21,6 @@ export const getJourneyDirections = async (request: Request) => {
     (from && (!target || !uuid.test(from)))
   )
     return Response.json({ error: "잘못된 요청입니다." }, { status: 400 });
-  // The home leg needs address → geocode; run that chain alongside the record lookup instead of after it.
   const homeOrigin = async () => {
     const { data: home, error: homeError } = await supabase
       .from("member_home_addresses")
@@ -87,8 +86,6 @@ export const getJourneyDirections = async (request: Request) => {
     const data: unknown = response.ok ? await response.json() : null;
     const route = parseKakaoDirections(data);
     if (route) return Response.json({ route }, { headers: { "Cache-Control": "private, no-store" } });
-    // No road reaches the region (an island without a car ferry; ferry routes come back as normal routes): the
-    // home leg becomes a straight line so the record still opens. Place legs keep failing so 다시 시도/건너뛰기 apply.
     if (!target && hasNoKakaoRoute(data))
       return Response.json(
         { route: straightHomeRoute(origin, destination) },

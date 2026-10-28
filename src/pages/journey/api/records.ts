@@ -19,6 +19,5 @@ export const getJourneyRegions = async () => {
     records.push(...data.map((record) => ({ ...record, record_places: [] })));
     if (data.length < 500) break;
   }
-  // Newest first (the query order), so each node sits at the latest visit.
   return toJourneyRegions(records);
 };

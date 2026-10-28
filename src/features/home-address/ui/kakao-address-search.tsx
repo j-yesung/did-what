@@ -10,8 +10,6 @@ type KakaoPostcode = new (options: {
   theme?: Record<string, string>;
 }) => { embed: (element: HTMLElement) => void };
 
-// 주소 찾기는 카카오가 그리는 iframe이라 앱 토큰이 닿지 않는다. 다크 시트의 값(grey-850 바탕, grey-50·400 글자,
-// grey-800 테두리, blue-400 강조)을 그대로 넘긴다.
 const DARK_THEME = {
   bgColor: "#202632",
   searchBgColor: "#191F28",

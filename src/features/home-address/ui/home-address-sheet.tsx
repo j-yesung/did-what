@@ -24,13 +24,13 @@ import { KakaoAddressSearch } from "./kakao-address-search";
 
 type HomeAddressSheetProps = {
   address: string | null;
-  /** 시트를 여는 버튼. BottomSheet.Trigger로 넘기면 닫힐 때 초점이 그 버튼으로 돌아간다. */
+
   children?: ReactNode;
-  /** 앱 테마와 상관없이 어둡게 그린다. 주소 찾기 화면도 어두운 색으로 맞춘다. */
+
   dark?: boolean;
   memberName: string;
   onOpenChange: (open: boolean) => void;
-  /** 저장에 성공해 시트가 닫힌 뒤 불린다. */
+
   onSaved?: () => void;
   open: boolean;
 };
@@ -54,7 +54,6 @@ export function HomeAddressSheet({
   const compactHeightRef = useRef(360);
   const [compactHeight, setCompactHeight] = useState(360);
   const [snapPoint, setSnapPoint] = useState<number | string | null>(360);
-  // 버튼으로 열든 다른 화면이 열든 같은 상태에서 시작한다. 주소가 없으면 바로 주소 찾기부터 보여준다.
   const [previousOpen, setPreviousOpen] = useState(open);
   if (previousOpen !== open) {
     setPreviousOpen(open);

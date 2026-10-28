@@ -10,13 +10,9 @@ export type JourneyRecord = {
   places: JourneyPlace[];
   destination: Point & { name: string };
 };
-/** The columns a journey needs: the home map's record cache and the server queries both provide them. */
+
 export type JourneyRecordRow = Pick<MapRecord, "id" | "activity" | "recorded_at" | "record_places" | "record_regions">;
 
-/**
- * A record as one journey within a 시·도. The destination is the first matching region by name, then code. The
- * directions route calls this too, so the drawn end point is the one it routes to.
- */
 export const toJourneyRecord = (record: JourneyRecordRow, regionCode: string): JourneyRecord | null => {
   const [destination] = record.record_regions
     .filter((region) => getRegionCode(region.region_code) === regionCode)
@@ -35,10 +31,6 @@ export const toJourneyRecord = (record: JourneyRecordRow, regionCode: string): J
   };
 };
 
-/**
- * One map node per 시·도: how many records went there (each record once) and where to draw it, the first record's
- * destination. Pass records newest first so a node sits where the latest visit was.
- */
 export const toJourneyRegions = (records: readonly JourneyRecordRow[]) => {
   const regions = new Map<string, { code: string; name: string; latitude: number; longitude: number; count: number }>();
   for (const record of records)

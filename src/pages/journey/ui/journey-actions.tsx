@@ -12,14 +12,8 @@ import styles from "./journey-map.module.css";
 
 type Action = { label: string; icon: Icon; onSelect: () => void };
 
-/** = --toolbar-height: one 48px button plus the 2px glass rim. Motion needs a number to spring from and to. */
 const COLLAPSED_WIDTH = 52;
 
-/**
- * A "…" that stretches leftward into the action row, like the iOS 26 Liquid Glass toolbar menus. It stays anchored
- * to the right edge; opening springs past its width and settles (the rubber band), closing snaps back without bounce.
- * Closes on an action, a tap anywhere else or Escape.
- */
 export function JourneyActions({ actions, hidden }: { actions: Action[]; hidden: boolean }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);

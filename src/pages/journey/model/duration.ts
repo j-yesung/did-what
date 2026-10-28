@@ -1,4 +1,3 @@
-/** 100 → [[1, "시간"], [40, "분"]]; whole hours drop the minutes, under an hour keeps 0분. */
 export const durationParts = (minutes: number): [number, string][] => {
   const hours = Math.floor(minutes / 60),
     rest = minutes % 60;

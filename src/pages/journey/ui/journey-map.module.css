@@ -4,7 +4,7 @@
   --map-line: rgb(133 139 137);
   --map-white: rgb(244 246 244);
   --map-green: rgb(0 255 116);
-  /* Same frame as the other app screens: full height, at most --app-width wide and centered. */
+
   position: fixed;
   inset: 0;
   max-width: var(--app-width);
@@ -95,7 +95,7 @@
     opacity: 0;
   }
 }
-/* Right side of the fixed toolbar, vertically centered on the back button's --toolbar-height. */
+
 .actions {
   display: flex;
   align-items: center;
@@ -104,7 +104,7 @@
   pointer-events: auto;
   transition: opacity 200ms ease;
 }
-/* The "…" menu: right-anchored glass pill; items overflow and clip on the left while it is narrow. */
+
 .menu {
   justify-content: flex-end;
   gap: 0;
@@ -120,7 +120,7 @@
 .tools[data-hidden] {
   opacity: 0;
 }
-/* Below the toolbar. Lets map drags through except on buttons. */
+
 .recordHeader {
   position: absolute;
   top: calc(var(--page-top) + var(--toolbar-height) + 8px);
@@ -152,7 +152,7 @@
 .empty p {
   opacity: 0.7;
 }
-/* Stretches a 38px button's touch area to 44px without changing how it looks. */
+
 .hit::before {
   content: "";
   position: absolute;
@@ -163,7 +163,7 @@
   font-size: 11px;
   opacity: 0.7;
 }
-/* The gradient is decoration only: the map stays draggable under it, the badges and error stay tappable. */
+
 .details {
   position: absolute;
   bottom: max(25px, env(safe-area-inset-bottom));
@@ -193,7 +193,7 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--map-background) 85%, transparent);
   font-size: 12px;
-  /* Only a wait longer than 300ms shows it; a quick leg never flashes it. */
+
   animation: status-in 200ms ease-out 300ms both;
 }
 @keyframes status-in {
@@ -217,7 +217,7 @@
   font-size: 12px;
   opacity: 0.6;
 }
-/* Fades whichever end still hides badges, since the scrollbar is hidden. */
+
 .chips {
   --fade-start: 0px;
   --fade-end: 0px;
@@ -316,7 +316,7 @@
     opacity: 0.5;
   }
 }
-/* A drawn place tapped again rings twice where it is. */
+
 .focusRing {
   fill: none;
   stroke: var(--map-green);
