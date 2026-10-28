@@ -256,7 +256,8 @@ export function JourneyMap({
   const queryClient = useQueryClient();
   const router = useRouter();
   /**
-   * One cache entry per leg (record, region, target, origin), kept while this page is open (removed on leave).
+   * One cache entry per leg (record, region, target, origin), kept for as long as this page is open: never stale,
+   * never collected, and removed when the page unmounts (so an edited record or home address is fetched fresh).
    * No retry: a failed leg shows 재시도 instead.
    */
   const routeQuery = (params: URLSearchParams) =>
@@ -264,6 +265,7 @@ export function JourneyMap({
       queryKey: ["journey-route", member.id, params.toString()],
       queryFn: ({ signal }) => fetchRoute(params, signal),
       staleTime: Number.POSITIVE_INFINITY,
+      gcTime: Number.POSITIVE_INFINITY,
       retry: false,
     });
   const [sheet, setSheet] = useState<"regions" | "capital" | "records" | null>(null);
@@ -464,7 +466,6 @@ export function JourneyMap({
     setSessionValue(next);
     showSheet(null);
     void run(next, token);
-    prefetchLegs(record, selectedRegion);
   };
   const selectPlace = (place: Place) => {
     const current = sessionRef.current;
@@ -488,15 +489,13 @@ export function JourneyMap({
     if (next.status === "loading") void run(next, generation.current);
   };
   /**
-   * Every leg a badge tap can ask for — region → place and place → place in both directions — fetched once when
-   * the record opens, so no tap waits or calls the API. ponytail: only the first 6 places (6 + 30 calls);
-   * legs touching later places are fetched on tap.
+   * One call per picked place, from where the line is to that place: no combinations are fetched ahead. The request
+   * starts as the finger lands; while legs are still queued the origin is not known yet, so those wait for their turn.
    */
-  const prefetchLegs = (record: RecordItem, selectedRegion: Region) => {
-    const places = record.places.slice(0, 6);
-    for (const to of places)
-      for (const from of [null, ...places])
-        if (from?.id !== to.id) void queryClient.prefetchQuery(routeQuery(legParams(record, selectedRegion, to, from)));
+  const pressPlace = (place: Place) => {
+    const current = sessionRef.current;
+    if (current?.status !== "idle" || current.segments.some((segment) => segment.target?.id === place.id)) return;
+    void queryClient.prefetchQuery(routeQuery(legParams(current.record, current.region, place, current.current)));
   };
   const reset = () => {
     generation.current++;
@@ -728,6 +727,9 @@ export function JourneyMap({
                 key={place.id}
                 type="button"
                 onClick={() => selectPlace(place)}
+                onPointerDown={(event) => {
+                  if (event.button === 0) pressPlace(place);
+                }}
                 aria-pressed={selectedPlaceIds.has(place.id)}
               >
                 {place.name}
