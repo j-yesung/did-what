@@ -139,21 +139,24 @@
 .recordHeader button {
   pointer-events: auto;
 }
-.pill {
-  border: 1px solid color-mix(in srgb, var(--map-white) 24%, transparent);
-  border-radius: 30px;
-  background: color-mix(in srgb, var(--map-background) 80%, transparent);
-  padding: 9px 13px;
-  font-size: 12px;
-}
 .empty {
   position: absolute;
   top: calc(var(--page-top) + var(--toolbar-height) + 16px);
   left: 20px;
   right: 20px;
+  display: grid;
+  justify-items: start;
+  gap: 12px;
   font-size: 13px;
+}
+.empty p {
   opacity: 0.7;
-  pointer-events: none;
+}
+/* Stretches a 38px button's touch area to 44px without changing how it looks. */
+.hit::before {
+  content: "";
+  position: absolute;
+  inset: -3px 0;
 }
 .note {
   margin-top: 6px;
@@ -190,6 +193,13 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--map-background) 85%, transparent);
   font-size: 12px;
+  /* Only a wait longer than 300ms shows it; a quick leg never flashes it. */
+  animation: status-in 200ms ease-out 300ms both;
+}
+@keyframes status-in {
+  from {
+    opacity: 0;
+  }
 }
 .placesHeading {
   margin-bottom: 8px;
@@ -207,17 +217,34 @@
   font-size: 12px;
   opacity: 0.6;
 }
+/* Fades whichever end still hides badges, since the scrollbar is hidden. */
 .chips {
+  --fade-start: 0px;
+  --fade-end: 0px;
   display: flex;
   gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
   padding-bottom: 18px;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--fade-start),
+    #000 calc(100% - var(--fade-end)),
+    transparent
+  );
+}
+.chips[data-fade-start] {
+  --fade-start: 28px;
+}
+.chips[data-fade-end] {
+  --fade-end: 28px;
 }
 .chips::-webkit-scrollbar {
   display: none;
 }
 .chips button {
+  min-height: 44px;
   white-space: nowrap;
   border: 1px solid color-mix(in srgb, var(--map-white) 30%, transparent);
   border-radius: 30px;
@@ -225,7 +252,7 @@
   padding: 9px 13px;
   font-size: 13px;
 }
-.chips button[aria-pressed="true"] {
+.chips button[data-selected] {
   border-color: var(--map-green);
   color: var(--map-green);
 }
@@ -260,37 +287,21 @@
 .error {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
   font-size: 12px;
-}
-.error button,
-.homeNotice button {
-  color: var(--map-green);
-  text-decoration: underline;
 }
 .homeNotice {
   position: absolute;
   bottom: max(32px, env(safe-area-inset-bottom));
   left: 20px;
   right: 20px;
-  font-size: 13px;
-}
-.row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 18px 2px;
-  border-bottom: 1px solid var(--border-default);
-  text-align: left;
-}
-.row span:first-child {
-  display: grid;
-  gap: 4px;
-}
-.row small {
-  opacity: 0.6;
+  gap: 12px;
+  font-size: 13px;
 }
 .skeleton i {
   display: block;
@@ -305,7 +316,32 @@
     opacity: 0.5;
   }
 }
+/* A drawn place tapped again rings twice where it is. */
+.focusRing {
+  fill: none;
+  stroke: var(--map-green);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: focus-ring 900ms ease-out 2 both;
+}
+@keyframes focus-ring {
+  from {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
+  .focusRing {
+    animation: none;
+    opacity: 0.8;
+  }
+  .status {
+    animation-duration: 1ms;
+  }
   .drawing,
   .pulse,
   .skeleton i {
