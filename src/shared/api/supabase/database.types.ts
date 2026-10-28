@@ -35,6 +35,12 @@ export type Database = {
         };
         Relationships: [];
       };
+      member_home_addresses: {
+        Row: { owner_id: string; member_id: string; address: string; updated_at: string };
+        Insert: { owner_id: string; member_id: string; address: string; updated_at?: string };
+        Update: { owner_id?: string; member_id?: string; address?: string; updated_at?: string };
+        Relationships: [];
+      };
       notifications: {
         Row: {
           comment_id: string | null;
