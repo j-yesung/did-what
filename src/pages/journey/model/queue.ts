@@ -4,7 +4,7 @@ export type JourneyQueue<T extends JourneyPlace> = {
   active: T | null;
   queue: T[];
   segments: { target: T | null }[];
-  status: "loading" | "drawing" | "idle" | "error";
+  status: "loading" | "moving" | "drawing" | "idle" | "error";
 };
 
 /** A place is picked once: drawn, in-flight or queued places ignore further taps, so no leg or distance repeats. */

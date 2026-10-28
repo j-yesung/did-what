@@ -36,7 +36,8 @@ type Session = {
   segments: Segment[];
   queue: Place[];
   active: Place | null;
-  status: "loading" | "drawing" | "idle" | "error";
+  /** loading: fetching the leg · moving: framing it (sheet closing, camera flying) · drawing: sketching it. */
+  status: "loading" | "moving" | "drawing" | "idle" | "error";
   error: string;
   current: Place | null;
   /** 다시 보기 in progress: the action buttons fade out until the last leg lands. */
@@ -122,6 +123,13 @@ const legParams = (record: RecordItem, region: Region, target: Place | null, fro
   return params;
 };
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** Narrower than the tightest auto-fit (routeBox's 0.9), so a pan or pinch never snaps out of an auto zoom. */
+const MIN_VIEW_WIDTH = 0.5;
+/** The camera eases out over 650ms and is ~90% there at 350ms: the sketch starts then, not while it still flies. */
+const CAMERA_SETTLE_MS = 350;
+/** Upper bound on waiting for the record sheet to finish closing, in case its close-complete event never comes. */
+const SHEET_CLOSE_FALLBACK_MS = 700;
 const fetchRoute = async (params: URLSearchParams, signal: AbortSignal) => {
   const response = await fetch(`/journey/directions?${params}`, { signal, cache: "no-store" });
   const body = (await response.json()) as { route?: Route; error?: string };
@@ -210,7 +218,7 @@ function AnimatedNumber({ value, format }: { value: number; format: (value: numb
   useEffect(() => {
     const start = previous.current;
     const started = performance.now();
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       setDisplay(value);
       previous.current = value;
       return;
@@ -266,6 +274,9 @@ export function JourneyMap({
   // Saving refreshes the server props too; homeSaved bridges the moment until hasHome catches up.
   const homeReady = (hasHome || homeSaved) && !homeUnavailable;
   const sheetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Resolves once the record sheet has slid away after a record is picked; already resolved when no sheet was open.
+  const sheetClosed = useRef<Promise<unknown>>(Promise.resolve());
+  const resolveSheetClosed = useRef<(() => void) | null>(null);
   const [sheetHeader, setSheetHeader] = useState<HTMLDivElement | null>(null);
   const [sheetBody, setSheetBody] = useState<HTMLDivElement | null>(null);
   const compactHeightRef = useRef(360);
@@ -313,7 +324,7 @@ export function JourneyMap({
     cancelAnimationFrame(cameraAnimation.current);
     const start = boxRef.current,
       started = performance.now();
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       setView(next);
       return;
     }
@@ -338,7 +349,7 @@ export function JourneyMap({
     const scale = Math.max(b.width / rect.width, b.height / rect.height);
     const anchorX = b.x + b.width / 2 + (clientX - rect.left - rect.width / 2) * scale;
     const anchorY = b.y + b.height / 2 + (clientY - rect.top - rect.height / 2) * scale;
-    const f = Math.max(10, Math.min(400, b.width * factor)) / b.width;
+    const f = Math.max(MIN_VIEW_WIDTH, Math.min(400, b.width * factor)) / b.width;
     setView({
       x: anchorX + (b.x - anchorX) * f - panX * scale * f,
       y: anchorY + (b.y - anchorY) * f - panY * scale * f,
@@ -387,6 +398,14 @@ export function JourneyMap({
           routeQuery(legParams(next.record, next.region, target, next.current)),
         );
         if (token !== generation.current) return;
+        // Frame the leg first and sketch only once the record sheet is down and the camera has mostly arrived.
+        // Otherwise the start of the line (leaving home) and of the climbing numbers plays behind the sheet or
+        // off-screen.
+        const camera = target ? followBox(boxRef.current, route) : routeBox([route]);
+        if (camera) moveCamera(camera);
+        setSessionValue({ ...sessionRef.current!, status: "moving" });
+        await Promise.all([sheetClosed.current, camera && !prefersReducedMotion() ? sleep(CAMERA_SETTLE_MS) : null]);
+        if (token !== generation.current) return;
         const segment = {
           route,
           target,
@@ -396,9 +415,7 @@ export function JourneyMap({
         };
         next = { ...sessionRef.current!, segments: [...sessionRef.current!.segments, segment], status: "drawing" };
         setSessionValue(next);
-        const camera = target ? followBox(boxRef.current, route) : routeBox([route]);
-        if (camera) moveCamera(camera);
-        await sleep(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 900);
+        await sleep(prefersReducedMotion() ? 0 : 900);
         if (token !== generation.current) return;
         next = { ...sessionRef.current!, current: target, active: null, status: "idle" };
         setSessionValue(next);
@@ -424,6 +441,15 @@ export function JourneyMap({
   };
   const begin = (record: RecordItem, selectedRegion: Region, replay?: Place[]) => {
     const token = ++generation.current;
+    sheetClosed.current =
+      sheet === null
+        ? Promise.resolve()
+        : Promise.race([
+            new Promise<void>((resolve) => {
+              resolveSheetClosed.current = resolve;
+            }),
+            sleep(SHEET_CLOSE_FALLBACK_MS),
+          ]);
     const next: Session = {
       record,
       region: selectedRegion,
@@ -492,7 +518,7 @@ export function JourneyMap({
     const p = project(selected.longitude, selected.latitude);
     moveCamera({ x: p.x - 32, y: p.y - 48, width: 64, height: 96 });
     const rising = sheet === "regions" || sheet === "capital";
-    if (!rising || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (!rising || prefersReducedMotion()) {
       setRegion(selected);
       showSheet("records");
       return;
@@ -773,6 +799,11 @@ export function JourneyMap({
         snapPoint={snapPoint}
         onSnapPointChange={setSnapPoint}
         open={sheet !== null}
+        onOpenChangeComplete={(open) => {
+          if (open) return;
+          resolveSheetClosed.current?.();
+          resolveSheetClosed.current = null;
+        }}
         onOpenChange={(open) => {
           if (open) return;
           showSheet(null);
