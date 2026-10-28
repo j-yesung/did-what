@@ -1,11 +1,10 @@
-export const TRAVEL_DEMO_HOMES = [{ latitude: 37.5665, longitude: 126.978 }] as const;
-
 type ObjectValue = Record<string, unknown>;
 const isObject = (value: unknown): value is ObjectValue => typeof value === "object" && value !== null;
 const isNonnegativeNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value) && value >= 0;
 
-export const parseTravelDirections = (data: unknown) => {
+/** Kakao Mobility car directions → road points with total distance (m) and duration (s); null when unusable. */
+export const parseKakaoDirections = (data: unknown) => {
   if (!isObject(data) || !Array.isArray(data.routes)) return null;
   const route = data.routes[0];
   if (!isObject(route) || route.result_code !== 0 || !isObject(route.summary) || !Array.isArray(route.sections)) {

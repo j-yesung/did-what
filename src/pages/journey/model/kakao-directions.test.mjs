@@ -1,9 +1,9 @@
-import { parseTravelDirections } from "./travel-directions-model.ts";
+import { parseKakaoDirections } from "./kakao-directions.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 
 test("도로 구간의 좌표를 순서대로 연결하고 거리와 시간을 가져온다", () => {
-  const result = parseTravelDirections({
+  const result = parseKakaoDirections({
     routes: [
       {
         result_code: 0,
@@ -25,9 +25,9 @@ test("도로 구간의 좌표를 순서대로 연결하고 거리와 시간을 �
 });
 
 test("실패 응답이나 불완전한 좌표는 경로로 표시하지 않는다", () => {
-  assert.equal(parseTravelDirections({ routes: [{ result_code: 104 }] }), null);
+  assert.equal(parseKakaoDirections({ routes: [{ result_code: 104 }] }), null);
   assert.equal(
-    parseTravelDirections({
+    parseKakaoDirections({
       routes: [
         {
           result_code: 0,

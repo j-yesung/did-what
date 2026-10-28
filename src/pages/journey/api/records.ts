@@ -1,11 +1,12 @@
 import "server-only";
 
-import { groupTravelRecords, type TravelRecord } from "@/app/route-handlers/travel-prototype-model";
 import { requireMember } from "@/entities/member/server";
+
+import { type JourneyRecordRow, toJourneyRegions } from "../model/record";
 
 export const getJourneyRegions = async () => {
   const { supabase, user } = await requireMember();
-  const records: TravelRecord[] = [];
+  const records: JourneyRecordRow[] = [];
   for (let offset = 0; ; offset += 500) {
     const { data, error } = await supabase
       .from("records")
@@ -18,11 +19,6 @@ export const getJourneyRegions = async () => {
     records.push(...data.map((record) => ({ ...record, record_places: [] })));
     if (data.length < 500) break;
   }
-  return Object.entries(groupTravelRecords(records)).map(([code, group]) => ({
-    code,
-    name: group.name,
-    latitude: group.latitude,
-    longitude: group.longitude,
-    count: group.records.length,
-  }));
+  // Newest first (the query order), so each node sits at the latest visit.
+  return toJourneyRegions(records);
 };

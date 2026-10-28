@@ -1,9 +1,10 @@
 import "server-only";
 
-import { parseTravelDirections } from "@/app/route-handlers/travel-directions-model";
-import { groupTravelRecords } from "@/app/route-handlers/travel-prototype-model";
 import { requireMember } from "@/entities/member/server";
 import { geocodeHomeAddress } from "@/features/home-address/api/geocode";
+
+import { parseKakaoDirections } from "../model/kakao-directions";
+import { toJourneyRecord } from "../model/record";
 
 export const getJourneyDirections = async (request: Request) => {
   const { supabase, user, member } = await requireMember();
@@ -43,14 +44,14 @@ export const getJourneyDirections = async (request: Request) => {
   const recordQuery = supabase
     .from("records")
     .select(
-      "id, activity, recorded_at, record_regions(region_code, region_name, region_latitude, region_longitude), record_places(created_at, place:places(id, name, latitude, longitude))",
+      "id, activity, recorded_at, record_regions(region_code, region_name, region_latitude, region_longitude), record_places(place:places(id, name, latitude, longitude))",
     )
     .eq("id", id)
     .eq("owner_id", user.id)
     .maybeSingle();
   const [{ data, error }, home] = await Promise.all([recordQuery, target ? null : homeOrigin()]);
   if (error) return Response.json({ error: "기록을 불러오지 못했어요." }, { status: 500 });
-  const record = data && groupTravelRecords([data])[region]?.records[0];
+  const record = data && toJourneyRecord(data, region);
   const destination = target ? record?.places.find((place) => place.id === target) : record?.destination;
   if (!record || !destination) return Response.json({ error: "해당 장소를 찾을 수 없어요." }, { status: 404 });
   if (home instanceof Response) return home;
@@ -83,7 +84,7 @@ export const getJourneyDirections = async (request: Request) => {
       cache: "no-store",
       signal: AbortSignal.any([request.signal, AbortSignal.timeout(10000)]),
     });
-    const route = response.ok ? parseTravelDirections(await response.json()) : null;
+    const route = response.ok ? parseKakaoDirections(await response.json()) : null;
     if (!route) throw new Error();
     return Response.json({ route }, { headers: { "Cache-Control": "private, no-store" } });
   } catch {
