@@ -34,3 +34,27 @@ export const parseKakaoDirections = (data: unknown) => {
   }
   return points.length >= 2 ? { points, distance, duration } : null;
 };
+
+/** Kakao answered but found no road route (result_code ≠ 0), e.g. to an island without a car ferry. */
+export const hasNoKakaoRoute = (data: unknown) => {
+  const route = isObject(data) && Array.isArray(data.routes) ? data.routes[0] : null;
+  return isObject(route) && typeof route.result_code === "number" && route.result_code !== 0;
+};
+
+type Point = { latitude: number; longitude: number };
+// ~110 m: the start of a straight home leg is the home itself, so it is not sent exactly.
+const roundCoordinate = (value: number) => Math.round(value * 1000) / 1000;
+
+/**
+ * The home leg when no road reaches the region: a straight line from home. It is not a car route, so it carries
+ * no distance or duration and `straight` lets the screen leave it out of the totals.
+ */
+export const straightHomeRoute = (home: Point, destination: Point) => ({
+  points: [
+    [roundCoordinate(home.longitude), roundCoordinate(home.latitude)],
+    [destination.longitude, destination.latitude],
+  ] as [number, number][],
+  distance: 0,
+  duration: 0,
+  straight: true,
+});

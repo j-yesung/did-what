@@ -27,7 +27,8 @@ type Point = { latitude: number; longitude: number };
 type Place = JourneyPlace;
 type Region = Point & { code: string; name: string; count: number };
 type RecordItem = JourneyRecord;
-type Route = { points: [number, number][]; distance: number; duration: number };
+/** `straight`: no road reached the region, so the home leg is a straight line with no distance or duration. */
+type Route = { points: [number, number][]; distance: number; duration: number; straight?: boolean };
 /** `from` is null for the home leg: the home coordinate never reaches the browser. */
 type Segment = { route: Route; target: Place | null; from: Point | null; to: Point; key: number };
 type Session = {
@@ -761,6 +762,9 @@ export function JourneyMap({
               )}
             </em>
           </div>
+          {segments.some((segment) => segment.route.straight) && (
+            <p className={styles.note}>차로 갈 수 없는 구간은 직선으로 이었고 거리·시간에서 뺐어요</p>
+          )}
           {/* Floats above the panel so the badges and distance never shift; the drawing line is its own progress. */}
           {session.status === "loading" && (
             <p className={styles.status} role="status">

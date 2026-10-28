@@ -3,7 +3,7 @@ import "server-only";
 import { requireMember } from "@/entities/member/server";
 import { geocodeHomeAddress } from "@/features/home-address/api/geocode";
 
-import { parseKakaoDirections } from "../model/kakao-directions";
+import { hasNoKakaoRoute, parseKakaoDirections, straightHomeRoute } from "../model/kakao-directions";
 import { toJourneyRecord } from "../model/record";
 
 export const getJourneyDirections = async (request: Request) => {
@@ -84,9 +84,17 @@ export const getJourneyDirections = async (request: Request) => {
       cache: "no-store",
       signal: AbortSignal.any([request.signal, AbortSignal.timeout(10000)]),
     });
-    const route = response.ok ? parseKakaoDirections(await response.json()) : null;
-    if (!route) throw new Error();
-    return Response.json({ route }, { headers: { "Cache-Control": "private, no-store" } });
+    const data: unknown = response.ok ? await response.json() : null;
+    const route = parseKakaoDirections(data);
+    if (route) return Response.json({ route }, { headers: { "Cache-Control": "private, no-store" } });
+    // No road reaches the region (an island without a car ferry; ferry routes come back as normal routes): the
+    // home leg becomes a straight line so the record still opens. Place legs keep failing so 다시 시도/건너뛰기 apply.
+    if (!target && hasNoKakaoRoute(data))
+      return Response.json(
+        { route: straightHomeRoute(origin, destination) },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
+    throw new Error();
   } catch {
     return Response.json({ error: "도로 경로를 불러오지 못했어요." }, { status: 502 });
   }
