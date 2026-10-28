@@ -4,16 +4,15 @@ import { type CSSProperties, memo, type ReactNode, useEffect, useLayoutEffect, u
 
 import { ArrowsInSimpleIcon, HouseIcon, ListBulletsIcon, MapTrifoldIcon, PlayIcon } from "@phosphor-icons/react";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/record";
 import { createRegionActivityMaps } from "@/entities/region";
+import { HomeAddressSheet } from "@/features/home-address/ui/home-address-sheet";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { FixedToolbar } from "@/shared/ui/layouts";
 import { PageBackButton } from "@/shared/ui/layouts/page-back-button";
-import { PressLink } from "@/shared/ui/press-link";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 import { RegionRecordList } from "@/widgets/region-activity-map/ui/region-record-list";
 
@@ -261,6 +260,11 @@ export function JourneyMap({
     });
   const [sheet, setSheet] = useState<"regions" | "capital" | "records" | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  // The address sheet opens right here instead of sending people to 설정: that tab has no way back to the map.
+  const [addressOpen, setAddressOpen] = useState(false);
+  const [homeSaved, setHomeSaved] = useState(false);
+  // Saving refreshes the server props too; homeSaved bridges the moment until hasHome catches up.
+  const homeReady = (hasHome || homeSaved) && !homeUnavailable;
   const sheetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sheetHeader, setSheetHeader] = useState<HTMLDivElement | null>(null);
   const [sheetBody, setSheetBody] = useState<HTMLDivElement | null>(null);
@@ -746,15 +750,22 @@ export function JourneyMap({
                   건너뛰기
                 </button>
               )}
-              {!hasHome && <Link href="/settings">주소 설정</Link>}
             </div>
           )}
         </div>
       )}
-      {!session && (!hasHome || homeUnavailable) && (
+      {!session && !homeReady && (
         <div className={styles.homeNotice}>
-          {homeUnavailable ? "집 주소를 불러오지 못했어요." : "길을 따라가려면 집 주소를 등록해 주세요."}{" "}
-          <Link href="/settings">설정하기 →</Link>
+          {homeUnavailable ? (
+            "집 주소를 불러오지 못했어요."
+          ) : (
+            <>
+              길을 따라가려면 집 주소를 등록해 주세요.{" "}
+              <button type="button" onClick={() => setAddressOpen(true)}>
+                등록하기
+              </button>
+            </>
+          )}
         </div>
       )}
       <BottomSheet
@@ -778,7 +789,7 @@ export function JourneyMap({
           className="dark motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
           style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
         >
-          {sheet === "records" && hasHome && !homeUnavailable && locations.data && region ? (
+          {sheet === "records" && homeReady && locations.data && region ? (
             <RegionRecordList
               isDetail={false}
               onRecordOpen={(recordId) => {
@@ -817,28 +828,36 @@ export function JourneyMap({
                       <span>{item.count}개 기록 →</span>
                     </button>
                   ))}
-                {sheet === "records" && (!hasHome || homeUnavailable) && (
+                {sheet === "records" && !homeReady && (
                   <div className={styles.sheetNotice}>
                     <p>
                       {homeUnavailable
                         ? "집 주소를 불러오지 못했어요. 잠시 후 다시 시도해 주세요."
-                        : "기록까지 이어지는 길은 내 집에서 출발해요. 설정에서 집 주소를 먼저 등록해 주세요."}
+                        : "기록까지 이어지는 길은 내 집에서 출발해요. 집 주소를 먼저 등록해 주세요."}
                     </p>
                     {!homeUnavailable && (
-                      <Button nativeButton={false} render={<PressLink href="/settings" />} size="large">
+                      <Button
+                        onClick={() => {
+                          // Closed in code, so the "closed without a record" zoom-out does not run: the region stays
+                          // framed and its list comes back after saving.
+                          showSheet(null);
+                          setAddressOpen(true);
+                        }}
+                        size="large"
+                      >
                         집 주소 등록하기
                       </Button>
                     )}
                   </div>
                 )}
-                {sheet === "records" && hasHome && !homeUnavailable && locations.isPending && (
+                {sheet === "records" && homeReady && locations.isPending && (
                   <div className={styles.skeleton} aria-label="기록을 불러오는 중">
                     <i />
                     <i />
                     <i />
                   </div>
                 )}
-                {sheet === "records" && hasHome && !homeUnavailable && locations.isError && (
+                {sheet === "records" && homeReady && locations.isError && (
                   <p>
                     기록을 불러오지 못했어요.{" "}
                     <button type="button" onClick={() => void locations.refetch()}>
@@ -851,6 +870,18 @@ export function JourneyMap({
           )}
         </BottomSheet.Content>
       </BottomSheet>
+      <HomeAddressSheet
+        address={null}
+        dark
+        memberName={member.name}
+        onOpenChange={setAddressOpen}
+        onSaved={() => {
+          setHomeSaved(true);
+          // Came from a region's list: bring it back, now with the records.
+          if (region) showSheet("records");
+        }}
+        open={addressOpen}
+      />
       <RecordDetailBottomSheet
         backLabel="지도로"
         className="dark"

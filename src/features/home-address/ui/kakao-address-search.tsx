@@ -7,7 +7,22 @@ type KakaoPostcode = new (options: {
   oncomplete: (data: KakaoAddress) => void;
   width: string;
   height: string;
+  theme?: Record<string, string>;
 }) => { embed: (element: HTMLElement) => void };
+
+// 주소 찾기는 카카오가 그리는 iframe이라 앱 토큰이 닿지 않는다. 다크 시트의 값(grey-850 바탕, grey-50·400 글자,
+// grey-800 테두리, blue-400 강조)을 그대로 넘긴다.
+const DARK_THEME = {
+  bgColor: "#202632",
+  searchBgColor: "#191F28",
+  contentBgColor: "#202632",
+  pageBgColor: "#202632",
+  textColor: "#F9FAFB",
+  queryTextColor: "#F9FAFB",
+  postcodeTextColor: "#B0B8C1",
+  emphTextColor: "#4593FC",
+  outlineColor: "#333D4B",
+};
 
 const getPostcode = () => (window as Window & { kakao?: { Postcode?: KakaoPostcode } }).kakao?.Postcode;
 let scriptPromise: Promise<void> | null = null;
@@ -37,7 +52,13 @@ const loadPostcode = () => {
   return scriptPromise;
 };
 
-export function KakaoAddressSearch({ onSelect }: { onSelect: (address: string) => void }) {
+export function KakaoAddressSearch({
+  dark = false,
+  onSelect,
+}: {
+  dark?: boolean;
+  onSelect: (address: string) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -55,6 +76,7 @@ export function KakaoAddressSearch({ onSelect }: { onSelect: (address: string) =
           },
           width: "100%",
           height: "100%",
+          theme: dark ? DARK_THEME : undefined,
         }).embed(containerRef.current);
         setLoading(false);
       })
@@ -67,7 +89,7 @@ export function KakaoAddressSearch({ onSelect }: { onSelect: (address: string) =
     return () => {
       cancelled = true;
     };
-  }, [onSelect]);
+  }, [dark, onSelect]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-5 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]">

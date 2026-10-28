@@ -260,8 +260,7 @@
   font-size: 12px;
 }
 .error button,
-.error a,
-.homeNotice a {
+.homeNotice button {
   color: var(--map-green);
   text-decoration: underline;
 }
