@@ -716,14 +716,19 @@ export function JourneyMap({
               </g>
             );
           })}
-        {startPoint && <circle cx={startPoint.x} cy={startPoint.y} r={unit * 3.5} className={styles.previous} />}
+        {startPoint && <circle cx={startPoint.x} cy={startPoint.y} r={unit * 4.5} className={styles.visited} />}
         {session &&
           completeSegments.map((segment, index) => {
             const p = project(segment.to.longitude, segment.to.latitude);
             const isCurrent = index === completeSegments.length - 1 && session.status !== "drawing";
             return (
               <g key={`point-${segment.key}`}>
-                <circle cx={p.x} cy={p.y} r={unit * 3.5} className={isCurrent ? styles.arrival : styles.previous} />
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={unit * (isCurrent ? 3.5 : 4.5)}
+                  className={isCurrent ? styles.arrival : styles.visited}
+                />
                 {isCurrent && <circle cx={p.x} cy={p.y} r={unit * 9} strokeWidth={unit} className={styles.pulse} />}
               </g>
             );

@@ -78,6 +78,13 @@
 .previous {
   fill: var(--map-white);
 }
+
+.visited {
+  fill: var(--map-background);
+  stroke: var(--map-white);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
 .pulse {
   fill: none;
   stroke: var(--map-green);
