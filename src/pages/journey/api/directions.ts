@@ -1,7 +1,7 @@
 import "server-only";
 
 import { requireMember } from "@/entities/member/server";
-import { geocodeHomeAddress } from "@/features/home-address/api/geocode";
+import { geocodeHomeAddress, HomeAddressLocationError } from "@/features/home-address/api/geocode";
 
 import { hasNoKakaoRoute, parseKakaoDirections, straightHomeRoute } from "../model/kakao-directions";
 import { toJourneyRecord } from "../model/record";
@@ -36,8 +36,16 @@ export const getJourneyDirections = async (request: Request) => {
       );
     try {
       return await geocodeHomeAddress(home.address, request.signal);
-    } catch {
-      return Response.json({ error: "집 주소를 확인하지 못했어요. 설정에서 주소를 확인해 주세요." }, { status: 502 });
+    } catch (error) {
+      return Response.json(
+        {
+          error:
+            error instanceof HomeAddressLocationError
+              ? "집 주소의 위치를 찾지 못했어요. 집 주소를 다시 등록해 주세요."
+              : "집 주소를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.",
+        },
+        { status: 502 },
+      );
     }
   };
   const recordQuery = supabase

@@ -151,11 +151,12 @@ const MIN_VIEW_WIDTH = 0.5;
 const CAMERA_SETTLE_MS = 350;
 
 const SHEET_CLOSE_FALLBACK_MS = 700;
+const ROUTE_ERROR = "경로를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.";
 const fetchRoute = async (params: URLSearchParams, signal: AbortSignal) => {
-  const response = await fetch(`/journey/directions?${params}`, { signal, cache: "no-store" });
-  const body = (await response.json()) as { route?: Route; error?: string };
-  if (!response.ok || !body.route) throw new Error(body.error ?? "경로를 불러오지 못했어요.");
-  return body.route;
+  const response = await fetch(`/journey/directions?${params}`, { signal, cache: "no-store" }).catch(() => null);
+  const body: { route?: Route; error?: string } | null = response ? await response.json().catch(() => null) : null;
+  if (response?.ok && body?.route) return body.route;
+  throw new Error(body?.error ?? ROUTE_ERROR);
 };
 
 const routeLabels = (
@@ -477,7 +478,7 @@ export function JourneyMap({
         next = {
           ...sessionRef.current!,
           status: "error",
-          error: error instanceof Error ? error.message : "경로를 불러오지 못했어요.",
+          error: error instanceof Error ? error.message : ROUTE_ERROR,
           replaying: false,
         };
         setSessionValue(next);
