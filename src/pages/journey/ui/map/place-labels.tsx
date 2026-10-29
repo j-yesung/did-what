@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 
-import { type Box, placeLabels } from "../../model/map-view";
+import { type Box, pinAt, placeLabels, project } from "../../model/map-view";
 import type { JourneyPlace } from "../../model/types";
 import styles from "../journey-map.module.css";
 
@@ -24,7 +24,8 @@ export function PlaceLabels({ places, view, unit, viewportWidth, canTap, onFocus
           key={label.key}
           role="button"
           tabIndex={0}
-          className={styles.placeLabel}
+          className={`${styles.placeLabel} ${styles.pinned}`}
+          style={pinAt(project(label.places[0].longitude, label.places[0].latitude))}
           aria-label={
             label.places.length > 1
               ? `${label.places[0].name} 외 ${label.places.length - 1}곳 보기`

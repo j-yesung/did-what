@@ -2,7 +2,7 @@ import { useEffectEvent, useLayoutEffect, useMemo, useRef } from "react";
 
 import { HouseIcon } from "@phosphor-icons/react";
 
-import { partialPathData, pathLengths, project, toPathData } from "../../model/map-view";
+import { partialPathData, pathLengths, pinAt, project, toPathData } from "../../model/map-view";
 import { prefersReducedMotion, SKETCH_MS } from "../../model/motion";
 import type { JourneyPlace, JourneySegment } from "../../model/types";
 import styles from "../journey-map.module.css";
@@ -77,12 +77,16 @@ export function RouteLayer({ segments, complete, drawing, highlight, unit, onSke
           onSketchEnd={onSketchEnd}
         />
       ))}
-      {startPoint && <circle cx={startPoint.x} cy={startPoint.y} r={unit * 4.5} className={styles.visited} />}
+      {startPoint && (
+        <g className={styles.pinned} style={pinAt(startPoint)}>
+          <circle cx={startPoint.x} cy={startPoint.y} r={unit * 4.5} className={styles.visited} />
+        </g>
+      )}
       {complete.map((segment, index) => {
         const point = project(segment.to.longitude, segment.to.latitude);
         const isCurrent = index === complete.length - 1 && !drawing;
         return (
-          <g key={`point-${segment.key}`}>
+          <g key={`point-${segment.key}`} className={styles.pinned} style={pinAt(point)}>
             <circle
               cx={point.x}
               cy={point.y}
@@ -94,24 +98,28 @@ export function RouteLayer({ segments, complete, drawing, highlight, unit, onSke
         );
       })}
       {highlight && highlightPoint && (
-        <circle
-          key={highlight.key}
-          className={styles.focusRing}
-          cx={highlightPoint.x}
-          cy={highlightPoint.y}
-          r={unit * 9}
-          strokeWidth={unit * 1.5}
-        />
+        <g className={styles.pinned} style={pinAt(highlightPoint)}>
+          <circle
+            key={highlight.key}
+            className={styles.focusRing}
+            cx={highlightPoint.x}
+            cy={highlightPoint.y}
+            r={unit * 9}
+            strokeWidth={unit * 1.5}
+          />
+        </g>
       )}
       {startPoint && (
-        <HouseIcon
-          aria-label="내 집"
-          className={styles.homeIcon}
-          size={unit * 14}
-          weight="fill"
-          x={startPoint.x - unit * 7}
-          y={startPoint.y - unit * 22}
-        />
+        <g className={styles.pinned} style={pinAt(startPoint)}>
+          <HouseIcon
+            aria-label="내 집"
+            className={styles.homeIcon}
+            size={unit * 14}
+            weight="fill"
+            x={startPoint.x - unit * 7}
+            y={startPoint.y - unit * 22}
+          />
+        </g>
       )}
     </>
   );

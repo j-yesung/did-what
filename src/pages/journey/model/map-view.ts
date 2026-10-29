@@ -17,6 +17,8 @@ export const national: Box = {
   height: homeBottomRight.y - homeTopLeft.y,
 };
 
+export const pinAt = (point: { x: number; y: number }) => ({ transformOrigin: `${point.x}px ${point.y}px` });
+
 export const MIN_VIEW_WIDTH = 0.02;
 export const MAX_VIEW_WIDTH = 400;
 const MIN_ROUTE_WIDTH = 3;

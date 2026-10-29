@@ -55,10 +55,12 @@ export const useMapCamera = () => {
 
     if (viewRef.current === rendered.current) {
       layer.style.transform = "";
+      layer.style.removeProperty("--map-scale");
       return null;
     }
     const shift = viewTransform(rendered.current, viewRef.current, viewportRef.current);
     layer.style.transform = `translate(${shift.x}px, ${shift.y}px) scale(${shift.scale})`;
+    layer.style.setProperty("--map-scale", `${shift.scale}`);
     return shift;
   };
 

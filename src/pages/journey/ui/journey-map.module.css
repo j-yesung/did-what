@@ -33,6 +33,10 @@
 .base {
   pointer-events: none;
 }
+.pinned {
+  transform-box: view-box;
+  transform: scale(calc(1 / var(--map-scale, 1)));
+}
 .land path,
 .land circle {
   fill: var(--journey-land);

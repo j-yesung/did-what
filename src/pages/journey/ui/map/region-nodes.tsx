@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 
-import { project } from "../../model/map-view";
+import { pinAt, project } from "../../model/map-view";
 import type { JourneyRegion } from "../../model/types";
 import styles from "../journey-map.module.css";
 
@@ -27,7 +27,8 @@ export function RegionNodes({ regions, unit, viewWidth, canTap, onChoose }: Regi
             role="button"
             tabIndex={0}
             aria-label={`${item.name} 기록 ${item.count}개`}
-            className={styles.node}
+            className={`${styles.node} ${styles.pinned}`}
+            style={pinAt(point)}
             onClick={(event) => {
               if (canTap(event)) onChoose(item, event);
             }}
