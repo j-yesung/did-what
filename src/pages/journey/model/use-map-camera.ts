@@ -16,6 +16,7 @@ import {
   constrainView,
   type Frame,
   followBox,
+  MOMENTUM_MS,
   momentumView,
   national,
   routeBox,
@@ -27,6 +28,9 @@ import { prefersReducedMotion } from "./motion";
 import type { JourneyRoute } from "./types";
 
 type Position = { x: number; y: number };
+
+const GLIDE_MIN_SPEED = 0.4;
+const GLIDE_MAX_SPEED = 2.5;
 
 export const MAP_OVERSCAN = 1.5;
 
@@ -173,16 +177,14 @@ export const useMapCamera = () => {
     return rect ? toViewPoint(viewRef.current, rect, clientX, clientY) : null;
   };
 
-  const zoomAt = (clientX: number, clientY: number, factor: number, panX = 0, panY = 0, elastic = false) => {
+  const zoomAt = (clientX: number, clientY: number, factor: number, panX = 0, panY = 0) => {
     const rect = stageRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const current = viewRef.current;
     const scale = viewScale(current, rect);
     const anchor = toViewPoint(current, rect, clientX, clientY);
-    const desired = current.width * factor;
-    const limited = clampViewWidth(desired);
-    const ratio = (elastic ? limited + (desired - limited) * 0.15 : limited) / current.width;
+    const ratio = clampViewWidth(current.width * factor) / current.width;
     preview(
       constrainView({
         x: anchor.x + (current.x - anchor.x) * ratio - panX * scale * ratio,
@@ -199,7 +201,8 @@ export const useMapCamera = () => {
     const tick = (now: number) => {
       const elapsed = now - started;
       preview(momentumView(start, velocity, elapsed));
-      if (elapsed < 850 && speed * Math.exp(-elapsed / 180) > 0.015) animation.current = requestAnimationFrame(tick);
+      if (elapsed < 500 && speed * Math.exp(-elapsed / MOMENTUM_MS) > 0.02)
+        animation.current = requestAnimationFrame(tick);
       else settle();
     };
     animation.current = requestAnimationFrame(tick);
@@ -217,33 +220,23 @@ export const useMapCamera = () => {
     dragged.current = false;
 
     const current = viewRef.current;
-    const width = clampViewWidth(current.width);
-    if (width !== current.width) {
-      const height = (current.height * width) / current.width;
-      moveCamera({
-        x: current.x + (current.width - width) / 2,
-        y: current.y + (current.height - height) / 2,
-        width,
-        height,
-      });
-      return;
-    }
     const samples = panSamples.current;
     const first = samples[0];
     const last = samples.at(-1);
     const unit = viewScale(current, viewportRef.current);
     const elapsed = first && last ? last.time - first.time : 0;
-    const velocity =
-      first && last && elapsed
-        ? { x: ((last.x - first.x) / elapsed) * unit, y: ((last.y - first.y) / elapsed) * unit }
-        : { x: 0, y: 0 };
+    const pixels =
+      first && last && elapsed ? { x: (last.x - first.x) / elapsed, y: (last.y - first.y) / elapsed } : null;
+    const speed = pixels ? Math.hypot(pixels.x, pixels.y) : 0;
+    const limit = speed > GLIDE_MAX_SPEED ? GLIDE_MAX_SPEED / speed : 1;
+    const velocity = pixels ? { x: pixels.x * limit * unit, y: pixels.y * limit * unit } : { x: 0, y: 0 };
     const gliding =
       wasDragged &&
       event.type !== "pointercancel" &&
       !prefersReducedMotion() &&
       last !== undefined &&
       event.timeStamp - last.time <= 100 &&
-      Math.hypot(velocity.x, velocity.y) / unit >= 0.05;
+      speed >= GLIDE_MIN_SPEED;
     if (gliding) glide(current, velocity, unit);
     else settle();
   };
@@ -298,7 +291,6 @@ export const useMapCamera = () => {
         Math.hypot(b.x - a.x, b.y - a.y) / distance,
         (nextA.x + nextB.x) / 2 - midX,
         (nextA.y + nextB.y) / 2 - midY,
-        true,
       );
     },
     onPointerUp: release,

@@ -254,7 +254,9 @@ export const constrainView = (view: Box): Box => ({
   y: Math.max(worldStart.y - view.height * 0.8, Math.min(worldEnd.y - view.height * 0.2, view.y)),
 });
 
+export const MOMENTUM_MS = 90;
+
 export const momentumView = (start: Box, velocity: { x: number; y: number }, elapsed: number) => {
-  const distance = 180 * (1 - Math.exp(-Math.max(0, elapsed) / 180));
+  const distance = MOMENTUM_MS * (1 - Math.exp(-Math.max(0, elapsed) / MOMENTUM_MS));
   return constrainView({ ...start, x: start.x - velocity.x * distance, y: start.y - velocity.y * distance });
 };
