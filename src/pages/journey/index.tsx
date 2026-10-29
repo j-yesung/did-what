@@ -7,7 +7,7 @@ export async function JourneyPage() {
   const [{ supabase, user, member }, regions] = await Promise.all([requireMember(), getJourneyRegions()]);
   const { data: home, error } = await supabase
     .from("member_home_addresses")
-    .select("member_id")
+    .select("updated_at")
     .eq("owner_id", user.id)
     .eq("member_id", member.id)
     .maybeSingle();
@@ -15,6 +15,7 @@ export async function JourneyPage() {
     <JourneyMap
       regions={regions}
       hasHome={Boolean(home)}
+      homeVersion={home?.updated_at ?? null}
       homeUnavailable={Boolean(error)}
       member={{ id: member.id, name: member.name }}
     />

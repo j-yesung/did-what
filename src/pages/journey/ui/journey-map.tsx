@@ -64,6 +64,7 @@ type Session = {
   current: Place | null;
 
   replaying: boolean;
+  restored?: boolean;
 };
 type Box = { x: number; y: number; width: number; height: number };
 
@@ -106,10 +107,10 @@ const routeBox = (routes: Route[]): Box => {
   const width = Math.max(0.5, maxX - x),
     height = Math.max(0.75, maxY - y);
   const paddedWidth = Math.max(width * 1.8, height * 0.75, 0.9),
-    paddedHeight = Math.max(height * 1.8, width * 1.2, 1.4);
+    paddedHeight = Math.max(height * 2.3, width * 1.2, 1.4);
   return {
     x: x + width / 2 - paddedWidth / 2,
-    y: y + height / 2 - paddedHeight * 0.45,
+    y: y + height / 2 - paddedHeight * 0.5,
     width: paddedWidth,
     height: paddedHeight,
   };
@@ -128,7 +129,12 @@ const followBox = (view: Box, route: Route): Box | null => {
     bounds.maxY <= top + view.height * 0.5;
   return visible && fit.width >= view.width * 0.3 ? null : fit;
 };
-const legParams = (record: RecordItem, region: Region, target: Place | null, from: Place | null) => {
+const legParams = (
+  record: Pick<RecordItem, "id">,
+  region: Pick<Region, "code">,
+  target: Place | null,
+  from: Place | null,
+) => {
   const params = new URLSearchParams({ recordId: record.id, region: region.code });
   if (target) {
     params.set("placeId", target.id);
@@ -233,9 +239,17 @@ function SegmentPath({ segment, drawing, unit }: { segment: Segment; drawing: bo
   );
 }
 
-function AnimatedNumber({ value, format }: { value: number; format: (value: number) => ReactNode }) {
-  const [display, setDisplay] = useState(0);
-  const previous = useRef(0);
+function AnimatedNumber({
+  value,
+  format,
+  instant = false,
+}: {
+  value: number;
+  format: (value: number) => ReactNode;
+  instant?: boolean;
+}) {
+  const [display, setDisplay] = useState(instant ? value : 0);
+  const previous = useRef(instant ? value : 0);
 
   useEffect(() => {
     const start = previous.current;
@@ -263,11 +277,13 @@ function AnimatedNumber({ value, format }: { value: number; format: (value: numb
 export function JourneyMap({
   regions,
   hasHome,
+  homeVersion,
   homeUnavailable,
   member,
 }: {
   regions: Region[];
   hasHome: boolean;
+  homeVersion: string | null;
   homeUnavailable: boolean;
   member: { id: string; name: string };
 }) {
@@ -278,17 +294,31 @@ export function JourneyMap({
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const routeQuery = (params: URLSearchParams) =>
-    queryOptions({
-      queryKey: ["journey-route", member.id, params.toString()],
+  const routeQuery = (record: RecordItem, region: Region, target: Place | null, from: Place | null) => {
+    const params = legParams(record, region, target, from);
+    const end = target ?? record.destination;
+    const start = from ?? (target ? record.destination : null);
+    return queryOptions({
+      queryKey: [
+        "journey-route",
+        member.id,
+        params.toString(),
+        start ? `${start.longitude},${start.latitude}` : homeVersion,
+        `${end.longitude},${end.latitude}`,
+      ],
       queryFn: ({ signal }) => fetchRoute(params, signal),
       staleTime: Number.POSITIVE_INFINITY,
       gcTime: Number.POSITIVE_INFINITY,
       retry: false,
     });
+  };
   const [sheet, setSheet] = useState<"regions" | "choices" | "records" | null>(null);
+  const [content, setContent] = useState(sheet);
+  if (sheet !== null && sheet !== content) setContent(sheet);
+  const opener = useRef<Element | null>(null);
+  const title = useRef<HTMLHeadingElement>(null);
+  const regionsButton = useRef<HTMLButtonElement>(null);
   const [choices, setChoices] = useState<Region[]>([]);
-  const [detailOpen, setDetailOpen] = useState(false);
   const [chipRow, setChipRow] = useState<HTMLDivElement | null>(null);
   const [chipFade, setChipFade] = useState({ start: false, end: false });
 
@@ -322,7 +352,13 @@ export function JourneyMap({
         : null,
     record: searchParams?.get("record") ?? null,
     places: searchParams?.get("places")?.split(",") ?? [],
+    detail: searchParams?.get("detail") === "1",
   }));
+  const restoringDetail = Boolean(initialUrl.region && initialUrl.record && initialUrl.detail);
+  const [detailRecordId, setDetailRecordId] = useState(restoringDetail ? initialUrl.record : null);
+  const [detailOpen, setDetailOpen] = useState(restoringDetail);
+  const [restoring, setRestoring] = useState(Boolean(initialUrl.region && initialUrl.record));
+  const restored = useRef(false);
 
   const [addressOpen, setAddressOpen] = useState(false);
   const [homeSaved, setHomeSaved] = useState(false);
@@ -337,10 +373,11 @@ export function JourneyMap({
   const [snapPoint, setSnapPoint] = useState<number | string | null>(360);
 
   const showSheet = (next: typeof sheet) => {
+    if (next !== null && sheet === null && !addressOpen) opener.current = document.activeElement;
     if (sheetTimer.current) clearTimeout(sheetTimer.current);
     sheetTimer.current = null;
     setSheet(next);
-    setSnapPoint(next === "records" ? 1 : compactHeightRef.current);
+    if (next !== null) setSnapPoint(next === "records" ? 1 : compactHeightRef.current);
   };
 
   useLayoutEffect(() => {
@@ -365,6 +402,9 @@ export function JourneyMap({
   const cameraAnimation = useRef(0);
   const svg = useRef<SVGSVGElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const dragOrigin = useRef<{ x: number; y: number } | null>(null);
+  const dragged = useRef(false);
+  const dragEndAt = useRef(Number.NEGATIVE_INFINITY);
   const [dimensions, setDimensions] = useState({ width: 390, height: 844 });
   const setSessionValue = (next: Session | null) => {
     sessionRef.current = next;
@@ -413,6 +453,9 @@ export function JourneyMap({
   };
   const releasePointer = (event: React.PointerEvent) => {
     pointers.current.delete(event.pointerId);
+    if (pointers.current.size) return;
+    dragEndAt.current = dragged.current ? event.timeStamp : Number.NEGATIVE_INFINITY;
+    dragged.current = false;
   };
   useEffect(() => {
     const element = svg.current;
@@ -426,9 +469,10 @@ export function JourneyMap({
       cancelAnimationFrame(cameraAnimation.current);
       if (sheetTimer.current) clearTimeout(sheetTimer.current);
       generation.current++;
+      restored.current = false;
+      sessionRef.current = null;
     };
   }, []);
-  useEffect(() => () => queryClient.removeQueries({ queryKey: ["journey-route"] }), [queryClient]);
   const locations = useQuery(recordLocationsQueryOptions);
   const [subregion, setSubregion] = useState<string | null>(null);
   const regionMaps = useMemo(
@@ -444,9 +488,7 @@ export function JourneyMap({
     while (token === generation.current) {
       const target = next.active;
       try {
-        const route = await queryClient.fetchQuery(
-          routeQuery(legParams(next.record, next.region, target, next.current)),
-        );
+        const route = await queryClient.fetchQuery(routeQuery(next.record, next.region, target, next.current));
         if (token !== generation.current) return;
         const camera = target ? followBox(boxRef.current, route) : routeBox([route]);
         if (camera) moveCamera(camera);
@@ -486,7 +528,7 @@ export function JourneyMap({
       }
     }
   };
-  const begin = (record: RecordItem, selectedRegion: Region, replay?: Place[]) => {
+  const begin = (record: RecordItem, selectedRegion: Region, queue: Place[] = [], replaying = false) => {
     const token = ++generation.current;
     sheetClosed.current =
       sheet === null
@@ -501,17 +543,63 @@ export function JourneyMap({
       record,
       region: selectedRegion,
       segments: [],
-      queue: replay ?? [],
+      queue,
       active: null,
       status: "loading",
       error: "",
       current: null,
-      replaying: Boolean(replay),
+      replaying,
     };
     setSessionValue(next);
     setHighlight(null);
     showSheet(null);
     void run(next, token);
+  };
+  const restore = async (record: RecordItem, selectedRegion: Region, places: Place[]) => {
+    const token = ++generation.current;
+    const base: Session = {
+      record,
+      region: selectedRegion,
+      segments: [],
+      queue: [],
+      active: null,
+      status: "loading",
+      error: "",
+      current: null,
+      replaying: false,
+    };
+    setSessionValue(base);
+    const segments: Segment[] = [];
+    let current: Place | null = null;
+    for (const [index, target] of [null, ...places].entries()) {
+      try {
+        const route = await queryClient.fetchQuery(routeQuery(record, selectedRegion, target, current));
+        if (token !== generation.current) return;
+        segments.push({
+          route,
+          target,
+          from: target ? (current ?? record.destination) : null,
+          to: target ?? record.destination,
+          key: Date.now() + Math.random(),
+        });
+        current = target;
+      } catch (error) {
+        if (token !== generation.current) return;
+        setSessionValue({
+          ...base,
+          segments,
+          current,
+          active: target,
+          queue: places.slice(index),
+          status: "error",
+          error: error instanceof Error ? error.message : ROUTE_ERROR,
+        });
+        return;
+      }
+    }
+    cancelAnimationFrame(cameraAnimation.current);
+    setView(routeBox(segments.map((segment) => segment.route)));
+    setSessionValue({ ...base, segments, current, status: "idle", restored: true });
   };
   const [highlight, setHighlight] = useState<{ place: Place; key: number } | null>(null);
   const focusPlace = (place: Place) => {
@@ -529,6 +617,7 @@ export function JourneyMap({
     }
     const next = enqueueJourneyPlace(current, place);
     if (next === current) return;
+    setHighlight(null);
     setSessionValue(next);
     if (current.status === "idle") void run(next, generation.current);
   };
@@ -547,39 +636,45 @@ export function JourneyMap({
   };
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    for (const key of ["region", "record", "places"]) params.delete(key);
+    for (const key of ["region", "record", "places", "detail"]) params.delete(key);
     if (session) {
       params.set("region", session.region.code);
       params.set("record", session.record.id);
       const places = session.segments.flatMap((segment) => (segment.target ? [segment.target.id] : []));
       if (places.length) params.set("places", places.join(","));
+      if (detailOpen) params.set("detail", "1");
     }
     const query = params.toString();
-    window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
-  }, [session]);
+    const url = `${window.location.pathname}${query ? `?${query}` : ""}`;
+    if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, "", url);
+  }, [session, detailOpen]);
   const restoreJourney = useEffectEvent((rows: NonNullable<typeof locations.data>) => {
+    setRestoring(false);
+    if (sessionRef.current || sheet !== null) return;
     const target = regions.find((item) => item.code === initialUrl.region);
     const row = rows.find((item) => item.id === initialUrl.record);
     const record = target && row && homeReady ? toJourneyRecord(row, target.code) : null;
-    if (!target || !record) return;
+    if (!target || !record) {
+      setDetailOpen(false);
+      return;
+    }
     setRegion(target);
-    begin(
+    void restore(
       record,
       target,
       initialUrl.places.flatMap((id) => record.places.filter((place) => place.id === id)),
     );
   });
-  const restored = useRef(false);
   useEffect(() => {
-    if (restored.current || !locations.data || locations.isFetching) return;
+    if (restored.current || locations.isFetching || (!locations.data && !locations.isError)) return;
     restored.current = true;
-    restoreJourney(locations.data);
-  }, [locations.data, locations.isFetching]);
+    restoreJourney(locations.data ?? []);
+  }, [locations.data, locations.isFetching, locations.isError]);
 
   const pressPlace = (place: Place) => {
     const current = sessionRef.current;
     if (current?.status !== "idle" || current.segments.some((segment) => segment.target?.id === place.id)) return;
-    void queryClient.prefetchQuery(routeQuery(legParams(current.record, current.region, place, current.current)));
+    void queryClient.prefetchQuery(routeQuery(current.record, current.region, place, current.current));
   };
   const reset = () => {
     generation.current++;
@@ -655,12 +750,24 @@ export function JourneyMap({
         onPointerDown={(event) => {
           if (event.button !== 0) return;
           cancelAnimationFrame(cameraAnimation.current);
+          if (pointers.current.size) dragged.current = true;
+          else {
+            dragOrigin.current = { x: event.clientX, y: event.clientY };
+            dragged.current = false;
+          }
           pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-          event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
           const tracked = pointers.current;
           if (!tracked.has(event.pointerId)) return;
+          if (!event.buttons) {
+            tracked.delete(event.pointerId);
+            return;
+          }
+          const origin = dragOrigin.current;
+          if (origin && Math.hypot(event.clientX - origin.x, event.clientY - origin.y) > 6) dragged.current = true;
+          if (dragged.current && !event.currentTarget.hasPointerCapture(event.pointerId))
+            event.currentTarget.setPointerCapture(event.pointerId);
           const [a, b] = [...tracked.values()];
           tracked.set(event.pointerId, { x: event.clientX, y: event.clientY });
           const [nextA, nextB] = [...tracked.values()];
@@ -700,6 +807,7 @@ export function JourneyMap({
           />
         ))}
         {!session &&
+          !restoring &&
           regions.map((item) => {
             const p = project(item.longitude, item.latitude);
             return (
@@ -709,8 +817,9 @@ export function JourneyMap({
                 tabIndex={0}
                 aria-label={`${item.name} 기록 ${item.count}개`}
                 className={styles.node}
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={(event) => chooseRegion(item, event)}
+                onClick={(event) => {
+                  if (!dragged.current && event.timeStamp - dragEndAt.current > 400) chooseRegion(item, event);
+                }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
@@ -803,12 +912,19 @@ export function JourneyMap({
               {
                 label: "다시 보기",
                 icon: PlayIcon,
-                onSelect: () =>
-                  begin(session.record, session.region, [
-                    ...session.segments.flatMap((segment) => (segment.target ? [segment.target] : [])),
-                    ...(session.active ? [session.active] : []),
-                    ...session.queue,
-                  ]),
+                onSelect: () => {
+                  begin(
+                    session.record,
+                    session.region,
+                    [
+                      ...session.segments.flatMap((segment) => (segment.target ? [segment.target] : [])),
+                      ...(session.active ? [session.active] : []),
+                      ...session.queue,
+                    ],
+                    true,
+                  );
+                  title.current?.focus();
+                },
               },
               {
                 label: "이 지역 기록 목록",
@@ -818,25 +934,43 @@ export function JourneyMap({
                   showSheet("records");
                 },
               },
-              { label: "전국 지도로 돌아가기", icon: MapTrifoldIcon, onSelect: reset },
+              {
+                label: "전국 지도로 돌아가기",
+                icon: MapTrifoldIcon,
+                onSelect: () => {
+                  reset();
+                  requestAnimationFrame(() => regionsButton.current?.focus());
+                },
+              },
             ]}
           />
         ) : (
-          <div className={styles.actions}>
-            <LiquidGlassButton className="min-w-0 px-5 text-foreground text-sm" onClick={() => showSheet("regions")}>
-              지역 목록
-            </LiquidGlassButton>
-          </div>
+          !restoring && (
+            <div className={styles.actions}>
+              <LiquidGlassButton
+                ref={regionsButton}
+                className="min-w-0 px-5 text-foreground text-sm"
+                onClick={() => showSheet("regions")}
+              >
+                지역 목록
+              </LiquidGlassButton>
+            </div>
+          )
         )}
       </FixedToolbar>
       {session && (
         <div className={styles.recordHeader}>
-          <h1>{session.region.name}의 기억</h1>
+          <h1 ref={title} tabIndex={-1}>
+            {session.region.name}의 기억
+          </h1>
           <div className={styles.tools} data-hidden={session.replaying ? "" : undefined} inert={session.replaying}>
             <Button
               className={styles.hit}
               color="dark"
-              onClick={() => setDetailOpen(true)}
+              onClick={() => {
+                setDetailRecordId(session.record.id);
+                setDetailOpen(true);
+              }}
               size="medium"
               variant="weak"
             >
@@ -845,7 +979,7 @@ export function JourneyMap({
           </div>
         </div>
       )}
-      {!session && !regions.length && (
+      {!session && !restoring && !regions.length && (
         <div className={styles.empty}>
           <p>아직 방문 지역이 있는 기록이 없어요.</p>
           <Button nativeButton={false} render={<PressLink href="/records/new" />} size="large">
@@ -884,12 +1018,21 @@ export function JourneyMap({
           </div>
           <div className={styles.metrics}>
             <strong>
-              {segments.length ? <AnimatedNumber value={distance / 1000} format={(value) => value.toFixed(1)} /> : "—"}
+              {segments.length ? (
+                <AnimatedNumber
+                  value={distance / 1000}
+                  format={(value) => value.toFixed(1)}
+                  instant={session.restored}
+                />
+              ) : (
+                "—"
+              )}
               <small> km</small>
             </strong>
             <em>
               {segments.length ? (
                 <AnimatedNumber
+                  instant={session.restored}
                   value={duration / 60}
                   format={(value) =>
                     durationParts(Math.round(value)).map(([amount, unit]) => (
@@ -952,7 +1095,7 @@ export function JourneyMap({
         </div>
       )}
       <BottomSheet
-        snapPoints={[compactHeight, 1]}
+        snapPoints={content === "records" ? [1] : [compactHeight, 1]}
         snapPoint={snapPoint}
         onSnapPointChange={setSnapPoint}
         open={sheet !== null}
@@ -960,19 +1103,27 @@ export function JourneyMap({
           if (open) return;
           resolveSheetClosed.current?.();
           resolveSheetClosed.current = null;
+          if (!sessionRef.current && !addressOpen) setRegion(null);
         }}
         onOpenChange={(open) => {
-          if (open) return;
-          showSheet(null);
-          if (!sessionRef.current) setRegion(null);
+          if (!open) showSheet(null);
         }}
         showSwipeHandle
       >
         <BottomSheet.Content
           className="dark motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
           style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
+          finalFocus={() => {
+            if (addressOpen || detailOpen) return false;
+            if (sessionRef.current) return title.current;
+            if (opener.current instanceof SVGElement && opener.current.isConnected) {
+              opener.current.focus();
+              return false;
+            }
+            return true;
+          }}
         >
-          {sheet === "records" && homeReady && locations.data && region ? (
+          {content === "records" && homeReady && locations.data && region ? (
             <RegionRecordList
               isDetail={false}
               onRecordOpen={(recordId) => {
@@ -981,7 +1132,7 @@ export function JourneyMap({
               }}
               onRecordPress={(recordId) => {
                 const record = journeyRecord(recordId);
-                if (record) void queryClient.prefetchQuery(routeQuery(legParams(record, region, null, null)));
+                if (record) void queryClient.prefetchQuery(routeQuery(record, region, null, null));
               }}
               onSubregionChange={setSubregion}
               records={locations.data}
@@ -992,19 +1143,19 @@ export function JourneyMap({
             <>
               <BottomSheet.Header ref={setSheetHeader}>
                 <BottomSheet.Title>
-                  {sheet === "regions"
+                  {content === "regions"
                     ? "방문한 지역"
-                    : sheet === "choices"
+                    : content === "choices"
                       ? "어느 지역의 기록을 볼까요?"
                       : `${region?.name ?? ""}의 기억`}
                 </BottomSheet.Title>
-                {sheet !== "records" && (
+                {content !== "records" && (
                   <BottomSheet.Description>다시 보고 싶은 지역을 선택해 주세요.</BottomSheet.Description>
                 )}
               </BottomSheet.Header>
               <div ref={setSheetBody} className="min-h-0 overflow-y-auto px-5 pt-4 pb-8">
-                {(sheet === "regions" || sheet === "choices") &&
-                  (sheet === "choices" ? choices : regions).map((item) => (
+                {(content === "regions" || content === "choices") &&
+                  (content === "choices" ? choices : regions).map((item) => (
                     <ListRow
                       key={item.code}
                       className="px-1"
@@ -1014,7 +1165,7 @@ export function JourneyMap({
                       <ListRowTexts description={`기록 ${item.count}개`} title={item.name} />
                     </ListRow>
                   ))}
-                {sheet === "records" && !homeReady && (
+                {content === "records" && !homeReady && (
                   <div className={styles.sheetNotice}>
                     <p>
                       {homeUnavailable
@@ -1034,14 +1185,14 @@ export function JourneyMap({
                     )}
                   </div>
                 )}
-                {sheet === "records" && homeReady && locations.isPending && (
+                {content === "records" && homeReady && locations.isPending && (
                   <div className={styles.skeleton} aria-label="기록을 불러오는 중">
                     <i />
                     <i />
                     <i />
                   </div>
                 )}
-                {sheet === "records" && homeReady && locations.isError && (
+                {content === "records" && homeReady && locations.isError && (
                   <p>
                     기록을 불러오지 못했어요.{" "}
                     <button type="button" onClick={() => void locations.refetch()}>
@@ -1076,7 +1227,7 @@ export function JourneyMap({
         }}
         onOpenChange={setDetailOpen}
         open={detailOpen}
-        record={session?.record ?? null}
+        record={detailRecordId ? { id: detailRecordId } : null}
       />
     </main>
   );

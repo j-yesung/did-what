@@ -18,6 +18,8 @@ export function JourneyActions({ actions, hidden }: { actions: Action[]; hidden:
   const [open, setOpen] = useState(false);
   const [settled, setSettled] = useState(true);
   const root = useRef<HTMLDivElement>(null);
+  const more = useRef<HTMLButtonElement>(null);
+  const returnFocus = useRef(false);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -26,6 +28,10 @@ export function JourneyActions({ actions, hidden }: { actions: Action[]; hidden:
 
   useEffect(() => {
     if (open) root.current?.querySelector<HTMLElement>("[data-action]")?.focus();
+    else if (returnFocus.current) {
+      returnFocus.current = false;
+      more.current?.focus();
+    }
   }, [open]);
 
   useEffect(() => {
@@ -34,7 +40,9 @@ export function JourneyActions({ actions, hidden }: { actions: Action[]; hidden:
       if (!root.current?.contains(event.target as Node)) setOpen(false);
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key !== "Escape") return;
+      returnFocus.current = Boolean(root.current?.contains(document.activeElement));
+      setOpen(false);
     };
     document.addEventListener("pointerdown", closeOutside);
     document.addEventListener("keydown", closeOnEscape);
@@ -66,7 +74,9 @@ export function JourneyActions({ actions, hidden }: { actions: Action[]; hidden:
       <motion.div
         animate={{ opacity: open ? 1 : 0 }}
         aria-hidden={!open}
+        aria-label="기록 지도 메뉴"
         className={styles.menuItems}
+        role="group"
         inert={!open}
         initial={false}
         transition={{ duration: reduceMotion ? 0.1 : open ? 0.15 : 0.08, delay: open && !reduceMotion ? 0.05 : 0 }}
@@ -79,6 +89,7 @@ export function JourneyActions({ actions, hidden }: { actions: Action[]; hidden:
             data-action=""
             icon={action.icon}
             onClick={() => {
+              returnFocus.current = true;
               setOpen(false);
               action.onSelect();
             }}
@@ -97,6 +108,7 @@ export function JourneyActions({ actions, hidden }: { actions: Action[]; hidden:
       >
         <IconButton
           aria-expanded={open}
+          ref={more}
           aria-label="더 보기"
           className="rounded-full text-foreground"
           icon={DotsThreeIcon}

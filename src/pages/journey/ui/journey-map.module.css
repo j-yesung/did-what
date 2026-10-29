@@ -7,8 +7,6 @@
 
   position: fixed;
   inset: 0;
-  max-width: var(--app-width);
-  margin-inline: auto;
   overflow: hidden;
   background: var(--map-background);
   color: var(--map-white);
@@ -143,6 +141,9 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   text-shadow: 0 1px 10px var(--map-background);
+}
+.recordHeader h1:focus {
+  outline: none;
 }
 .recordHeader button {
   pointer-events: auto;
@@ -342,16 +343,31 @@
     opacity: 0;
   }
 }
+@media (min-width: 700px) {
+  .page {
+    max-width: var(--app-width);
+    margin-inline: auto;
+  }
+}
+@keyframes focus-ring-fade {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 0;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .focusRing {
-    animation: none;
-    opacity: 0.8;
+    animation: focus-ring-fade 1.2s ease-out both;
+  }
+  .pulse {
+    display: none;
   }
   .status {
     animation-duration: 1ms;
   }
   .drawing,
-  .pulse,
   .skeleton i {
     animation: none;
   }

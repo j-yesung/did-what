@@ -139,7 +139,8 @@ export const useLeaveGuard = ({ busy = false, extraEntries = 0, fallbackHref, is
         () => {
           if (!couldGoBack.current) router.replace(destination);
           // 왔던 화면이 목적지가 아니면(지도 시트에서 수정을 시작한 경우) 목적지를 그 위에 얹는다.
-          else if (getAppPathname() !== getAppPathname(destination)) router.push(destination);
+          // 기록 지도는 돌아오면 보던 경로를 이어 그리므로 그대로 둔다.
+          else if (![getAppPathname(destination), "/journey"].includes(getAppPathname())) router.push(destination);
         },
         { once: true },
       );
