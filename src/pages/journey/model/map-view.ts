@@ -6,19 +6,22 @@ export const project = (longitude: number, latitude: number) => ({
   x: 110 + (longitude - 125.5) * 49 * Math.cos((36 * Math.PI) / 180),
   y: 23 + (39.4 - latitude) * 49,
 });
-const homeTopLeft = project(125.5, 39.4),
-  homeBottomRight = project(130.2, 32.4);
+
+const homeTopLeft = project(125.5, 39.4);
+const homeBottomRight = project(130.2, 32.4);
+
 export const national: Box = {
   x: homeTopLeft.x,
   y: homeTopLeft.y,
   width: homeBottomRight.x - homeTopLeft.x,
   height: homeBottomRight.y - homeTopLeft.y,
 };
+
 const routeBounds = (routes: Route[]) => {
-  let x = Infinity,
-    y = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
+  let x = Infinity;
+  let y = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
   for (const route of routes)
     for (const [longitude, latitude] of route.points) {
       const point = project(longitude, latitude);
@@ -27,16 +30,20 @@ const routeBounds = (routes: Route[]) => {
       maxX = Math.max(maxX, point.x);
       maxY = Math.max(maxY, point.y);
     }
+
   return Number.isFinite(x) ? { x, y, maxX, maxY } : null;
 };
+
 export const routeBox = (routes: Route[]): Box => {
   const bounds = routeBounds(routes);
   if (!bounds) return national;
+
   const { x, y, maxX, maxY } = bounds;
-  const width = Math.max(0.5, maxX - x),
-    height = Math.max(0.75, maxY - y);
-  const paddedWidth = Math.max(width * 1.8, height * 0.75, 0.9),
-    paddedHeight = Math.max(height * 2.3, width * 1.2, 1.4);
+  const width = Math.max(0.5, maxX - x);
+  const height = Math.max(0.75, maxY - y);
+  const paddedWidth = Math.max(width * 1.8, height * 0.75, 0.9);
+  const paddedHeight = Math.max(height * 2.3, width * 1.2, 1.4);
+
   return {
     x: (x + maxX) / 2 - paddedWidth / 2,
     y: (y + maxY) / 2 - paddedHeight * 0.5,
@@ -48,14 +55,16 @@ export const routeBox = (routes: Route[]): Box => {
 export const followBox = (view: Box, route: Route): Box | null => {
   const bounds = routeBounds([route]);
   if (!bounds) return null;
+
   const fit = routeBox([route]);
-  const left = view.x + view.width * 0.1,
-    top = view.y + view.height * 0.2;
+  const left = view.x + view.width * 0.1;
+  const top = view.y + view.height * 0.2;
   const visible =
     bounds.x >= left &&
     bounds.maxX <= left + view.width * 0.8 &&
     bounds.y >= top &&
     bounds.maxY <= top + view.height * 0.5;
+
   return visible && fit.width >= view.width * 0.3 ? null : fit;
 };
 
@@ -73,19 +82,24 @@ export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: nu
       point.y <= view.y + view.height
     );
   });
+
   const layout = (group: JourneyPlace[]) => {
     const place = group[0];
     const point = project(place.longitude, place.latitude);
     const suffix = group.length > 1 ? ` +${group.length - 1}` : "";
-    let name = place.name;
     const maxWidth = Math.max(44, (right - left) / unit - 20);
+
+    let name = place.name;
     while (name.length > 1 && nameWidth(name + suffix) > maxWidth) name = name.slice(0, -1);
     if (name !== place.name) name = `${name.slice(0, -1)}…`;
+
     const width = Math.max(44, nameWidth(name + suffix) + 20) * unit;
     const x = Math.max(left, Math.min(right - width, point.x + 7 * unit));
     const y = point.y - 38 * unit;
+
     return { key: place.id, x, y, width, name, places: group };
   };
+
   let groups = unique.map((place) => [place]);
   let merged = true;
   while (merged) {
@@ -103,18 +117,21 @@ export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: nu
       }
     }
   }
+
   return groups.map(layout);
 };
 
 export const placesBox = (places: readonly JourneyPlace[], viewport: { width: number; height: number }): Box => {
   if (!places.length) return national;
+
   const points = places.map((place) => project(place.longitude, place.latitude));
-  const minX = Math.min(...points.map((point) => point.x)),
-    maxX = Math.max(...points.map((point) => point.x));
-  const minY = Math.min(...points.map((point) => point.y)),
-    maxY = Math.max(...points.map((point) => point.y));
+  const minX = Math.min(...points.map((point) => point.x));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxY = Math.max(...points.map((point) => point.y));
   const width = Math.max(0.02, (maxX - minX) * 3, (((maxY - minY) * viewport.width) / viewport.height) * 3);
   const height = (width * viewport.height) / viewport.width;
+
   return { x: (minX + maxX - width) / 2, y: (minY + maxY) / 2 - height * 0.45, width, height };
 };
 

@@ -4,6 +4,7 @@ import type { MapRecord } from "@/widgets/region-activity-map/model/record-map-p
 import type { JourneyPlace, JourneyRegion, JourneyPoint as Point } from "./types";
 
 export type { JourneyPlace } from "./types";
+
 export type JourneyRecord = {
   id: string;
   places: JourneyPlace[];
@@ -16,6 +17,7 @@ export type JourneyRecordRow = Pick<MapRecord, "id" | "record_places"> & {
 };
 
 const MAINLAND_LONGITUDE = { min: 125.8, max: 129.9 };
+
 const onMainland = ({ longitude }: Point) => longitude >= MAINLAND_LONGITUDE.min && longitude <= MAINLAND_LONGITUDE.max;
 
 const recordDestination = (record: Pick<JourneyRecordRow, "region_code" | "record_regions">, regionCode: string) => {
@@ -29,12 +31,14 @@ const recordDestination = (record: Pick<JourneyRecordRow, "region_code" | "recor
         a.region_name.localeCompare(b.region_name, "ko") ||
         a.region_code.localeCompare(b.region_code),
     );
+
   return destination;
 };
 
 export const toJourneyRecord = (record: JourneyRecordRow, regionCode: string): JourneyRecord | null => {
   const destination = recordDestination(record, regionCode);
   if (!destination) return null;
+
   return {
     id: record.id,
     places: record.record_places.flatMap(({ place }) => (place ? [place] : [])),
@@ -63,6 +67,7 @@ export const toJourneyRegions = (records: readonly Pick<JourneyRecordRow, "regio
           Object.assign(region, { latitude: destination.region_latitude, longitude: destination.region_longitude });
         continue;
       }
+
       const info = getRegion(code);
       if (info && destination)
         regions.set(code, {
@@ -73,6 +78,7 @@ export const toJourneyRegions = (records: readonly Pick<JourneyRecordRow, "regio
           count: 1,
         });
     }
+
   return [...regions.values()].map((region) => ({
     ...region,
     longitude: Math.min(MAINLAND_LONGITUDE.max, Math.max(MAINLAND_LONGITUDE.min, region.longitude)),

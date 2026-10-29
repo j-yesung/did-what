@@ -1,16 +1,19 @@
 import type { JourneyRoute, JourneyPoint as Point } from "./types";
 
 type ObjectValue = Record<string, unknown>;
+
 const isObject = (value: unknown): value is ObjectValue => typeof value === "object" && value !== null;
 const isNonnegativeNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value) && value >= 0;
 
 export const parseKakaoDirections = (data: unknown): JourneyRoute | null => {
   if (!isObject(data) || !Array.isArray(data.routes)) return null;
+
   const route = data.routes[0];
   if (!isObject(route) || route.result_code !== 0 || !isObject(route.summary) || !Array.isArray(route.sections)) {
     return null;
   }
+
   const { distance, duration } = route.summary;
   if (!isNonnegativeNumber(distance) || !isNonnegativeNumber(duration)) return null;
 
@@ -33,6 +36,7 @@ export const parseKakaoDirections = (data: unknown): JourneyRoute | null => {
       }
     }
   }
+
   return points.length >= 2 ? { points, distance, duration } : null;
 };
 
@@ -49,6 +53,7 @@ export const nearbyRoute = (origin: Point, destination: Point): JourneyRoute | n
     Math.cos(((origin.latitude + destination.latitude) * radians) / 2);
   const y = (destination.latitude - origin.latitude) * radians;
   if (Math.hypot(x, y) * 6_371_000 > 10) return null;
+
   return {
     points: [
       [origin.longitude, origin.latitude],
@@ -58,6 +63,7 @@ export const nearbyRoute = (origin: Point, destination: Point): JourneyRoute | n
     duration: 0,
   };
 };
+
 const roundCoordinate = (value: number) => Math.round(value * 1000) / 1000;
 
 export const straightHomeRoute = (home: Point, destination: Point): JourneyRoute => ({
