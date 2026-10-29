@@ -43,7 +43,7 @@ export const getJourneyDirections = async (request: Request) => {
   const recordQuery = supabase
     .from("records")
     .select(
-      "id, activity, recorded_at, record_regions(region_code, region_name, region_latitude, region_longitude), record_places(place:places(id, name, latitude, longitude))",
+      "id, activity, recorded_at, region_code, record_regions(region_code, region_name, region_latitude, region_longitude, selected_directly), record_places(place:places(id, name, latitude, longitude))",
     )
     .eq("id", id)
     .eq("owner_id", user.id)

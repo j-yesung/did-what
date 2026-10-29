@@ -10,7 +10,9 @@ export const getJourneyRegions = async () => {
   for (let offset = 0; ; offset += 500) {
     const { data, error } = await supabase
       .from("records")
-      .select("id, activity, recorded_at, record_regions(region_code, region_name, region_latitude, region_longitude)")
+      .select(
+        "id, activity, recorded_at, region_code, record_regions(region_code, region_name, region_latitude, region_longitude, selected_directly)",
+      )
       .eq("owner_id", user.id)
       .order("recorded_at", { ascending: false })
       .order("id", { ascending: false })

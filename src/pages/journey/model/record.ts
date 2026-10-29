@@ -11,12 +11,25 @@ export type JourneyRecord = {
   destination: Point & { name: string };
 };
 
-export type JourneyRecordRow = Pick<MapRecord, "id" | "activity" | "recorded_at" | "record_places" | "record_regions">;
+export type JourneyRecordRow = Pick<MapRecord, "id" | "activity" | "recorded_at" | "record_places"> & {
+  region_code?: string | null;
+  record_regions: (MapRecord["record_regions"][number] & { selected_directly?: boolean })[];
+};
+
+const MAINLAND_LONGITUDE = { min: 125.8, max: 129.9 };
+const onMainland = ({ longitude }: Point) => longitude >= MAINLAND_LONGITUDE.min && longitude <= MAINLAND_LONGITUDE.max;
 
 export const toJourneyRecord = (record: JourneyRecordRow, regionCode: string): JourneyRecord | null => {
+  const priority = (region: JourneyRecordRow["record_regions"][number]) =>
+    region.region_code === record.region_code ? 2 : region.selected_directly ? 1 : 0;
   const [destination] = record.record_regions
     .filter((region) => getRegionCode(region.region_code) === regionCode)
-    .toSorted((a, b) => a.region_name.localeCompare(b.region_name, "ko") || a.region_code.localeCompare(b.region_code));
+    .toSorted(
+      (a, b) =>
+        priority(b) - priority(a) ||
+        a.region_name.localeCompare(b.region_name, "ko") ||
+        a.region_code.localeCompare(b.region_code),
+    );
   if (!destination) return null;
   return {
     id: record.id,
@@ -37,12 +50,14 @@ export const toJourneyRegions = (records: readonly JourneyRecordRow[]) => {
     for (const code of new Set(record.record_regions.map((region) => getRegionCode(region.region_code)))) {
       if (!code) continue;
       const region = regions.get(code);
+      const destination = toJourneyRecord(record, code)?.destination;
       if (region) {
         region.count++;
+        if (destination && !onMainland(region) && onMainland(destination))
+          Object.assign(region, { latitude: destination.latitude, longitude: destination.longitude });
         continue;
       }
       const info = getRegion(code);
-      const destination = toJourneyRecord(record, code)?.destination;
       if (info && destination)
         regions.set(code, {
           code,
@@ -52,5 +67,8 @@ export const toJourneyRegions = (records: readonly JourneyRecordRow[]) => {
           count: 1,
         });
     }
-  return [...regions.values()];
+  return [...regions.values()].map((region) => ({
+    ...region,
+    longitude: Math.min(MAINLAND_LONGITUDE.max, Math.max(MAINLAND_LONGITUDE.min, region.longitude)),
+  }));
 };
