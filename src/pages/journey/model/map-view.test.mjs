@@ -1,6 +1,7 @@
 import {
   clampViewWidth,
   constrainView,
+  expandView,
   followBox,
   momentumView,
   national,
@@ -12,6 +13,8 @@ import {
   routeBox,
   toPathData,
   toViewPoint,
+  viewScale,
+  viewTransform,
 } from "./map-view.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -114,4 +117,21 @@ test("가까운 장소 사이 구간은 화면 폭이 지도 단위 3보다 좁�
   const frame = { width: 390, height: 844, top: 200, bottom: 220 };
   assert.ok(routeBox([route], frame).width >= 3 - 1e-9);
   assert.ok(routeBox([route]).width >= 3 - 1e-9);
+});
+
+test("움직이는 동안의 화면 이동은 그려 둔 지도를 같은 자리로 옮기는 변환과 같다", () => {
+  const viewport = { width: 400, height: 800 };
+  const rendered = { x: 100, y: 50, width: 20, height: 40 };
+  const live = { x: 104, y: 52, width: 10, height: 20 };
+  const { scale, x, y } = viewTransform(rendered, live, viewport);
+  const screen = (view, point) => ({
+    x: viewport.width / 2 + (point.x - (view.x + view.width / 2)) / viewScale(view, viewport),
+    y: viewport.height / 2 + (point.y - (view.y + view.height / 2)) / viewScale(view, viewport),
+  });
+  const point = { x: 108, y: 61 };
+  const before = screen(rendered, point);
+  const after = screen(live, point);
+  assert.ok(Math.abs(viewport.width / 2 + scale * (before.x - viewport.width / 2) + x - after.x) < 1e-9);
+  assert.ok(Math.abs(viewport.height / 2 + scale * (before.y - viewport.height / 2) + y - after.y) < 1e-9);
+  assert.deepEqual(expandView(rendered, 1.5), { x: 95, y: 40, width: 30, height: 60 });
 });

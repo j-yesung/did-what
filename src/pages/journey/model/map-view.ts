@@ -34,6 +34,24 @@ export const toViewPoint = (view: Box, rect: DOMRectReadOnly, clientX: number, c
   };
 };
 
+export const expandView = (view: Box, factor: number): Box => ({
+  x: view.x - (view.width * (factor - 1)) / 2,
+  y: view.y - (view.height * (factor - 1)) / 2,
+  width: view.width * factor,
+  height: view.height * factor,
+});
+
+export const viewTransform = (rendered: Box, live: Box, viewport: { width: number; height: number }) => {
+  const renderedScale = viewScale(rendered, viewport);
+  const liveScale = viewScale(live, viewport);
+
+  return {
+    scale: renderedScale / liveScale,
+    x: (rendered.x + rendered.width / 2 - (live.x + live.width / 2)) / liveScale,
+    y: (rendered.y + rendered.height / 2 - (live.y + live.height / 2)) / liveScale,
+  };
+};
+
 const routeBounds = (routes: Route[]) => {
   let x = Infinity;
   let y = Infinity;
