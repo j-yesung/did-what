@@ -305,6 +305,13 @@ export function JourneyMap({
     if (main.current && getPageNavigation(window).traversal) main.current.style.animation = "none";
   }, []);
 
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    if (root.classList.contains("dark")) return;
+    root.classList.add("dark");
+    return () => root.classList.remove("dark");
+  }, []);
+
   const searchParams = useSearchParams();
 
   const [initialUrl] = useState(() => ({
