@@ -1,6 +1,6 @@
 "use client";
 
-import { CaretRightIcon } from "@phosphor-icons/react";
+import { CaretRightIcon, ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -73,11 +73,9 @@ export function RegionRecordList({
           ) : null}
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             {isDetail ? (
-              <p className="break-keep font-bold text-foreground text-xl leading-7">{regionLabel}의 기억</p>
+              <p className="break-keep font-bold text-foreground text-xl leading-7">{regionLabel}</p>
             ) : (
-              <BottomSheet.Title className="break-keep font-bold text-xl leading-7">
-                {regionLabel}의 기억
-              </BottomSheet.Title>
+              <BottomSheet.Title className="break-keep font-bold text-xl leading-7">{regionLabel}</BottomSheet.Title>
             )}
             {regionRecords.length > 0 ? (
               <p className="break-keep text-muted-foreground text-sm tabular-nums">기록 {visibleRecords.length}개</p>
@@ -123,6 +121,7 @@ export function RegionRecordList({
               {visibleRecords.map(({ record, subregions }, index) => {
                 const date = format(parseISO(record.recorded_at), "yyyy.M.d");
                 const until = record.recorded_until;
+                const commentCount = record.record_comments?.[0]?.count ?? 0;
                 const period =
                   until && until !== record.recorded_at
                     ? `${date}–${format(parseISO(until), until.slice(0, 4) === record.recorded_at.slice(0, 4) ? "M.d" : "yyyy.M.d")}`
@@ -133,7 +132,7 @@ export function RegionRecordList({
                     <PressLink
                       className={cn(
                         buttonVariants({ variant: "ghost" }),
-                        "h-auto min-h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
+                        "h-auto min-h-15 w-full min-w-0 justify-start whitespace-normal rounded-none px-1 py-3.5 text-left font-normal after:hidden",
                       )}
                       href={`/records/${record.id}`}
                       onClick={(event) => {
@@ -148,24 +147,33 @@ export function RegionRecordList({
                       }}
                       prefetch={false}
                     >
-                      <span className="min-w-0 flex-1">
+                      <span className="flex min-w-0 flex-1 flex-col">
                         <span className="flex min-w-0 items-center justify-between gap-2">
-                          <span className="min-w-0 truncate font-semibold text-base leading-5">{record.activity}</span>
-                          <span className="flex max-w-1/2 flex-wrap justify-end gap-1">
-                            <RecordCategoryBadge category={record.category} />
+                          <span className="min-w-0 break-words font-semibold text-base leading-5">
+                            {record.activity}
                           </span>
+                          <CaretRightIcon aria-hidden="true" className="shrink-0" size={20} />
                         </span>
                         <span className="mt-1 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
-                          <span className="shrink-0 tabular-nums">{period}</span>
-                          {!selectedSubregion ? (
-                            <>
-                              <span aria-hidden="true">·</span>
-                              <span className="truncate">{subregions.join(", ")}</span>
-                            </>
+                          <time className="shrink-0 tabular-nums" dateTime={record.recorded_at}>
+                            {period}
+                          </time>
+                          <span aria-hidden="true">·</span>
+                          <span className="truncate">{subregions.join(", ")}</span>
+                        </span>
+                        <span className="mt-2 flex min-w-0 items-center justify-between gap-3">
+                          <span className="flex min-w-0 flex-wrap gap-1">
+                            <RecordCategoryBadge category={record.category} />
+                          </span>
+                          {commentCount > 0 ? (
+                            <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground tabular-nums">
+                              <ChatCircleIcon aria-hidden="true" className="size-4" />
+                              <span className="sr-only">댓글</span>
+                              {commentCount}
+                            </span>
                           ) : null}
                         </span>
                       </span>
-                      <CaretRightIcon aria-hidden="true" className="ml-2 shrink-0" size={20} />
                     </PressLink>
                   </li>
                 );

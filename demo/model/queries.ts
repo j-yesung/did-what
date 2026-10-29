@@ -27,6 +27,7 @@ const toLocationRow = (state: DemoState, record: DemoRecord) => ({
   category: record.category,
   created_at: record.created_at,
   id: record.id,
+  record_comments: [{ count: state.comments.filter((comment) => comment.record_id === record.id).length }],
   record_places: placesOf(state, record).map(({ id, latitude, longitude, name }) => ({
     place: { id, latitude, longitude, name },
   })),
