@@ -50,13 +50,37 @@ const routeBounds = (routes: Route[]) => {
   return Number.isFinite(x) ? { x, y, maxX, maxY } : null;
 };
 
-export const routeBox = (routes: Route[]): Box => {
+export type Frame = { width: number; height: number; top: number; bottom: number };
+
+const routeArea = (frame: Frame) => {
+  const top = Math.min(frame.top, frame.height * 0.5) + 40;
+  const bottom = Math.max(top + frame.height * 0.25, frame.height - frame.bottom - 20);
+
+  return { top, bottom };
+};
+
+const toViewY = (view: Box, frame: Frame, y: number) =>
+  view.y + view.height / 2 + (y - frame.height / 2) * viewScale(view, frame);
+
+export const routeBox = (routes: Route[], frame?: Frame): Box => {
   const bounds = routeBounds(routes);
   if (!bounds) return national;
 
   const { x, y, maxX, maxY } = bounds;
   const width = Math.max(0.5, maxX - x);
   const height = Math.max(0.75, maxY - y);
+  if (frame) {
+    const area = routeArea(frame);
+    const scale = Math.max((width * 1.8) / frame.width, height / (area.bottom - area.top), 0.9 / frame.width);
+
+    return {
+      x: (x + maxX) / 2 - (frame.width * scale) / 2,
+      y: (y + maxY) / 2 - ((area.top + area.bottom) / 2) * scale,
+      width: frame.width * scale,
+      height: frame.height * scale,
+    };
+  }
+
   const paddedWidth = Math.max(width * 1.8, height * 0.75, 0.9);
   const paddedHeight = Math.max(height * 2.3, width * 1.2, 1.4);
 
@@ -68,18 +92,17 @@ export const routeBox = (routes: Route[]): Box => {
   };
 };
 
-export const followBox = (view: Box, route: Route): Box | null => {
+export const followBox = (view: Box, route: Route, frame?: Frame): Box | null => {
   const bounds = routeBounds([route]);
   if (!bounds) return null;
 
-  const fit = routeBox([route]);
+  const fit = routeBox([route], frame);
   const left = view.x + view.width * 0.1;
-  const top = view.y + view.height * 0.2;
-  const visible =
-    bounds.x >= left &&
-    bounds.maxX <= left + view.width * 0.8 &&
-    bounds.y >= top &&
-    bounds.maxY <= top + view.height * 0.5;
+  const right = view.x + view.width * 0.9;
+  const area = frame && routeArea(frame);
+  const top = area ? toViewY(view, frame, area.top) : view.y + view.height * 0.2;
+  const bottom = area ? toViewY(view, frame, area.bottom) : view.y + view.height * 0.7;
+  const visible = bounds.x >= left && bounds.maxX <= right && bounds.y >= top && bounds.maxY <= bottom;
 
   return visible && fit.width >= view.width * 0.3 ? null : fit;
 };

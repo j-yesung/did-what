@@ -1,4 +1,8 @@
-import { getRegionRecords, getSubregionCounts } from "@/widgets/region-activity-map/model/region-record-list";
+import {
+  formatShortPeriod,
+  getRegionRecords,
+  getSubregionCounts,
+} from "@/widgets/region-activity-map/model/region-record-list";
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -49,4 +53,11 @@ test("지역을 선택하지 않았거나 일치하는 기록이 없으면 빈 �
   assert.deepEqual(getRegionRecords(records, "KR-11"), []);
   assert.deepEqual(getRegionRecords([], "KR-11"), []);
   assert.deepEqual(getSubregionCounts([]), []);
+});
+
+test("여러 날 기록은 끝 날짜까지 짧게 쓰고, 해가 바뀌면 연도를 붙인다", () => {
+  assert.equal(formatShortPeriod("2026-10-25", null), "2026.10.25");
+  assert.equal(formatShortPeriod("2026-10-25", "2026-10-25"), "2026.10.25");
+  assert.equal(formatShortPeriod("2026-10-25", "2026-10-27"), "2026.10.25–10.27");
+  assert.equal(formatShortPeriod("2026-12-30", "2027-01-02"), "2026.12.30–2027.1.2");
 });

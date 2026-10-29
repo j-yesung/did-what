@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 
 import { CaretRightIcon, ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
 import { prefetchRecordDetail, RecordCategoryBadge } from "@/entities/record";
@@ -19,7 +18,7 @@ import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 
 import type { MapRecord } from "../model/record-map-points";
-import { getRegionRecords, getSubregionCounts } from "../model/region-record-list";
+import { formatShortPeriod, getRegionRecords, getSubregionCounts } from "../model/region-record-list";
 
 type RegionRecordListProps = {
   records: readonly MapRecord[];
@@ -132,13 +131,8 @@ export function RegionRecordList({
             <h3 className="font-semibold text-sm">방문 기록</h3>
             <ul>
               {visibleRecords.map(({ record, subregions }, index) => {
-                const date = format(parseISO(record.recorded_at), "yyyy.M.d");
-                const until = record.recorded_until;
                 const commentCount = record.record_comments?.[0]?.count ?? 0;
-                const period =
-                  until && until !== record.recorded_at
-                    ? `${date}–${format(parseISO(until), until.slice(0, 4) === record.recorded_at.slice(0, 4) ? "M.d" : "yyyy.M.d")}`
-                    : date;
+                const period = formatShortPeriod(record.recorded_at, record.recorded_until);
                 return (
                   <li key={record.id} ref={record.id === currentRecordId ? currentRow : undefined}>
                     {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}

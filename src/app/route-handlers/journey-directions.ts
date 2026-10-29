@@ -97,7 +97,7 @@ export const getJourneyDirections = async (request: Request) => {
     console.warn("[journey] 길찾기 응답 실패", { status: response.status, resultCode });
 
     if (target && hasNoKakaoRoute(data))
-      return Response.json({ error: "이 장소까지 자동차 경로가 없어요.", code: "NO_ROUTE" }, { status: 422 });
+      return Response.json({ error: "이 장소까지 자동차 경로가 없어요." }, { status: 422 });
     if (!target && hasNoKakaoRoute(data))
       return Response.json(
         { route: straightHomeRoute(origin, destination) },

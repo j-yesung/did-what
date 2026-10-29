@@ -1,6 +1,7 @@
 import {
   clampViewWidth,
   constrainView,
+  followBox,
   momentumView,
   national,
   placeLabels,
@@ -64,4 +65,23 @@ test("화면 가운데를 누르면 지도 범위의 가운데를 고른다", ()
   assert.ok(Math.abs(point.y - (national.y + national.height / 2)) < 1e-9);
   assert.equal(clampViewWidth(0), 0.02);
   assert.equal(clampViewWidth(1000), 400);
+});
+
+test("제목과 하단 패널 사이 빈 공간에 경로를 맞춘다", () => {
+  const frame = { width: 390, height: 844, top: 320, bottom: 220 };
+  const route = {
+    points: [
+      [127.0, 37.5],
+      [127.4, 36.4],
+    ],
+    distance: 0,
+    duration: 0,
+  };
+  const view = routeBox([route], frame);
+  const scale = view.width / frame.width;
+  const toScreenY = (latitude) => (project(127, latitude).y - view.y) / scale;
+  assert.ok(Math.abs(view.height / view.width - frame.height / frame.width) < 1e-9);
+  assert.ok(toScreenY(37.5) >= frame.top + 40 - 1e-6);
+  assert.ok(toScreenY(36.4) <= frame.height - frame.bottom - 20 + 1e-6);
+  assert.equal(followBox(view, route, frame), null);
 });

@@ -289,8 +289,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
-  margin-top: 10px;
+  margin-bottom: 12px;
   font-size: 12px;
 }
 .homeNotice {

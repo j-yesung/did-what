@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import { JourneyRouteError, type journeyRouteQuery } from "../api/route-query";
-import { followBox, project, routeBox } from "./map-view";
+import type { journeyRouteQuery } from "../api/route-query";
+import { project } from "./map-view";
 import { prefersReducedMotion, SKETCH_MS } from "./motion";
 import { enqueueJourneyPlace, skipJourneyPlace } from "./queue";
 import type { JourneyRecord } from "./record";
@@ -13,6 +13,8 @@ import type { JourneyPlace, JourneyRegion, JourneyRoute, JourneySegment, Journey
 import type { MapCamera } from "./use-map-camera";
 
 const CAMERA_SETTLE_MS = 350;
+
+const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
 const toSegment = (
   record: JourneyRecord,
@@ -29,7 +31,6 @@ const toSegment = (
 
 const toRouteError = (error: unknown) => ({
   error: error instanceof Error ? error.message : "경로를 불러오지 못했어요. 다시 시도해 주세요.",
-  errorCode: error instanceof JourneyRouteError ? error.code : undefined,
 });
 
 const startSession = (
@@ -58,7 +59,7 @@ type RouteQuery = (
 
 type JourneySessionOptions = {
   routeQuery: RouteQuery;
-  camera: Pick<MapCamera, "viewRef" | "setView" | "moveCamera" | "stop">;
+  camera: Pick<MapCamera, "viewRef" | "setView" | "moveCamera" | "stop" | "fitRoutes" | "followRoute">;
   closeSheet: () => Promise<unknown>;
 };
 
@@ -110,6 +111,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     while (token === generation.current) {
       const target = next.active;
       const result = await fetchLeg(next.record, next.region, target, next.current);
+      await nextFrame();
       if (token !== generation.current) return;
       if ("error" in result) {
         fastForward.current = false;
@@ -118,7 +120,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       }
 
       const route = result.route;
-      const view = target ? followBox(camera.viewRef.current, route) : routeBox([route]);
+      const view = target ? camera.followRoute(route) : camera.fitRoutes([route]);
       if (view && !fastForward.current) camera.moveCamera(view);
       setSessionValue({ ...sessionRef.current!, status: "moving" });
       await Promise.all([
@@ -138,7 +140,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       if (!next.queue.length) {
         if (next.replaying) {
           setSessionValue({ ...next, replaying: false });
-          if (fastForward.current) camera.moveCamera(routeBox(next.segments.map((item) => item.route)));
+          if (fastForward.current) camera.moveCamera(camera.fitRoutes(next.segments.map((item) => item.route)));
         }
         fastForward.current = false;
         return;
@@ -189,8 +191,11 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       current = target;
     }
 
+    await nextFrame();
+    if (token !== generation.current) return;
+
     camera.stop();
-    camera.setView(routeBox(segments.map((segment) => segment.route)));
+    camera.setView(camera.fitRoutes(segments.map((segment) => segment.route)));
     setSessionValue({ ...base, segments, current, status: "idle", restored: true });
   };
 
@@ -236,7 +241,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       return;
     }
 
-    const next = { ...skipJourneyPlace(current), error: "", errorCode: undefined };
+    const next = { ...skipJourneyPlace(current), error: "" };
     setSessionValue(next);
     if (next.status === "loading") void run(next, generation.current);
   };

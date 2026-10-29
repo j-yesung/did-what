@@ -2,8 +2,20 @@
 
 import { type MouseEvent, type PointerEvent, useEffect, useRef, useState, type WheelEvent } from "react";
 
-import { type Box, clampViewWidth, constrainView, momentumView, national, toViewPoint, viewScale } from "./map-view";
+import {
+  type Box,
+  clampViewWidth,
+  constrainView,
+  type Frame,
+  followBox,
+  momentumView,
+  national,
+  routeBox,
+  toViewPoint,
+  viewScale,
+} from "./map-view";
 import { prefersReducedMotion } from "./motion";
+import type { JourneyRoute } from "./types";
 
 type Position = { x: number; y: number };
 
@@ -12,6 +24,8 @@ export const useMapCamera = () => {
   const viewRef = useRef(view);
   const [viewport, setViewport] = useState({ width: 390, height: 844 });
   const svgRef = useRef<SVGSVGElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const animation = useRef(0);
   const pointers = useRef(new Map<number, Position>());
   const dragOrigin = useRef<Position | null>(null);
@@ -62,6 +76,24 @@ export const useMapCamera = () => {
     };
     animation.current = requestAnimationFrame(tick);
   };
+
+  const frame = (): Frame | undefined => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return undefined;
+
+    const header = headerRef.current?.getBoundingClientRect();
+    const panel = panelRef.current?.getBoundingClientRect();
+    return {
+      width: rect.width,
+      height: rect.height,
+      top: header ? header.bottom - rect.top : 0,
+      bottom: panel ? rect.bottom - panel.top : 0,
+    };
+  };
+
+  const fitRoutes = (routes: JourneyRoute[]) => routeBox(routes, frame());
+
+  const followRoute = (route: JourneyRoute) => followBox(viewRef.current, route, frame());
 
   const toMapPoint = (clientX: number, clientY: number) => {
     const rect = svgRef.current?.getBoundingClientRect();
@@ -207,12 +239,16 @@ export const useMapCamera = () => {
     viewport,
     unit: viewScale(view, viewport),
     svgRef,
+    headerRef,
+    panelRef,
     handlers,
     setView,
     moveCamera,
     stop,
     toMapPoint,
     canTap,
+    fitRoutes,
+    followRoute,
   };
 };
 

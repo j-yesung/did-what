@@ -16,7 +16,7 @@ import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 
 import { journeyRouteQuery } from "../api/route-query";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
-import { national, placesBox, project, routeBox } from "../model/map-view";
+import { national, placesBox, project } from "../model/map-view";
 import { prefersReducedMotion, SKETCH_MS } from "../model/motion";
 import { pickedJourneyPlaces } from "../model/queue";
 import { type JourneyRecord, toJourneyRecord } from "../model/record";
@@ -74,12 +74,27 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
     from: JourneyPlace | null,
   ) => journeyRouteQuery(member.id, homeVersion, record, recordRegion, target, from);
 
-  const { view, viewRef, viewport, unit, svgRef, handlers, setView, moveCamera, stop, toMapPoint, canTap } =
-    useMapCamera();
+  const {
+    view,
+    viewRef,
+    viewport,
+    unit,
+    svgRef,
+    headerRef,
+    panelRef,
+    handlers,
+    setView,
+    moveCamera,
+    stop,
+    toMapPoint,
+    canTap,
+    fitRoutes,
+    followRoute,
+  } = useMapCamera();
   const sheet = useJourneySheet(addressOpen);
   const journey = useJourneySession({
     routeQuery,
-    camera: { viewRef, setView, moveCamera, stop },
+    camera: { viewRef, setView, moveCamera, stop, fitRoutes, followRoute },
     closeSheet: sheet.close,
   });
   const { session, sessionRef } = journey;
@@ -211,6 +226,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
     >
       {session ? (
         <RecordHeader
+          ref={headerRef}
           titleRef={title}
           regionName={session.region.name}
           record={activeRecord}
@@ -261,7 +277,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
               {
                 label: "전체 경로 보기",
                 icon: ArrowsInSimpleIcon,
-                onSelect: () => moveCamera(routeBox(session.segments.map((segment) => segment.route))),
+                onSelect: () => moveCamera(fitRoutes(session.segments.map((segment) => segment.route))),
               },
               {
                 label: "다시 보기",
@@ -305,6 +321,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
       {!session && !restoring && !regions.length && <EmptyJourney />}
       {session && (
         <JourneyPanel
+          ref={panelRef}
           session={session}
           onRecover={journey.recover}
           onFinishReplay={journey.finishReplay}

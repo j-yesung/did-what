@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type Ref, useEffect, useState } from "react";
 
 import { WarningCircleIcon } from "@phosphor-icons/react";
 
@@ -22,6 +22,7 @@ const keepIfSame = (next: Edges) => (current: Edges) =>
   current.start === next.start && current.end === next.end ? current : next;
 
 type JourneyPanelProps = {
+  ref: Ref<HTMLDivElement>;
   session: JourneySession;
   onRecover: (skip: boolean) => void;
   onFinishReplay: () => void;
@@ -29,7 +30,14 @@ type JourneyPanelProps = {
   onPressPlace: (place: JourneyPlace) => void;
 };
 
-export function JourneyPanel({ session, onRecover, onFinishReplay, onSelectPlace, onPressPlace }: JourneyPanelProps) {
+export function JourneyPanel({
+  ref,
+  session,
+  onRecover,
+  onFinishReplay,
+  onSelectPlace,
+  onPressPlace,
+}: JourneyPanelProps) {
   const [chipRow, setChipRow] = useState<HTMLDivElement | null>(null);
   const [chipFade, setChipFade] = useState<Edges>({ start: false, end: false });
 
@@ -47,7 +55,7 @@ export function JourneyPanel({ session, onRecover, onFinishReplay, onSelectPlace
   const failedPlaceId = session.status === "error" ? session.active?.id : undefined;
 
   return (
-    <div className={styles.details}>
+    <div ref={ref} className={styles.details}>
       {session.status === "error" && (
         <div role="alert" className={styles.error}>
           <div>
@@ -56,14 +64,13 @@ export function JourneyPanel({ session, onRecover, onFinishReplay, onSelectPlace
             </strong>
             <p>{session.error}</p>
           </div>
-          {session.errorCode !== "NO_ROUTE" && (
-            <Button className={styles.hit} color="dark" onClick={() => onRecover(false)} size="medium" variant="weak">
-              다시 시도
-            </Button>
-          )}
-          {session.active && (
+          {session.active ? (
             <Button className={styles.hit} color="dark" onClick={() => onRecover(true)} size="medium" variant="weak">
               건너뛰기
+            </Button>
+          ) : (
+            <Button className={styles.hit} color="dark" onClick={() => onRecover(false)} size="medium" variant="weak">
+              다시 시도
             </Button>
           )}
         </div>

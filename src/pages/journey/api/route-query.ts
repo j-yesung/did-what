@@ -5,15 +5,6 @@ import type { JourneyPlace, JourneyRegion, JourneyRoute } from "../model/types";
 
 const ROUTE_ERROR = "경로를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.";
 
-export class JourneyRouteError extends Error {
-  constructor(
-    message = ROUTE_ERROR,
-    public readonly code?: string,
-  ) {
-    super(message);
-  }
-}
-
 export const legParams = (
   record: Pick<JourneyRecord, "id">,
   region: Pick<JourneyRegion, "code">,
@@ -30,11 +21,11 @@ export const legParams = (
 
 const fetchRoute = async (params: URLSearchParams, signal: AbortSignal): Promise<JourneyRoute> => {
   const response = await fetch(`/journey/directions?${params}`, { signal, cache: "no-store" }).catch(() => null);
-  const body: { route?: JourneyRoute; error?: string; code?: string } | null = response
+  const body: { route?: JourneyRoute; error?: string } | null = response
     ? await response.json().catch(() => null)
     : null;
   if (response?.ok && body?.route) return body.route;
-  throw new JourneyRouteError(body?.error, body?.code);
+  throw new Error(body?.error ?? ROUTE_ERROR);
 };
 
 export const journeyRouteQuery = (

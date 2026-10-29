@@ -23,7 +23,6 @@ export type JourneySession = {
 
   status: JourneyStatus;
   error: string;
-  errorCode?: string;
   current: JourneyPlace | null;
 
   replaying: boolean;
