@@ -1,6 +1,14 @@
 "use client";
 
-import { type MouseEvent, type PointerEvent, useEffect, useRef, useState, type WheelEvent } from "react";
+import {
+  type MouseEvent,
+  type PointerEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type WheelEvent,
+} from "react";
 
 import {
   type Box,
@@ -8,22 +16,34 @@ import {
   constrainView,
   type Frame,
   followBox,
+  MOMENTUM_MS,
   momentumView,
   national,
   routeBox,
   toViewPoint,
   viewScale,
+  viewTransform,
 } from "./map-view";
 import { prefersReducedMotion } from "./motion";
 import type { JourneyRoute } from "./types";
 
 type Position = { x: number; y: number };
 
+const GLIDE_MIN_SPEED = 0.4;
+const GLIDE_MAX_SPEED = 2.5;
+
+export const MAP_OVERSCAN = 1.5;
+
 export const useMapCamera = () => {
   const [view, setViewState] = useState<Box>(national);
+  const [settledView, setSettledView] = useState<Box>(national);
   const viewRef = useRef(view);
+  const rendered = useRef(view);
+  const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [viewport, setViewport] = useState({ width: 390, height: 844 });
-  const svgRef = useRef<SVGSVGElement>(null);
+  const viewportRef = useRef(viewport);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const animation = useRef(0);
@@ -34,30 +54,73 @@ export const useMapCamera = () => {
   const dragEndAt = useRef(Number.NEGATIVE_INFINITY);
   const panSamples = useRef<(Position & { time: number })[]>([]);
 
+  const applyTransform = () => {
+    const layer = layerRef.current;
+    if (!layer) return null;
+
+    if (viewRef.current === rendered.current) {
+      layer.style.transform = "";
+      layer.style.removeProperty("--map-scale");
+      return null;
+    }
+    const shift = viewTransform(rendered.current, viewRef.current, viewportRef.current);
+    layer.style.transform = `translate(${shift.x}px, ${shift.y}px) scale(${shift.scale})`;
+    layer.style.setProperty("--map-scale", `${shift.scale}`);
+    return shift;
+  };
+
+  useLayoutEffect(() => {
+    rendered.current = view;
+    applyTransform();
+  });
+
   useEffect(() => {
-    const element = svgRef.current;
+    const element = stageRef.current;
     if (!element) return;
 
-    const observer = new ResizeObserver(([entry]) =>
-      setViewport({ width: entry.contentRect.width, height: entry.contentRect.height }),
-    );
+    const observer = new ResizeObserver(([entry]) => {
+      viewportRef.current = { width: entry.contentRect.width, height: entry.contentRect.height };
+      setViewport(viewportRef.current);
+    });
     observer.observe(element);
     return () => {
       observer.disconnect();
       cancelAnimationFrame(animation.current);
+      if (wheelTimer.current) clearTimeout(wheelTimer.current);
       settled.current?.();
     };
   }, []);
+
+  const commit = () => {
+    if (viewRef.current !== rendered.current) setViewState(viewRef.current);
+  };
+
+  const settle = () => {
+    commit();
+    setSettledView(viewRef.current);
+  };
+
+  const preview = (next: Box) => {
+    viewRef.current = next;
+    const shift = applyTransform();
+    if (!shift) return;
+
+    const { width, height } = viewportRef.current;
+    const drift = 2 * Math.max(Math.abs(shift.x) / width, Math.abs(shift.y) / height);
+    if (shift.scale > 1.6 || MAP_OVERSCAN * shift.scale < 1.2 + drift) commit();
+  };
 
   const stop = () => {
     cancelAnimationFrame(animation.current);
     settled.current?.();
     settled.current = null;
+    settle();
   };
 
   const setView = (next: Box) => {
     viewRef.current = next;
     setViewState(next);
+    setSettledView(next);
   };
 
   const moveCamera = (next: Box) => {
@@ -74,7 +137,7 @@ export const useMapCamera = () => {
       const tick = (now: number) => {
         const progress = Math.min(1, (now - started) / 650);
         const eased = 1 - (1 - progress) ** 3;
-        setView({
+        preview({
           x: start.x + (next.x - start.x) * eased,
           y: start.y + (next.y - start.y) * eased,
           width: start.width + (next.width - start.width) * eased,
@@ -83,6 +146,7 @@ export const useMapCamera = () => {
         if (progress < 1) animation.current = requestAnimationFrame(tick);
         else {
           settled.current = null;
+          settle();
           resolve();
         }
       };
@@ -91,7 +155,7 @@ export const useMapCamera = () => {
   };
 
   const frame = (): Frame | undefined => {
-    const rect = svgRef.current?.getBoundingClientRect();
+    const rect = stageRef.current?.getBoundingClientRect();
     if (!rect) return undefined;
 
     const header = headerRef.current?.getBoundingClientRect();
@@ -109,21 +173,19 @@ export const useMapCamera = () => {
   const followRoute = (route: JourneyRoute) => followBox(viewRef.current, route, frame());
 
   const toMapPoint = (clientX: number, clientY: number) => {
-    const rect = svgRef.current?.getBoundingClientRect();
+    const rect = stageRef.current?.getBoundingClientRect();
     return rect ? toViewPoint(viewRef.current, rect, clientX, clientY) : null;
   };
 
-  const zoomAt = (clientX: number, clientY: number, factor: number, panX = 0, panY = 0, elastic = false) => {
-    const rect = svgRef.current?.getBoundingClientRect();
+  const zoomAt = (clientX: number, clientY: number, factor: number, panX = 0, panY = 0) => {
+    const rect = stageRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const current = viewRef.current;
     const scale = viewScale(current, rect);
     const anchor = toViewPoint(current, rect, clientX, clientY);
-    const desired = current.width * factor;
-    const limited = clampViewWidth(desired);
-    const ratio = (elastic ? limited + (desired - limited) * 0.15 : limited) / current.width;
-    setView(
+    const ratio = clampViewWidth(current.width * factor) / current.width;
+    preview(
       constrainView({
         x: anchor.x + (current.x - anchor.x) * ratio - panX * scale * ratio,
         y: anchor.y + (current.y - anchor.y) * ratio - panY * scale * ratio,
@@ -138,13 +200,15 @@ export const useMapCamera = () => {
     const started = performance.now();
     const tick = (now: number) => {
       const elapsed = now - started;
-      setView(momentumView(start, velocity, elapsed));
-      if (elapsed < 850 && speed * Math.exp(-elapsed / 180) > 0.015) animation.current = requestAnimationFrame(tick);
+      preview(momentumView(start, velocity, elapsed));
+      if (elapsed < 500 && speed * Math.exp(-elapsed / MOMENTUM_MS) > 0.02)
+        animation.current = requestAnimationFrame(tick);
+      else settle();
     };
     animation.current = requestAnimationFrame(tick);
   };
 
-  const release = (event: PointerEvent<SVGSVGElement>) => {
+  const release = (event: PointerEvent<HTMLDivElement>) => {
     pointers.current.delete(event.pointerId);
     if (pointers.current.size) {
       panSamples.current = [];
@@ -156,35 +220,29 @@ export const useMapCamera = () => {
     dragged.current = false;
 
     const current = viewRef.current;
-    const width = clampViewWidth(current.width);
-    if (width !== current.width) {
-      const height = (current.height * width) / current.width;
-      moveCamera({
-        x: current.x + (current.width - width) / 2,
-        y: current.y + (current.height - height) / 2,
-        width,
-        height,
-      });
-      return;
-    }
-    if (!wasDragged || event.type === "pointercancel" || prefersReducedMotion()) return;
-
     const samples = panSamples.current;
     const first = samples[0];
     const last = samples.at(-1);
-    if (!first || !last || last.time === first.time || event.timeStamp - last.time > 100) return;
-
-    const rect = svgRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const unit = viewScale(current, rect);
-    const elapsed = last.time - first.time;
-    const velocity = { x: ((last.x - first.x) / elapsed) * unit, y: ((last.y - first.y) / elapsed) * unit };
-    if (Math.hypot(velocity.x, velocity.y) / unit >= 0.05) glide(current, velocity, unit);
+    const unit = viewScale(current, viewportRef.current);
+    const elapsed = first && last ? last.time - first.time : 0;
+    const pixels =
+      first && last && elapsed ? { x: (last.x - first.x) / elapsed, y: (last.y - first.y) / elapsed } : null;
+    const speed = pixels ? Math.hypot(pixels.x, pixels.y) : 0;
+    const limit = speed > GLIDE_MAX_SPEED ? GLIDE_MAX_SPEED / speed : 1;
+    const velocity = pixels ? { x: pixels.x * limit * unit, y: pixels.y * limit * unit } : { x: 0, y: 0 };
+    const gliding =
+      wasDragged &&
+      event.type !== "pointercancel" &&
+      !prefersReducedMotion() &&
+      last !== undefined &&
+      event.timeStamp - last.time <= 100 &&
+      speed >= GLIDE_MIN_SPEED;
+    if (gliding) glide(current, velocity, unit);
+    else settle();
   };
 
   const handlers = {
-    onPointerDown: (event: PointerEvent<SVGSVGElement>) => {
+    onPointerDown: (event: PointerEvent<HTMLDivElement>) => {
       if (event.button !== 0) return;
 
       stop();
@@ -196,7 +254,7 @@ export const useMapCamera = () => {
       }
       pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     },
-    onPointerMove: (event: PointerEvent<SVGSVGElement>) => {
+    onPointerMove: (event: PointerEvent<HTMLDivElement>) => {
       const tracked = pointers.current;
       if (!tracked.has(event.pointerId)) return;
       if (!event.buttons) {
@@ -233,14 +291,15 @@ export const useMapCamera = () => {
         Math.hypot(b.x - a.x, b.y - a.y) / distance,
         (nextA.x + nextB.x) / 2 - midX,
         (nextA.y + nextB.y) / 2 - midY,
-        true,
       );
     },
     onPointerUp: release,
     onPointerCancel: release,
-    onWheel: (event: WheelEvent<SVGSVGElement>) => {
-      stop();
+    onWheel: (event: WheelEvent<HTMLDivElement>) => {
+      cancelAnimationFrame(animation.current);
       zoomAt(event.clientX, event.clientY, Math.exp(event.deltaY * 0.001));
+      if (wheelTimer.current) clearTimeout(wheelTimer.current);
+      wheelTimer.current = setTimeout(settle, 150);
     },
   };
 
@@ -251,7 +310,9 @@ export const useMapCamera = () => {
     viewRef,
     viewport,
     unit: viewScale(view, viewport),
-    svgRef,
+    settled: { view: settledView, unit: viewScale(settledView, viewport) },
+    stageRef,
+    layerRef,
     headerRef,
     panelRef,
     handlers,

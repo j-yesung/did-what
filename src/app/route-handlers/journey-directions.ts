@@ -7,13 +7,14 @@ import {
   hasNoKakaoRoute,
   nearbyRoute,
   parseKakaoDirections,
+  simplifyRoutePoints,
   straightHomeRoute,
 } from "@/pages/journey/model/kakao-directions";
 import { toJourneyRecord } from "@/pages/journey/model/record";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 export const getJourneyDirections = async (request: Request) => {
-  const { supabase, user } = await requireMember();
+  const { supabase, user, member } = await requireMember();
   const params = new URL(request.url).searchParams;
   const id = params.get("recordId") ?? "";
   const region = params.get("region") ?? "";
@@ -26,9 +27,18 @@ export const getJourneyDirections = async (request: Request) => {
     const { data: home, error: homeError } = await getMemberHomeAddress();
     if (homeError) return Response.json({ error: "집 주소를 불러오지 못했어요." }, { status: 500 });
     if (!home) return Response.json({ error: "집 주소를 등록해 주세요." }, { status: 400 });
+    if (home.latitude !== null && home.longitude !== null)
+      return { latitude: home.latitude, longitude: home.longitude };
 
     try {
-      return await geocodeHomeAddress(home.address, request.signal);
+      const location = await geocodeHomeAddress(home.address, request.signal);
+      await supabase
+        .from("member_home_addresses")
+        .update(location)
+        .eq("owner_id", user.id)
+        .eq("member_id", member.id)
+        .eq("address", home.address);
+      return location;
     } catch (error) {
       return Response.json(
         {
@@ -86,7 +96,11 @@ export const getJourneyDirections = async (request: Request) => {
 
     const data: unknown = response.ok ? await response.json() : null;
     const route = parseKakaoDirections(data);
-    if (route) return Response.json({ route }, { headers: { "Cache-Control": "private, no-store" } });
+    if (route)
+      return Response.json(
+        { route: { ...route, points: simplifyRoutePoints(route.points) } },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
     if (request.signal.aborted) return new Response(null, { status: 499 });
 
     const resultCode =

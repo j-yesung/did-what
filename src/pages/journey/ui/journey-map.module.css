@@ -5,25 +5,37 @@
   background: var(--journey-background);
   color: var(--journey-white);
 }
-.base,
-.map {
-  display: block;
-  width: 100%;
-  height: 100%;
-  will-change: transform;
-}
-.base {
+.stage {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-}
-.map {
-  position: relative;
   touch-action: none;
   cursor: grab;
 }
-.map:active {
+.stage:active {
   cursor: grabbing;
+}
+.layer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.base,
+.map {
+  position: absolute;
+  top: calc((1 - var(--map-overscan)) * 50%);
+  left: calc((1 - var(--map-overscan)) * 50%);
+  display: block;
+  width: calc(var(--map-overscan) * 100%);
+  height: calc(var(--map-overscan) * 100%);
+  will-change: transform;
+}
+.base {
+  pointer-events: none;
+}
+.pinned {
+  transform-box: view-box;
+  transform: scale(calc(1 / var(--map-scale, 1)));
 }
 .land path,
 .land circle {

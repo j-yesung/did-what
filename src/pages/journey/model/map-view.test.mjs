@@ -1,6 +1,7 @@
 import {
   clampViewWidth,
   constrainView,
+  expandView,
   followBox,
   momentumView,
   national,
@@ -12,6 +13,8 @@ import {
   routeBox,
   toPathData,
   toViewPoint,
+  viewScale,
+  viewTransform,
 } from "./map-view.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -26,17 +29,25 @@ test("짧은 구간도 실제 경로의 가운데에 맞춘다", () => {
   assert.ok(Math.abs(view.y + view.height / 2 - point.y) < 1e-9);
 });
 
-test("이름이 겹치면 묶고, 확대해서 공간이 생기면 나눈다", () => {
+test("가까운 장소는 점 좌우·위아래로 나눠 붙이고, 자리가 모두 막혔을 때만 묶는다", () => {
   const point = project(a.longitude, a.latitude);
   const view = { x: point.x - 10, y: point.y - 10, width: 20, height: 40 };
-  const labels = placeLabels([a, b, a], view, 0.1, 390);
-  assert.equal(labels.length, 1);
+  const pair = placeLabels([a, b, a], view, 0.1, 390);
   assert.deepEqual(
-    labels[0].places.map(({ id }) => id),
-    ["a", "b"],
+    pair.map((label) => label.places.map(({ id }) => id)),
+    [["a"], ["b"]],
   );
-  const zoomed = placesBox([a, b], { width: 390, height: 844 });
-  assert.equal(placeLabels([a, b], zoomed, zoomed.width / 390, 390).length, 2);
+  assert.ok(pair[1].x + pair[1].width <= pair[0].x);
+
+  const crowd = ["c", "d", "e"].map((id, index) => ({
+    ...a,
+    id,
+    name: `장소 ${index}`,
+    longitude: a.longitude + (index + 1) * 0.0001,
+  }));
+  const labels = placeLabels([a, b, ...crowd], view, 0.1, 390);
+  assert.equal(labels.length, 4);
+  assert.deepEqual(labels.map((label) => label.places.length).sort(), [1, 1, 1, 2]);
 });
 
 test("긴 이름도 화면 오른쪽 끝을 넘지 않는다", () => {
@@ -114,4 +125,40 @@ test("가까운 장소 사이 구간은 화면 폭이 지도 단위 3보다 좁�
   const frame = { width: 390, height: 844, top: 200, bottom: 220 };
   assert.ok(routeBox([route], frame).width >= 3 - 1e-9);
   assert.ok(routeBox([route]).width >= 3 - 1e-9);
+});
+
+test("움직이는 동안의 화면 이동은 그려 둔 지도를 같은 자리로 옮기는 변환과 같다", () => {
+  const viewport = { width: 400, height: 800 };
+  const rendered = { x: 100, y: 50, width: 20, height: 40 };
+  const live = { x: 104, y: 52, width: 10, height: 20 };
+  const { scale, x, y } = viewTransform(rendered, live, viewport);
+  const screen = (view, point) => ({
+    x: viewport.width / 2 + (point.x - (view.x + view.width / 2)) / viewScale(view, viewport),
+    y: viewport.height / 2 + (point.y - (view.y + view.height / 2)) / viewScale(view, viewport),
+  });
+  const point = { x: 108, y: 61 };
+  const before = screen(rendered, point);
+  const after = screen(live, point);
+  assert.ok(Math.abs(viewport.width / 2 + scale * (before.x - viewport.width / 2) + x - after.x) < 1e-9);
+  assert.ok(Math.abs(viewport.height / 2 + scale * (before.y - viewport.height / 2) + y - after.y) < 1e-9);
+  assert.deepEqual(expandView(rendered, 1.5), { x: 95, y: 40, width: 30, height: 60 });
+});
+
+test("움직이는 동안에는 멈췄던 화면의 묶음을 유지하고 위치만 지금 화면에 맞춘다", () => {
+  const point = project(a.longitude, a.latitude);
+  const crowd = ["c", "d", "e"].map((id, index) => ({
+    ...a,
+    id,
+    name: `장소 ${index}`,
+    longitude: a.longitude + (index + 1) * 0.0001,
+  }));
+  const places = [a, b, ...crowd];
+  const wide = { x: point.x - 19.5, y: point.y - 42.2, width: 39, height: 84.4 };
+  const zoomed = placesBox(places, { width: 390, height: 844 });
+  const zoomedUnit = zoomed.width / 390;
+  const held = placeLabels(places, zoomed, zoomedUnit, 390, { view: wide, unit: 0.1 });
+  const groups = (labels) => labels.map((label) => label.places.map(({ id }) => id).join());
+  assert.deepEqual(groups(held), groups(placeLabels(places, wide, 0.1, 390)));
+  assert.notDeepEqual(groups(held), groups(placeLabels(places, zoomed, zoomedUnit, 390)));
+  assert.ok(Math.abs(held[0].y - (point.y - 38 * zoomedUnit)) < 1e-9);
 });
