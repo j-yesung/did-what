@@ -101,3 +101,17 @@ test("그리는 중인 선은 지나온 길이만큼만 경로를 자른다", ()
   assert.equal(partialPathData(points, lengths, 5), "M0,0L3,0L3,2");
   assert.equal(partialPathData(points, lengths, 7), toPathData(points));
 });
+
+test("가까운 장소 사이 구간은 화면 폭이 지도 단위 3보다 좁아지게 확대하지 않는다", () => {
+  const route = {
+    points: [
+      [127.04, 37.54],
+      [127.041, 37.541],
+    ],
+    distance: 0,
+    duration: 0,
+  };
+  const frame = { width: 390, height: 844, top: 200, bottom: 220 };
+  assert.ok(routeBox([route], frame).width >= 3 - 1e-9);
+  assert.ok(routeBox([route]).width >= 3 - 1e-9);
+});

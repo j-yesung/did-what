@@ -19,6 +19,7 @@ export const national: Box = {
 
 export const MIN_VIEW_WIDTH = 0.02;
 export const MAX_VIEW_WIDTH = 400;
+const MIN_ROUTE_WIDTH = 3;
 
 export const clampViewWidth = (width: number) => Math.max(MIN_VIEW_WIDTH, Math.min(MAX_VIEW_WIDTH, width));
 
@@ -71,7 +72,11 @@ export const routeBox = (routes: Route[], frame?: Frame): Box => {
   const height = Math.max(0.75, maxY - y);
   if (frame) {
     const area = routeArea(frame);
-    const scale = Math.max((width * 1.8) / frame.width, height / (area.bottom - area.top), 0.9 / frame.width);
+    const scale = Math.max(
+      (width * 1.8) / frame.width,
+      height / (area.bottom - area.top),
+      MIN_ROUTE_WIDTH / frame.width,
+    );
 
     return {
       x: (x + maxX) / 2 - (frame.width * scale) / 2,
@@ -81,7 +86,7 @@ export const routeBox = (routes: Route[], frame?: Frame): Box => {
     };
   }
 
-  const paddedWidth = Math.max(width * 1.8, height * 0.75, 0.9);
+  const paddedWidth = Math.max(width * 1.8, height * 0.75, MIN_ROUTE_WIDTH);
   const paddedHeight = Math.max(height * 2.3, width * 1.2, 1.4);
 
   return {
