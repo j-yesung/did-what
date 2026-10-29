@@ -235,6 +235,7 @@ function SegmentPath({ segment, drawing, unit }: { segment: Segment; drawing: bo
 function AnimatedNumber({ value, format }: { value: number; format: (value: number) => ReactNode }) {
   const [display, setDisplay] = useState(0);
   const previous = useRef(0);
+
   useEffect(() => {
     const start = previous.current;
     const started = performance.now();
@@ -254,6 +255,7 @@ function AnimatedNumber({ value, format }: { value: number; format: (value: numb
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [value]);
+
   return <>{format(display)}</>;
 }
 
@@ -288,6 +290,7 @@ export function JourneyMap({
   const [detailOpen, setDetailOpen] = useState(false);
   const [chipRow, setChipRow] = useState<HTMLDivElement | null>(null);
   const [chipFade, setChipFade] = useState({ start: false, end: false });
+
   useEffect(() => {
     if (!chipRow) return;
     const update = () => setChipFade(keepIfSame(scrollEdges(chipRow)));
@@ -297,15 +300,19 @@ export function JourneyMap({
     return () => observer.disconnect();
   }, [chipRow]);
   const main = useRef<HTMLElement>(null);
+
   useLayoutEffect(() => {
     if (main.current && getPageNavigation(window).traversal) main.current.style.animation = "none";
   }, []);
+
   const searchParams = useSearchParams();
+
   const [initialUrl] = useState(() => ({
     region: searchParams?.get("region") ?? null,
     record: searchParams?.get("record") ?? null,
     places: searchParams?.get("places")?.split(",") ?? [],
   }));
+
   const [addressOpen, setAddressOpen] = useState(false);
   const [homeSaved, setHomeSaved] = useState(false);
   const homeReady = (hasHome || homeSaved) && !homeUnavailable;
@@ -317,12 +324,14 @@ export function JourneyMap({
   const compactHeightRef = useRef(360);
   const [compactHeight, setCompactHeight] = useState(360);
   const [snapPoint, setSnapPoint] = useState<number | string | null>(360);
+
   const showSheet = (next: typeof sheet) => {
     if (sheetTimer.current) clearTimeout(sheetTimer.current);
     sheetTimer.current = null;
     setSheet(next);
     setSnapPoint(next === "records" ? 1 : compactHeightRef.current);
   };
+
   useLayoutEffect(() => {
     if ((sheet !== "regions" && sheet !== "choices") || !sheetHeader || !sheetBody) return;
     const measure = () => {
@@ -339,6 +348,7 @@ export function JourneyMap({
     observer.observe(sheetBody);
     return () => observer.disconnect();
   }, [sheet, sheetHeader, sheetBody]);
+
   const [box, setBox] = useState<Box>(national);
   const boxRef = useRef(box);
   const cameraAnimation = useRef(0);
