@@ -2,11 +2,11 @@
 
 import type { ReactNode } from "react";
 
-import { CircleChevronLeftIcon } from "@animateicons/react/lucide";
 import { CaretDownIcon } from "@phosphor-icons/react";
 
 import { OVERSCROLL_BACK_NAVIGATION_DELAY } from "@/shared/lib/navigation/overscroll-back/overscroll-back";
 import { useOverscrollBack } from "@/shared/lib/navigation/overscroll-back/use-overscroll-back";
+import { CircleChevronLeftIcon } from "@/shared/ui/animated-icons";
 
 type OverscrollBackProps = {
   children: ReactNode;
