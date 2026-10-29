@@ -47,34 +47,28 @@ export function RouteMetrics({ segments, instant }: { segments: JourneySegment[]
 
   return (
     <div className={styles.metrics}>
-      <strong>
-        {segments.length ? (
-          <AnimatedNumber value={distance / 1000} format={(value) => value.toFixed(1)} instant={instant} />
-        ) : (
-          "—"
-        )}
-        <small> km</small>
-      </strong>
-      <em>
-        {segments.length ? (
-          <AnimatedNumber
-            instant={instant}
-            value={duration / 60}
-            format={(value) =>
-              durationParts(Math.round(value)).map(([amount, unit]) => (
-                <span key={unit}>
-                  <b>{amount}</b>
-                  {unit}
-                </span>
-              ))
-            }
-          />
-        ) : (
-          <>
-            <b>—</b>분
-          </>
-        )}
-      </em>
+      {segments.length > 0 && (
+        <>
+          <strong>
+            <AnimatedNumber value={distance / 1000} format={(value) => value.toFixed(1)} instant={instant} />
+            <small> km</small>
+          </strong>
+          <em>
+            <AnimatedNumber
+              instant={instant}
+              value={duration / 60}
+              format={(value) =>
+                durationParts(Math.round(value)).map(([amount, unit]) => (
+                  <span key={unit}>
+                    <b>{amount}</b>
+                    {unit}
+                  </span>
+                ))
+              }
+            />
+          </em>
+        </>
+      )}
     </div>
   );
 }

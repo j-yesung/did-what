@@ -256,32 +256,35 @@
   color: var(--journey-green);
 }
 .metrics {
+  --metrics-size: clamp(40px, 13vw, 56px);
   display: flex;
   align-items: baseline;
-  gap: 16px;
+  gap: 14px;
+  min-height: calc(var(--metrics-size) * 1.1);
+  white-space: nowrap;
 }
 .metrics em span + span {
   margin-left: 6px;
 }
 .metrics strong {
-  font-size: clamp(32px, 9vw, 40px);
+  font-size: var(--metrics-size);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.06em;
   line-height: 1.1;
 }
 .metrics small {
-  font-size: 15px;
+  font-size: calc(var(--metrics-size) * 0.38);
   letter-spacing: 0;
 }
 .metrics em {
   margin-top: 4px;
-  font-size: 12px;
+  font-size: calc(var(--metrics-size) * 0.3);
   font-style: normal;
   opacity: 0.75;
 }
 .metrics b {
   margin-right: 2px;
-  font-size: 18px;
+  font-size: calc(var(--metrics-size) * 0.56);
   font-variant-numeric: tabular-nums;
 }
 .error {
