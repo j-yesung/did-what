@@ -315,7 +315,10 @@ export function JourneyMap({
   const searchParams = useSearchParams();
 
   const [initialUrl] = useState(() => ({
-    region: searchParams?.get("region") ?? null,
+    region:
+      typeof window !== "undefined" && getPageNavigation(window).traversal
+        ? (searchParams?.get("region") ?? null)
+        : null,
     record: searchParams?.get("record") ?? null,
     places: searchParams?.get("places")?.split(",") ?? [],
   }));
