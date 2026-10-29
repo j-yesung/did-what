@@ -17,6 +17,22 @@ export const national: Box = {
   height: homeBottomRight.y - homeTopLeft.y,
 };
 
+export const MIN_VIEW_WIDTH = 0.02;
+export const MAX_VIEW_WIDTH = 400;
+
+export const clampViewWidth = (width: number) => Math.max(MIN_VIEW_WIDTH, Math.min(MAX_VIEW_WIDTH, width));
+
+export const viewScale = (view: Box, viewport: { width: number; height: number }) =>
+  Math.max(view.width / viewport.width, view.height / viewport.height);
+
+export const toViewPoint = (view: Box, rect: DOMRectReadOnly, clientX: number, clientY: number) => {
+  const scale = viewScale(view, rect);
+  return {
+    x: view.x + view.width / 2 + (clientX - rect.left - rect.width / 2) * scale,
+    y: view.y + view.height / 2 + (clientY - rect.top - rect.height / 2) * scale,
+  };
+};
+
 const routeBounds = (routes: Route[]) => {
   let x = Infinity;
   let y = Infinity;
@@ -75,6 +91,7 @@ export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: nu
   const right = left + (viewportWidth - 24) * unit;
   const unique = [...new Map(places.map((place) => [place.id, place])).values()].filter((place) => {
     const point = project(place.longitude, place.latitude);
+
     return (
       point.x >= left - 12 * unit &&
       point.x <= right + 12 * unit &&
@@ -91,6 +108,7 @@ export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: nu
 
     let name = place.name;
     while (name.length > 1 && nameWidth(name + suffix) > maxWidth) name = name.slice(0, -1);
+
     if (name !== place.name) name = `${name.slice(0, -1)}…`;
 
     const width = Math.max(44, nameWidth(name + suffix) + 20) * unit;
@@ -102,6 +120,7 @@ export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: nu
 
   let groups = unique.map((place) => [place]);
   let merged = true;
+
   while (merged) {
     merged = false;
     for (let i = 0; i < groups.length && !merged; i++) {

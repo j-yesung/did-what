@@ -1,4 +1,14 @@
-import { constrainView, momentumView, national, placeLabels, placesBox, project, routeBox } from "./map-view.ts";
+import {
+  clampViewWidth,
+  constrainView,
+  momentumView,
+  national,
+  placeLabels,
+  placesBox,
+  project,
+  routeBox,
+  toViewPoint,
+} from "./map-view.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -45,4 +55,13 @@ test("관성은 시간 기준으로 같은 지점에 도달하고 지도 경계�
   const far = constrainView({ ...national, x: 99999, y: -99999 });
   assert.ok(far.x < 1000 && far.y > -1000);
   assert.deepEqual(routeBox([]), national);
+});
+
+test("화면 가운데를 누르면 지도 범위의 가운데를 고른다", () => {
+  const rect = { left: 10, top: 20, width: 390, height: 844 };
+  const point = toViewPoint(national, rect, 10 + 195, 20 + 422);
+  assert.ok(Math.abs(point.x - (national.x + national.width / 2)) < 1e-9);
+  assert.ok(Math.abs(point.y - (national.y + national.height / 2)) < 1e-9);
+  assert.equal(clampViewWidth(0), 0.02);
+  assert.equal(clampViewWidth(1000), 400);
 });
