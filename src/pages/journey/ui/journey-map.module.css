@@ -98,23 +98,6 @@
   gap: 4px;
   height: var(--toolbar-height);
   pointer-events: auto;
-  transition: opacity 200ms ease;
-}
-
-.menu {
-  position: relative;
-  justify-content: flex-end;
-  gap: 0;
-  overflow: hidden;
-  padding: 2px;
-  border-radius: 999px;
-}
-.menuItems {
-  display: flex;
-  flex-shrink: 0;
-}
-.actions[data-hidden] {
-  opacity: 0;
 }
 
 .recordHeader {
@@ -365,9 +348,6 @@
   .skeleton i {
     animation: none;
   }
-  .actions {
-    transition: none;
-  }
 }
 .sheetNotice {
   display: grid;
@@ -387,14 +367,6 @@
   pointer-events: none;
 }
 
-.menuBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background: transparent;
-  pointer-events: auto;
-  touch-action: none;
-}
 .replayStatus {
   display: flex;
   justify-content: space-between;

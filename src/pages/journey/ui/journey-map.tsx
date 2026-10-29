@@ -2,7 +2,6 @@
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 
-import { ArrowsInSimpleIcon, ListBulletsIcon, MapTrifoldIcon, PlayIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
@@ -270,35 +269,17 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
       <FixedToolbar className="justify-end">
         {session ? (
           <JourneyActions
-            actions={[
-              {
-                label: "전체 경로 보기",
-                icon: ArrowsInSimpleIcon,
-                onSelect: () => moveCamera(fitRoutes(session.segments.map((segment) => segment.route))),
-              },
-              {
-                label: "다시 보기",
-                disabled: session.replaying,
-                icon: PlayIcon,
-                onSelect: () => {
-                  journey.begin(session.record, session.region, pickedJourneyPlaces(session), true);
-                  title.current?.focus();
-                },
-              },
-              {
-                label: "이 지역 기록 목록",
-                icon: ListBulletsIcon,
-                onSelect: () => showRegionRecords(session.region),
-              },
-              {
-                label: "전국 지도로 돌아가기",
-                icon: MapTrifoldIcon,
-                onSelect: () => {
-                  reset();
-                  requestAnimationFrame(() => regionsButton.current?.focus());
-                },
-              },
-            ]}
+            replaying={session.replaying}
+            onFitRoutes={() => moveCamera(fitRoutes(session.segments.map((segment) => segment.route)))}
+            onReplay={() => {
+              journey.begin(session.record, session.region, pickedJourneyPlaces(session), true);
+              title.current?.focus();
+            }}
+            onShowRecords={() => showRegionRecords(session.region)}
+            onReset={() => {
+              reset();
+              requestAnimationFrame(() => regionsButton.current?.focus());
+            }}
           />
         ) : (
           !restoring &&
