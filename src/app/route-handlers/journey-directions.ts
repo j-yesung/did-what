@@ -7,6 +7,7 @@ import {
   hasNoKakaoRoute,
   nearbyRoute,
   parseKakaoDirections,
+  simplifyRoutePoints,
   straightHomeRoute,
 } from "@/pages/journey/model/kakao-directions";
 import { toJourneyRecord } from "@/pages/journey/model/record";
@@ -95,7 +96,11 @@ export const getJourneyDirections = async (request: Request) => {
 
     const data: unknown = response.ok ? await response.json() : null;
     const route = parseKakaoDirections(data);
-    if (route) return Response.json({ route }, { headers: { "Cache-Control": "private, no-store" } });
+    if (route)
+      return Response.json(
+        { route: { ...route, points: simplifyRoutePoints(route.points) } },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
     if (request.signal.aborted) return new Response(null, { status: 499 });
 
     const resultCode =

@@ -75,3 +75,41 @@ export const straightHomeRoute = (home: Point, destination: Point): JourneyRoute
   duration: 0,
   straight: true,
 });
+
+const METERS_PER_DEGREE = 111_320;
+
+const distanceToSegment = ([x, y]: number[], [startX, startY]: number[], [endX, endY]: number[]) => {
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const length = dx * dx + dy * dy;
+  const t = length ? Math.max(0, Math.min(1, ((x - startX) * dx + (y - startY) * dy) / length)) : 0;
+
+  return Math.hypot(x - startX - t * dx, y - startY - t * dy);
+};
+
+export const simplifyRoutePoints = (points: [number, number][], toleranceMeters = 3) => {
+  if (points.length <= 2) return points;
+
+  const scale = Math.cos((points[0][1] * Math.PI) / 180) * METERS_PER_DEGREE;
+  const meters = points.map(([longitude, latitude]) => [longitude * scale, latitude * METERS_PER_DEGREE]);
+  const keep = new Set([0, points.length - 1]);
+  const ranges = [[0, points.length - 1]];
+  while (ranges.length) {
+    const [start, end] = ranges.pop()!;
+    let farthest = -1;
+    let distance = toleranceMeters;
+    for (let index = start + 1; index < end; index++) {
+      const next = distanceToSegment(meters[index], meters[start], meters[end]);
+      if (next > distance) {
+        farthest = index;
+        distance = next;
+      }
+    }
+    if (farthest < 0) continue;
+
+    keep.add(farthest);
+    ranges.push([start, farthest], [farthest, end]);
+  }
+
+  return points.filter((_, index) => keep.has(index));
+};

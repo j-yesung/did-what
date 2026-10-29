@@ -1,4 +1,10 @@
-import { hasNoKakaoRoute, nearbyRoute, parseKakaoDirections, straightHomeRoute } from "./kakao-directions.ts";
+import {
+  hasNoKakaoRoute,
+  nearbyRoute,
+  parseKakaoDirections,
+  simplifyRoutePoints,
+  straightHomeRoute,
+} from "./kakao-directions.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -68,4 +74,19 @@ test("직선 집 구간은 집 좌표를 약 110m 단위로 흐리고 거리·�
   assert.equal(route.distance, 0);
   assert.equal(route.duration, 0);
   assert.equal(route.straight, true);
+});
+
+test("경로 점은 3m 넘게 벗어나는 꺾임만 남기고 직선 위의 점은 덜어 낸다", () => {
+  const straight = Array.from({ length: 50 }, (_, index) => [127 + index * 0.0001, 37.5]);
+  assert.deepEqual(simplifyRoutePoints(straight), [straight[0], straight[49]]);
+
+  const corner = [
+    ...straight.slice(0, 25),
+    ...Array.from({ length: 25 }, (_, index) => [127.0024, 37.5 + (index + 1) * 0.0001]),
+  ];
+  assert.deepEqual(simplifyRoutePoints(corner), [corner[0], corner[24], corner[49]]);
+
+  const wiggle = straight.map(([longitude, latitude], index) => [longitude, latitude + (index % 2 ? 0.000005 : 0)]);
+  assert.equal(simplifyRoutePoints(wiggle).length, 2);
+  assert.deepEqual(simplifyRoutePoints(straight.slice(0, 2)), straight.slice(0, 2));
 });
