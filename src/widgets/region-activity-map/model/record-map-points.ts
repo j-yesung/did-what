@@ -4,6 +4,7 @@ export type MapRecord = {
   id: string;
   recorded_at: string;
   recorded_until: string | null;
+  record_comments?: { count: number }[];
   record_places: { place: { id: string; latitude: number; longitude: number; name: string } | null }[];
   record_regions: { region_code: string; region_latitude: number; region_longitude: number; region_name: string }[];
 };

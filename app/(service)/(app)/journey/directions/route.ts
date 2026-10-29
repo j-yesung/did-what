@@ -1,1 +1,1 @@
-export { getJourneyDirections as GET } from "@/pages/journey/api/directions";
+export { getJourneyDirections as GET } from "@/app/route-handlers/journey-directions";

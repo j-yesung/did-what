@@ -1,8 +1,9 @@
 "use client";
 
-import { CaretRightIcon } from "@phosphor-icons/react";
+import { useEffect, useRef } from "react";
+
+import { CaretRightIcon, ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 
 import { prefetchRecordDetail, RecordCategoryBadge } from "@/entities/record";
@@ -17,7 +18,7 @@ import { PressLink } from "@/shared/ui/press-link";
 import { Separator } from "@/shared/ui/separator";
 
 import type { MapRecord } from "../model/record-map-points";
-import { getRegionRecords, getSubregionCounts } from "../model/region-record-list";
+import { formatShortPeriod, getRegionRecords, getSubregionCounts } from "../model/region-record-list";
 
 type RegionRecordListProps = {
   records: readonly MapRecord[];
@@ -28,6 +29,7 @@ type RegionRecordListProps = {
   /** 기록을 누르는 순간(클릭 전) 불린다. 화면마다 필요한 조회를 미리 시작할 때 쓴다. */
   onRecordPress?: (recordId: string) => void;
   isDetail: boolean;
+  currentRecordId?: string;
 };
 
 export function RegionRecordList({
@@ -38,7 +40,15 @@ export function RegionRecordList({
   onRecordOpen,
   onRecordPress,
   isDetail,
+  currentRecordId,
 }: RegionRecordListProps) {
+  const currentRow = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (!currentRecordId) return;
+    const row = currentRow.current;
+    const scroll = row?.closest("[data-record-scroll]");
+    if (row && scroll) scroll.scrollTop += row.getBoundingClientRect().top - scroll.getBoundingClientRect().top - 32;
+  }, [currentRecordId]);
   const router = useRouter();
   const queryClient = useQueryClient();
   const regionRecords = getRegionRecords(records, region?.code);
@@ -73,11 +83,9 @@ export function RegionRecordList({
           ) : null}
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             {isDetail ? (
-              <p className="break-keep font-bold text-foreground text-xl leading-7">{regionLabel}의 기억</p>
+              <p className="break-keep font-bold text-foreground text-xl leading-7">{regionLabel}</p>
             ) : (
-              <BottomSheet.Title className="break-keep font-bold text-xl leading-7">
-                {regionLabel}의 기억
-              </BottomSheet.Title>
+              <BottomSheet.Title className="break-keep font-bold text-xl leading-7">{regionLabel}</BottomSheet.Title>
             )}
             {regionRecords.length > 0 ? (
               <p className="break-keep text-muted-foreground text-sm tabular-nums">기록 {visibleRecords.length}개</p>
@@ -96,7 +104,8 @@ export function RegionRecordList({
             <button
               aria-pressed={selectedSubregion === name}
               className={cn(
-                "min-h-9 shrink-0 rounded-full bg-muted px-3.5 font-medium text-muted-foreground text-sm tabular-nums transition-colors",
+                "min-h-11 shrink-0 rounded-full px-3.5 font-medium text-muted-foreground text-sm tabular-nums transition-colors",
+                selectedSubregion !== name && "bg-muted dark:bg-input/30",
                 selectedSubregion === name && "bg-primary font-semibold text-primary-foreground",
               )}
               key={label}
@@ -110,6 +119,7 @@ export function RegionRecordList({
       ) : null}
 
       <div
+        data-record-scroll
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-4",
           regionRecords.length > 0 && "pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]",
@@ -121,19 +131,15 @@ export function RegionRecordList({
             <h3 className="font-semibold text-sm">방문 기록</h3>
             <ul>
               {visibleRecords.map(({ record, subregions }, index) => {
-                const date = format(parseISO(record.recorded_at), "yyyy.M.d");
-                const until = record.recorded_until;
-                const period =
-                  until && until !== record.recorded_at
-                    ? `${date}–${format(parseISO(until), until.slice(0, 4) === record.recorded_at.slice(0, 4) ? "M.d" : "yyyy.M.d")}`
-                    : date;
+                const commentCount = record.record_comments?.[0]?.count ?? 0;
+                const period = formatShortPeriod(record.recorded_at, record.recorded_until);
                 return (
-                  <li key={record.id}>
+                  <li key={record.id} ref={record.id === currentRecordId ? currentRow : undefined}>
                     {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
                     <PressLink
                       className={cn(
                         buttonVariants({ variant: "ghost" }),
-                        "h-auto min-h-15 w-full min-w-0 justify-start rounded-none px-1 py-2 text-left font-normal after:hidden",
+                        "h-auto min-h-15 w-full min-w-0 justify-start whitespace-normal rounded-none px-1 py-3.5 text-left font-normal after:hidden",
                       )}
                       href={`/records/${record.id}`}
                       onClick={(event) => {
@@ -148,24 +154,33 @@ export function RegionRecordList({
                       }}
                       prefetch={false}
                     >
-                      <span className="min-w-0 flex-1">
+                      <span className="flex min-w-0 flex-1 flex-col">
                         <span className="flex min-w-0 items-center justify-between gap-2">
-                          <span className="min-w-0 truncate font-semibold text-base leading-5">{record.activity}</span>
-                          <span className="flex max-w-1/2 flex-wrap justify-end gap-1">
-                            <RecordCategoryBadge category={record.category} />
+                          <span className="min-w-0 break-words font-semibold text-base leading-5">
+                            {record.activity}
                           </span>
+                          <CaretRightIcon aria-hidden="true" className="shrink-0" size={20} />
                         </span>
                         <span className="mt-1 flex min-w-0 items-center gap-1.5 text-muted-foreground text-xs">
-                          <span className="shrink-0 tabular-nums">{period}</span>
-                          {!selectedSubregion ? (
-                            <>
-                              <span aria-hidden="true">·</span>
-                              <span className="truncate">{subregions.join(", ")}</span>
-                            </>
+                          <time className="shrink-0 tabular-nums" dateTime={record.recorded_at}>
+                            {period}
+                          </time>
+                          <span aria-hidden="true">·</span>
+                          <span className="truncate">{subregions.join(", ")}</span>
+                        </span>
+                        <span className="mt-2 flex min-w-0 items-center justify-between gap-3">
+                          <span className="flex min-w-0 flex-wrap gap-1">
+                            <RecordCategoryBadge category={record.category} />
+                          </span>
+                          {commentCount > 0 ? (
+                            <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground tabular-nums">
+                              <ChatCircleIcon aria-hidden="true" className="size-4" />
+                              <span className="sr-only">댓글</span>
+                              {commentCount}
+                            </span>
                           ) : null}
                         </span>
                       </span>
-                      <CaretRightIcon aria-hidden="true" className="ml-2 shrink-0" size={20} />
                     </PressLink>
                   </li>
                 );

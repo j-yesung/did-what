@@ -1,6 +1,15 @@
-import { hasNoKakaoRoute, parseKakaoDirections, straightHomeRoute } from "./kakao-directions.ts";
+import { hasNoKakaoRoute, nearbyRoute, parseKakaoDirections, straightHomeRoute } from "./kakao-directions.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
+
+test("같은 건물 안의 10m 이내 장소는 0m로 잇고 떨어진 장소는 길찾기를 한다", () => {
+  const origin = { latitude: 37.54, longitude: 127.04 };
+  const near = nearbyRoute(origin, { latitude: 37.54004, longitude: 127.04 });
+  assert.equal(near.distance, 0);
+  assert.equal(near.duration, 0);
+  assert.equal(near.straight, undefined);
+  assert.equal(nearbyRoute(origin, { latitude: 37.541, longitude: 127.04 }), null);
+});
 
 test("도로 구간의 좌표를 순서대로 연결하고 거리와 시간을 가져온다", () => {
   const result = parseKakaoDirections({

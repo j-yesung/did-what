@@ -2,20 +2,16 @@
 
 import { type Dispatch, type SetStateAction, useState } from "react";
 
-import { NotePencilIcon } from "@phosphor-icons/react";
+import { DotsThreeVerticalIcon, NotePencilIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
-import {
-  formatRecordRegionLabels,
-  RecordActionToolbar,
-  RecordDetailHeader,
-  recordDetailQueryOptions,
-} from "@/entities/record";
+import { formatRecordRegionLabels, RecordDetailHeader, recordDetailQueryOptions } from "@/entities/record";
 import { DeleteRecordConfirm } from "@/features/record/delete-record";
 import { RecordComments } from "@/features/record-comment";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
+import { MorphMenu } from "@/shared/ui/morph-menu";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { RecordDetailSections } from "./record-detail-sections";
@@ -50,7 +46,21 @@ export function RecordSheetDetail({
     <div className="relative flex min-h-0 flex-1 flex-col">
       <div className="pointer-events-none absolute inset-x-5 top-7 z-20 flex items-center justify-between gap-3 [&>*]:pointer-events-auto">
         <BackButton aria-label={backLabel} onClick={onBack} />
-        {record ? <RecordActionToolbar onDelete={() => setDeleteOpen(true)} recordId={recordId} /> : null}
+        {record ? (
+          <MorphMenu
+            label="기록 작업"
+            moreIcon={DotsThreeVerticalIcon}
+            actions={[
+              { label: "수정하기", icon: PencilSimpleIcon, href: `/records/${recordId}/edit` },
+              {
+                label: "삭제하기",
+                icon: TrashIcon,
+                onSelect: () => setDeleteOpen(true),
+                className: "text-destructive",
+              },
+            ]}
+          />
+        ) : null}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]">
         <BottomSheet.Header className="pt-7 text-left" glass>

@@ -2,13 +2,12 @@
 
 import { startTransition, useOptimistic, useRef } from "react";
 
-import { BookmarkIcon, type BookmarkIconHandle } from "@animateicons/react/lucide";
-
 import { placesQueryOptions } from "@/entities/place";
 import { RECORD_DETAILS_QUERY_KEY } from "@/entities/record";
 import { useDemoOverride } from "@/shared/lib/demo-override";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { cn } from "@/shared/lib/utils";
+import { BookmarkIcon, type BookmarkIconHandle } from "@/shared/ui/animated-icons";
 import { Button } from "@/shared/ui/button";
 
 import { setPlaceSaved } from "../api/save-place";

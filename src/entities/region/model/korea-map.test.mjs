@@ -85,6 +85,7 @@ assert.equal(getRegionCode(regionalRecords[0].region_code), "KR-11");
 assert.equal(getRegionCode("3611010100"), "KR-50");
 assert.equal(getRegionCode("5111010100"), "KR-42");
 assert.equal(getRegionCode("5211010100"), "KR-45");
+assert.equal(getRegionCode("5011025000"), "KR-49");
 assert.equal(getRegionCode("1211000000"), "KR-12");
 assert.equal(getRegionCode("2911010100"), "KR-12");
 assert.equal(getRegionCode("4611010100"), "KR-12");

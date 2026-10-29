@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { Button } from "@/shared/ui/button";
+
 type KakaoAddress = { address: string };
 type KakaoPostcode = new (options: {
   oncomplete: (data: KakaoAddress) => void;
@@ -50,13 +52,17 @@ const loadPostcode = () => {
   return scriptPromise;
 };
 
-export function KakaoAddressSearch({
-  dark = false,
-  onSelect,
-}: {
+type KakaoAddressSearchProps = {
   dark?: boolean;
   onSelect: (address: string) => void;
-}) {
+};
+
+export function KakaoAddressSearch(props: KakaoAddressSearchProps) {
+  const [attempt, setAttempt] = useState(0);
+  return <PostcodeFrame key={attempt} {...props} onRetry={() => setAttempt((count) => count + 1)} />;
+}
+
+function PostcodeFrame({ dark = false, onSelect, onRetry }: KakaoAddressSearchProps & { onRetry: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -97,9 +103,14 @@ export function KakaoAddressSearch({
         </p>
       )}
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
-          주소 찾기를 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.
-        </p>
+        <>
+          <p role="alert" className="text-destructive text-sm">
+            주소 찾기를 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.
+          </p>
+          <Button className="self-end" color="dark" onClick={onRetry} size="medium" variant="weak">
+            다시 시도
+          </Button>
+        </>
       ) : (
         <div ref={containerRef} className="min-h-0 w-full flex-1 overflow-hidden rounded-lg" />
       )}

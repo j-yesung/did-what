@@ -23,3 +23,15 @@ export const getSubregionCounts = (records: readonly { subregions: readonly stri
   }
   return [...counts].sort(([, first], [, second]) => second - first);
 };
+
+const shortDate = (date: string, withYear: boolean) => {
+  const [year, month, day] = date.split("-").map(Number);
+  return withYear ? `${year}.${month}.${day}` : `${month}.${day}`;
+};
+
+export const formatShortPeriod = (recordedAt: string, recordedUntil: string | null) => {
+  const start = shortDate(recordedAt, true);
+  if (!recordedUntil || recordedUntil === recordedAt) return start;
+
+  return `${start}–${shortDate(recordedUntil, recordedUntil.slice(0, 4) !== recordedAt.slice(0, 4))}`;
+};

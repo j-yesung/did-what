@@ -2,10 +2,9 @@
 
 import { type TouchEvent, useEffect, useRef } from "react";
 
-import type { CircleChevronLeftIconHandle } from "@animateicons/react/lucide";
-
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
 import { useScrollRestoration } from "@/shared/lib/navigation/use-scroll-restoration";
+import type { CircleChevronLeftIconHandle } from "@/shared/ui/animated-icons";
 
 import {
   getOverscrollBackDistance,

@@ -63,7 +63,7 @@ export const RECORD_CATEGORY_BADGE: Record<RecordCategory, string> = {
   date: "bg-category-date/8 text-category-date",
   gathering: "bg-category-gathering/8 text-category-gathering",
   travel: "bg-primary/15 text-accent-text",
-  uncategorized: "bg-muted text-muted-foreground",
+  uncategorized: "bg-category-uncategorized/12 text-muted-foreground",
 };
 
 export const RECORD_CATEGORY_SELECTED: Record<RecordCategory, string> = {

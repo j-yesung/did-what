@@ -1,11 +1,10 @@
 import { type KeyboardEvent, useEffect, useRef } from "react";
 
-import { CheckIcon, type CheckIconHandle } from "@animateicons/react/lucide";
-
 import { PlaceIconTile } from "@/entities/place";
 import type { PlaceClassification } from "@/entities/place/model/place-kind";
 import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
+import { CheckIcon, type CheckIconHandle } from "@/shared/ui/animated-icons";
 import { Badge } from "@/shared/ui/badge";
 
 type SelectablePlaceCardProps = {

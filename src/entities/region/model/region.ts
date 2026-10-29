@@ -22,7 +22,7 @@ export const REGIONS = [
   { administrativeCodes: ["45", "52"], code: "KR-45", label: "전북", name: "전북특별자치도", subdivisionCount: 15 },
   { administrativeCodes: ["47"], code: "KR-47", label: "경북", name: "경상북도", subdivisionCount: 23 },
   { administrativeCodes: ["48"], code: "KR-48", label: "경남", name: "경상남도", subdivisionCount: 22 },
-  { administrativeCodes: ["49"], code: "KR-49", label: "제주", name: "제주특별자치도", subdivisionCount: 2 },
+  { administrativeCodes: ["49", "50"], code: "KR-49", label: "제주", name: "제주특별자치도", subdivisionCount: 2 },
 ] as const;
 
 export type Region = (typeof REGIONS)[number];

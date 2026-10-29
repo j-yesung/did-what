@@ -2,7 +2,6 @@
 
 import type { Dispatch, SetStateAction, SubmitEvent } from "react";
 
-import { CheckIcon } from "@animateicons/react/lucide";
 import { WarningCircleIcon, XIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
@@ -11,6 +10,7 @@ import { recordLocationsQueryOptions } from "@/entities/record";
 import { regionSearchQueryOptions } from "@/entities/region/api/queries";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { CheckIcon } from "@/shared/ui/animated-icons";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { IconButton } from "@/shared/ui/icon-button";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";

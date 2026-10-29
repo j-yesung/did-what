@@ -55,3 +55,26 @@ test("지역 점은 기록을 시·도마다 한 번씩 세고, 가장 최근 �
     ],
   );
 });
+test("대표 지역, 직접 고른 지역, 이름순 순서로 도착지를 고른다", () => {
+  const regions = [
+    region("대구 중구", "2711000000", 1),
+    { ...region("대구 수성구", "2726000000", 3), selected_directly: true },
+    region("대구 남구", "2720000000", 2),
+  ];
+  assert.equal(toJourneyRecord({ ...record, record_regions: regions }, "KR-27").destination.name, "대구 수성구");
+  assert.equal(
+    toJourneyRecord({ ...record, region_code: "2711000000", record_regions: regions }, "KR-27").destination.name,
+    "대구 중구",
+  );
+});
+test("섬 기록뿐이면 지역 점을 본토 화면 안으로 옮기고, 본토 기록이 있으면 그 자리에 찍는다", () => {
+  const ulleung = { ...region("경북 울릉군", "4794000000", 37.48), region_longitude: 130.9 };
+  const pohang = { ...region("경북 포항시", "4711000000", 36.02), region_longitude: 129.34 };
+  const [islandOnly] = toJourneyRegions([{ ...record, id: "a", record_regions: [ulleung] }]);
+  assert.deepEqual([islandOnly.latitude, islandOnly.longitude], [37.48, 129.9]);
+  const [mixed] = toJourneyRegions([
+    { ...record, id: "a", record_regions: [ulleung] },
+    { ...record, id: "b", record_regions: [pohang] },
+  ]);
+  assert.deepEqual([mixed.latitude, mixed.longitude, mixed.count], [36.02, 129.34, 2]);
+});
