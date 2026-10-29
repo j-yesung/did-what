@@ -9,7 +9,7 @@ import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { IconButton } from "@/shared/ui/icon-button";
 
-import styles from "./journey-map.module.css";
+import styles from "../journey-map.module.css";
 
 type Action = { label: string; icon: Icon; onSelect: () => void; disabled?: boolean };
 

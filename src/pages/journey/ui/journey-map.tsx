@@ -2,195 +2,67 @@
 
 import {
   type CSSProperties,
-  memo,
-  type ReactNode,
+  type MouseEvent,
+  type PointerEvent,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 
-import {
-  ArrowsInSimpleIcon,
-  CaretRightIcon,
-  HouseIcon,
-  ListBulletsIcon,
-  MapTrifoldIcon,
-  PlayIcon,
-  WarningCircleIcon,
-  XIcon,
-} from "@phosphor-icons/react";
+import { ArrowsInSimpleIcon, ListBulletsIcon, MapTrifoldIcon, PlayIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
-import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/record";
-import { createRegionActivityMaps } from "@/entities/region";
+import { recordLocationsQueryOptions } from "@/entities/record";
 import { HomeAddressSheet } from "@/features/home-address/ui/home-address-sheet";
-import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
-import { cn } from "@/shared/lib/utils";
-import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
-import { Button } from "@/shared/ui/button";
-import { IconButton } from "@/shared/ui/icon-button";
 import { FixedToolbar } from "@/shared/ui/layouts";
 import { PageBackButton } from "@/shared/ui/layouts/page-back-button";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
-import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
-import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { PressLink } from "@/shared/ui/press-link";
 import { SHEET_EXPAND_MS, useCompactSnapPoint } from "@/shared/ui/use-compact-snap-point";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
-import { RegionRecordList } from "@/widgets/region-activity-map/ui/region-record-list";
 
 import { JourneyRouteError, journeyRouteQuery } from "../api/route-query";
-import { durationParts } from "../model/duration";
-import boundaries from "../model/map-boundaries.json";
+import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
 import {
   type Box,
   constrainView,
   followBox,
   momentumView,
   national,
-  placeLabels,
   placesBox,
   project,
   routeBox,
 } from "../model/map-view";
+import { prefersReducedMotion, SKETCH_MS } from "../model/motion";
 import { enqueueJourneyPlace, pickedJourneyPlaces, skipJourneyPlace } from "../model/queue";
 import { type JourneyRecord, toJourneyRecord } from "../model/record";
-import {
-  type JourneyStatus,
-  type JourneyPlace as Place,
-  type JourneyPoint as Point,
-  type JourneyRegion as Region,
-  type JourneyRoute as Route,
-  SKETCH_MS,
+import type {
+  JourneySheetKind,
+  JourneyPlace as Place,
+  JourneyRegion as Region,
+  JourneySegment as Segment,
+  JourneySession as Session,
 } from "../model/types";
-import { JourneyActions } from "./journey-actions";
+import { JourneyActions } from "./header/journey-actions";
+import { RecordHeader } from "./header/record-header";
 import styles from "./journey-map.module.css";
+import { DistrictShapes, MapShapes } from "./map/map-shapes";
+import { PlaceLabels } from "./map/place-labels";
+import { NODE_HIT_RADIUS, RegionNodes } from "./map/region-nodes";
+import { RouteLayer } from "./map/route-layer";
+import { EmptyJourney, HomeNotice } from "./panel/journey-notices";
+import { JourneyPanel } from "./panel/journey-panel";
+import { JourneySheet, RegionRecords } from "./sheet/journey-sheet";
+import { RegionChoices } from "./sheet/region-choices";
 
-type RecordItem = JourneyRecord;
-
-type Segment = { route: Route; target: Place | null; from: Point | null; to: Point; key: number };
-type Session = {
-  record: RecordItem;
-  region: Region;
-  segments: Segment[];
-  queue: Place[];
-  active: Place | null;
-
-  status: JourneyStatus;
-  error: string;
-  errorCode?: string;
-  current: Place | null;
-
-  replaying: boolean;
-  restored?: boolean;
-};
-
-const NODE_HIT_RADIUS = 22;
-const dokdo = [
-  { longitude: 131.8697, latitude: 37.2411 },
-  { longitude: 131.8636, latitude: 37.2425 },
-].map(({ longitude, latitude }) => project(longitude, latitude));
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const scrollEdges = (row: HTMLElement) => ({
-  start: row.scrollLeft > 1,
-  end: row.scrollLeft + row.clientWidth < row.scrollWidth - 1,
-});
-const keepIfSame = (next: { start: boolean; end: boolean }) => (current: { start: boolean; end: boolean }) =>
-  current.start === next.start && current.end === next.end ? current : next;
-const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 const MIN_VIEW_WIDTH = 0.02;
-
 const CAMERA_SETTLE_MS = 350;
-
 const SHEET_CLOSE_FALLBACK_MS = 700;
-const MapShapes = memo(function MapShapes() {
-  return (
-    <g className={styles.land}>
-      {boundaries.regions.map((item) => (
-        <path key={item.code} d={item.path} />
-      ))}
-      {dokdo.map((point) => (
-        <circle key={point.x} cx={point.x} cy={point.y} r={0.45} />
-      ))}
-      <path d={boundaries.coast} />
-    </g>
-  );
-});
-const DistrictShapes = memo(function DistrictShapes() {
-  return (
-    <>
-      {boundaries.districts.map((path) => (
-        <path key={path} d={path} />
-      ))}
-    </>
-  );
-});
-function SegmentPath({ segment, drawing, unit }: { segment: Segment; drawing: boolean; unit: number }) {
-  const path = useMemo(
-    () =>
-      [
-        ...(segment.from ? [segment.from] : []),
-        ...segment.route.points.map(([longitude, latitude]) => ({ longitude, latitude })),
-        segment.to,
-      ]
-        .map(({ longitude, latitude }, index) => {
-          const point = project(longitude, latitude);
-          return `${index ? "L" : "M"}${point.x},${point.y}`;
-        })
-        .join(""),
-    [segment],
-  );
-  return (
-    <path
-      className={`${styles.route} ${drawing ? styles.drawing : ""}`}
-      d={path}
-      pathLength={1}
-      strokeWidth={unit * 2.5}
-    />
-  );
-}
-
-function AnimatedNumber({
-  value,
-  format,
-  instant = false,
-}: {
-  value: number;
-  format: (value: number) => ReactNode;
-  instant?: boolean;
-}) {
-  const [display, setDisplay] = useState(instant ? value : 0);
-  const previous = useRef(instant ? value : 0);
-
-  useEffect(() => {
-    const start = previous.current;
-    const started = performance.now();
-    if (instant || prefersReducedMotion()) {
-      setDisplay(value);
-      previous.current = value;
-      return;
-    }
-    let frame = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - started) / SKETCH_MS);
-      const current = start + (value - start) * t;
-      previous.current = current;
-      setDisplay(current);
-      if (t < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [value, instant]);
-
-  return <>{format(display)}</>;
-}
 
 export function JourneyMap({
   regions,
@@ -213,11 +85,11 @@ export function JourneyMap({
   const animationDone = useRef<(() => void) | null>(null);
   const deletedRegion = useRef<Region | null>(null);
   const queryClient = useQueryClient();
-  const router = useRouter();
 
-  const routeQuery = (record: RecordItem, region: Region, target: Place | null, from: Place | null) =>
+  const routeQuery = (record: JourneyRecord, region: Region, target: Place | null, from: Place | null) =>
     journeyRouteQuery(member.id, homeVersion, record, region, target, from);
-  const [sheet, setSheet] = useState<"regions" | "choices" | "records" | "places" | null>(null);
+
+  const [sheet, setSheet] = useState<JourneySheetKind | null>(null);
   const [content, setContent] = useState(sheet);
   if (sheet !== null && sheet !== content) setContent(sheet);
   const opener = useRef<Element | null>(null);
@@ -225,17 +97,6 @@ export function JourneyMap({
   const regionsButton = useRef<HTMLButtonElement>(null);
   const [choices, setChoices] = useState<Region[]>([]);
   const [placeChoices, setPlaceChoices] = useState<Place[]>([]);
-  const [chipRow, setChipRow] = useState<HTMLDivElement | null>(null);
-  const [chipFade, setChipFade] = useState({ start: false, end: false });
-
-  useEffect(() => {
-    if (!chipRow) return;
-    const update = () => setChipFade(keepIfSame(scrollEdges(chipRow)));
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(chipRow);
-    return () => observer.disconnect();
-  }, [chipRow]);
   const main = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
@@ -245,21 +106,15 @@ export function JourneyMap({
   useLayoutEffect(() => {
     const root = document.documentElement;
     if (root.classList.contains("dark")) return;
+
     root.classList.add("dark");
     return () => root.classList.remove("dark");
   }, []);
 
   const searchParams = useSearchParams();
-
-  const [initialUrl] = useState(() => ({
-    region:
-      typeof window !== "undefined" && getPageNavigation(window).traversal
-        ? (searchParams?.get("region") ?? null)
-        : null,
-    record: searchParams?.get("record") ?? null,
-    places: searchParams?.get("places")?.split(",") ?? [],
-    detail: searchParams?.get("detail") === "1",
-  }));
+  const [initialUrl] = useState(() =>
+    readJourneyUrlState(searchParams, typeof window !== "undefined" && getPageNavigation(window).traversal),
+  );
   const restoringDetail = Boolean(initialUrl.region && initialUrl.record && initialUrl.detail);
   const [detailRecordId, setDetailRecordId] = useState(restoringDetail ? initialUrl.record : null);
   const [detailOpen, setDetailOpen] = useState(restoringDetail);
@@ -281,7 +136,7 @@ export function JourneyMap({
     setBody: setSheetBody,
   } = useCompactSnapPoint(sheet === "regions" || sheet === "choices" || sheet === "places");
 
-  const showSheet = (next: typeof sheet) => {
+  const showSheet = (next: JourneySheetKind | null) => {
     if (next !== null && sheet === null && !addressOpen) opener.current = document.activeElement;
     if (sheetTimer.current) clearTimeout(sheetTimer.current);
     sheetTimer.current = null;
@@ -299,32 +154,36 @@ export function JourneyMap({
   const dragEndAt = useRef(Number.NEGATIVE_INFINITY);
   const panSamples = useRef<{ x: number; y: number; time: number }[]>([]);
   const [dimensions, setDimensions] = useState({ width: 390, height: 844 });
+
   const setSessionValue = (next: Session | null) => {
     sessionRef.current = next;
     setSession(next);
   };
+
   const setView = (next: Box) => {
     boxRef.current = next;
     setBox(next);
   };
+
   const moveCamera = (next: Box) => {
     cancelAnimationFrame(cameraAnimation.current);
-    const start = boxRef.current,
-      started = performance.now();
+    const start = boxRef.current;
+    const started = performance.now();
     if (prefersReducedMotion()) {
       setView(next);
       return;
     }
+
     const tick = (now: number) => {
-      const t = Math.min(1, (now - started) / 650),
-        e = 1 - (1 - t) ** 3;
+      const progress = Math.min(1, (now - started) / 650);
+      const eased = 1 - (1 - progress) ** 3;
       setView({
-        x: start.x + (next.x - start.x) * e,
-        y: start.y + (next.y - start.y) * e,
-        width: start.width + (next.width - start.width) * e,
-        height: start.height + (next.height - start.height) * e,
+        x: start.x + (next.x - start.x) * eased,
+        y: start.y + (next.y - start.y) * eased,
+        width: start.width + (next.width - start.width) * eased,
+        height: start.height + (next.height - start.height) * eased,
       });
-      if (t < 1) cameraAnimation.current = requestAnimationFrame(tick);
+      if (progress < 1) cameraAnimation.current = requestAnimationFrame(tick);
     };
     cameraAnimation.current = requestAnimationFrame(tick);
   };
@@ -332,28 +191,31 @@ export function JourneyMap({
   const zoomAt = (clientX: number, clientY: number, factor: number, panX = 0, panY = 0, elastic = false) => {
     const rect = svg.current?.getBoundingClientRect();
     if (!rect) return;
-    const b = boxRef.current;
-    const scale = Math.max(b.width / rect.width, b.height / rect.height);
-    const anchorX = b.x + b.width / 2 + (clientX - rect.left - rect.width / 2) * scale;
-    const anchorY = b.y + b.height / 2 + (clientY - rect.top - rect.height / 2) * scale;
-    const desired = b.width * factor;
+
+    const view = boxRef.current;
+    const scale = Math.max(view.width / rect.width, view.height / rect.height);
+    const anchorX = view.x + view.width / 2 + (clientX - rect.left - rect.width / 2) * scale;
+    const anchorY = view.y + view.height / 2 + (clientY - rect.top - rect.height / 2) * scale;
+    const desired = view.width * factor;
     const limited = Math.max(MIN_VIEW_WIDTH, Math.min(400, desired));
-    const f = (elastic ? limited + (desired - limited) * 0.15 : limited) / b.width;
+    const ratio = (elastic ? limited + (desired - limited) * 0.15 : limited) / view.width;
     setView(
       constrainView({
-        x: anchorX + (b.x - anchorX) * f - panX * scale * f,
-        y: anchorY + (b.y - anchorY) * f - panY * scale * f,
-        width: b.width * f,
-        height: b.height * f,
+        x: anchorX + (view.x - anchorX) * ratio - panX * scale * ratio,
+        y: anchorY + (view.y - anchorY) * ratio - panY * scale * ratio,
+        width: view.width * ratio,
+        height: view.height * ratio,
       }),
     );
   };
-  const releasePointer = (event: React.PointerEvent) => {
+
+  const releasePointer = (event: PointerEvent) => {
     pointers.current.delete(event.pointerId);
     if (pointers.current.size) {
       panSamples.current = [];
       return;
     }
+
     const wasDragged = dragged.current;
     dragEndAt.current = wasDragged ? event.timeStamp : Number.NEGATIVE_INFINITY;
     dragged.current = false;
@@ -365,18 +227,22 @@ export function JourneyMap({
       return;
     }
     if (!wasDragged || event.type === "pointercancel" || prefersReducedMotion()) return;
+
     const samples = panSamples.current;
-    const first = samples[0],
-      last = samples.at(-1);
+    const first = samples[0];
+    const last = samples.at(-1);
     if (!first || !last || last.time === first.time || event.timeStamp - last.time > 100) return;
+
     const rect = svg.current?.getBoundingClientRect();
     if (!rect) return;
+
     const unit = Math.max(view.width / rect.width, view.height / rect.height);
     const velocity = {
       x: ((last.x - first.x) / (last.time - first.time)) * unit,
       y: ((last.y - first.y) / (last.time - first.time)) * unit,
     };
     if (Math.hypot(velocity.x, velocity.y) / unit < 0.05) return;
+
     const started = performance.now();
     const tick = (now: number) => {
       const elapsed = now - started;
@@ -386,9 +252,13 @@ export function JourneyMap({
     };
     cameraAnimation.current = requestAnimationFrame(tick);
   };
+
+  const canTap = (event: MouseEvent) => !dragged.current && event.timeStamp - dragEndAt.current > 400;
+
   useEffect(() => {
     const element = svg.current;
     if (!element) return;
+
     const observer = new ResizeObserver(([entry]) =>
       setDimensions({ width: entry.contentRect.width, height: entry.contentRect.height }),
     );
@@ -402,16 +272,15 @@ export function JourneyMap({
       sessionRef.current = null;
     };
   }, []);
+
   const locations = useQuery(recordLocationsQueryOptions);
   const [subregion, setSubregion] = useState<string | null>(null);
-  const regionMaps = useMemo(
-    () => (locations.data ? createRegionActivityMaps(toRegionLocations(locations.data)) : []),
-    [locations.data],
-  );
+
   const journeyRecord = (recordId: string) => {
     const record = locations.data?.find((item) => item.id === recordId);
     return record && region ? toJourneyRecord(record, region.code) : null;
   };
+
   const waitForPlayback = (duration: number) =>
     new Promise<void>((resolve) => {
       animationDone.current = resolve;
@@ -420,6 +289,7 @@ export function JourneyMap({
         resolve();
       }, duration);
     });
+
   const run = async (initial: Session, token: number) => {
     let next = initial;
     while (token === generation.current) {
@@ -440,6 +310,7 @@ export function JourneyMap({
         });
         return;
       }
+
       const route = result.route;
       const camera = target ? followBox(boxRef.current, route) : routeBox([route]);
       if (camera && !fastForward.current) moveCamera(camera);
@@ -449,6 +320,7 @@ export function JourneyMap({
         camera && !prefersReducedMotion() && !fastForward.current ? waitForPlayback(CAMERA_SETTLE_MS) : null,
       ]);
       if (token !== generation.current) return;
+
       const segment = {
         route,
         target,
@@ -460,6 +332,7 @@ export function JourneyMap({
       setSessionValue(next);
       if (!prefersReducedMotion() && !fastForward.current) await waitForPlayback(SKETCH_MS);
       if (token !== generation.current) return;
+
       next = { ...sessionRef.current!, current: target, active: null, status: "idle" };
       setSessionValue(next);
       if (!next.queue.length) {
@@ -470,12 +343,14 @@ export function JourneyMap({
         fastForward.current = false;
         return;
       }
+
       const [first, ...rest] = next.queue;
       next = { ...next, active: first, queue: rest, status: "loading" };
       setSessionValue(next);
     }
   };
-  const begin = (record: RecordItem, selectedRegion: Region, queue: Place[] = [], replaying = false) => {
+
+  const begin = (record: JourneyRecord, selectedRegion: Region, queue: Place[] = [], replaying = false) => {
     const token = ++generation.current;
     fastForward.current = false;
     animationDone.current?.();
@@ -504,7 +379,8 @@ export function JourneyMap({
     showSheet(null);
     void run(next, token);
   };
-  const restore = async (record: RecordItem, selectedRegion: Region, places: Place[]) => {
+
+  const restore = async (record: JourneyRecord, selectedRegion: Region, places: Place[]) => {
     const token = ++generation.current;
     const base: Session = {
       record,
@@ -518,6 +394,7 @@ export function JourneyMap({
       replaying: false,
     };
     setSessionValue(base);
+
     const segments: Segment[] = [];
     let current: Place | null = null;
     for (const [index, target] of [null, ...places].entries()) {
@@ -539,6 +416,7 @@ export function JourneyMap({
         });
         return;
       }
+
       segments.push({
         route: result.route,
         target,
@@ -548,17 +426,21 @@ export function JourneyMap({
       });
       current = target;
     }
+
     cancelAnimationFrame(cameraAnimation.current);
     setView(routeBox(segments.map((segment) => segment.route)));
     setSessionValue({ ...base, segments, current, status: "idle", restored: true });
   };
+
   const [highlight, setHighlight] = useState<{ place: Place; key: number } | null>(null);
+
   const focusPlace = (place: Place) => {
-    const p = project(place.longitude, place.latitude);
-    const b = boxRef.current;
-    moveCamera({ ...b, x: p.x - b.width / 2, y: p.y - b.height * 0.45 });
+    const point = project(place.longitude, place.latitude);
+    const view = boxRef.current;
+    moveCamera({ ...view, x: point.x - view.width / 2, y: point.y - view.height * 0.45 });
     setHighlight({ place, key: Date.now() });
   };
+
   const selectPlace = (place: Place) => {
     const current = sessionRef.current;
     if (!current) return;
@@ -566,12 +448,15 @@ export function JourneyMap({
       focusPlace(place);
       return;
     }
+
     const next = enqueueJourneyPlace(current, place);
     if (next === current) return;
+
     setHighlight(null);
     setSessionValue({ ...next, restored: false });
     if (current.status === "idle") void run(next, generation.current);
   };
+
   const recover = (skip: boolean) => {
     const current = sessionRef.current;
     if (!current || current.status !== "error") return;
@@ -581,27 +466,30 @@ export function JourneyMap({
       void run(next, generation.current);
       return;
     }
+
     const next = { ...skipJourneyPlace(current), error: "", errorCode: undefined };
     setSessionValue(next);
     if (next.status === "loading") void run(next, generation.current);
   };
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    for (const key of ["region", "record", "places", "detail"]) params.delete(key);
-    if (session) {
-      params.set("region", session.region.code);
-      params.set("record", session.record.id);
-      const places = session.segments.flatMap((segment) => (segment.target ? [segment.target.id] : []));
-      if (places.length) params.set("places", places.join(","));
-      if (detailOpen) params.set("detail", "1");
-    }
-    const query = params.toString();
-    const url = `${window.location.pathname}${query ? `?${query}` : ""}`;
+    const search = toJourneySearch(
+      window.location.search,
+      session && {
+        region: session.region.code,
+        record: session.record.id,
+        places: session.segments.flatMap((segment) => (segment.target ? [segment.target.id] : [])),
+        detail: detailOpen,
+      },
+    );
+    const url = `${window.location.pathname}${search}`;
     if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, "", url);
   }, [session, detailOpen]);
+
   const restoreJourney = useEffectEvent((rows: NonNullable<typeof locations.data>) => {
     setRestoring(false);
     if (sessionRef.current || sheet !== null) return;
+
     const target = regions.find((item) => item.code === initialUrl.region);
     const row = rows.find((item) => item.id === initialUrl.record);
     const record = target && row && homeReady ? toJourneyRecord(row, target.code) : null;
@@ -609,6 +497,7 @@ export function JourneyMap({
       setDetailOpen(false);
       return;
     }
+
     setRegion(target);
     void restore(
       record,
@@ -616,8 +505,10 @@ export function JourneyMap({
       initialUrl.places.flatMap((id) => record.places.filter((place) => place.id === id)),
     );
   });
+
   useEffect(() => {
     if (restored.current || locations.isFetching || (!locations.data && !locations.isError)) return;
+
     restored.current = true;
     restoreJourney(locations.data ?? []);
   }, [locations.data, locations.isFetching, locations.isError]);
@@ -625,8 +516,10 @@ export function JourneyMap({
   const pressPlace = (place: Place) => {
     const current = sessionRef.current;
     if (current?.status !== "idle" || current.segments.some((segment) => segment.target?.id === place.id)) return;
+
     void queryClient.prefetchQuery(routeQuery(current.record, current.region, place, current.current));
   };
+
   const reset = () => {
     generation.current++;
     animationDone.current?.();
@@ -641,11 +534,12 @@ export function JourneyMap({
   const toMapPoint = (clientX: number, clientY: number) => {
     const rect = svg.current?.getBoundingClientRect();
     if (!rect) return null;
-    const b = boxRef.current;
-    const scale = Math.max(b.width / rect.width, b.height / rect.height);
+
+    const view = boxRef.current;
+    const scale = Math.max(view.width / rect.width, view.height / rect.height);
     return {
-      x: b.x + b.width / 2 + (clientX - rect.left - rect.width / 2) * scale,
-      y: b.y + b.height / 2 + (clientY - rect.top - rect.height / 2) * scale,
+      x: view.x + view.width / 2 + (clientX - rect.left - rect.width / 2) * scale,
+      y: view.y + view.height / 2 + (clientY - rect.top - rect.height / 2) * scale,
     };
   };
 
@@ -653,8 +547,8 @@ export function JourneyMap({
     const point = tap && toMapPoint(tap.clientX, tap.clientY);
     const nearby = point
       ? regions.filter((item) => {
-          const p = project(item.longitude, item.latitude);
-          return Math.hypot(p.x - point.x, p.y - point.y) <= unit * NODE_HIT_RADIUS;
+          const position = project(item.longitude, item.latitude);
+          return Math.hypot(position.x - point.x, position.y - point.y) <= unit * NODE_HIT_RADIUS;
         })
       : [];
     if (nearby.length > 1) {
@@ -662,8 +556,10 @@ export function JourneyMap({
       showSheet("choices");
       return;
     }
+
     openRegion(selected);
   };
+
   const openRegion = (selected: Region) => {
     if (!homeReady && !homeUnavailable) {
       setRegion(selected);
@@ -671,6 +567,7 @@ export function JourneyMap({
       setAddressOpen(true);
       return;
     }
+
     if (selected.code !== region?.code) setSubregion(null);
     const rising = sheet === "regions" || sheet === "choices";
     if (!rising || prefersReducedMotion()) {
@@ -678,6 +575,7 @@ export function JourneyMap({
       showSheet("records");
       return;
     }
+
     setSnapPoint(1);
     if (sheetTimer.current) clearTimeout(sheetTimer.current);
     sheetTimer.current = setTimeout(() => {
@@ -686,26 +584,24 @@ export function JourneyMap({
       setSheet("records");
     }, SHEET_EXPAND_MS);
   };
+
   const finishReplay = () => {
     if (!sessionRef.current?.replaying) return;
+
     fastForward.current = true;
     setSessionValue({ ...sessionRef.current, restored: true });
     animationDone.current?.();
   };
+
+  const registerHome = () => {
+    showSheet(null);
+    setAddressOpen(true);
+  };
+
   const unit = Math.max(box.width / dimensions.width, box.height / dimensions.height);
-  const nodeLabelOpacity = Math.max(0, Math.min(1, (150 - box.width) / 40));
   const completeSegments = session?.status === "drawing" ? session.segments.slice(0, -1) : (session?.segments ?? []);
-  const selectedPlaceIds = new Set([
-    ...(session?.segments.flatMap((segment) => (segment.target ? [segment.target.id] : [])) ?? []),
-    ...(session?.active ? [session.active.id] : []),
-    ...(session?.queue.map((place) => place.id) ?? []),
-  ]);
-  const start = session?.segments[0]?.route.points[0];
-  const startPoint = start ? project(start[0], start[1]) : null;
-  const segments = session?.segments ?? [];
   const activeRecord = locations.data?.find((record) => record.id === session?.record.id);
-  const distance = segments.reduce((sum, segment) => sum + segment.route.distance, 0);
-  const duration = segments.reduce((sum, segment) => sum + segment.route.duration, 0);
+
   return (
     <main
       ref={main}
@@ -715,31 +611,19 @@ export function JourneyMap({
       data-direction="forward"
       data-funnel-step
     >
-      {session && (
-        <div className={styles.recordHeader}>
-          <h1 ref={title} tabIndex={-1}>
-            {session.region.name}
-          </h1>
-          <Button
-            className={styles.hit}
-            color="dark"
-            onClick={() => {
-              setDetailRecordId(session.record.id);
-              setDetailOpen(true);
-            }}
-            size="medium"
-            variant="weak"
-          >
-            기록 읽기
-          </Button>
-          {activeRecord && (
-            <p className={styles.recordMeta}>
-              {activeRecord.activity} · {activeRecord.recorded_at.replaceAll("-", ".")}
-            </p>
-          )}
-        </div>
+      {session ? (
+        <RecordHeader
+          titleRef={title}
+          regionName={session.region.name}
+          record={activeRecord}
+          onRead={() => {
+            setDetailRecordId(session.record.id);
+            setDetailOpen(true);
+          }}
+        />
+      ) : (
+        <h1 className="sr-only">기록 지도</h1>
       )}
-      {!session && <h1 className="sr-only">기록 지도</h1>}
       <svg
         ref={svg}
         className={styles.map}
@@ -747,6 +631,7 @@ export function JourneyMap({
         aria-label="방문 지역 지도"
         onPointerDown={(event) => {
           if (event.button !== 0) return;
+
           cancelAnimationFrame(cameraAnimation.current);
           if (pointers.current.size) dragged.current = true;
           else {
@@ -763,10 +648,12 @@ export function JourneyMap({
             tracked.delete(event.pointerId);
             return;
           }
+
           const origin = dragOrigin.current;
           if (origin && Math.hypot(event.clientX - origin.x, event.clientY - origin.y) > 6) dragged.current = true;
           if (dragged.current && !event.currentTarget.hasPointerCapture(event.pointerId))
             event.currentTarget.setPointerCapture(event.pointerId);
+
           const [a, b] = [...tracked.values()];
           tracked.set(event.pointerId, { x: event.clientX, y: event.clientY });
           const [nextA, nextB] = [...tracked.values()];
@@ -778,11 +665,13 @@ export function JourneyMap({
             zoomAt(0, 0, 1, nextA.x - a.x, nextA.y - a.y);
             return;
           }
+
           panSamples.current = [];
           const distance = Math.hypot(nextB.x - nextA.x, nextB.y - nextA.y);
           if (!distance || tracked.size > 2) return;
-          const midX = (a.x + b.x) / 2,
-            midY = (a.y + b.y) / 2;
+
+          const midX = (a.x + b.x) / 2;
+          const midY = (a.y + b.y) / 2;
           zoomAt(
             midX,
             midY,
@@ -800,155 +689,31 @@ export function JourneyMap({
         }}
       >
         <MapShapes />
-        <g
-          className={styles.districts}
-          display={box.width >= 120 ? "none" : undefined}
-          opacity={Math.max(0, Math.min(0.65, (120 - box.width) / 80))}
-        >
-          <DistrictShapes />
-        </g>
-        {session?.segments.map((segment, index) => (
-          <SegmentPath
-            key={segment.key}
-            segment={segment}
+        <DistrictShapes viewWidth={box.width} />
+        {session && (
+          <RouteLayer
+            segments={session.segments}
+            complete={completeSegments}
+            drawing={session.status === "drawing"}
+            highlight={highlight}
             unit={unit}
-            drawing={session.status === "drawing" && index === session.segments.length - 1}
-          />
-        ))}
-        {!session &&
-          !restoring &&
-          regions.map((item) => {
-            const p = project(item.longitude, item.latitude);
-            return (
-              <g
-                key={item.code}
-                role="button"
-                tabIndex={0}
-                aria-label={`${item.name} 기록 ${item.count}개`}
-                className={styles.node}
-                onClick={(event) => {
-                  if (!dragged.current && event.timeStamp - dragEndAt.current > 400) chooseRegion(item, event);
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    chooseRegion(item);
-                  }
-                }}
-              >
-                <circle cx={p.x} cy={p.y} r={unit * NODE_HIT_RADIUS} fill="transparent" />
-                <circle cx={p.x} cy={p.y} r={unit * 7} className={styles.halo} />
-                <circle cx={p.x} cy={p.y} r={unit * 3.5} className={styles.previous} />
-                {nodeLabelOpacity > 0 && (
-                  <text
-                    aria-hidden="true"
-                    className={styles.label}
-                    fontSize={unit * 11}
-                    opacity={nodeLabelOpacity}
-                    strokeWidth={unit * 3}
-                    x={p.x + unit * 10}
-                    y={p.y + unit * 4}
-                  >
-                    {item.name}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        {startPoint && <circle cx={startPoint.x} cy={startPoint.y} r={unit * 4.5} className={styles.visited} />}
-        {session &&
-          completeSegments.map((segment, index) => {
-            const p = project(segment.to.longitude, segment.to.latitude);
-            const isCurrent = index === completeSegments.length - 1 && session.status !== "drawing";
-            return (
-              <g key={`point-${segment.key}`}>
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={unit * (isCurrent ? 3.5 : 4.5)}
-                  className={isCurrent ? styles.arrival : styles.visited}
-                />
-                {isCurrent && <circle cx={p.x} cy={p.y} r={unit * 9} strokeWidth={unit} className={styles.pulse} />}
-              </g>
-            );
-          })}
-        {session && highlight && (
-          <circle
-            key={highlight.key}
-            className={styles.focusRing}
-            cx={project(highlight.place.longitude, highlight.place.latitude).x}
-            cy={project(highlight.place.longitude, highlight.place.latitude).y}
-            r={unit * 9}
-            strokeWidth={unit * 1.5}
           />
         )}
-        {startPoint && (
-          <HouseIcon
-            aria-label="내 집"
-            className={styles.homeIcon}
-            size={unit * 14}
-            weight="fill"
-            x={startPoint.x - unit * 7}
-            y={startPoint.y - unit * 22}
-          />
+        {!session && !restoring && (
+          <RegionNodes regions={regions} unit={unit} viewWidth={box.width} canTap={canTap} onChoose={chooseRegion} />
         )}
-        {placeLabels(
-          completeSegments.flatMap((segment) => (segment.target ? [segment.target] : [])),
-          box,
-          unit,
-          dimensions.width,
-        ).map((label) => (
-          <g
-            key={label.key}
-            role="button"
-            tabIndex={0}
-            className={styles.placeLabel}
-            aria-label={
-              label.places.length > 1
-                ? `${label.places[0].name} 외 ${label.places.length - 1}곳 보기`
-                : `${label.places[0].name} 위치 보기`
-            }
-            onClick={(event) => {
-              if (dragged.current || event.timeStamp - dragEndAt.current <= 400) return;
-              if (label.places.length === 1) focusPlace(label.places[0]);
-              else {
-                setPlaceChoices(label.places);
-                showSheet("places");
-              }
-            }}
-            onKeyDown={(event) => {
-              if (event.key !== "Enter" && event.key !== " ") return;
-              event.preventDefault();
-              if (label.places.length === 1) focusPlace(label.places[0]);
-              else {
-                setPlaceChoices(label.places);
-                showSheet("places");
-              }
-            }}
-          >
-            <rect
-              className={styles.labelHit}
-              x={label.x}
-              y={label.y - 6 * unit}
-              width={label.width}
-              height={44 * unit}
-              rx={22 * unit}
-            />
-            <rect
-              className={styles.labelSurface}
-              x={label.x}
-              y={label.y}
-              width={label.width}
-              height={32 * unit}
-              rx={16 * unit}
-              strokeWidth={unit}
-            />
-            <text x={label.x + 10 * unit} y={label.y + 21 * unit} fontSize={11 * unit}>
-              {label.name}
-              {label.places.length > 1 && <tspan className={styles.labelCount}> +{label.places.length - 1}</tspan>}
-            </text>
-          </g>
-        ))}
+        <PlaceLabels
+          places={completeSegments.flatMap((segment) => (segment.target ? [segment.target] : []))}
+          view={box}
+          unit={unit}
+          viewportWidth={dimensions.width}
+          canTap={canTap}
+          onFocus={focusPlace}
+          onChoose={(places) => {
+            setPlaceChoices(places);
+            showSheet("places");
+          }}
+        />
       </svg>
       <PageBackButton fallbackHref="/" />
       <FixedToolbar className="justify-end">
@@ -1003,303 +768,80 @@ export function JourneyMap({
           )
         )}
       </FixedToolbar>
-      {!session && !restoring && !regions.length && (
-        <div className={styles.empty}>
-          <h2>함께한 곳을 남겨볼까요?</h2>
-          <p>
-            장소가 담긴 기록이 쌓이면
-            <br />
-            여기서 다시 돌아볼 수 있어요.
-          </p>
-          <Button nativeButton={false} render={<PressLink href="/records/new" />} size="large">
-            기록 남기기
-          </Button>
-        </div>
-      )}
+      {!session && !restoring && !regions.length && <EmptyJourney />}
       {session && (
-        <div className={styles.details}>
-          {session.status === "error" && (
-            <div role="alert" className={styles.error}>
-              <div>
-                <strong>
-                  {session.active
-                    ? `${session.active.name}까지 길을 잇지 못했어요`
-                    : "집에서 출발하는 길을 잇지 못했어요"}
-                </strong>
-                <p>{session.error}</p>
-              </div>
-              {session.errorCode !== "NO_ROUTE" && (
-                <Button className={styles.hit} color="dark" onClick={() => recover(false)} size="medium" variant="weak">
-                  다시 시도
-                </Button>
-              )}
-              {session.active && (
-                <Button className={styles.hit} color="dark" onClick={() => recover(true)} size="medium" variant="weak">
-                  건너뛰기
-                </Button>
-              )}
-            </div>
-          )}
-          {session.replaying && (
-            <div className={styles.replayStatus}>
-              <span>기억을 다시 잇고 있어요</span>
-              <Button color="dark" variant="weak" onClick={finishReplay} disabled={session.restored}>
-                바로 끝내기
-              </Button>
-            </div>
-          )}
-          <p className={styles.placesHeading}>
-            방문 장소 {session.record.places.length > 0 && <span>{session.record.places.length}</span>}
-          </p>
-          {!session.record.places.length && <p className={styles.placesEmpty}>등록된 장소가 없어요</p>}
-          <div
-            key={session.record.id}
-            ref={setChipRow}
-            className={styles.chips}
-            data-fade-end={chipFade.end ? "" : undefined}
-            data-fade-start={chipFade.start ? "" : undefined}
-            onScroll={(event) => setChipFade(keepIfSame(scrollEdges(event.currentTarget)))}
-          >
-            {session.record.places.map((place) => (
-              <button
-                key={place.id}
-                className={cn(PRESS_FEEDBACK, FOCUS_RING)}
-                type="button"
-                onClick={() => selectPlace(place)}
-                onPointerDown={(event) => {
-                  if (event.button === 0) pressPlace(place);
-                }}
-                data-selected={selectedPlaceIds.has(place.id) ? "" : undefined}
-                data-error={session.status === "error" && session.active?.id === place.id ? "" : undefined}
-              >
-                {session.status === "error" && session.active?.id === place.id && (
-                  <WarningCircleIcon aria-hidden="true" size={16} />
-                )}
-                {place.name}
-                {selectedPlaceIds.has(place.id) && <span className="sr-only"> (선택됨)</span>}
-              </button>
-            ))}
-          </div>
-          <div className={styles.metrics}>
-            <strong>
-              {segments.length ? (
-                <AnimatedNumber
-                  value={distance / 1000}
-                  format={(value) => value.toFixed(1)}
-                  instant={session.restored}
-                />
-              ) : (
-                "—"
-              )}
-              <small> km</small>
-            </strong>
-            <em>
-              {segments.length ? (
-                <AnimatedNumber
-                  instant={session.restored}
-                  value={duration / 60}
-                  format={(value) =>
-                    durationParts(Math.round(value)).map(([amount, unit]) => (
-                      <span key={unit}>
-                        <b>{amount}</b>
-                        {unit}
-                      </span>
-                    ))
-                  }
-                />
-              ) : (
-                <>
-                  <b>—</b>분
-                </>
-              )}
-            </em>
-          </div>
-          {segments.some((segment) => segment.route.straight) && (
-            <p className={styles.note}>차로 갈 수 없는 구간은 직선으로 이었고 거리·시간에서 뺐어요</p>
-          )}
-
-          {session.status === "loading" && (
-            <p className={styles.status} role="status">
-              경로를 불러오고 있어요
-            </p>
-          )}
-        </div>
+        <JourneyPanel
+          session={session}
+          onRecover={recover}
+          onFinishReplay={finishReplay}
+          onSelectPlace={selectPlace}
+          onPressPlace={pressPlace}
+        />
       )}
       {!session && regions.length > 0 && !homeReady && (
-        <div className={styles.homeNotice}>
-          {homeUnavailable ? (
-            <LoadErrorAlert title="집 주소를 불러오지 못했어요." onRetry={() => router.refresh()} />
-          ) : (
-            <>
-              <p>길을 따라가려면 집 주소를 등록해 주세요.</p>
-              <Button
-                className={styles.hit}
-                color="dark"
-                onClick={() => setAddressOpen(true)}
-                size="medium"
-                variant="weak"
-              >
-                등록하기
-              </Button>
-            </>
-          )}
-        </div>
+        <HomeNotice unavailable={homeUnavailable} onRegister={() => setAddressOpen(true)} />
       )}
-      <BottomSheet
-        snapPoints={content === "records" ? [1] : [compactHeight, 1]}
+      <JourneySheet
+        open={sheet !== null}
+        kind={content}
+        compactHeight={compactHeight}
         snapPoint={snapPoint}
         onSnapPointChange={setSnapPoint}
-        open={sheet !== null}
-        onOpenChangeComplete={(open) => {
-          if (open) return;
+        onClose={() => showSheet(null)}
+        onCloseComplete={() => {
           resolveSheetClosed.current?.();
           resolveSheetClosed.current = null;
           if (!sessionRef.current && !addressOpen) setRegion(null);
         }}
-        onOpenChange={(open) => {
-          if (!open) showSheet(null);
+        finalFocus={() => {
+          if (addressOpen || detailOpen) return false;
+          if (sessionRef.current) return title.current;
+          if (opener.current instanceof SVGElement && opener.current.isConnected) {
+            opener.current.focus();
+            return false;
+          }
+          return true;
         }}
-        showSwipeHandle
       >
-        <BottomSheet.Content
-          className="dark motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
-          style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
-          finalFocus={() => {
-            if (addressOpen || detailOpen) return false;
-            if (sessionRef.current) return title.current;
-            if (opener.current instanceof SVGElement && opener.current.isConnected) {
-              opener.current.focus();
-              return false;
-            }
-            return true;
-          }}
-        >
-          {content === "records" && homeReady && (
-            <BottomSheet.Close
-              render={<IconButton aria-label="기록 목록 닫기" icon={XIcon} className="absolute top-7 right-3 z-10" />}
-            />
-          )}
-          {content === "records" && homeReady && locations.data && region ? (
-            <RegionRecordList
-              isDetail={false}
-              currentRecordId={session?.record.id}
-              onRecordOpen={(recordId) => {
-                const record = journeyRecord(recordId);
-                if (record) begin(record, region);
+        {content === "records" ? (
+          <RegionRecords
+            region={region}
+            homeReady={homeReady}
+            homeUnavailable={homeUnavailable}
+            currentRecordId={session?.record.id}
+            subregion={subregion}
+            onSubregionChange={setSubregion}
+            onRecordOpen={(recordId) => {
+              const record = journeyRecord(recordId);
+              if (record && region) begin(record, region);
+            }}
+            onRecordPress={(recordId) => {
+              const record = journeyRecord(recordId);
+              if (record && region) void queryClient.prefetchQuery(routeQuery(record, region, null, null));
+            }}
+            onRegisterHome={registerHome}
+          />
+        ) : (
+          content && (
+            <RegionChoices
+              kind={content}
+              regions={content === "choices" ? choices : regions}
+              places={placeChoices}
+              headerRef={setSheetHeader}
+              bodyRef={setSheetBody}
+              onRegion={openRegion}
+              onPlace={(place) => {
+                showSheet(null);
+                focusPlace(place);
               }}
-              onRecordPress={(recordId) => {
-                const record = journeyRecord(recordId);
-                if (record) void queryClient.prefetchQuery(routeQuery(record, region, null, null));
+              onPlacesTogether={() => {
+                showSheet(null);
+                moveCamera(placesBox(placeChoices, dimensions));
               }}
-              onSubregionChange={setSubregion}
-              records={locations.data}
-              region={regionMaps.find(({ code }) => code === region.code) ?? null}
-              subregion={subregion}
             />
-          ) : (
-            <>
-              <BottomSheet.Header
-                ref={setSheetHeader}
-                className="relative text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left"
-              >
-                <BottomSheet.Close
-                  render={<IconButton aria-label="목록 닫기" icon={XIcon} className="absolute top-2 right-3" />}
-                />
-                <BottomSheet.Title className="pr-10 text-left font-bold text-xl">
-                  {content === "regions"
-                    ? "방문한 지역"
-                    : content === "places"
-                      ? `여기에 함께한 장소 ${placeChoices.length}곳`
-                      : content === "choices"
-                        ? "어느 지역의 기록을 볼까요?"
-                        : (region?.name ?? "")}
-                </BottomSheet.Title>
-                {content === "regions" && (
-                  <BottomSheet.Description>다시 보고 싶은 지역을 선택해 주세요.</BottomSheet.Description>
-                )}
-              </BottomSheet.Header>
-              <div
-                ref={setSheetBody}
-                className="min-h-0 overflow-y-auto px-5 pt-4 pb-[calc(--spacing(8)+env(safe-area-inset-bottom))]"
-              >
-                {content === "places" && (
-                  <>
-                    {placeChoices.map((place, index) => (
-                      <ListRow
-                        key={place.id}
-                        className="px-1"
-                        onClick={() => {
-                          showSheet(null);
-                          focusPlace(place);
-                        }}
-                        right={<CaretRightIcon aria-hidden="true" size={20} />}
-                      >
-                        <ListRowTexts title={place.name} description={`장소 ${index + 1}`} />
-                      </ListRow>
-                    ))}
-                    <Button
-                      className="mt-4"
-                      fullWidth
-                      size="large"
-                      onClick={() => {
-                        showSheet(null);
-                        moveCamera(placesBox(placeChoices, dimensions));
-                      }}
-                    >
-                      지도에서 따로 보기
-                    </Button>
-                  </>
-                )}
-                {(content === "regions" || content === "choices") &&
-                  (content === "choices" ? choices : regions).map((item) => (
-                    <ListRow
-                      key={item.code}
-                      className="px-1"
-                      onClick={() => openRegion(item)}
-                      right={<CaretRightIcon aria-hidden="true" size={20} />}
-                    >
-                      <ListRowTexts description={`기록 ${item.count}개`} title={item.name} />
-                    </ListRow>
-                  ))}
-                {content === "records" && !homeReady && (
-                  <div className={styles.sheetNotice}>
-                    {!homeUnavailable && (
-                      <p>기록까지 이어지는 길은 내 집에서 출발해요. 집 주소를 먼저 등록해 주세요.</p>
-                    )}
-                    {homeUnavailable ? (
-                      <LoadErrorAlert title="집 주소를 불러오지 못했어요." onRetry={() => router.refresh()} />
-                    ) : (
-                      <Button
-                        onClick={() => {
-                          showSheet(null);
-                          setAddressOpen(true);
-                        }}
-                        size="large"
-                      >
-                        집 주소 등록하기
-                      </Button>
-                    )}
-                  </div>
-                )}
-                {content === "records" && homeReady && locations.isPending && (
-                  <div className={styles.skeleton} aria-label="기록을 불러오는 중">
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                )}
-                {content === "records" && homeReady && locations.isError && (
-                  <LoadErrorAlert
-                    title="기록을 불러오지 못했어요."
-                    onRetry={() => void locations.refetch()}
-                    retrying={locations.isFetching}
-                  />
-                )}
-              </div>
-            </>
-          )}
-        </BottomSheet.Content>
-      </BottomSheet>
+          )
+        )}
+      </JourneySheet>
       <HomeAddressSheet
         address={null}
         dark
@@ -1323,6 +865,7 @@ export function JourneyMap({
           setDetailRecordId(null);
           const previous = deletedRegion.current;
           if (!previous) return;
+
           deletedRegion.current = null;
           generation.current++;
           setSessionValue(null);
