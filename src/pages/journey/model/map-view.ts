@@ -163,19 +163,19 @@ export const partialPathData = (points: Point[], lengths: number[], length: numb
 
 const nameWidth = (name: string) => [...name].reduce((width, char) => width + (char.charCodeAt(0) > 255 ? 11 : 6.5), 0);
 
-export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: number, viewportWidth: number) => {
+const labelFrame = (view: Box, unit: number, viewportWidth: number) => {
   const left = view.x + view.width / 2 - (viewportWidth * unit) / 2 + 12 * unit;
   const right = left + (viewportWidth - 24) * unit;
-  const unique = [...new Map(places.map((place) => [place.id, place])).values()].filter((place) => {
-    const point = project(place.longitude, place.latitude);
 
+  const visible = (place: JourneyPlace) => {
+    const point = project(place.longitude, place.latitude);
     return (
       point.x >= left - 12 * unit &&
       point.x <= right + 12 * unit &&
       point.y >= view.y &&
       point.y <= view.y + view.height
     );
-  });
+  };
 
   const layout = (group: JourneyPlace[]) => {
     const place = group[0];
@@ -195,16 +195,30 @@ export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: nu
     return { key: place.id, x, y, width, name, places: group };
   };
 
+  return { visible, layout };
+};
+
+export const placeLabels = (
+  places: readonly JourneyPlace[],
+  view: Box,
+  unit: number,
+  viewportWidth: number,
+  settled = { view, unit },
+) => {
+  const grouping = labelFrame(settled.view, settled.unit, viewportWidth);
+  const gap = settled.unit;
+  const unique = [...new Map(places.map((place) => [place.id, place])).values()].filter(grouping.visible);
+
   let groups = unique.map((place) => [place]);
   let merged = true;
 
   while (merged) {
     merged = false;
     for (let i = 0; i < groups.length && !merged; i++) {
-      const a = layout(groups[i]);
+      const a = grouping.layout(groups[i]);
       for (let j = i + 1; j < groups.length; j++) {
-        const b = layout(groups[j]);
-        if (a.x < b.x + b.width + 6 * unit && b.x < a.x + a.width + 6 * unit && Math.abs(a.y - b.y) < 36 * unit) {
+        const b = grouping.layout(groups[j]);
+        if (a.x < b.x + b.width + 6 * gap && b.x < a.x + a.width + 6 * gap && Math.abs(a.y - b.y) < 36 * gap) {
           groups[i] = [...groups[i], ...groups[j]];
           groups = groups.filter((_, index) => index !== j);
           merged = true;
@@ -214,7 +228,7 @@ export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: nu
     }
   }
 
-  return groups.map(layout);
+  return groups.map(labelFrame(view, unit, viewportWidth).layout);
 };
 
 export const placesBox = (places: readonly JourneyPlace[], viewport: { width: number; height: number }): Box => {

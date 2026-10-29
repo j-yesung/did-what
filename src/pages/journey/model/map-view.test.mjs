@@ -135,3 +135,14 @@ test("움직이는 동안의 화면 이동은 그려 둔 지도를 같은 자리
   assert.ok(Math.abs(viewport.height / 2 + scale * (before.y - viewport.height / 2) + y - after.y) < 1e-9);
   assert.deepEqual(expandView(rendered, 1.5), { x: 95, y: 40, width: 30, height: 60 });
 });
+
+test("움직이는 동안에는 멈췄던 화면의 묶음을 유지하고 위치만 지금 화면에 맞춘다", () => {
+  const point = project(a.longitude, a.latitude);
+  const wide = { x: point.x - 19.5, y: point.y - 42.2, width: 39, height: 84.4 };
+  const zoomed = placesBox([a, b], { width: 390, height: 844 });
+  const zoomedUnit = zoomed.width / 390;
+  const held = placeLabels([a, b], zoomed, zoomedUnit, 390, { view: wide, unit: 0.1 });
+  assert.equal(held.length, 1);
+  assert.ok(Math.abs(held[0].y - (point.y - 38 * zoomedUnit)) < 1e-9);
+  assert.equal(placeLabels([a, b], zoomed, zoomedUnit, 390).length, 2);
+});

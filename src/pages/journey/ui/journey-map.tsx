@@ -78,6 +78,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
     viewRef,
     viewport,
     unit,
+    settled,
     stageRef,
     layerRef,
     headerRef,
@@ -270,6 +271,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
               view={view}
               unit={unit}
               viewportWidth={viewport.width}
+              settled={settled}
               canTap={canTap}
               onFocus={journey.focusPlace}
               onChoose={sheet.showPlaces}

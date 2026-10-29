@@ -9,17 +9,27 @@ type PlaceLabelsProps = {
   view: Box;
   unit: number;
   viewportWidth: number;
+  settled: { view: Box; unit: number };
   canTap: (event: MouseEvent) => boolean;
   onFocus: (place: JourneyPlace) => void;
   onChoose: (places: JourneyPlace[]) => void;
 };
 
-export function PlaceLabels({ places, view, unit, viewportWidth, canTap, onFocus, onChoose }: PlaceLabelsProps) {
+export function PlaceLabels({
+  places,
+  view,
+  unit,
+  viewportWidth,
+  settled,
+  canTap,
+  onFocus,
+  onChoose,
+}: PlaceLabelsProps) {
   const open = (group: JourneyPlace[]) => (group.length === 1 ? onFocus(group[0]) : onChoose(group));
 
   return (
     <>
-      {placeLabels(places, view, unit, viewportWidth).map((label) => (
+      {placeLabels(places, view, unit, viewportWidth, settled).map((label) => (
         <g
           key={label.key}
           role="button"

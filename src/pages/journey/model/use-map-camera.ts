@@ -32,6 +32,7 @@ export const MAP_OVERSCAN = 1.5;
 
 export const useMapCamera = () => {
   const [view, setViewState] = useState<Box>(national);
+  const [settledView, setSettledView] = useState<Box>(national);
   const viewRef = useRef(view);
   const rendered = useRef(view);
   const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,6 +91,11 @@ export const useMapCamera = () => {
     if (viewRef.current !== rendered.current) setViewState(viewRef.current);
   };
 
+  const settle = () => {
+    commit();
+    setSettledView(viewRef.current);
+  };
+
   const preview = (next: Box) => {
     viewRef.current = next;
     const shift = applyTransform();
@@ -104,12 +110,13 @@ export const useMapCamera = () => {
     cancelAnimationFrame(animation.current);
     settled.current?.();
     settled.current = null;
-    commit();
+    settle();
   };
 
   const setView = (next: Box) => {
     viewRef.current = next;
     setViewState(next);
+    setSettledView(next);
   };
 
   const moveCamera = (next: Box) => {
@@ -135,7 +142,7 @@ export const useMapCamera = () => {
         if (progress < 1) animation.current = requestAnimationFrame(tick);
         else {
           settled.current = null;
-          commit();
+          settle();
           resolve();
         }
       };
@@ -193,7 +200,7 @@ export const useMapCamera = () => {
       const elapsed = now - started;
       preview(momentumView(start, velocity, elapsed));
       if (elapsed < 850 && speed * Math.exp(-elapsed / 180) > 0.015) animation.current = requestAnimationFrame(tick);
-      else commit();
+      else settle();
     };
     animation.current = requestAnimationFrame(tick);
   };
@@ -238,7 +245,7 @@ export const useMapCamera = () => {
       event.timeStamp - last.time <= 100 &&
       Math.hypot(velocity.x, velocity.y) / unit >= 0.05;
     if (gliding) glide(current, velocity, unit);
-    else commit();
+    else settle();
   };
 
   const handlers = {
@@ -300,7 +307,7 @@ export const useMapCamera = () => {
       cancelAnimationFrame(animation.current);
       zoomAt(event.clientX, event.clientY, Math.exp(event.deltaY * 0.001));
       if (wheelTimer.current) clearTimeout(wheelTimer.current);
-      wheelTimer.current = setTimeout(commit, 150);
+      wheelTimer.current = setTimeout(settle, 150);
     },
   };
 
@@ -311,6 +318,7 @@ export const useMapCamera = () => {
     viewRef,
     viewport,
     unit: viewScale(view, viewport),
+    settled: { view: settledView, unit: viewScale(settledView, viewport) },
     stageRef,
     layerRef,
     headerRef,
