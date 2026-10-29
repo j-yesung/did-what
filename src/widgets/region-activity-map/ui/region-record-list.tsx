@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { CaretRightIcon, ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
@@ -28,6 +30,7 @@ type RegionRecordListProps = {
   /** 기록을 누르는 순간(클릭 전) 불린다. 화면마다 필요한 조회를 미리 시작할 때 쓴다. */
   onRecordPress?: (recordId: string) => void;
   isDetail: boolean;
+  currentRecordId?: string;
 };
 
 export function RegionRecordList({
@@ -38,7 +41,15 @@ export function RegionRecordList({
   onRecordOpen,
   onRecordPress,
   isDetail,
+  currentRecordId,
 }: RegionRecordListProps) {
+  const currentRow = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (!currentRecordId) return;
+    const row = currentRow.current;
+    const scroll = row?.closest("[data-record-scroll]");
+    if (row && scroll) scroll.scrollTop += row.getBoundingClientRect().top - scroll.getBoundingClientRect().top - 32;
+  }, [currentRecordId]);
   const router = useRouter();
   const queryClient = useQueryClient();
   const regionRecords = getRegionRecords(records, region?.code);
@@ -94,7 +105,8 @@ export function RegionRecordList({
             <button
               aria-pressed={selectedSubregion === name}
               className={cn(
-                "min-h-9 shrink-0 rounded-full bg-muted px-3.5 font-medium text-muted-foreground text-sm tabular-nums transition-colors",
+                "min-h-11 shrink-0 rounded-full px-3.5 font-medium text-muted-foreground text-sm tabular-nums transition-colors",
+                selectedSubregion !== name && "bg-muted dark:bg-input/30",
                 selectedSubregion === name && "bg-primary font-semibold text-primary-foreground",
               )}
               key={label}
@@ -108,6 +120,7 @@ export function RegionRecordList({
       ) : null}
 
       <div
+        data-record-scroll
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-4",
           regionRecords.length > 0 && "pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]",
@@ -127,7 +140,7 @@ export function RegionRecordList({
                     ? `${date}–${format(parseISO(until), until.slice(0, 4) === record.recorded_at.slice(0, 4) ? "M.d" : "yyyy.M.d")}`
                     : date;
                 return (
-                  <li key={record.id}>
+                  <li key={record.id} ref={record.id === currentRecordId ? currentRow : undefined}>
                     {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
                     <PressLink
                       className={cn(

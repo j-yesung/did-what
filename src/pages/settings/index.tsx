@@ -1,4 +1,4 @@
-import { requireMember } from "@/entities/member/server";
+import { getMemberHomeAddress, requireMember } from "@/entities/member/server";
 import { LogoutButton } from "@/features/auth";
 import { HomeAddressSetting } from "@/features/home-address/ui/home-address-setting";
 import { CurrentMemberSetting } from "@/features/member/select-member";
@@ -8,13 +8,11 @@ import { getTheme } from "@/features/switch-theme/server";
 import { PageSection, PageShell } from "@/shared/ui/layouts";
 
 export async function SettingsPage() {
-  const [theme, { member, members, supabase, user }] = await Promise.all([getTheme(), requireMember()]);
-  const { data: home, error: homeError } = await supabase
-    .from("member_home_addresses")
-    .select("address")
-    .eq("owner_id", user.id)
-    .eq("member_id", member.id)
-    .maybeSingle();
+  const [theme, { member, members }, { data: home, error: homeError }] = await Promise.all([
+    getTheme(),
+    requireMember(),
+    getMemberHomeAddress(),
+  ]);
 
   return (
     <PageShell className="gap-4" withBottomNavigation>

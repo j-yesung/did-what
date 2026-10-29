@@ -1,4 +1,4 @@
-import { enqueueJourneyPlace, skipJourneyPlace } from "./queue.ts";
+import { enqueueJourneyPlace, pickedJourneyPlaces, skipJourneyPlace } from "./queue.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -39,4 +39,17 @@ test("A를 누르고 바로 B를 누르면 A가 진행되는 동안 B가 대기�
   assert.equal(state.status, "loading");
   state = enqueueJourneyPlace(state, b);
   assert.deepEqual(state.queue, [b]);
+});
+
+test("다시 보기는 그리는 중인 장소를 중복하지 않고 누른 순서를 유지한다", () => {
+  assert.deepEqual(
+    pickedJourneyPlaces({
+      segments: [{ target: null }, { target: a }],
+      active: a,
+      queue: [b, c],
+      current: null,
+      status: "drawing",
+    }),
+    [a, b, c],
+  );
 });

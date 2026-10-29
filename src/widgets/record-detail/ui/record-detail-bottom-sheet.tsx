@@ -16,6 +16,7 @@ type RecordDetailBottomSheetProps = {
   /** 삭제한 뒤 할 일. 넘기지 않으면 시트를 닫는다. */
   onDeleted?: () => void;
   onOpenChange: (open: boolean) => void;
+  onCloseComplete?: () => void;
   open: boolean;
   record: Pick<RecordSummary, "id"> | null;
 };
@@ -26,6 +27,7 @@ export function RecordDetailBottomSheet({
   member,
   onDeleted,
   onOpenChange,
+  onCloseComplete,
   open,
   record,
 }: RecordDetailBottomSheetProps) {
@@ -37,6 +39,7 @@ export function RecordDetailBottomSheet({
       onOpenChangeComplete={(nextOpen) => {
         if (nextOpen) return;
         setDraft("");
+        onCloseComplete?.();
       }}
       open={open}
       showSwipeHandle

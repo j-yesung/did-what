@@ -1,39 +1,30 @@
 import "server-only";
 
-import { requireMember } from "@/entities/member/server";
+import { getMemberHomeAddress, requireMember } from "@/entities/member/server";
+import { getRegion } from "@/entities/region/model/region";
 import { geocodeHomeAddress, HomeAddressLocationError } from "@/features/home-address/api/geocode";
-
-import { hasNoKakaoRoute, parseKakaoDirections, straightHomeRoute } from "../model/kakao-directions";
-import { toJourneyRecord } from "../model/record";
+import {
+  hasNoKakaoRoute,
+  nearbyRoute,
+  parseKakaoDirections,
+  straightHomeRoute,
+} from "@/pages/journey/model/kakao-directions";
+import { toJourneyRecord } from "@/pages/journey/model/record";
+import { isUuid } from "@/shared/lib/validation/is-uuid";
 
 export const getJourneyDirections = async (request: Request) => {
-  const { supabase, user, member } = await requireMember();
+  const { supabase, user } = await requireMember();
   const params = new URL(request.url).searchParams;
   const id = params.get("recordId") ?? "";
   const region = params.get("region") ?? "";
   const target = params.get("placeId");
   const from = params.get("fromPlaceId");
-  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (
-    !uuid.test(id) ||
-    !/^KR-\d{2}$/.test(region) ||
-    (target && !uuid.test(target)) ||
-    (from && (!target || !uuid.test(from)))
-  )
+  if (!isUuid(id) || !getRegion(region) || (target && !isUuid(target)) || (from && (!target || !isUuid(from))))
     return Response.json({ error: "잘못된 요청입니다." }, { status: 400 });
   const homeOrigin = async () => {
-    const { data: home, error: homeError } = await supabase
-      .from("member_home_addresses")
-      .select("address")
-      .eq("owner_id", user.id)
-      .eq("member_id", member.id)
-      .maybeSingle();
+    const { data: home, error: homeError } = await getMemberHomeAddress();
     if (homeError) return Response.json({ error: "집 주소를 불러오지 못했어요." }, { status: 500 });
-    if (!home)
-      return Response.json(
-        { error: "설정에서 집 주소를 등록해 주세요.", code: "HOME_ADDRESS_REQUIRED" },
-        { status: 400 },
-      );
+    if (!home) return Response.json({ error: "집 주소를 등록해 주세요." }, { status: 400 });
     try {
       return await geocodeHomeAddress(home.address, request.signal);
     } catch (error) {
@@ -51,7 +42,7 @@ export const getJourneyDirections = async (request: Request) => {
   const recordQuery = supabase
     .from("records")
     .select(
-      "id, activity, recorded_at, region_code, record_regions(region_code, region_name, region_latitude, region_longitude, selected_directly), record_places(place:places(id, name, latitude, longitude))",
+      "id, region_code, record_regions(region_code, region_name, region_latitude, region_longitude, selected_directly), record_places(place:places(id, name, latitude, longitude))",
     )
     .eq("id", id)
     .eq("owner_id", user.id)
@@ -72,18 +63,10 @@ export const getJourneyDirections = async (request: Request) => {
   url.searchParams.set("destination", `${destination.longitude},${destination.latitude}`);
   url.searchParams.set("summary", "false");
   try {
-    if (origin.longitude === destination.longitude && origin.latitude === destination.latitude)
+    const nearby = nearbyRoute(origin, destination);
+    if (nearby)
       return Response.json(
-        {
-          route: {
-            points: [
-              [origin.longitude, origin.latitude],
-              [destination.longitude, destination.latitude],
-            ],
-            distance: 0,
-            duration: 0,
-          },
-        },
+        { route: target ? nearby : { ...nearby, points: straightHomeRoute(origin, destination).points } },
         { headers: { "Cache-Control": "private, no-store" } },
       );
     const response = await fetch(url, {
@@ -94,13 +77,25 @@ export const getJourneyDirections = async (request: Request) => {
     const data: unknown = response.ok ? await response.json() : null;
     const route = parseKakaoDirections(data);
     if (route) return Response.json({ route }, { headers: { "Cache-Control": "private, no-store" } });
+    if (request.signal.aborted) return new Response(null, { status: 499 });
+    const resultCode =
+      data && typeof data === "object" && "routes" in data && Array.isArray(data.routes)
+        ? data.routes[0]?.result_code
+        : undefined;
+    // biome-ignore lint/suspicious/noConsole: 길찾기 실패 원인을 운영 로그로 남긴다.
+    console.warn("[journey] 길찾기 응답 실패", { status: response.status, resultCode });
+    if (target && hasNoKakaoRoute(data))
+      return Response.json({ error: "이 장소까지 자동차 경로가 없어요.", code: "NO_ROUTE" }, { status: 422 });
     if (!target && hasNoKakaoRoute(data))
       return Response.json(
         { route: straightHomeRoute(origin, destination) },
         { headers: { "Cache-Control": "private, no-store" } },
       );
-    throw new Error();
-  } catch {
+    return Response.json({ error: "도로 경로를 불러오지 못했어요." }, { status: 502 });
+  } catch (error) {
+    if (request.signal.aborted) return new Response(null, { status: 499 });
+    // biome-ignore lint/suspicious/noConsole: 길찾기 실패 원인을 운영 로그로 남긴다.
+    console.warn("[journey] 길찾기 요청 실패", { name: error instanceof Error ? error.name : "UnknownError" });
     return Response.json({ error: "도로 경로를 불러오지 못했어요." }, { status: 502 });
   }
 };

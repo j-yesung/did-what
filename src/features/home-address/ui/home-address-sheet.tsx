@@ -1,23 +1,17 @@
 "use client";
 
-import {
-  type CSSProperties,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState, useTransition } from "react";
 
+import { XIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
 import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
+import { IconButton } from "@/shared/ui/icon-button";
 import { Input } from "@/shared/ui/input";
+import { SHEET_EXPAND_MS, useCompactSnapPoint } from "@/shared/ui/use-compact-snap-point";
 
 import { saveHomeAddress } from "../api/actions";
 import { KakaoAddressSearch } from "./kakao-address-search";
@@ -49,11 +43,14 @@ export function HomeAddressSheet({
   const [searching, setSearching] = useState(false);
   const [openingSearch, setOpeningSearch] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [header, setHeader] = useState<HTMLDivElement | null>(null);
-  const [form, setForm] = useState<HTMLFormElement | null>(null);
-  const compactHeightRef = useRef(360);
-  const [compactHeight, setCompactHeight] = useState(360);
-  const [snapPoint, setSnapPoint] = useState<number | string | null>(360);
+  const {
+    compactHeight,
+    compactHeightRef,
+    snapPoint,
+    setSnapPoint,
+    setHeader,
+    setBody: setForm,
+  } = useCompactSnapPoint(open && !searching);
   const [previousOpen, setPreviousOpen] = useState(open);
   if (previousOpen !== open) {
     setPreviousOpen(open);
@@ -76,28 +73,15 @@ export function HomeAddressSheet({
     },
     [],
   );
-  useLayoutEffect(() => {
-    if (!open || searching || !header || !form) return;
-    const measure = () => {
-      const height = Math.ceil(header.offsetHeight + form.offsetHeight + 29);
-      if (height === compactHeightRef.current) return;
-      const previous = compactHeightRef.current;
-      compactHeightRef.current = height;
-      setCompactHeight(height);
-      setSnapPoint((current) => (current === previous ? height : current));
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(header);
-    observer.observe(form);
-    return () => observer.disconnect();
-  }, [open, searching, header, form]);
-  const selectAddress = useCallback((selected: string) => {
-    setValue(selected);
-    setError("");
-    setSearching(false);
-    setSnapPoint(compactHeightRef.current);
-  }, []);
+  const selectAddress = useCallback(
+    (selected: string) => {
+      setValue(selected);
+      setError("");
+      setSearching(false);
+      setSnapPoint(compactHeightRef.current);
+    },
+    [compactHeightRef, setSnapPoint],
+  );
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   return (
@@ -120,7 +104,10 @@ export function HomeAddressSheet({
         className={cn("motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]", dark && "dark")}
         style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
       >
-        <BottomSheet.Header ref={setHeader}>
+        <BottomSheet.Header ref={setHeader} className="relative">
+          <BottomSheet.Close
+            render={<IconButton aria-label="주소 설정 닫기" icon={XIcon} className="absolute top-2 right-3" />}
+          />
           {searching && (
             <div className="mb-5 flex justify-start">
               <BackButton
@@ -144,9 +131,13 @@ export function HomeAddressSheet({
         ) : (
           <form
             ref={setForm}
-            className="flex flex-col gap-4 px-5 pt-4 pb-7"
+            className="flex flex-col gap-4 px-5 pt-4 pb-[calc(--spacing(7)+env(safe-area-inset-bottom))]"
             onSubmit={(event) => {
               event.preventDefault();
+              if (!value.trim()) {
+                setError("주소 찾기에서 주소를 골라 주세요.");
+                return;
+              }
               setError("");
               startTransition(async () => {
                 const result = await saveHomeAddress(value);
@@ -176,6 +167,7 @@ export function HomeAddressSheet({
               <Button
                 type="button"
                 variant="outline"
+                size="large"
                 disabled={openingSearch}
                 onClick={() => {
                   setSnapPoint(1);
@@ -188,7 +180,7 @@ export function HomeAddressSheet({
                     setOpeningSearch(false);
                     setSearching(true);
                     searchTimer.current = null;
-                  }, 250);
+                  }, SHEET_EXPAND_MS);
                 }}
               >
                 주소 찾기
@@ -199,7 +191,7 @@ export function HomeAddressSheet({
                 {error}
               </p>
             )}
-            <Button size="large" type="submit" loading={pending} disabled={openingSearch}>
+            <Button size="large" type="submit" loading={pending} disabled={openingSearch || !value.trim()}>
               저장
             </Button>
           </form>

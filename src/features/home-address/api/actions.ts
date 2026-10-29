@@ -9,7 +9,7 @@ import { geocodeHomeAddress } from "./geocode";
 export const saveHomeAddress = async (address: string) => {
   const { supabase, user, member } = await requireMember();
   const trimmed = address.trim();
-  if (trimmed.length < 5 || trimmed.length > 200) return { error: "주소를 5자 이상 200자 이하로 입력해 주세요." };
+  if (trimmed.length < 5 || trimmed.length > 200) return { error: "주소 찾기에서 주소를 다시 골라 주세요." };
   try {
     await geocodeHomeAddress(trimmed);
   } catch (error) {
