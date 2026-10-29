@@ -5,10 +5,20 @@
   background: var(--journey-background);
   color: var(--journey-white);
 }
+.base,
 .map {
   display: block;
   width: 100%;
   height: 100%;
+  will-change: transform;
+}
+.base {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.map {
+  position: relative;
   touch-action: none;
   cursor: grab;
 }
@@ -37,18 +47,6 @@
   stroke: var(--journey-white);
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-.drawing {
-  stroke-dasharray: 1;
-  animation: sketch var(--journey-sketch-duration) linear both;
-}
-@keyframes sketch {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
 }
 .node {
   cursor: pointer;
@@ -121,6 +119,7 @@
 
 .recordHeader {
   position: absolute;
+  z-index: 1;
   top: calc(var(--page-top) + var(--toolbar-height) + 16px);
   left: 20px;
   right: 20px;
@@ -360,7 +359,6 @@
   .status {
     animation-duration: 1ms;
   }
-  .drawing,
   .skeleton i {
     animation: none;
   }

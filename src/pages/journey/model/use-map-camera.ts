@@ -27,6 +27,7 @@ export const useMapCamera = () => {
   const headerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const animation = useRef(0);
+  const settled = useRef<(() => void) | null>(null);
   const pointers = useRef(new Map<number, Position>());
   const dragOrigin = useRef<Position | null>(null);
   const dragged = useRef(false);
@@ -44,10 +45,15 @@ export const useMapCamera = () => {
     return () => {
       observer.disconnect();
       cancelAnimationFrame(animation.current);
+      settled.current?.();
     };
   }, []);
 
-  const stop = () => cancelAnimationFrame(animation.current);
+  const stop = () => {
+    cancelAnimationFrame(animation.current);
+    settled.current?.();
+    settled.current = null;
+  };
 
   const setView = (next: Box) => {
     viewRef.current = next;
@@ -60,21 +66,28 @@ export const useMapCamera = () => {
     const started = performance.now();
     if (prefersReducedMotion()) {
       setView(next);
-      return;
+      return Promise.resolve();
     }
 
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - started) / 650);
-      const eased = 1 - (1 - progress) ** 3;
-      setView({
-        x: start.x + (next.x - start.x) * eased,
-        y: start.y + (next.y - start.y) * eased,
-        width: start.width + (next.width - start.width) * eased,
-        height: start.height + (next.height - start.height) * eased,
-      });
-      if (progress < 1) animation.current = requestAnimationFrame(tick);
-    };
-    animation.current = requestAnimationFrame(tick);
+    return new Promise<void>((resolve) => {
+      settled.current = resolve;
+      const tick = (now: number) => {
+        const progress = Math.min(1, (now - started) / 650);
+        const eased = 1 - (1 - progress) ** 3;
+        setView({
+          x: start.x + (next.x - start.x) * eased,
+          y: start.y + (next.y - start.y) * eased,
+          width: start.width + (next.width - start.width) * eased,
+          height: start.height + (next.height - start.height) * eased,
+        });
+        if (progress < 1) animation.current = requestAnimationFrame(tick);
+        else {
+          settled.current = null;
+          resolve();
+        }
+      };
+      animation.current = requestAnimationFrame(tick);
+    });
   };
 
   const frame = (): Frame | undefined => {

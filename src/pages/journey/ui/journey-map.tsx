@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 
 import { ArrowsInSimpleIcon, ListBulletsIcon, MapTrifoldIcon, PlayIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,7 +17,7 @@ import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 import { journeyRouteQuery } from "../api/route-query";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
 import { national, placesBox, project } from "../model/map-view";
-import { prefersReducedMotion, SKETCH_MS } from "../model/motion";
+import { prefersReducedMotion } from "../model/motion";
 import { pickedJourneyPlaces } from "../model/queue";
 import { type JourneyRecord, toJourneyRecord } from "../model/record";
 import type { JourneyPlace, JourneyRegion } from "../model/types";
@@ -214,13 +214,13 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
   };
 
   const activeRecord = locations.data?.find((record) => record.id === session?.record.id);
+  const viewBox = `${view.x} ${view.y} ${view.width} ${view.height}`;
 
   return (
     <main
       ref={main}
       data-empty={regions.length === 0 ? "" : undefined}
       className={`${styles.page} dark`}
-      style={{ "--journey-sketch-duration": `${SKETCH_MS}ms` } as CSSProperties}
       data-direction="forward"
       data-funnel-step
     >
@@ -238,15 +238,11 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
       ) : (
         <h1 className="sr-only">기록 지도</h1>
       )}
-      <svg
-        ref={svgRef}
-        className={styles.map}
-        viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`}
-        aria-label="방문 지역 지도"
-        {...handlers}
-      >
+      <svg className={styles.base} viewBox={viewBox} aria-hidden="true">
         <MapShapes />
         <DistrictShapes viewWidth={view.width} />
+      </svg>
+      <svg ref={svgRef} className={styles.map} viewBox={viewBox} aria-label="방문 지역 지도" {...handlers}>
         {session && (
           <RouteLayer
             segments={session.segments}
@@ -254,6 +250,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
             drawing={session.status === "drawing"}
             highlight={journey.highlight}
             unit={unit}
+            onSketchEnd={journey.handleSketchEnd}
           />
         )}
         {!session && !restoring && (

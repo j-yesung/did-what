@@ -1,12 +1,20 @@
-import { useMemo } from "react";
+import { useEffectEvent, useLayoutEffect, useMemo, useRef } from "react";
 
 import { HouseIcon } from "@phosphor-icons/react";
 
 import { project } from "../../model/map-view";
+import { prefersReducedMotion, SKETCH_MS } from "../../model/motion";
 import type { JourneyPlace, JourneySegment } from "../../model/types";
 import styles from "../journey-map.module.css";
 
-function SegmentPath({ segment, drawing, unit }: { segment: JourneySegment; drawing: boolean; unit: number }) {
+type SegmentPathProps = {
+  segment: JourneySegment;
+  drawing: boolean;
+  unit: number;
+  onSketchEnd: () => void;
+};
+
+function SegmentPath({ segment, drawing, unit, onSketchEnd }: SegmentPathProps) {
   const path = useMemo(
     () =>
       [
@@ -21,15 +29,26 @@ function SegmentPath({ segment, drawing, unit }: { segment: JourneySegment; draw
         .join(""),
     [segment],
   );
+  const element = useRef<SVGPathElement>(null);
+  const finishSketch = useEffectEvent(onSketchEnd);
 
-  return (
-    <path
-      className={`${styles.route} ${drawing ? styles.drawing : ""}`}
-      d={path}
-      pathLength={1}
-      strokeWidth={unit * 2.5}
-    />
-  );
+  useLayoutEffect(() => {
+    const target = element.current;
+    if (!drawing || !target || prefersReducedMotion()) return;
+
+    const length = `${target.getTotalLength()}`;
+    const sketch = target.animate(
+      [
+        { strokeDasharray: length, strokeDashoffset: length },
+        { strokeDasharray: length, strokeDashoffset: "0" },
+      ],
+      { duration: SKETCH_MS, easing: "linear", fill: "both" },
+    );
+    sketch.finished.then(finishSketch, () => {});
+    return () => sketch.cancel();
+  }, [drawing]);
+
+  return <path ref={element} className={styles.route} d={path} strokeWidth={unit * 2.5} />;
 }
 
 type RouteLayerProps = {
@@ -38,9 +57,10 @@ type RouteLayerProps = {
   drawing: boolean;
   highlight: { place: JourneyPlace; key: number } | null;
   unit: number;
+  onSketchEnd: () => void;
 };
 
-export function RouteLayer({ segments, complete, drawing, highlight, unit }: RouteLayerProps) {
+export function RouteLayer({ segments, complete, drawing, highlight, unit, onSketchEnd }: RouteLayerProps) {
   const start = segments[0]?.route.points[0];
   const startPoint = start ? project(start[0], start[1]) : null;
   const highlightPoint = highlight ? project(highlight.place.longitude, highlight.place.latitude) : null;
@@ -53,6 +73,7 @@ export function RouteLayer({ segments, complete, drawing, highlight, unit }: Rou
           segment={segment}
           unit={unit}
           drawing={drawing && index === segments.length - 1}
+          onSketchEnd={onSketchEnd}
         />
       ))}
       {startPoint && <circle cx={startPoint.x} cy={startPoint.y} r={unit * 4.5} className={styles.visited} />}

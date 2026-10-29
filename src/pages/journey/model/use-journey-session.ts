@@ -12,8 +12,6 @@ import type { JourneyRecord } from "./record";
 import type { JourneyPlace, JourneyRegion, JourneyRoute, JourneySegment, JourneySession } from "./types";
 import type { MapCamera } from "./use-map-camera";
 
-const CAMERA_SETTLE_MS = 350;
-
 const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
 const toSegment = (
@@ -70,7 +68,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
   const [highlight, setHighlight] = useState<{ place: JourneyPlace; key: number } | null>(null);
   const generation = useRef(0);
   const fastForward = useRef(false);
-  const animationDone = useRef<(() => void) | null>(null);
+  const sketchDone = useRef<(() => void) | null>(null);
   const sheetClosed = useRef<Promise<unknown>>(Promise.resolve());
 
   useEffect(
@@ -97,14 +95,19 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       (error: unknown) => ({ error }),
     );
 
-  const waitForPlayback = (duration: number) =>
+  const waitForSketch = () =>
     new Promise<void>((resolve) => {
-      animationDone.current = resolve;
+      sketchDone.current = resolve;
       setTimeout(() => {
-        if (animationDone.current === resolve) animationDone.current = null;
+        if (sketchDone.current === resolve) sketchDone.current = null;
         resolve();
-      }, duration);
+      }, SKETCH_MS * 2);
     });
+
+  const handleSketchEnd = () => {
+    sketchDone.current?.();
+    sketchDone.current = null;
+  };
 
   const run = async (initial: JourneySession, token: number) => {
     let next = initial;
@@ -121,18 +124,15 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
 
       const route = result.route;
       const view = target ? camera.followRoute(route) : camera.fitRoutes([route]);
-      if (view && !fastForward.current) camera.moveCamera(view);
+      const moving = view && !fastForward.current ? camera.moveCamera(view) : null;
       setSessionValue({ ...sessionRef.current!, status: "moving" });
-      await Promise.all([
-        sheetClosed.current,
-        view && !prefersReducedMotion() && !fastForward.current ? waitForPlayback(CAMERA_SETTLE_MS) : null,
-      ]);
+      await Promise.all([sheetClosed.current, moving]);
       if (token !== generation.current) return;
 
       const segment = toSegment(next.record, route, target, next.current);
       next = { ...sessionRef.current!, segments: [...sessionRef.current!.segments, segment], status: "drawing" };
       setSessionValue(next);
-      if (!prefersReducedMotion() && !fastForward.current) await waitForPlayback(SKETCH_MS);
+      if (!prefersReducedMotion() && !fastForward.current) await waitForSketch();
       if (token !== generation.current) return;
 
       next = { ...sessionRef.current!, current: target, active: null, status: "idle" };
@@ -155,7 +155,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
   const begin = (record: JourneyRecord, region: JourneyRegion, queue: JourneyPlace[] = [], replaying = false) => {
     const token = ++generation.current;
     fastForward.current = false;
-    animationDone.current?.();
+    sketchDone.current?.();
     sheetClosed.current = closeSheet();
 
     const next = startSession(record, region, queue, replaying);
@@ -251,12 +251,13 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
 
     fastForward.current = true;
     setSessionValue({ ...sessionRef.current, restored: true });
-    animationDone.current?.();
+    camera.stop();
+    sketchDone.current?.();
   };
 
   const clear = () => {
     generation.current++;
-    animationDone.current?.();
+    sketchDone.current?.();
     fastForward.current = false;
     setSessionValue(null);
     setHighlight(null);
@@ -274,6 +275,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     pressPlace,
     recover,
     finishReplay,
+    handleSketchEnd,
     clear,
   };
 };
