@@ -2,7 +2,7 @@ import { useEffectEvent, useLayoutEffect, useMemo, useRef } from "react";
 
 import { HouseIcon } from "@phosphor-icons/react";
 
-import { project } from "../../model/map-view";
+import { partialPathData, pathLengths, project, toPathData } from "../../model/map-view";
 import { prefersReducedMotion, SKETCH_MS } from "../../model/motion";
 import type { JourneyPlace, JourneySegment } from "../../model/types";
 import styles from "../journey-map.module.css";
@@ -15,20 +15,16 @@ type SegmentPathProps = {
 };
 
 function SegmentPath({ segment, drawing, unit, onSketchEnd }: SegmentPathProps) {
-  const path = useMemo(
+  const points = useMemo(
     () =>
       [
         ...(segment.from ? [segment.from] : []),
         ...segment.route.points.map(([longitude, latitude]) => ({ longitude, latitude })),
         segment.to,
-      ]
-        .map(({ longitude, latitude }, index) => {
-          const point = project(longitude, latitude);
-          return `${index ? "L" : "M"}${point.x},${point.y}`;
-        })
-        .join(""),
+      ].map(({ longitude, latitude }) => project(longitude, latitude)),
     [segment],
   );
+  const path = useMemo(() => toPathData(points), [points]);
   const element = useRef<SVGPathElement>(null);
   const finishSketch = useEffectEvent(onSketchEnd);
 
@@ -36,17 +32,22 @@ function SegmentPath({ segment, drawing, unit, onSketchEnd }: SegmentPathProps) 
     const target = element.current;
     if (!drawing || !target || prefersReducedMotion()) return;
 
-    const length = `${target.getTotalLength()}`;
-    const sketch = target.animate(
-      [
-        { strokeDasharray: length, strokeDashoffset: length },
-        { strokeDasharray: length, strokeDashoffset: "0" },
-      ],
-      { duration: SKETCH_MS, easing: "linear", fill: "both" },
-    );
-    sketch.finished.then(finishSketch, () => {});
-    return () => sketch.cancel();
-  }, [drawing]);
+    const lengths = pathLengths(points);
+    const total = lengths.at(-1) ?? 0;
+    const started = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, Math.max(0, now - started) / SKETCH_MS);
+      target.setAttribute("d", partialPathData(points, lengths, total * progress));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+      else finishSketch();
+    };
+    tick(started);
+    return () => {
+      cancelAnimationFrame(frame);
+      target.setAttribute("d", path);
+    };
+  }, [drawing, points, path]);
 
   return <path ref={element} className={styles.route} d={path} strokeWidth={unit * 2.5} />;
 }

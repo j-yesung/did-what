@@ -4,10 +4,13 @@ import {
   followBox,
   momentumView,
   national,
+  partialPathData,
+  pathLengths,
   placeLabels,
   placesBox,
   project,
   routeBox,
+  toPathData,
   toViewPoint,
 } from "./map-view.ts";
 import assert from "node:assert/strict";
@@ -84,4 +87,17 @@ test("제목과 하단 패널 사이 빈 공간에 경로를 맞춘다", () => {
   assert.ok(toScreenY(37.5) >= frame.top + 40 - 1e-6);
   assert.ok(toScreenY(36.4) <= frame.height - frame.bottom - 20 + 1e-6);
   assert.equal(followBox(view, route, frame), null);
+});
+
+test("그리는 중인 선은 지나온 길이만큼만 경로를 자른다", () => {
+  const points = [
+    { x: 0, y: 0 },
+    { x: 3, y: 0 },
+    { x: 3, y: 4 },
+  ];
+  const lengths = pathLengths(points);
+  assert.deepEqual(lengths, [0, 3, 7]);
+  assert.equal(partialPathData(points, lengths, 0), "M0,0L0,0");
+  assert.equal(partialPathData(points, lengths, 5), "M0,0L3,0L3,2");
+  assert.equal(partialPathData(points, lengths, 7), toPathData(points));
 });

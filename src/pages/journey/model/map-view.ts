@@ -107,6 +107,35 @@ export const followBox = (view: Box, route: Route, frame?: Frame): Box | null =>
   return visible && fit.width >= view.width * 0.3 ? null : fit;
 };
 
+type Point = { x: number; y: number };
+
+export const toPathData = (points: Point[]) =>
+  points.map((point, index) => `${index ? "L" : "M"}${point.x},${point.y}`).join("");
+
+export const pathLengths = (points: Point[]) =>
+  points.reduce<number[]>(
+    (lengths, point, index) =>
+      index
+        ? [...lengths, lengths[index - 1] + Math.hypot(point.x - points[index - 1].x, point.y - points[index - 1].y)]
+        : [0],
+    [],
+  );
+
+export const partialPathData = (points: Point[], lengths: number[], length: number) => {
+  let end = 1;
+  while (end < points.length && lengths[end] <= length) end++;
+  if (end >= points.length) return toPathData(points);
+
+  const from = points[end - 1];
+  const to = points[end];
+  const ratio = (length - lengths[end - 1]) / (lengths[end] - lengths[end - 1] || 1);
+
+  return toPathData([
+    ...points.slice(0, end),
+    { x: from.x + (to.x - from.x) * ratio, y: from.y + (to.y - from.y) * ratio },
+  ]);
+};
+
 const nameWidth = (name: string) => [...name].reduce((width, char) => width + (char.charCodeAt(0) > 255 ? 11 : 6.5), 0);
 
 export const placeLabels = (places: readonly JourneyPlace[], view: Box, unit: number, viewportWidth: number) => {
