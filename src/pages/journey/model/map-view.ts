@@ -163,6 +163,13 @@ export const partialPathData = (points: Point[], lengths: number[], length: numb
 
 const nameWidth = (name: string) => [...name].reduce((width, char) => width + (char.charCodeAt(0) > 255 ? 11 : 6.5), 0);
 
+const LABEL_SLOTS = [
+  { side: 1, above: true },
+  { side: -1, above: true },
+  { side: 1, above: false },
+  { side: -1, above: false },
+];
+
 const labelFrame = (view: Box, unit: number, viewportWidth: number) => {
   const left = view.x + view.width / 2 - (viewportWidth * unit) / 2 + 12 * unit;
   const right = left + (viewportWidth - 24) * unit;
@@ -177,7 +184,7 @@ const labelFrame = (view: Box, unit: number, viewportWidth: number) => {
     );
   };
 
-  const layout = (group: JourneyPlace[]) => {
+  const layout = (group: JourneyPlace[], slot = 0) => {
     const place = group[0];
     const point = project(place.longitude, place.latitude);
     const suffix = group.length > 1 ? ` +${group.length - 1}` : "";
@@ -189,10 +196,11 @@ const labelFrame = (view: Box, unit: number, viewportWidth: number) => {
     if (name !== place.name) name = `${name.slice(0, -1)}…`;
 
     const width = Math.max(44, nameWidth(name + suffix) + 20) * unit;
-    const x = Math.max(left, Math.min(right - width, point.x + 7 * unit));
-    const y = point.y - 38 * unit;
+    const { side, above } = LABEL_SLOTS[slot];
+    const x = Math.max(left, Math.min(right - width, side > 0 ? point.x + 7 * unit : point.x - 7 * unit - width));
+    const y = above ? point.y - 38 * unit : point.y + 6 * unit;
 
-    return { key: place.id, x, y, width, name, places: group };
+    return { key: place.id, x, y, width, name, places: group, slot };
   };
 
   return { visible, layout };
@@ -209,26 +217,38 @@ export const placeLabels = (
   const gap = settled.unit;
   const unique = [...new Map(places.map((place) => [place.id, place])).values()].filter(grouping.visible);
 
+  type Label = ReturnType<typeof grouping.layout>;
+  const overlaps = (a: Label, b: Label) =>
+    a.x < b.x + b.width + 6 * gap && b.x < a.x + a.width + 6 * gap && Math.abs(a.y - b.y) < 36 * gap;
+
   let groups = unique.map((place) => [place]);
-  let merged = true;
-
-  while (merged) {
-    merged = false;
-    for (let i = 0; i < groups.length && !merged; i++) {
-      const a = grouping.layout(groups[i]);
-      for (let j = i + 1; j < groups.length; j++) {
-        const b = grouping.layout(groups[j]);
-        if (a.x < b.x + b.width + 6 * gap && b.x < a.x + a.width + 6 * gap && Math.abs(a.y - b.y) < 36 * gap) {
-          groups[i] = [...groups[i], ...groups[j]];
-          groups = groups.filter((_, index) => index !== j);
-          merged = true;
-          break;
-        }
+  for (;;) {
+    const placed: Label[] = [];
+    let blocked = -1;
+    for (const [index, group] of groups.entries()) {
+      const label = LABEL_SLOTS.map((_, slot) => grouping.layout(group, slot)).find((candidate) =>
+        placed.every((other) => !overlaps(candidate, other)),
+      );
+      if (!label) {
+        blocked = index;
+        break;
       }
+      placed.push(label);
     }
-  }
 
-  return groups.map(labelFrame(view, unit, viewportWidth).layout);
+    if (blocked < 0) {
+      const current = labelFrame(view, unit, viewportWidth);
+      return placed.map((label) => current.layout(label.places, label.slot));
+    }
+
+    const preferred = grouping.layout(groups[blocked]);
+    const target = Math.max(
+      0,
+      placed.findIndex((other) => overlaps(preferred, other)),
+    );
+    groups[target] = [...groups[target], ...groups[blocked]];
+    groups = groups.filter((_, index) => index !== blocked);
+  }
 };
 
 export const placesBox = (places: readonly JourneyPlace[], viewport: { width: number; height: number }): Box => {
