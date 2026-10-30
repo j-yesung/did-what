@@ -27,6 +27,7 @@ import { JourneyActions } from "./header/journey-actions";
 import { RecordHeader } from "./header/record-header";
 import styles from "./journey-map.module.css";
 import { DotLand, toSpots } from "./map/dot-land";
+import { Fireworks } from "./map/fireworks";
 import { NODE_HIT_RADIUS, RegionNodes } from "./map/region-nodes";
 import { RouteLayer } from "./map/route-layer";
 import { EmptyJourney, HomeNotice } from "./panel/journey-notices";
@@ -263,6 +264,11 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
                 onSketchEnd={journey.handleSketchEnd}
               />
             )}
+            {session &&
+              journey.arrivals.map(({ key, target }) => {
+                const end = target ?? session.record.destination;
+                return <Fireworks key={key} point={project(end.longitude, end.latitude)} unit={unit} />;
+              })}
             {!session && !restoring && (
               <RegionNodes
                 regions={regions}
