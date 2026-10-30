@@ -14,6 +14,7 @@ export function JourneyActions({ replaying, onFitRoutes, onReplay, onShowRecords
   return (
     <MorphMenu
       label="기록 지도 메뉴"
+      layout="column"
       actions={[
         { label: "전체 경로 보기", icon: ArrowsInSimpleIcon, onSelect: onFitRoutes },
         { label: "다시 보기", icon: PlayIcon, onSelect: onReplay, disabled: replaying },
