@@ -296,7 +296,7 @@ export const useMapCamera = () => {
     onPointerUp: release,
     onPointerCancel: release,
     onWheel: (event: WheelEvent<HTMLDivElement>) => {
-      cancelAnimationFrame(animation.current);
+      stop();
       zoomAt(event.clientX, event.clientY, Math.exp(event.deltaY * 0.001));
       if (wheelTimer.current) clearTimeout(wheelTimer.current);
       wheelTimer.current = setTimeout(settle, 150);
