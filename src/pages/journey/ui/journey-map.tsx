@@ -368,6 +368,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       </JourneySheet>
       <HomeAddressSheet
         address={null}
+        className={styles.sheet}
         dark
         memberName={member.name}
         onOpenChange={setAddressOpen}
@@ -379,7 +380,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       />
       <RecordDetailBottomSheet
         backLabel="지도로"
-        className="dark"
+        className={`${styles.sheet} dark`}
         member={member}
         onDeleted={() => {
           setDetailOpen(false);

@@ -18,6 +18,7 @@ type HomeAddressSheetProps = {
   address: string | null;
 
   children?: ReactNode;
+  className?: string;
 
   dark?: boolean;
   memberName: string;
@@ -30,6 +31,7 @@ type HomeAddressSheetProps = {
 export function HomeAddressSheet({
   address,
   children,
+  className,
   dark = false,
   memberName,
   onOpenChange,
@@ -99,7 +101,11 @@ export function HomeAddressSheet({
     >
       {children}
       <BottomSheet.Content
-        className={cn("motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]", dark && "dark")}
+        className={cn(
+          "motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]",
+          dark && "dark",
+          className,
+        )}
         style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
       >
         <BottomSheet.Header ref={setHeader} className="relative">

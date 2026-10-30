@@ -104,6 +104,25 @@
   pointer-events: auto;
 }
 
+.sheet {
+  --sheet: color-mix(in srgb, var(--journey-white) 8%, var(--journey-background));
+  --sheet-raised: color-mix(in srgb, var(--journey-white) 14%, var(--journey-background));
+  --sheet-line: color-mix(in srgb, var(--journey-white) 8%, transparent);
+  --surface: var(--sheet);
+  --card: var(--sheet);
+  --fill-surface: var(--sheet);
+  --color-surface: var(--sheet);
+  --color-card: var(--sheet);
+  --muted: var(--sheet-raised);
+  --fill-muted: var(--sheet-raised);
+  --color-muted: var(--sheet-raised);
+  --fill-elevated: var(--sheet-raised);
+  --map-empty: var(--sheet-raised);
+  --color-map-empty: var(--sheet-raised);
+  --border: var(--sheet-line);
+  --border-default: var(--sheet-line);
+  --color-border: var(--sheet-line);
+}
 .recordHeader {
   position: absolute;
   z-index: 1;

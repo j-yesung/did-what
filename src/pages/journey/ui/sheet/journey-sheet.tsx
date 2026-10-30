@@ -36,7 +36,7 @@ export function JourneySheet({ open, onClose, onCloseComplete, finalFocus, child
       showSwipeHandle
     >
       <BottomSheet.Content
-        className="dark motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
+        className={`dark ${styles.sheet} motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]`}
         style={{ "--drawer-content-max-height": FULL_SHEET_HEIGHT } as CSSProperties}
         finalFocus={finalFocus}
       >
