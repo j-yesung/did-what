@@ -245,8 +245,9 @@
 .metrics {
   --metrics-size: clamp(40px, 13vw, 56px);
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 14px;
+  gap: 0 10px;
   min-height: calc(var(--metrics-size) * 1.1);
   white-space: nowrap;
 }
@@ -268,6 +269,18 @@
   font-size: calc(var(--metrics-size) * 0.3);
   font-style: normal;
   opacity: 0.75;
+}
+.weather {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: calc(var(--metrics-size) * 0.3);
+  opacity: 0.75;
+}
+.weather svg {
+  width: 1.3em;
+  height: 1.3em;
 }
 .metrics b {
   margin-right: 2px;

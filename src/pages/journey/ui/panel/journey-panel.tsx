@@ -24,6 +24,7 @@ const keepIfSame = (next: Edges) => (current: Edges) =>
 type JourneyPanelProps = {
   ref: Ref<HTMLDivElement>;
   session: JourneySession;
+  weather?: string;
   onRecover: (skip: boolean) => void;
   onFinishReplay: () => void;
   onSelectPlace: (place: JourneyPlace) => void;
@@ -33,6 +34,7 @@ type JourneyPanelProps = {
 export function JourneyPanel({
   ref,
   session,
+  weather,
   onRecover,
   onFinishReplay,
   onSelectPlace,
@@ -113,7 +115,7 @@ export function JourneyPanel({
           </button>
         ))}
       </div>
-      <RouteMetrics segments={session.segments} instant={session.restored} />
+      <RouteMetrics segments={session.segments} weather={weather} instant={session.restored} />
       {session.segments.some((segment) => segment.route.straight) && (
         <p className={styles.note}>차로 갈 수 없는 구간은 직선으로 이었고 거리·시간에서 뺐어요</p>
       )}

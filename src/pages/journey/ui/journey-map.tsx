@@ -303,6 +303,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         <JourneyPanel
           ref={panelRef}
           session={session}
+          weather={activeRecord?.weather}
           onRecover={journey.recover}
           onFinishReplay={journey.finishReplay}
           onSelectPlace={journey.selectPlace}
