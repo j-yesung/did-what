@@ -127,6 +127,9 @@
 }
 .arrival {
   fill: var(--journey-green);
+  stroke: var(--journey-white);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
 }
 .place .arrival {
   fill: var(--journey-sky);
