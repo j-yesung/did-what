@@ -24,7 +24,9 @@ export function RecordHeader({ ref, titleRef, regionName, record, onRead }: Reco
       </Button>
       {record && (
         <p className={styles.recordMeta}>
-          {record.activity} · {formatShortPeriod(record.recorded_at, record.recorded_until)}
+          {record.activity}
+          <br />
+          {formatShortPeriod(record.recorded_at, record.recorded_until)}
         </p>
       )}
     </div>
