@@ -76,6 +76,9 @@
 .arrival {
   fill: var(--journey-green);
 }
+.place .arrival {
+  fill: var(--journey-sky);
+}
 .previous {
   fill: var(--journey-white);
 }
@@ -92,6 +95,9 @@
   transform-box: fill-box;
   transform-origin: center;
   animation: pulse 1.8s ease-out infinite;
+}
+.place .pulse {
+  stroke: var(--journey-sky);
 }
 @keyframes pulse {
   from {
@@ -318,7 +324,7 @@
 
 .focusRing {
   fill: none;
-  stroke: var(--journey-green);
+  stroke: var(--journey-sky);
   transform-box: fill-box;
   transform-origin: center;
   animation: focus-ring 900ms ease-out 2 both;

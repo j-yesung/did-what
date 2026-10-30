@@ -86,7 +86,11 @@ export function RouteLayer({ segments, complete, drawing, highlight, unit, onSke
         const point = project(segment.to.longitude, segment.to.latitude);
         const isCurrent = index === complete.length - 1 && !drawing;
         return (
-          <g key={`point-${segment.key}`} className={styles.pinned} style={pinAt(point)}>
+          <g
+            key={`point-${segment.key}`}
+            className={segment.target ? `${styles.pinned} ${styles.place}` : styles.pinned}
+            style={pinAt(point)}
+          >
             <circle
               cx={point.x}
               cy={point.y}
