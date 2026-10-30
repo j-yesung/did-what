@@ -7,12 +7,12 @@ import { type JourneyRecordRow, toJourneyRegions } from "../model/record";
 
 export const getJourneyRegions = async () => {
   const { supabase, user } = await requireMember();
-  const records: JourneyRecordRow[] = [];
+  const records: (JourneyRecordRow & { recorded_at: string })[] = [];
   for (let offset = 0; ; offset += 500) {
     const { data, error } = await supabase
       .from("records")
       .select(
-        "id, region_code, record_regions(region_code, region_name, region_latitude, region_longitude, selected_directly), record_places(place:places(id, name, latitude, longitude))",
+        "id, recorded_at, region_code, record_regions(region_code, region_name, region_latitude, region_longitude, selected_directly), record_places(place:places(id, name, latitude, longitude))",
       )
       .eq("owner_id", user.id)
       .order("recorded_at", { ascending: false })
@@ -24,6 +24,15 @@ export const getJourneyRegions = async () => {
   }
   return {
     regions: toJourneyRegions(records),
-    visits: toRecordMapPoints(records).map(({ latitude, longitude }) => ({ latitude, longitude })),
+    visits: records.flatMap((record) => {
+      const placeIds = record.record_places.flatMap(({ place }) => (place ? [place.id] : []));
+      return toRecordMapPoints([record]).map(({ latitude, longitude }, index) => ({
+        latitude,
+        longitude,
+        recordId: record.id,
+        placeId: placeIds[index] ?? null,
+        recordedAt: record.recorded_at,
+      }));
+    }),
   };
 };

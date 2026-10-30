@@ -1,4 +1,4 @@
-import { circlesPath, dotStep, landDots, spotRadius, toShape } from "./dot-map.ts";
+import { circlesPath, dotStep, firstLit, landDots, spotRadius, toShape } from "./dot-map.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -40,4 +40,12 @@ test("확대할수록 점 간격이 절반씩 줄어 화면에서 비슷한 간�
   assert.equal(dotStep(0.25), 2.8);
   assert.ok(dotStep(0.001) / 0.001 >= 11 && dotStep(0.001) / 0.001 < 22);
   assert.equal(circlesPath([{ x: 1, y: 2 }], 0.5), "M0.500 2.000a0.500 0.500 0 1 0 1.000 0a0.500 0.500 0 1 0 -1.000 0");
+});
+
+test("먼저 다녀온 기록이 같은 점을 켜 두지 않았을 때만 처음 밝힌 곳으로 본다", () => {
+  const spot = { x: 5.4, y: 4.6, weight: 0.5 };
+  assert.ok(firstLit(spot, [], 2.5));
+  assert.ok(firstLit(spot, [{ x: 9, y: 9, weight: 0.5 }], 2.5));
+  assert.ok(!firstLit(spot, [{ x: 4.9, y: 5.2, weight: 0.5 }], 2.5));
+  assert.ok(firstLit(spot, [{ x: 4.9, y: 5.2, weight: 0.5 }], 0.35), "확대해서 점이 갈라지면 처음 밝힌 곳이 된다");
 });

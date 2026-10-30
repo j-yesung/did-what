@@ -1,6 +1,6 @@
 import { memo, useId } from "react";
 
-import { circlesPath, LIT_LEVELS, landDots, type Spot, toShape } from "../../model/dot-map";
+import { circlesPath, LIT_LEVELS, landDots, nearestDot, type Spot, toShape } from "../../model/dot-map";
 import boundaries from "../../model/map-boundaries.json";
 import { type Box, project } from "../../model/map-view";
 import type { JourneyPoint } from "../../model/types";
@@ -15,9 +15,9 @@ const LIT_COLORS = Array.from({ length: LIT_LEVELS }, (_, level) => {
 export const toSpots = (visits: JourneyPoint[]): Spot[] =>
   visits.map((visit) => ({ ...project(visit.longitude, visit.latitude), weight: 0.5 }));
 
-type DotLandProps = { box: Box; step: number; spots: Spot[] };
+type DotLandProps = { box: Box; step: number; spots: Spot[]; bursts: (Spot & { key: string })[] };
 
-export const DotLand = memo(function DotLand({ box, step, spots }: DotLandProps) {
+export const DotLand = memo(function DotLand({ box, step, spots, bursts }: DotLandProps) {
   const dots = landDots(land, spots, box, step);
   const levels = LIT_COLORS.map((_, level) => dots.filter((dot) => dot.level === level));
   const glow = useId();
@@ -54,6 +54,15 @@ export const DotLand = memo(function DotLand({ box, step, spots }: DotLandProps)
       {levels.map((group, level) => (
         <path key={LIT_COLORS[level]} d={circlesPath(group, step * 0.3)} fill={LIT_COLORS[level]} />
       ))}
+      {bursts.map((burst) => {
+        const dot = nearestDot(burst, step);
+        return (
+          <g key={burst.key} className={styles.burst}>
+            <circle cx={dot.x} cy={dot.y} r={step * 0.3} />
+            <circle cx={dot.x} cy={dot.y} r={step * 0.3} strokeWidth={step * 0.08} />
+          </g>
+        );
+      })}
     </g>
   );
 });

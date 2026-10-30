@@ -42,6 +42,19 @@ export type Spot = { x: number; y: number; weight: number };
 
 export const spotRadius = (step: number) => step * 0.75;
 
+export const nearestDot = ({ x, y }: { x: number; y: number }, step: number) => ({
+  x: Math.round(x / step) * step,
+  y: Math.round(y / step) * step,
+});
+
+export const firstLit = (spot: Spot, earlier: Spot[], step: number) => {
+  const dot = nearestDot(spot, step);
+  return earlier.every((other) => {
+    const near = nearestDot(other, step);
+    return near.x !== dot.x || near.y !== dot.y;
+  });
+};
+
 const shine = (spots: Spot[], radius: number, x: number, y: number) => {
   let total = 0;
   for (const spot of spots) {
