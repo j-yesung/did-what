@@ -1,34 +1,43 @@
-import { memo, useId } from "react";
+import { useId } from "react";
 
-import { circlesPath, LIT_LEVELS, landDots, nearestDot, type Spot, toShape } from "../../model/dot-map";
+import {
+  type ArrivalLight,
+  burstDots,
+  circlesPath,
+  LIT_LEVELS,
+  landDots,
+  type Spot,
+  toShape,
+} from "../../model/dot-map";
 import boundaries from "../../model/map-boundaries.json";
-import { type Box, project } from "../../model/map-view";
-import type { JourneyPoint } from "../../model/types";
-import styles from "../journey-map.module.css";
+import type { Box } from "../../model/map-view";
+import styles from "./dot-land.module.css";
 
 const land = boundaries.land.map(toShape);
-const LIT_COLORS = Array.from({ length: LIT_LEVELS }, (_, level) => {
-  const t = 0.25 + ((level + 0.5) / LIT_LEVELS) * 0.75;
-  return `rgb(${Math.round(170 + 85 * t)} ${Math.round(110 + 120 * t)} ${Math.round(40 + 120 * t * t)})`;
-});
 
-export const toSpots = (visits: JourneyPoint[]): Spot[] =>
-  visits.map((visit) => ({ ...project(visit.longitude, visit.latitude), weight: 0.5 }));
+const LIT_COLORS = Array.from(
+  { length: LIT_LEVELS },
+  (_, level) =>
+    `color-mix(in srgb, var(--journey-glow) ${Math.round(((level + 0.5) / LIT_LEVELS) * 100)}%, var(--journey-ember))`,
+);
 
-type DotLandProps = { box: Box; step: number; spots: Spot[]; bursts: (Spot & { key: string })[] };
+type DotLandProps = { box: Box; step: number; spots: Spot[]; arrivals: ArrivalLight[] };
 
-export const DotLand = memo(function DotLand({ box, step, spots, bursts }: DotLandProps) {
+export function DotLand({ box, step, spots, arrivals }: DotLandProps) {
   const dots = landDots(land, spots, box, step);
   const levels = LIT_COLORS.map((_, level) => dots.filter((dot) => dot.level === level));
+  const bursts = arrivals.flatMap((light) =>
+    burstDots(dots, light, step).map((dot) => ({ ...dot, key: `${light.key}:${dot.x},${dot.y}` })),
+  );
   const glow = useId();
 
   return (
     <g>
       <defs>
         <radialGradient id={glow}>
-          <stop offset="0" stopColor="rgb(255 214 120 / 0.9)" />
-          <stop offset="0.4" stopColor="rgb(255 158 44 / 0.35)" />
-          <stop offset="1" stopColor="rgb(255 140 30 / 0)" />
+          <stop offset="0" style={{ stopColor: "color-mix(in srgb, var(--journey-gold) 90%, transparent)" }} />
+          <stop offset="0.4" style={{ stopColor: "color-mix(in srgb, var(--journey-amber) 35%, transparent)" }} />
+          <stop offset="1" style={{ stopColor: "color-mix(in srgb, var(--journey-amber) 0%, transparent)" }} />
         </radialGradient>
       </defs>
       {dots.map(
@@ -52,17 +61,14 @@ export const DotLand = memo(function DotLand({ box, step, spots, bursts }: DotLa
         )}
       />
       {levels.map((group, level) => (
-        <path key={LIT_COLORS[level]} d={circlesPath(group, step * 0.3)} fill={LIT_COLORS[level]} />
+        <path key={LIT_COLORS[level]} d={circlesPath(group, step * 0.3)} style={{ fill: LIT_COLORS[level] }} />
       ))}
-      {bursts.map((burst) => {
-        const dot = nearestDot(burst, step);
-        return (
-          <g key={burst.key} className={styles.burst}>
-            <circle cx={dot.x} cy={dot.y} r={step * 0.3} />
-            <circle cx={dot.x} cy={dot.y} r={step * 0.3} strokeWidth={step * 0.08} />
-          </g>
-        );
-      })}
+      {bursts.map(({ key, x, y }) => (
+        <g key={key} className={styles.burst}>
+          <circle cx={x} cy={y} r={step * 0.3} />
+          <circle cx={x} cy={y} r={step * 0.3} strokeWidth={step * 0.08} />
+        </g>
+      ))}
     </g>
   );
-});
+}

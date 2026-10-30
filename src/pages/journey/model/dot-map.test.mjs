@@ -1,4 +1,4 @@
-import { circlesPath, dotStep, firstLit, landDots, spotRadius, toShape } from "./dot-map.ts";
+import { arrivalLights, burstDots, circlesPath, dotStep, landDots, spotRadius, toShape } from "./dot-map.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -42,10 +42,43 @@ test("확대할수록 점 간격이 절반씩 줄어 화면에서 비슷한 간�
   assert.equal(circlesPath([{ x: 1, y: 2 }], 0.5), "M0.500 2.000a0.500 0.500 0 1 0 1.000 0a0.500 0.500 0 1 0 -1.000 0");
 });
 
-test("먼저 다녀온 기록이 같은 점을 켜 두지 않았을 때만 처음 밝힌 곳으로 본다", () => {
-  const spot = { x: 5.4, y: 4.6, weight: 0.5 };
-  assert.ok(firstLit(spot, [], 2.5));
-  assert.ok(firstLit(spot, [{ x: 9, y: 9, weight: 0.5 }], 2.5));
-  assert.ok(!firstLit(spot, [{ x: 4.9, y: 5.2, weight: 0.5 }], 2.5));
-  assert.ok(firstLit(spot, [{ x: 4.9, y: 5.2, weight: 0.5 }], 0.35), "확대해서 점이 갈라지면 처음 밝힌 곳이 된다");
+const visit = (recordId, placeId, recordedAt, createdAt, longitude = 128.6) => ({
+  recordId,
+  placeId,
+  recordedAt,
+  createdAt,
+  latitude: 35.87,
+  longitude,
+});
+
+test("같은 날 먼저 쓴 기록과 앞서 닿은 장소는 먼저 밝힌 곳으로 본다", () => {
+  const visits = [
+    visit("same-day-before", "x", "2026-10-01", "2026-10-01T09:00:00Z"),
+    visit("same-day-after", "y", "2026-10-01", "2026-10-01T11:00:00Z", 128.7),
+    visit("me", "a", "2026-10-01", "2026-10-01T10:00:00Z"),
+    visit("me", "b", "2026-10-01", "2026-10-01T10:00:00Z", 128.7),
+    visit("me", "c", "2026-10-01", "2026-10-01T10:00:00Z", 128.8),
+  ];
+  const toB = arrivalLights(visits, "me", [null, "a", "b"], [{ key: 1, target: { id: "b" } }]);
+  assert.equal(toB[0].fresh.length, 1);
+  assert.equal(toB[0].earlier.length, 2, "같은 날 먼저 쓴 기록과 앞서 닿은 a만 먼저 밝힌 곳이다");
+
+  const toC = arrivalLights(visits, "me", [null, "a", "b", "c"], [{ key: 2, target: { id: "c" } }]);
+  assert.equal(toC[0].earlier.length, 3, "c 앞에 닿은 a, b까지 먼저 밝힌 곳이다");
+  assert.deepEqual(arrivalLights(visits, null, [], []), []);
+});
+
+test("반짝임은 이번에 켜진 점 중 먼저 켜진 적 없는 점에만 터지고, 땅에 점이 없으면 터지지 않는다", () => {
+  const square = toShape([-1, -1, 11, -1, 11, 11, -1, 11]);
+  const fresh = [{ x: 5, y: 5, weight: 0.5 }];
+  const dots = landDots([square], fresh, { x: -5, y: -5, width: 20, height: 20 }, 2.5);
+  assert.deepEqual(
+    burstDots(dots, { key: 1, fresh, earlier: [] }, 2.5).map(({ x, y }) => [x, y]),
+    [[5, 5]],
+  );
+  assert.equal(burstDots(dots, { key: 1, fresh, earlier: [{ x: 5.2, y: 4.9, weight: 0.5 }] }, 2.5).length, 0);
+
+  const sea = [{ x: 30, y: 30, weight: 0.5 }];
+  const seaDots = landDots([square], sea, { x: 20, y: 20, width: 20, height: 20 }, 2.5);
+  assert.equal(burstDots(seaDots, { key: 1, fresh: sea, earlier: [] }, 2.5).length, 0);
 });

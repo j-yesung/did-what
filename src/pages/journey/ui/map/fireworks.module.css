@@ -1,0 +1,35 @@
+.fireworkFlash {
+  fill: var(--journey-glow);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: firework-flash 800ms ease-out both;
+}
+.spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spark 1600ms cubic-bezier(0.15, 0.75, 0.3, 1) both;
+}
+@keyframes firework-flash {
+  from {
+    transform: scale(0.2);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@keyframes spark {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  65% {
+    transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * 1px)) scale(0.9);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(var(--dx) * 1px), calc((var(--dy) + var(--fall)) * 1px)) scale(0.3);
+    opacity: 0;
+  }
+}

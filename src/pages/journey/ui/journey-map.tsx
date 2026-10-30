@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
@@ -14,7 +14,7 @@ import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 
 import { journeyRouteQuery } from "../api/route-query";
-import { dotStep, firstLit } from "../model/dot-map";
+import { arrivalLights, dotStep, toSpot } from "../model/dot-map";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
 import { expandView, national, project } from "../model/map-view";
 import { pickedJourneyPlaces } from "../model/queue";
@@ -26,7 +26,7 @@ import { MAP_OVERSCAN, useMapCamera } from "../model/use-map-camera";
 import { JourneyActions } from "./header/journey-actions";
 import { RecordHeader } from "./header/record-header";
 import styles from "./journey-map.module.css";
-import { DotLand, toSpots } from "./map/dot-land";
+import { DotLand } from "./map/dot-land";
 import { Fireworks } from "./map/fireworks";
 import { NODE_HIT_RADIUS, RegionNodes } from "./map/region-nodes";
 import { RouteLayer } from "./map/route-layer";
@@ -209,15 +209,12 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
 
   const activeRecord = locations.data?.find((record) => record.id === session?.record.id);
   const drawn = expandView(view, MAP_OVERSCAN);
-  const step = dotStep(unit);
-  const ownVisit = (visit: JourneyVisit) => visit.recordId === session?.record.id;
-  const reached = new Set(journey.completeSegments.map((segment) => segment.target?.id ?? null));
-  const recordedAt = visits.find(ownVisit)?.recordedAt ?? "";
-  const earlier = toSpots(visits.filter((visit) => visit.recordedAt < recordedAt));
-  const bursts = journey.arrivals.flatMap(({ key, target }) =>
-    toSpots(visits.filter((visit) => ownVisit(visit) && visit.placeId === (target?.id ?? null)))
-      .filter((spot) => firstLit(spot, earlier, step))
-      .map((spot, index) => ({ ...spot, key: `${key}-${index}` })),
+  const recordId = session?.record.id ?? null;
+  const reachedKey = JSON.stringify(journey.completeSegments.map((segment) => segment.target?.id ?? null));
+  const spots = useMemo(() => visits.map(toSpot), [visits]);
+  const lights = useMemo(
+    () => arrivalLights(visits, recordId, JSON.parse(reachedKey) as (string | null)[], journey.arrivals),
+    [visits, recordId, reachedKey, journey.arrivals],
   );
   const viewBox = `${drawn.x} ${drawn.y} ${drawn.width} ${drawn.height}`;
 
@@ -246,12 +243,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       <div ref={stageRef} className={styles.stage} {...handlers}>
         <div ref={layerRef} className={styles.layer} style={{ "--map-overscan": MAP_OVERSCAN } as CSSProperties}>
           <svg className={styles.base} viewBox={viewBox} aria-hidden="true">
-            <DotLand
-              box={drawn}
-              step={step}
-              spots={toSpots(visits.filter((visit) => !ownVisit(visit) || reached.has(visit.placeId)))}
-              bursts={bursts}
-            />
+            <DotLand box={drawn} step={dotStep(unit)} spots={spots} arrivals={lights} />
           </svg>
           <svg className={styles.map} viewBox={viewBox} aria-label="방문 지역 지도">
             {session && (

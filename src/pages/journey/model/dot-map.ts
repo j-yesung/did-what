@@ -1,4 +1,5 @@
-import type { Box } from "./map-view";
+import { type Box, project } from "./map-view";
+import type { JourneyPoint, JourneyVisit } from "./types";
 
 export type Shape = { points: number[]; left: number; top: number; right: number; bottom: number };
 
@@ -39,20 +40,42 @@ export const dotStep = (unit: number) =>
   BASE_STEP / 2 ** Math.max(0, Math.floor(Math.log2(BASE_STEP / (MIN_GAP * unit))));
 
 export type Spot = { x: number; y: number; weight: number };
+export type Dot = { x: number; y: number; level: number };
+export type ArrivalLight = { key: number; fresh: Spot[]; earlier: Spot[] };
 
 export const spotRadius = (step: number) => step * 0.75;
 
-export const nearestDot = ({ x, y }: { x: number; y: number }, step: number) => ({
-  x: Math.round(x / step) * step,
-  y: Math.round(y / step) * step,
-});
+export const toSpot = (point: JourneyPoint): Spot => ({ ...project(point.longitude, point.latitude), weight: 0.5 });
 
-export const firstLit = (spot: Spot, earlier: Spot[], step: number) => {
-  const dot = nearestDot(spot, step);
-  return earlier.every((other) => {
-    const near = nearestDot(other, step);
-    return near.x !== dot.x || near.y !== dot.y;
+const visitOrder = (visit: JourneyVisit) => `${visit.recordedAt}|${visit.createdAt}|${visit.recordId}`;
+
+export const arrivalLights = (
+  visits: readonly JourneyVisit[],
+  recordId: string | null,
+  reached: readonly (string | null)[],
+  arrivals: readonly { key: number; target: { id: string } | null }[],
+): ArrivalLight[] => {
+  const own = visits.filter((visit) => visit.recordId === recordId);
+  if (!own.length) return [];
+
+  const order = visitOrder(own[0]);
+  const before = visits.filter((visit) => visit.recordId !== recordId && visitOrder(visit) < order).map(toSpot);
+  return arrivals.map(({ key, target }) => {
+    const placeId = target?.id ?? null;
+    const passed = reached.slice(0, Math.max(0, reached.indexOf(placeId)));
+    return {
+      key,
+      fresh: own.filter((visit) => visit.placeId === placeId).map(toSpot),
+      earlier: [...before, ...own.filter((visit) => passed.includes(visit.placeId)).map(toSpot)],
+    };
   });
+};
+
+export const burstDots = (dots: readonly Dot[], light: ArrivalLight, step: number) => {
+  const reach = spotRadius(step) ** 2;
+  const lit = (spots: Spot[], dot: Dot) => spots.some((spot) => (spot.x - dot.x) ** 2 + (spot.y - dot.y) ** 2 <= reach);
+
+  return dots.filter((dot) => dot.level >= 0 && lit(light.fresh, dot) && !lit(light.earlier, dot));
 };
 
 const shine = (spots: Spot[], radius: number, x: number, y: number) => {
@@ -66,7 +89,7 @@ const shine = (spots: Spot[], radius: number, x: number, y: number) => {
 };
 
 export const landDots = (land: Shape[], spots: Spot[], box: Box, step: number) => {
-  const dots: { x: number; y: number; level: number }[] = [];
+  const dots: Dot[] = [];
   const radius = spotRadius(step);
   const nearby = spots.filter(
     ({ x, y }) =>

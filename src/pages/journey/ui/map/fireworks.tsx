@@ -1,9 +1,10 @@
 import type { CSSProperties } from "react";
 
 import { pinAt } from "../../model/map-view";
-import styles from "../journey-map.module.css";
+import journey from "../journey-map.module.css";
+import styles from "./fireworks.module.css";
 
-const COLORS = ["rgb(255 214 120)", "rgb(255 158 44)", "var(--journey-white)", "var(--journey-sky)"];
+const COLORS = ["var(--journey-gold)", "var(--journey-amber)", "var(--journey-white)", "var(--journey-sky)"];
 
 const SPARKS = Array.from({ length: 18 }, (_, index) => {
   const angle = (index / 18) * Math.PI * 2 + (index % 2) * 0.17;
@@ -15,7 +16,7 @@ type FireworksProps = { point: { x: number; y: number }; unit: number };
 
 export function Fireworks({ point, unit }: FireworksProps) {
   return (
-    <g className={`${styles.pinned} ${styles.fireworks}`} style={pinAt(point)} aria-hidden="true">
+    <g className={journey.pinned} style={pinAt(point)} aria-hidden="true">
       <circle className={styles.fireworkFlash} cx={point.x} cy={point.y} r={unit * 10} />
       {SPARKS.map((spark) => (
         <circle

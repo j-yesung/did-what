@@ -37,75 +37,6 @@
   transform-box: view-box;
   transform: scale(calc(1 / var(--map-scale, 1)));
 }
-.fireworkFlash {
-  fill: rgb(255 236 170);
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: firework-flash 800ms ease-out both;
-}
-.spark {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: spark 1600ms cubic-bezier(0.15, 0.75, 0.3, 1) both;
-}
-@keyframes firework-flash {
-  from {
-    transform: scale(0.2);
-    opacity: 0.9;
-  }
-  to {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-}
-@keyframes spark {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  65% {
-    transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * 1px)) scale(0.9);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(calc(var(--dx) * 1px), calc((var(--dy) + var(--fall)) * 1px)) scale(0.3);
-    opacity: 0;
-  }
-}
-.burst circle {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: burst-flash 700ms ease-out both;
-  fill: rgb(255 236 170);
-}
-.burst circle + circle {
-  animation: burst-ring 1300ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
-  fill: none;
-  stroke: rgb(255 200 90);
-}
-@keyframes burst-flash {
-  from {
-    transform: scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: scale(3.2);
-    opacity: 0;
-  }
-}
-@keyframes burst-ring {
-  from {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  to {
-    transform: scale(9);
-    opacity: 0;
-  }
-}
-.mutedDots {
-  fill: color-mix(in srgb, var(--journey-line) 40%, transparent);
-}
 .route {
   fill: none;
   stroke: var(--journey-white);
@@ -311,51 +242,6 @@
   border-color: var(--journey-green);
   color: var(--journey-green);
 }
-.metrics {
-  --metrics-size: clamp(40px, 13vw, 56px);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 10px;
-  min-height: calc(var(--metrics-size) * 1.1);
-  white-space: nowrap;
-}
-.metrics em span + span {
-  margin-left: 6px;
-}
-.metrics strong {
-  font-size: var(--metrics-size);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.06em;
-  line-height: 1.1;
-}
-.metrics small {
-  font-size: calc(var(--metrics-size) * 0.38);
-  letter-spacing: 0;
-}
-.metrics em {
-  margin-top: 4px;
-  font-size: calc(var(--metrics-size) * 0.3);
-  font-style: normal;
-  opacity: 0.75;
-}
-.weather {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-  font-size: calc(var(--metrics-size) * 0.3);
-  opacity: 0.75;
-}
-.weather svg {
-  width: 1.3em;
-  height: 1.3em;
-}
-.metrics b {
-  margin-right: 2px;
-  font-size: calc(var(--metrics-size) * 0.56);
-  font-variant-numeric: tabular-nums;
-}
 .error {
   display: flex;
   flex-wrap: wrap;
@@ -422,10 +308,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .burst,
-  .fireworks {
-    display: none;
-  }
   .focusRing {
     animation: focus-ring-fade 1.2s ease-out both;
   }

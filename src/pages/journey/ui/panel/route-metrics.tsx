@@ -5,7 +5,7 @@ import { getRecordWeatherLabel, normalizeRecordWeather, WeatherIcon } from "@/en
 import { durationParts } from "../../model/duration";
 import { prefersReducedMotion, SKETCH_MS } from "../../model/motion";
 import type { JourneySegment } from "../../model/types";
-import styles from "../journey-map.module.css";
+import styles from "./route-metrics.module.css";
 
 function AnimatedNumber({
   value,
