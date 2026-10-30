@@ -418,31 +418,6 @@
 .error p {
   line-height: 1.6;
 }
-.placeLabel {
-  cursor: pointer;
-  outline: none;
-}
-.labelHit {
-  fill: transparent;
-}
-.labelSurface {
-  fill: var(--journey-land);
-  stroke: var(--border-default);
-}
-.placeLabel text {
-  fill: var(--journey-white);
-  font-weight: 600;
-  pointer-events: none;
-}
-.placeLabel .labelCount {
-  fill: var(--journey-green);
-}
-.placeLabel:focus-visible .labelSurface {
-  stroke: var(--journey-green);
-}
-.placeLabel:active .labelSurface {
-  fill: var(--fill-elevated);
-}
 .node:active .halo {
   stroke: var(--journey-green);
   stroke-width: 3px;

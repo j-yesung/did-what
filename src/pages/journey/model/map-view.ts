@@ -1,4 +1,4 @@
-import type { JourneyPlace, JourneyRoute as Route } from "./types";
+import type { JourneyRoute as Route } from "./types";
 
 export type Box = { x: number; y: number; width: number; height: number };
 
@@ -159,110 +159,6 @@ export const partialPathData = (points: Point[], lengths: number[], length: numb
     ...points.slice(0, end),
     { x: from.x + (to.x - from.x) * ratio, y: from.y + (to.y - from.y) * ratio },
   ]);
-};
-
-const nameWidth = (name: string) => [...name].reduce((width, char) => width + (char.charCodeAt(0) > 255 ? 11 : 6.5), 0);
-
-const LABEL_SLOTS = [
-  { side: 1, above: true },
-  { side: -1, above: true },
-  { side: 1, above: false },
-  { side: -1, above: false },
-];
-
-const labelFrame = (view: Box, unit: number, viewportWidth: number) => {
-  const left = view.x + view.width / 2 - (viewportWidth * unit) / 2 + 12 * unit;
-  const right = left + (viewportWidth - 24) * unit;
-
-  const visible = (place: JourneyPlace) => {
-    const point = project(place.longitude, place.latitude);
-    return (
-      point.x >= left - 12 * unit &&
-      point.x <= right + 12 * unit &&
-      point.y >= view.y &&
-      point.y <= view.y + view.height
-    );
-  };
-
-  const layout = (group: JourneyPlace[], slot = 0) => {
-    const place = group[0];
-    const point = project(place.longitude, place.latitude);
-    const suffix = group.length > 1 ? ` +${group.length - 1}` : "";
-    const maxWidth = Math.max(44, (right - left) / unit - 20);
-
-    let name = place.name;
-    while (name.length > 1 && nameWidth(name + suffix) > maxWidth) name = name.slice(0, -1);
-
-    if (name !== place.name) name = `${name.slice(0, -1)}…`;
-
-    const width = Math.max(44, nameWidth(name + suffix) + 20) * unit;
-    const { side, above } = LABEL_SLOTS[slot];
-    const x = Math.max(left, Math.min(right - width, side > 0 ? point.x + 7 * unit : point.x - 7 * unit - width));
-    const y = above ? point.y - 38 * unit : point.y + 6 * unit;
-
-    return { key: place.id, x, y, width, name, places: group, slot };
-  };
-
-  return { visible, layout };
-};
-
-export const placeLabels = (
-  places: readonly JourneyPlace[],
-  view: Box,
-  unit: number,
-  viewportWidth: number,
-  settled = { view, unit },
-) => {
-  const grouping = labelFrame(settled.view, settled.unit, viewportWidth);
-  const gap = settled.unit;
-  const unique = [...new Map(places.map((place) => [place.id, place])).values()].filter(grouping.visible);
-
-  type Label = ReturnType<typeof grouping.layout>;
-  const overlaps = (a: Label, b: Label) =>
-    a.x < b.x + b.width + 6 * gap && b.x < a.x + a.width + 6 * gap && Math.abs(a.y - b.y) < 36 * gap;
-
-  let groups = unique.map((place) => [place]);
-  for (;;) {
-    const placed: Label[] = [];
-    let blocked = -1;
-    for (const [index, group] of groups.entries()) {
-      const label = LABEL_SLOTS.map((_, slot) => grouping.layout(group, slot)).find((candidate) =>
-        placed.every((other) => !overlaps(candidate, other)),
-      );
-      if (!label) {
-        blocked = index;
-        break;
-      }
-      placed.push(label);
-    }
-
-    if (blocked < 0) {
-      const current = labelFrame(view, unit, viewportWidth);
-      return placed.map((label) => current.layout(label.places, label.slot));
-    }
-
-    const preferred = grouping.layout(groups[blocked]);
-    const target = Math.max(
-      0,
-      placed.findIndex((other) => overlaps(preferred, other)),
-    );
-    groups[target] = [...groups[target], ...groups[blocked]];
-    groups = groups.filter((_, index) => index !== blocked);
-  }
-};
-
-export const placesBox = (places: readonly JourneyPlace[], viewport: { width: number; height: number }): Box => {
-  if (!places.length) return national;
-
-  const points = places.map((place) => project(place.longitude, place.latitude));
-  const minX = Math.min(...points.map((point) => point.x));
-  const maxX = Math.max(...points.map((point) => point.x));
-  const minY = Math.min(...points.map((point) => point.y));
-  const maxY = Math.max(...points.map((point) => point.y));
-  const width = Math.max(0.02, (maxX - minX) * 3, (((maxY - minY) * viewport.width) / viewport.height) * 3);
-  const height = (width * viewport.height) / viewport.width;
-
-  return { x: (minX + maxX - width) / 2, y: (minY + maxY) / 2 - height * 0.45, width, height };
 };
 
 const worldStart = project(124.5, 39.4);

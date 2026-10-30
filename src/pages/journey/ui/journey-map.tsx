@@ -15,7 +15,7 @@ import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 
 import { journeyRouteQuery } from "../api/route-query";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
-import { expandView, national, placesBox, project } from "../model/map-view";
+import { expandView, national, project } from "../model/map-view";
 import { prefersReducedMotion } from "../model/motion";
 import { pickedJourneyPlaces } from "../model/queue";
 import { type JourneyRecord, toJourneyRecord } from "../model/record";
@@ -27,7 +27,6 @@ import { JourneyActions } from "./header/journey-actions";
 import { RecordHeader } from "./header/record-header";
 import styles from "./journey-map.module.css";
 import { DistrictShapes, MapShapes } from "./map/map-shapes";
-import { PlaceLabels } from "./map/place-labels";
 import { NODE_HIT_RADIUS, RegionNodes } from "./map/region-nodes";
 import { RouteLayer } from "./map/route-layer";
 import { EmptyJourney, HomeNotice } from "./panel/journey-notices";
@@ -76,9 +75,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
   const {
     view,
     viewRef,
-    viewport,
     unit,
-    settled,
     stageRef,
     layerRef,
     headerRef,
@@ -266,16 +263,6 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
                 onChoose={chooseRegion}
               />
             )}
-            <PlaceLabels
-              places={journey.completeSegments.flatMap((segment) => (segment.target ? [segment.target] : []))}
-              view={view}
-              unit={unit}
-              viewportWidth={viewport.width}
-              settled={settled}
-              canTap={canTap}
-              onFocus={journey.focusPlace}
-              onChoose={sheet.showPlaces}
-            />
           </svg>
         </div>
       </div>
@@ -370,18 +357,9 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
             <RegionChoices
               kind={sheet.content}
               regions={sheet.content === "choices" ? sheet.choices : regions}
-              places={sheet.places}
               headerRef={sheet.snap.setHeader}
               bodyRef={sheet.snap.setBody}
               onRegion={openRegion}
-              onPlace={(place) => {
-                sheet.show(null);
-                journey.focusPlace(place);
-              }}
-              onPlacesTogether={() => {
-                sheet.show(null);
-                moveCamera(placesBox(sheet.places, viewport));
-              }}
             />
           )
         )}

@@ -36,7 +36,6 @@ export const MAP_OVERSCAN = 1.5;
 
 export const useMapCamera = () => {
   const [view, setViewState] = useState<Box>(national);
-  const [settledView, setSettledView] = useState<Box>(national);
   const viewRef = useRef(view);
   const rendered = useRef(view);
   const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -95,11 +94,6 @@ export const useMapCamera = () => {
     if (viewRef.current !== rendered.current) setViewState(viewRef.current);
   };
 
-  const settle = () => {
-    commit();
-    setSettledView(viewRef.current);
-  };
-
   const preview = (next: Box) => {
     viewRef.current = next;
     const shift = applyTransform();
@@ -114,13 +108,12 @@ export const useMapCamera = () => {
     cancelAnimationFrame(animation.current);
     settled.current?.();
     settled.current = null;
-    settle();
+    commit();
   };
 
   const setView = (next: Box) => {
     viewRef.current = next;
     setViewState(next);
-    setSettledView(next);
   };
 
   const moveCamera = (next: Box) => {
@@ -146,7 +139,7 @@ export const useMapCamera = () => {
         if (progress < 1) animation.current = requestAnimationFrame(tick);
         else {
           settled.current = null;
-          settle();
+          commit();
           resolve();
         }
       };
@@ -203,7 +196,7 @@ export const useMapCamera = () => {
       preview(momentumView(start, velocity, elapsed));
       if (elapsed < 500 && speed * Math.exp(-elapsed / MOMENTUM_MS) > 0.02)
         animation.current = requestAnimationFrame(tick);
-      else settle();
+      else commit();
     };
     animation.current = requestAnimationFrame(tick);
   };
@@ -238,7 +231,7 @@ export const useMapCamera = () => {
       event.timeStamp - last.time <= 100 &&
       speed >= GLIDE_MIN_SPEED;
     if (gliding) glide(current, velocity, unit);
-    else settle();
+    else commit();
   };
 
   const handlers = {
@@ -299,7 +292,7 @@ export const useMapCamera = () => {
       stop();
       zoomAt(event.clientX, event.clientY, Math.exp(event.deltaY * 0.001));
       if (wheelTimer.current) clearTimeout(wheelTimer.current);
-      wheelTimer.current = setTimeout(settle, 150);
+      wheelTimer.current = setTimeout(commit, 150);
     },
   };
 
@@ -308,9 +301,7 @@ export const useMapCamera = () => {
   return {
     view,
     viewRef,
-    viewport,
     unit: viewScale(view, viewport),
-    settled: { view: settledView, unit: viewScale(settledView, viewport) },
     stageRef,
     layerRef,
     headerRef,

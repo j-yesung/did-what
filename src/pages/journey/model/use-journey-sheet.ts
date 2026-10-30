@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { SHEET_EXPAND_MS, useCompactSnapPoint } from "@/shared/ui/use-compact-snap-point";
 
-import type { JourneyPlace, JourneyRegion, JourneySheetKind } from "./types";
+import type { JourneyRegion, JourneySheetKind } from "./types";
 
 const CLOSE_FALLBACK_MS = 700;
 
@@ -15,11 +15,10 @@ export const useJourneySheet = (keepOpener: boolean) => {
   const [content, setContent] = useState(kind);
   if (kind !== null && kind !== content) setContent(kind);
   const [choices, setChoices] = useState<JourneyRegion[]>([]);
-  const [places, setPlaces] = useState<JourneyPlace[]>([]);
   const opener = useRef<Element | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolveClosed = useRef<(() => void) | null>(null);
-  const snap = useCompactSnapPoint(kind === "regions" || kind === "choices" || kind === "places");
+  const snap = useCompactSnapPoint(kind === "regions" || kind === "choices");
 
   useEffect(
     () => () => {
@@ -74,16 +73,10 @@ export const useJourneySheet = (keepOpener: boolean) => {
     show("choices");
   };
 
-  const showPlaces = (group: JourneyPlace[]) => {
-    setPlaces(group);
-    show("places");
-  };
-
   return {
     kind,
     content,
     choices,
-    places,
     opener,
     snap,
     show,
@@ -91,6 +84,5 @@ export const useJourneySheet = (keepOpener: boolean) => {
     handleCloseComplete,
     expandTo,
     showChoices,
-    showPlaces,
   };
 };

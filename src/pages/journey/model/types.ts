@@ -29,4 +29,4 @@ export type JourneySession = {
   restored?: boolean;
 };
 
-export type JourneySheetKind = "regions" | "choices" | "records" | "places";
+export type JourneySheetKind = "regions" | "choices" | "records";
