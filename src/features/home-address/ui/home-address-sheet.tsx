@@ -2,14 +2,12 @@
 
 import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState, useTransition } from "react";
 
-import { XIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
 import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
-import { IconButton } from "@/shared/ui/icon-button";
 import { Input } from "@/shared/ui/input";
 import { SHEET_EXPAND_MS, useCompactSnapPoint } from "@/shared/ui/use-compact-snap-point";
 
@@ -105,9 +103,7 @@ export function HomeAddressSheet({
         style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
       >
         <BottomSheet.Header ref={setHeader} className="relative">
-          <BottomSheet.Close
-            render={<IconButton aria-label="주소 설정 닫기" icon={XIcon} className="absolute top-2 right-3" />}
-          />
+          <BottomSheet.CloseButton label="주소 설정 닫기" className={searching ? "top-5" : "top-1"} />
           {searching && (
             <div className="mb-5 flex justify-start">
               <BackButton
@@ -119,7 +115,7 @@ export function HomeAddressSheet({
               />
             </div>
           )}
-          <BottomSheet.Title className="text-left font-bold text-xl">
+          <BottomSheet.Title className="pr-12 text-left font-bold text-xl">
             {searching ? "주소 찾기" : "나의 집 주소"}
           </BottomSheet.Title>
           <BottomSheet.Description className="mt-2 text-left">

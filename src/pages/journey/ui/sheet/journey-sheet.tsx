@@ -1,13 +1,11 @@
 import { type CSSProperties, type ReactNode, useMemo } from "react";
 
-import { XIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/record";
 import { createRegionActivityMaps } from "@/entities/region";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
-import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { RegionRecordList } from "@/widgets/region-activity-map/ui/region-record-list";
 
@@ -39,7 +37,7 @@ export function JourneySheet({ open, onClose, onCloseComplete, finalFocus, child
     >
       <BottomSheet.Content
         className="dark motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
-        style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
+        style={{ "--drawer-content-max-height": FULL_SHEET_HEIGHT } as CSSProperties}
         finalFocus={finalFocus}
       >
         {children}
@@ -80,9 +78,7 @@ export function RegionRecords({
   if (homeReady && locations.data && region)
     return (
       <>
-        <BottomSheet.Close
-          render={<IconButton aria-label="기록 목록 닫기" icon={XIcon} className="absolute top-7 right-3 z-10" />}
-        />
+        <BottomSheet.CloseButton label="기록 목록 닫기" className="top-7" />
         <RegionRecordList
           isDetail={false}
           currentRecordId={currentRecordId}

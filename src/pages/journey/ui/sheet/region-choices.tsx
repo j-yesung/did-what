@@ -1,7 +1,6 @@
-import { CaretRightIcon, XIcon } from "@phosphor-icons/react";
+import { CaretRightIcon } from "@phosphor-icons/react";
 
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
-import { IconButton } from "@/shared/ui/icon-button";
 import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 
 import type { JourneyRegion } from "../../model/types";
@@ -14,10 +13,8 @@ type SheetHeaderProps = {
 export function SheetHeader({ title, description }: SheetHeaderProps) {
   return (
     <BottomSheet.Header className="relative text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
-      <BottomSheet.Close
-        render={<IconButton aria-label="목록 닫기" icon={XIcon} className="absolute top-2 right-3" />}
-      />
-      <BottomSheet.Title className="pr-10 text-left font-bold text-xl">{title}</BottomSheet.Title>
+      <BottomSheet.CloseButton label="목록 닫기" className="top-1" />
+      <BottomSheet.Title className="pr-12 text-left font-bold text-xl">{title}</BottomSheet.Title>
       {description && <BottomSheet.Description>{description}</BottomSheet.Description>}
     </BottomSheet.Header>
   );

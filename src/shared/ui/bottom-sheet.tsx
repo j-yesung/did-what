@@ -2,8 +2,10 @@
 import * as React from "react";
 
 import { Drawer as BottomSheetPrimitive } from "@base-ui/react/drawer";
+import { XIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 
 type BottomSheetContextProps = {
   hasSnapPoints: boolean;
@@ -208,8 +210,18 @@ function BottomSheetDescription({ className, ...props }: BottomSheetPrimitive.De
     />
   );
 }
+function BottomSheetCloseButton({ label, className }: { label: string; className?: string }) {
+  return (
+    <div className={cn("absolute right-3 z-10", className)}>
+      <BottomSheetClose render={<LiquidGlassButton aria-label={label} className="size-11" shape="circle" />}>
+        <XIcon aria-hidden="true" />
+      </BottomSheetClose>
+    </div>
+  );
+}
 export const BottomSheet = Object.assign(BottomSheetRoot, {
   Close: BottomSheetClose,
+  CloseButton: BottomSheetCloseButton,
   Content: BottomSheetContent,
   Description: BottomSheetDescription,
   Footer: BottomSheetFooter,
