@@ -37,22 +37,8 @@
   transform-box: view-box;
   transform: scale(calc(1 / var(--map-scale, 1)));
 }
-.land path,
-.land circle {
-  fill: var(--journey-land);
-  stroke: var(--journey-line);
-  stroke-width: 0.45;
-  vector-effect: non-scaling-stroke;
-}
-.land path:last-child {
-  fill: none;
-  stroke-width: 0.9;
-}
-.districts path {
-  fill: none;
-  stroke: var(--journey-line);
-  stroke-width: 0.5;
-  vector-effect: non-scaling-stroke;
+.mutedDots {
+  fill: color-mix(in srgb, var(--journey-line) 40%, transparent);
 }
 .route {
   fill: none;

@@ -14,19 +14,20 @@ import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 
 import { journeyRouteQuery } from "../api/route-query";
+import { dotStep } from "../model/dot-map";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
 import { expandView, national, project } from "../model/map-view";
 import { prefersReducedMotion } from "../model/motion";
 import { pickedJourneyPlaces } from "../model/queue";
 import { type JourneyRecord, toJourneyRecord } from "../model/record";
-import type { JourneyPlace, JourneyRegion } from "../model/types";
+import type { JourneyPlace, JourneyPoint, JourneyRegion } from "../model/types";
 import { useJourneySession } from "../model/use-journey-session";
 import { useJourneySheet } from "../model/use-journey-sheet";
 import { MAP_OVERSCAN, useMapCamera } from "../model/use-map-camera";
 import { JourneyActions } from "./header/journey-actions";
 import { RecordHeader } from "./header/record-header";
 import styles from "./journey-map.module.css";
-import { DistrictShapes, MapShapes } from "./map/map-shapes";
+import { DotLand, toSpots } from "./map/dot-land";
 import { NODE_HIT_RADIUS, RegionNodes } from "./map/region-nodes";
 import { RouteLayer } from "./map/route-layer";
 import { EmptyJourney, HomeNotice } from "./panel/journey-notices";
@@ -36,13 +37,14 @@ import { RegionChoices } from "./sheet/region-choices";
 
 type JourneyMapProps = {
   regions: JourneyRegion[];
+  visits: JourneyPoint[];
   hasHome: boolean;
   homeVersion: string | null;
   homeUnavailable: boolean;
   member: { id: string; name: string };
 };
 
-export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, member }: JourneyMapProps) {
+export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavailable, member }: JourneyMapProps) {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const locations = useQuery(recordLocationsQueryOptions);
@@ -240,8 +242,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
       <div ref={stageRef} className={styles.stage} {...handlers}>
         <div ref={layerRef} className={styles.layer} style={{ "--map-overscan": MAP_OVERSCAN } as CSSProperties}>
           <svg className={styles.base} viewBox={viewBox} aria-hidden="true">
-            <MapShapes />
-            <DistrictShapes viewWidth={view.width} />
+            <DotLand box={drawn} step={dotStep(unit)} spots={toSpots(visits)} />
           </svg>
           <svg className={styles.map} viewBox={viewBox} aria-label="방문 지역 지도">
             {session && (

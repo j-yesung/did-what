@@ -16,7 +16,9 @@ export type RecordMapPoint = {
   longitude: number;
 };
 
-export const toRecordMapPoints = (records: readonly MapRecord[]): RecordMapPoint[] =>
+export const toRecordMapPoints = (
+  records: readonly Pick<MapRecord, "id" | "record_places" | "record_regions">[],
+): RecordMapPoint[] =>
   records.flatMap<RecordMapPoint>((record) => {
     const places = record.record_places.flatMap(({ place }) => (place ? [place] : []));
     if (places.length > 0) {
