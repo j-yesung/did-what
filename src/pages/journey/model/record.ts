@@ -1,7 +1,7 @@
 import { getRegion, getRegionCode } from "@/entities/region/model/region";
 import type { MapRecord } from "@/widgets/region-activity-map/model/record-map-points";
 
-import type { JourneyPlace, JourneyRegion, JourneyPoint as Point } from "./types";
+import type { JourneyPlace, JourneyRegion, JourneyVisit, JourneyPoint as Point } from "./types";
 
 export type { JourneyPlace } from "./types";
 
@@ -49,6 +49,30 @@ export const toJourneyRecord = (record: JourneyRecordRow, regionCode: string): J
     },
   };
 };
+
+export const toJourneyVisits = (
+  records: readonly (JourneyRecordRow & { recorded_at: string; created_at: string })[],
+): JourneyVisit[] =>
+  records.flatMap((record): JourneyVisit[] => {
+    const base = { recordId: record.id, recordedAt: record.recorded_at, createdAt: record.created_at };
+    const places = record.record_places.flatMap(({ place }) => (place ? [place] : []));
+    if (places.length)
+      return places.map((place) => ({
+        ...base,
+        placeId: place.id,
+        latitude: place.latitude,
+        longitude: place.longitude,
+      }));
+
+    return record.record_regions
+      .filter((region, index, all) => all.findIndex((item) => item.region_code === region.region_code) === index)
+      .map((region) => ({
+        ...base,
+        placeId: null,
+        latitude: region.region_latitude,
+        longitude: region.region_longitude,
+      }));
+  });
 
 export const toJourneyRegions = (records: readonly Pick<JourneyRecordRow, "region_code" | "record_regions">[]) => {
   const regions = new Map<string, JourneyRegion>();

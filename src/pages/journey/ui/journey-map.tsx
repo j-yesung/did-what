@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
@@ -14,20 +14,20 @@ import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 
 import { journeyRouteQuery } from "../api/route-query";
+import { arrivalLights, dotStep, toSpot } from "../model/dot-map";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
-import { expandView, national, placesBox, project } from "../model/map-view";
-import { prefersReducedMotion } from "../model/motion";
+import { expandView, national, project } from "../model/map-view";
 import { pickedJourneyPlaces } from "../model/queue";
 import { type JourneyRecord, toJourneyRecord } from "../model/record";
-import type { JourneyPlace, JourneyRegion } from "../model/types";
+import type { JourneyPlace, JourneyRegion, JourneyVisit } from "../model/types";
 import { useJourneySession } from "../model/use-journey-session";
 import { useJourneySheet } from "../model/use-journey-sheet";
 import { MAP_OVERSCAN, useMapCamera } from "../model/use-map-camera";
 import { JourneyActions } from "./header/journey-actions";
 import { RecordHeader } from "./header/record-header";
 import styles from "./journey-map.module.css";
-import { DistrictShapes, MapShapes } from "./map/map-shapes";
-import { PlaceLabels } from "./map/place-labels";
+import { DotLand } from "./map/dot-land";
+import { Fireworks } from "./map/fireworks";
 import { NODE_HIT_RADIUS, RegionNodes } from "./map/region-nodes";
 import { RouteLayer } from "./map/route-layer";
 import { EmptyJourney, HomeNotice } from "./panel/journey-notices";
@@ -37,13 +37,14 @@ import { RegionChoices } from "./sheet/region-choices";
 
 type JourneyMapProps = {
   regions: JourneyRegion[];
+  visits: JourneyVisit[];
   hasHome: boolean;
   homeVersion: string | null;
   homeUnavailable: boolean;
   member: { id: string; name: string };
 };
 
-export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, member }: JourneyMapProps) {
+export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavailable, member }: JourneyMapProps) {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const locations = useQuery(recordLocationsQueryOptions);
@@ -76,9 +77,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
   const {
     view,
     viewRef,
-    viewport,
     unit,
-    settled,
     stageRef,
     layerRef,
     headerRef,
@@ -181,14 +180,8 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
     }
 
     if (selected.code !== region?.code) setSubregion(null);
-    const rising = sheet.kind === "regions" || sheet.kind === "choices";
-    if (!rising || prefersReducedMotion()) {
-      setRegion(selected);
-      sheet.show("records");
-      return;
-    }
-
-    sheet.expandTo("records", () => setRegion(selected));
+    setRegion(selected);
+    sheet.show("records");
   };
 
   const chooseRegion = (selected: JourneyRegion, tap?: { clientX: number; clientY: number }) => {
@@ -216,6 +209,13 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
 
   const activeRecord = locations.data?.find((record) => record.id === session?.record.id);
   const drawn = expandView(view, MAP_OVERSCAN);
+  const recordId = session?.record.id ?? null;
+  const reachedKey = JSON.stringify(journey.completeSegments.map((segment) => segment.target?.id ?? null));
+  const spots = useMemo(() => visits.map(toSpot), [visits]);
+  const lights = useMemo(
+    () => arrivalLights(visits, recordId, JSON.parse(reachedKey) as (string | null)[], journey.arrivals),
+    [visits, recordId, reachedKey, journey.arrivals],
+  );
   const viewBox = `${drawn.x} ${drawn.y} ${drawn.width} ${drawn.height}`;
 
   return (
@@ -243,8 +243,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
       <div ref={stageRef} className={styles.stage} {...handlers}>
         <div ref={layerRef} className={styles.layer} style={{ "--map-overscan": MAP_OVERSCAN } as CSSProperties}>
           <svg className={styles.base} viewBox={viewBox} aria-hidden="true">
-            <MapShapes />
-            <DistrictShapes viewWidth={view.width} />
+            <DotLand box={drawn} step={dotStep(unit)} spots={spots} arrivals={lights} />
           </svg>
           <svg className={styles.map} viewBox={viewBox} aria-label="방문 지역 지도">
             {session && (
@@ -257,6 +256,11 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
                 onSketchEnd={journey.handleSketchEnd}
               />
             )}
+            {session &&
+              journey.arrivals.map(({ key, target }) => {
+                const end = target ?? session.record.destination;
+                return <Fireworks key={key} point={project(end.longitude, end.latitude)} unit={unit} />;
+              })}
             {!session && !restoring && (
               <RegionNodes
                 regions={regions}
@@ -266,16 +270,6 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
                 onChoose={chooseRegion}
               />
             )}
-            <PlaceLabels
-              places={journey.completeSegments.flatMap((segment) => (segment.target ? [segment.target] : []))}
-              view={view}
-              unit={unit}
-              viewportWidth={viewport.width}
-              settled={settled}
-              canTap={canTap}
-              onFocus={journey.focusPlace}
-              onChoose={sheet.showPlaces}
-            />
           </svg>
         </div>
       </div>
@@ -315,6 +309,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
         <JourneyPanel
           ref={panelRef}
           session={session}
+          weather={activeRecord?.weather}
           onRecover={journey.recover}
           onFinishReplay={journey.finishReplay}
           onSelectPlace={journey.selectPlace}
@@ -326,10 +321,6 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
       )}
       <JourneySheet
         open={sheet.kind !== null}
-        kind={sheet.content}
-        compactHeight={sheet.snap.compactHeight}
-        snapPoint={sheet.snap.snapPoint}
-        onSnapPointChange={sheet.snap.setSnapPoint}
         onClose={() => sheet.show(null)}
         onCloseComplete={() => {
           sheet.handleCloseComplete();
@@ -370,18 +361,7 @@ export function JourneyMap({ regions, hasHome, homeVersion, homeUnavailable, mem
             <RegionChoices
               kind={sheet.content}
               regions={sheet.content === "choices" ? sheet.choices : regions}
-              places={sheet.places}
-              headerRef={sheet.snap.setHeader}
-              bodyRef={sheet.snap.setBody}
               onRegion={openRegion}
-              onPlace={(place) => {
-                sheet.show(null);
-                journey.focusPlace(place);
-              }}
-              onPlacesTogether={() => {
-                sheet.show(null);
-                moveCamera(placesBox(sheet.places, viewport));
-              }}
             />
           )
         )}

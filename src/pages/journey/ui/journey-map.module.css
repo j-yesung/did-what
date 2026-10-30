@@ -37,23 +37,6 @@
   transform-box: view-box;
   transform: scale(calc(1 / var(--map-scale, 1)));
 }
-.land path,
-.land circle {
-  fill: var(--journey-land);
-  stroke: var(--journey-line);
-  stroke-width: 0.45;
-  vector-effect: non-scaling-stroke;
-}
-.land path:last-child {
-  fill: none;
-  stroke-width: 0.9;
-}
-.districts path {
-  fill: none;
-  stroke: var(--journey-line);
-  stroke-width: 0.5;
-  vector-effect: non-scaling-stroke;
-}
 .route {
   fill: none;
   stroke: var(--journey-white);
@@ -75,6 +58,12 @@
 }
 .arrival {
   fill: var(--journey-green);
+  stroke: var(--journey-white);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
+.place .arrival {
+  fill: var(--journey-sky);
 }
 .previous {
   fill: var(--journey-white);
@@ -92,6 +81,9 @@
   transform-box: fill-box;
   transform-origin: center;
   animation: pulse 1.8s ease-out infinite;
+}
+.place .pulse {
+  stroke: var(--journey-sky);
 }
 @keyframes pulse {
   from {
@@ -250,38 +242,6 @@
   border-color: var(--journey-green);
   color: var(--journey-green);
 }
-.metrics {
-  --metrics-size: clamp(40px, 13vw, 56px);
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  min-height: calc(var(--metrics-size) * 1.1);
-  white-space: nowrap;
-}
-.metrics em span + span {
-  margin-left: 6px;
-}
-.metrics strong {
-  font-size: var(--metrics-size);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.06em;
-  line-height: 1.1;
-}
-.metrics small {
-  font-size: calc(var(--metrics-size) * 0.38);
-  letter-spacing: 0;
-}
-.metrics em {
-  margin-top: 4px;
-  font-size: calc(var(--metrics-size) * 0.3);
-  font-style: normal;
-  opacity: 0.75;
-}
-.metrics b {
-  margin-right: 2px;
-  font-size: calc(var(--metrics-size) * 0.56);
-  font-variant-numeric: tabular-nums;
-}
 .error {
   display: flex;
   flex-wrap: wrap;
@@ -318,7 +278,7 @@
 
 .focusRing {
   fill: none;
-  stroke: var(--journey-green);
+  stroke: var(--journey-sky);
   transform-box: fill-box;
   transform-origin: center;
   animation: focus-ring 900ms ease-out 2 both;
@@ -418,31 +378,6 @@
 .error p {
   line-height: 1.6;
 }
-.placeLabel {
-  cursor: pointer;
-  outline: none;
-}
-.labelHit {
-  fill: transparent;
-}
-.labelSurface {
-  fill: var(--journey-land);
-  stroke: var(--border-default);
-}
-.placeLabel text {
-  fill: var(--journey-white);
-  font-weight: 600;
-  pointer-events: none;
-}
-.placeLabel .labelCount {
-  fill: var(--journey-green);
-}
-.placeLabel:focus-visible .labelSurface {
-  stroke: var(--journey-green);
-}
-.placeLabel:active .labelSurface {
-  fill: var(--fill-elevated);
-}
 .node:active .halo {
   stroke: var(--journey-green);
   stroke-width: 3px;
@@ -455,7 +390,7 @@
   grid-column: 1;
   min-width: 0;
   max-width: 32ch;
-  color: var(--text-secondary);
+  color: color-mix(in srgb, var(--journey-white) 88%, transparent);
   font-size: 12px;
   line-height: 1.5;
   overflow-wrap: anywhere;

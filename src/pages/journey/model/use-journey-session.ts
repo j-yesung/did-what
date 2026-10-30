@@ -12,6 +12,8 @@ import type { JourneyRecord } from "./record";
 import type { JourneyPlace, JourneyRegion, JourneyRoute, JourneySegment, JourneySession } from "./types";
 import type { MapCamera } from "./use-map-camera";
 
+const ARRIVAL_MS = 1800;
+
 const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
 const toSegment = (
@@ -66,6 +68,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
   const [session, setSession] = useState<JourneySession | null>(null);
   const sessionRef = useRef<JourneySession | null>(null);
   const [highlight, setHighlight] = useState<{ place: JourneyPlace; key: number } | null>(null);
+  const [arrivals, setArrivals] = useState<{ key: number; target: JourneyPlace | null }[]>([]);
   const generation = useRef(0);
   const fastForward = useRef(false);
   const sketchDone = useRef<(() => void) | null>(null);
@@ -109,6 +112,11 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     sketchDone.current = null;
   };
 
+  const arrive = (key: number, target: JourneyPlace | null) => {
+    setArrivals((current) => [...current, { key, target }]);
+    setTimeout(() => setArrivals((current) => current.filter((item) => item.key !== key)), ARRIVAL_MS);
+  };
+
   const run = async (initial: JourneySession, token: number) => {
     let next = initial;
     while (token === generation.current) {
@@ -134,6 +142,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       setSessionValue(next);
       if (!prefersReducedMotion() && !fastForward.current) await waitForSketch();
       if (token !== generation.current) return;
+      if (!prefersReducedMotion() && !fastForward.current) arrive(segment.key, target);
 
       next = { ...sessionRef.current!, current: target, active: null, status: "idle" };
       setSessionValue(next);
@@ -161,6 +170,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     const next = startSession(record, region, queue, replaying);
     setSessionValue(next);
     setHighlight(null);
+    setArrivals([]);
     void run(next, token);
   };
 
@@ -261,12 +271,14 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     fastForward.current = false;
     setSessionValue(null);
     setHighlight(null);
+    setArrivals([]);
   };
 
   return {
     session,
     sessionRef,
     highlight,
+    arrivals,
     completeSegments,
     begin,
     restore,

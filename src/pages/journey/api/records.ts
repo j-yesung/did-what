@@ -2,16 +2,16 @@ import "server-only";
 
 import { requireMember } from "@/entities/member/server";
 
-import { type JourneyRecordRow, toJourneyRegions } from "../model/record";
+import { type JourneyRecordRow, toJourneyRegions, toJourneyVisits } from "../model/record";
 
-export const getJourneyRegions = async () => {
+export const getJourneyMap = async () => {
   const { supabase, user } = await requireMember();
-  const records: Pick<JourneyRecordRow, "region_code" | "record_regions">[] = [];
+  const records: (JourneyRecordRow & { recorded_at: string; created_at: string })[] = [];
   for (let offset = 0; ; offset += 500) {
     const { data, error } = await supabase
       .from("records")
       .select(
-        "region_code, record_regions(region_code, region_name, region_latitude, region_longitude, selected_directly)",
+        "id, recorded_at, created_at, region_code, record_regions(region_code, region_name, region_latitude, region_longitude, selected_directly), record_places(place:places(id, name, latitude, longitude))",
       )
       .eq("owner_id", user.id)
       .order("recorded_at", { ascending: false })
@@ -21,5 +21,5 @@ export const getJourneyRegions = async () => {
     records.push(...data);
     if (data.length < 500) break;
   }
-  return toJourneyRegions(records);
+  return { regions: toJourneyRegions(records), visits: toJourneyVisits(records) };
 };

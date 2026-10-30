@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-import { SHEET_EXPAND_MS, useCompactSnapPoint } from "@/shared/ui/use-compact-snap-point";
-
-import type { JourneyPlace, JourneyRegion, JourneySheetKind } from "./types";
+import type { JourneyRegion, JourneySheetKind } from "./types";
 
 const CLOSE_FALLBACK_MS = 700;
 
@@ -15,29 +13,12 @@ export const useJourneySheet = (keepOpener: boolean) => {
   const [content, setContent] = useState(kind);
   if (kind !== null && kind !== content) setContent(kind);
   const [choices, setChoices] = useState<JourneyRegion[]>([]);
-  const [places, setPlaces] = useState<JourneyPlace[]>([]);
   const opener = useRef<Element | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolveClosed = useRef<(() => void) | null>(null);
-  const snap = useCompactSnapPoint(kind === "regions" || kind === "choices" || kind === "places");
-
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-
-  const clearTimer = () => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = null;
-  };
 
   const show = (next: JourneySheetKind | null) => {
     if (next !== null && kind === null && !keepOpener) opener.current = document.activeElement;
-    clearTimer();
     setKind(next);
-    if (next !== null) snap.setSnapPoint(next === "records" ? 1 : snap.compactHeightRef.current);
   };
 
   const close = (): Promise<unknown> => {
@@ -59,38 +40,19 @@ export const useJourneySheet = (keepOpener: boolean) => {
     resolveClosed.current = null;
   };
 
-  const expandTo = (next: JourneySheetKind, prepare: () => void) => {
-    snap.setSnapPoint(1);
-    clearTimer();
-    timer.current = setTimeout(() => {
-      timer.current = null;
-      prepare();
-      setKind(next);
-    }, SHEET_EXPAND_MS);
-  };
-
   const showChoices = (regions: JourneyRegion[]) => {
     setChoices(regions);
     show("choices");
-  };
-
-  const showPlaces = (group: JourneyPlace[]) => {
-    setPlaces(group);
-    show("places");
   };
 
   return {
     kind,
     content,
     choices,
-    places,
     opener,
-    snap,
     show,
     close,
     handleCloseComplete,
-    expandTo,
     showChoices,
-    showPlaces,
   };
 };

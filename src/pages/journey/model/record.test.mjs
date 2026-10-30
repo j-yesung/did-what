@@ -1,4 +1,4 @@
-import { toJourneyRecord, toJourneyRegions } from "./record.ts";
+import { toJourneyRecord, toJourneyRegions, toJourneyVisits } from "./record.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -77,4 +77,41 @@ test("섬 기록뿐이면 지역 점을 본토 화면 안으로 옮기고, 본�
     { ...record, id: "b", record_regions: [pohang] },
   ]);
   assert.deepEqual([mixed.latitude, mixed.longitude, mixed.count], [36.02, 129.34, 2]);
+});
+
+test("장소가 있으면 장소마다, 없으면 겹치지 않는 지역마다 다녀온 좌표를 만든다", () => {
+  const dated = { recorded_at: "2026-10-24", created_at: "2026-10-24T10:00:00Z" };
+  const visits = toJourneyVisits([
+    {
+      ...record,
+      ...dated,
+      record_places: [{ place: { id: "p1", name: "동성로", latitude: 35.87, longitude: 128.59 } }, { place: null }],
+    },
+    {
+      ...record,
+      ...dated,
+      id: "r2",
+      record_places: [],
+      record_regions: [region("대구 중구", "27110"), region("대구 중구", "27110")],
+    },
+  ]);
+
+  assert.deepEqual(visits, [
+    {
+      recordId: "r1",
+      recordedAt: "2026-10-24",
+      createdAt: "2026-10-24T10:00:00Z",
+      placeId: "p1",
+      latitude: 35.87,
+      longitude: 128.59,
+    },
+    {
+      recordId: "r2",
+      recordedAt: "2026-10-24",
+      createdAt: "2026-10-24T10:00:00Z",
+      placeId: null,
+      latitude: 35.8,
+      longitude: 128.6,
+    },
+  ]);
 });

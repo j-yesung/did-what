@@ -1,49 +1,31 @@
 import { type CSSProperties, type ReactNode, useMemo } from "react";
 
-import { XIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { recordLocationsQueryOptions, toRegionLocations } from "@/entities/record";
 import { createRegionActivityMaps } from "@/entities/region";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
-import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { RegionRecordList } from "@/widgets/region-activity-map/ui/region-record-list";
 
-import type { JourneyRegion, JourneySheetKind } from "../../model/types";
+import type { JourneyRegion } from "../../model/types";
 import styles from "../journey-map.module.css";
 import { HomeLoadError } from "../panel/journey-notices";
 import { SHEET_BODY_CLASS, SheetHeader } from "./region-choices";
 
 type JourneySheetProps = {
   open: boolean;
-  kind: JourneySheetKind | null;
-  compactHeight: number;
-  snapPoint: number | string | null;
-  onSnapPointChange: (snapPoint: number | string | null) => void;
   onClose: () => void;
   onCloseComplete: () => void;
   finalFocus: () => HTMLElement | boolean | null;
   children: ReactNode;
 };
 
-export function JourneySheet({
-  open,
-  kind,
-  compactHeight,
-  snapPoint,
-  onSnapPointChange,
-  onClose,
-  onCloseComplete,
-  finalFocus,
-  children,
-}: JourneySheetProps) {
+export function JourneySheet({ open, onClose, onCloseComplete, finalFocus, children }: JourneySheetProps) {
   return (
     <BottomSheet
-      snapPoints={kind === "records" ? [1] : [compactHeight, 1]}
-      snapPoint={snapPoint}
-      onSnapPointChange={onSnapPointChange}
+      snapPoints={[1]}
       open={open}
       onOpenChangeComplete={(nextOpen) => {
         if (!nextOpen) onCloseComplete();
@@ -55,7 +37,7 @@ export function JourneySheet({
     >
       <BottomSheet.Content
         className="dark motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
-        style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
+        style={{ "--drawer-content-max-height": FULL_SHEET_HEIGHT } as CSSProperties}
         finalFocus={finalFocus}
       >
         {children}
@@ -96,9 +78,7 @@ export function RegionRecords({
   if (homeReady && locations.data && region)
     return (
       <>
-        <BottomSheet.Close
-          render={<IconButton aria-label="기록 목록 닫기" icon={XIcon} className="absolute top-7 right-3 z-10" />}
-        />
+        <BottomSheet.CloseButton label="기록 목록 닫기" className="top-7" />
         <RegionRecordList
           isDetail={false}
           currentRecordId={currentRecordId}

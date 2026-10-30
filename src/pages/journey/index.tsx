@@ -1,17 +1,18 @@
 import { getMemberHomeAddress, requireMember } from "@/entities/member/server";
 
-import { getJourneyRegions } from "./api/records";
+import { getJourneyMap } from "./api/records";
 import { JourneyMap } from "./ui/journey-map";
 
 export async function JourneyPage() {
-  const [{ member }, regions, { data: home, error }] = await Promise.all([
+  const [{ member }, { regions, visits }, { data: home, error }] = await Promise.all([
     requireMember(),
-    getJourneyRegions(),
+    getJourneyMap(),
     getMemberHomeAddress(),
   ]);
   return (
     <JourneyMap
       regions={regions}
+      visits={visits}
       hasHome={Boolean(home)}
       homeVersion={home?.updated_at ?? null}
       homeUnavailable={Boolean(error)}

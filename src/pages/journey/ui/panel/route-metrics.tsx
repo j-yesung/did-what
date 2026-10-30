@@ -1,9 +1,11 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
+import { getRecordWeatherLabel, normalizeRecordWeather, WeatherIcon } from "@/entities/record";
+
 import { durationParts } from "../../model/duration";
 import { prefersReducedMotion, SKETCH_MS } from "../../model/motion";
 import type { JourneySegment } from "../../model/types";
-import styles from "../journey-map.module.css";
+import styles from "./route-metrics.module.css";
 
 function AnimatedNumber({
   value,
@@ -41,7 +43,9 @@ function AnimatedNumber({
   return <>{format(display)}</>;
 }
 
-export function RouteMetrics({ segments, instant }: { segments: JourneySegment[]; instant?: boolean }) {
+type RouteMetricsProps = { segments: JourneySegment[]; weather?: string; instant?: boolean };
+
+export function RouteMetrics({ segments, weather, instant }: RouteMetricsProps) {
   const distance = segments.reduce((sum, segment) => sum + segment.route.distance, 0);
   const duration = segments.reduce((sum, segment) => sum + segment.route.duration, 0);
 
@@ -67,6 +71,12 @@ export function RouteMetrics({ segments, instant }: { segments: JourneySegment[]
               }
             />
           </em>
+          {weather && (
+            <span className={styles.weather}>
+              <WeatherIcon aria-hidden="true" weather={normalizeRecordWeather(weather)} />
+              {getRecordWeatherLabel(normalizeRecordWeather(weather))}
+            </span>
+          )}
         </>
       )}
     </div>

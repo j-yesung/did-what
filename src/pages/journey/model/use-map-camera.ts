@@ -3,6 +3,7 @@
 import {
   type MouseEvent,
   type PointerEvent,
+  startTransition,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -36,12 +37,12 @@ export const MAP_OVERSCAN = 1.5;
 
 export const useMapCamera = () => {
   const [view, setViewState] = useState<Box>(national);
-  const [settledView, setSettledView] = useState<Box>(national);
   const viewRef = useRef(view);
   const rendered = useRef(view);
   const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [viewport, setViewport] = useState({ width: 390, height: 844 });
   const viewportRef = useRef(viewport);
+  const stageRect = useRef<DOMRectReadOnly | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -79,6 +80,7 @@ export const useMapCamera = () => {
     if (!element) return;
 
     const observer = new ResizeObserver(([entry]) => {
+      stageRect.current = element.getBoundingClientRect();
       viewportRef.current = { width: entry.contentRect.width, height: entry.contentRect.height };
       setViewport(viewportRef.current);
     });
@@ -92,12 +94,8 @@ export const useMapCamera = () => {
   }, []);
 
   const commit = () => {
-    if (viewRef.current !== rendered.current) setViewState(viewRef.current);
-  };
-
-  const settle = () => {
-    commit();
-    setSettledView(viewRef.current);
+    const next = viewRef.current;
+    if (next !== rendered.current) startTransition(() => setViewState(next));
   };
 
   const preview = (next: Box) => {
@@ -110,21 +108,26 @@ export const useMapCamera = () => {
     if (shift.scale > 1.6 || MAP_OVERSCAN * shift.scale < 1.2 + drift) commit();
   };
 
-  const stop = () => {
+  const halt = () => {
     cancelAnimationFrame(animation.current);
+    if (wheelTimer.current) clearTimeout(wheelTimer.current);
+    wheelTimer.current = null;
     settled.current?.();
     settled.current = null;
-    settle();
+  };
+
+  const stop = () => {
+    halt();
+    commit();
   };
 
   const setView = (next: Box) => {
     viewRef.current = next;
     setViewState(next);
-    setSettledView(next);
   };
 
   const moveCamera = (next: Box) => {
-    stop();
+    halt();
     const start = viewRef.current;
     const started = performance.now();
     if (prefersReducedMotion()) {
@@ -146,7 +149,7 @@ export const useMapCamera = () => {
         if (progress < 1) animation.current = requestAnimationFrame(tick);
         else {
           settled.current = null;
-          settle();
+          commit();
           resolve();
         }
       };
@@ -155,7 +158,7 @@ export const useMapCamera = () => {
   };
 
   const frame = (): Frame | undefined => {
-    const rect = stageRef.current?.getBoundingClientRect();
+    const rect = stageRect.current;
     if (!rect) return undefined;
 
     const header = headerRef.current?.getBoundingClientRect();
@@ -173,12 +176,12 @@ export const useMapCamera = () => {
   const followRoute = (route: JourneyRoute) => followBox(viewRef.current, route, frame());
 
   const toMapPoint = (clientX: number, clientY: number) => {
-    const rect = stageRef.current?.getBoundingClientRect();
+    const rect = stageRect.current;
     return rect ? toViewPoint(viewRef.current, rect, clientX, clientY) : null;
   };
 
   const zoomAt = (clientX: number, clientY: number, factor: number, panX = 0, panY = 0) => {
-    const rect = stageRef.current?.getBoundingClientRect();
+    const rect = stageRect.current;
     if (!rect) return;
 
     const current = viewRef.current;
@@ -203,7 +206,7 @@ export const useMapCamera = () => {
       preview(momentumView(start, velocity, elapsed));
       if (elapsed < 500 && speed * Math.exp(-elapsed / MOMENTUM_MS) > 0.02)
         animation.current = requestAnimationFrame(tick);
-      else settle();
+      else commit();
     };
     animation.current = requestAnimationFrame(tick);
   };
@@ -238,14 +241,14 @@ export const useMapCamera = () => {
       event.timeStamp - last.time <= 100 &&
       speed >= GLIDE_MIN_SPEED;
     if (gliding) glide(current, velocity, unit);
-    else settle();
+    else commit();
   };
 
   const handlers = {
     onPointerDown: (event: PointerEvent<HTMLDivElement>) => {
       if (event.button !== 0) return;
 
-      stop();
+      halt();
       if (pointers.current.size) dragged.current = true;
       else {
         dragOrigin.current = { x: event.clientX, y: event.clientY };
@@ -296,10 +299,9 @@ export const useMapCamera = () => {
     onPointerUp: release,
     onPointerCancel: release,
     onWheel: (event: WheelEvent<HTMLDivElement>) => {
-      cancelAnimationFrame(animation.current);
+      halt();
       zoomAt(event.clientX, event.clientY, Math.exp(event.deltaY * 0.001));
-      if (wheelTimer.current) clearTimeout(wheelTimer.current);
-      wheelTimer.current = setTimeout(settle, 150);
+      wheelTimer.current = setTimeout(commit, 150);
     },
   };
 
@@ -308,9 +310,7 @@ export const useMapCamera = () => {
   return {
     view,
     viewRef,
-    viewport,
     unit: viewScale(view, viewport),
-    settled: { view: settledView, unit: viewScale(settledView, viewport) },
     stageRef,
     layerRef,
     headerRef,
