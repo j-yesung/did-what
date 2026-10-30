@@ -1,5 +1,3 @@
-import type { Ref } from "react";
-
 import { CaretRightIcon, XIcon } from "@phosphor-icons/react";
 
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -9,14 +7,13 @@ import { ListRow, ListRowTexts } from "@/shared/ui/list-row";
 import type { JourneyRegion } from "../../model/types";
 
 type SheetHeaderProps = {
-  ref?: Ref<HTMLDivElement>;
   title: string;
   description?: string;
 };
 
-export function SheetHeader({ ref, title, description }: SheetHeaderProps) {
+export function SheetHeader({ title, description }: SheetHeaderProps) {
   return (
-    <BottomSheet.Header ref={ref} className="relative text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
+    <BottomSheet.Header className="relative text-left group-data-[swipe-axis=y]/bottom-sheet-popup:text-left">
       <BottomSheet.Close
         render={<IconButton aria-label="목록 닫기" icon={XIcon} className="absolute top-2 right-3" />}
       />
@@ -31,8 +28,6 @@ export const SHEET_BODY_CLASS = "min-h-0 overflow-y-auto px-5 pt-4 pb-[calc(--sp
 type RegionChoicesProps = {
   kind: "regions" | "choices";
   regions: JourneyRegion[];
-  headerRef: Ref<HTMLDivElement>;
-  bodyRef: Ref<HTMLDivElement>;
   onRegion: (region: JourneyRegion) => void;
 };
 
@@ -41,15 +36,14 @@ const TITLES = {
   choices: "어느 지역의 기록을 볼까요?",
 };
 
-export function RegionChoices({ kind, regions, headerRef, bodyRef, onRegion }: RegionChoicesProps) {
+export function RegionChoices({ kind, regions, onRegion }: RegionChoicesProps) {
   return (
     <>
       <SheetHeader
-        ref={headerRef}
         title={TITLES[kind]}
         description={kind === "regions" ? "다시 보고 싶은 지역을 선택해 주세요." : undefined}
       />
-      <div ref={bodyRef} className={SHEET_BODY_CLASS}>
+      <div className={SHEET_BODY_CLASS}>
         {regions.map((item) => (
           <ListRow
             key={item.code}

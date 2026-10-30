@@ -11,39 +11,23 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { RegionRecordList } from "@/widgets/region-activity-map/ui/region-record-list";
 
-import type { JourneyRegion, JourneySheetKind } from "../../model/types";
+import type { JourneyRegion } from "../../model/types";
 import styles from "../journey-map.module.css";
 import { HomeLoadError } from "../panel/journey-notices";
 import { SHEET_BODY_CLASS, SheetHeader } from "./region-choices";
 
 type JourneySheetProps = {
   open: boolean;
-  kind: JourneySheetKind | null;
-  compactHeight: number;
-  snapPoint: number | string | null;
-  onSnapPointChange: (snapPoint: number | string | null) => void;
   onClose: () => void;
   onCloseComplete: () => void;
   finalFocus: () => HTMLElement | boolean | null;
   children: ReactNode;
 };
 
-export function JourneySheet({
-  open,
-  kind,
-  compactHeight,
-  snapPoint,
-  onSnapPointChange,
-  onClose,
-  onCloseComplete,
-  finalFocus,
-  children,
-}: JourneySheetProps) {
+export function JourneySheet({ open, onClose, onCloseComplete, finalFocus, children }: JourneySheetProps) {
   return (
     <BottomSheet
-      snapPoints={kind === "records" ? [1] : [compactHeight, 1]}
-      snapPoint={snapPoint}
-      onSnapPointChange={onSnapPointChange}
+      snapPoints={[1]}
       open={open}
       onOpenChangeComplete={(nextOpen) => {
         if (!nextOpen) onCloseComplete();

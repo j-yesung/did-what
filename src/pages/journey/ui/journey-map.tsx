@@ -17,7 +17,6 @@ import { journeyRouteQuery } from "../api/route-query";
 import { dotStep } from "../model/dot-map";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
 import { expandView, national, project } from "../model/map-view";
-import { prefersReducedMotion } from "../model/motion";
 import { pickedJourneyPlaces } from "../model/queue";
 import { type JourneyRecord, toJourneyRecord } from "../model/record";
 import type { JourneyPlace, JourneyPoint, JourneyRegion } from "../model/types";
@@ -180,14 +179,8 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
     }
 
     if (selected.code !== region?.code) setSubregion(null);
-    const rising = sheet.kind === "regions" || sheet.kind === "choices";
-    if (!rising || prefersReducedMotion()) {
-      setRegion(selected);
-      sheet.show("records");
-      return;
-    }
-
-    sheet.expandTo("records", () => setRegion(selected));
+    setRegion(selected);
+    sheet.show("records");
   };
 
   const chooseRegion = (selected: JourneyRegion, tap?: { clientX: number; clientY: number }) => {
@@ -315,10 +308,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       )}
       <JourneySheet
         open={sheet.kind !== null}
-        kind={sheet.content}
-        compactHeight={sheet.snap.compactHeight}
-        snapPoint={sheet.snap.snapPoint}
-        onSnapPointChange={sheet.snap.setSnapPoint}
         onClose={() => sheet.show(null)}
         onCloseComplete={() => {
           sheet.handleCloseComplete();
@@ -359,8 +348,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
             <RegionChoices
               kind={sheet.content}
               regions={sheet.content === "choices" ? sheet.choices : regions}
-              headerRef={sheet.snap.setHeader}
-              bodyRef={sheet.snap.setBody}
               onRegion={openRegion}
             />
           )
