@@ -282,7 +282,6 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     completeSegments,
     begin,
     restore,
-    focusPlace,
     selectPlace,
     pressPlace,
     recover,

@@ -66,15 +66,15 @@ export function JourneyPanel({
             </strong>
             <p>{session.error}</p>
           </div>
-          {session.active ? (
-            <Button className={styles.hit} color="dark" onClick={() => onRecover(true)} size="medium" variant="weak">
-              건너뛰기
-            </Button>
-          ) : (
-            <Button className={styles.hit} color="dark" onClick={() => onRecover(false)} size="medium" variant="weak">
-              다시 시도
-            </Button>
-          )}
+          <Button
+            className={styles.hit}
+            color="dark"
+            onClick={() => onRecover(Boolean(session.active))}
+            size="medium"
+            variant="weak"
+          >
+            {session.active ? "건너뛰기" : "다시 시도"}
+          </Button>
         </div>
       )}
       {session.replaying && (
