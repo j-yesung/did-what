@@ -48,12 +48,14 @@
   outline: none;
 }
 .halo {
+  opacity: 0;
   fill: none;
-  stroke: var(--journey-white);
+  stroke: var(--journey-gold);
   stroke-width: 1px;
   vector-effect: non-scaling-stroke;
 }
 .node:focus-visible .halo {
+  opacity: 1;
   stroke-width: 2.5px;
 }
 .arrival {
@@ -64,9 +66,6 @@
 }
 .place .arrival {
   fill: var(--journey-sky);
-}
-.previous {
-  fill: var(--journey-white);
 }
 
 .visited {
@@ -350,13 +349,6 @@
   color: var(--journey-white);
   pointer-events: none;
 }
-.label {
-  fill: var(--journey-white);
-  font-weight: 600;
-  paint-order: stroke;
-  stroke: var(--journey-background);
-  pointer-events: none;
-}
 
 .replayStatus {
   display: flex;
@@ -398,11 +390,8 @@
   line-height: 1.6;
 }
 .node:active .halo {
-  stroke: var(--journey-green);
+  opacity: 1;
   stroke-width: 3px;
-}
-.node:active .previous {
-  fill: var(--journey-green);
 }
 
 .recordMeta {

@@ -262,13 +262,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
                 return <Fireworks key={key} point={project(end.longitude, end.latitude)} unit={unit} />;
               })}
             {!session && !restoring && (
-              <RegionNodes
-                regions={regions}
-                unit={unit}
-                viewWidth={view.width}
-                canTap={canTap}
-                onChoose={chooseRegion}
-              />
+              <RegionNodes regions={regions} unit={unit} canTap={canTap} onChoose={chooseRegion} />
             )}
           </svg>
         </div>

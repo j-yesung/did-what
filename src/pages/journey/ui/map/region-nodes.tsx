@@ -9,14 +9,11 @@ export const NODE_HIT_RADIUS = 22;
 type RegionNodesProps = {
   regions: JourneyRegion[];
   unit: number;
-  viewWidth: number;
   canTap: (event: MouseEvent) => boolean;
   onChoose: (region: JourneyRegion, tap?: MouseEvent) => void;
 };
 
-export function RegionNodes({ regions, unit, viewWidth, canTap, onChoose }: RegionNodesProps) {
-  const labelOpacity = Math.max(0, Math.min(1, (150 - viewWidth) / 40));
-
+export function RegionNodes({ regions, unit, canTap, onChoose }: RegionNodesProps) {
   return (
     <>
       {regions.map((item) => {
@@ -40,20 +37,6 @@ export function RegionNodes({ regions, unit, viewWidth, canTap, onChoose }: Regi
           >
             <circle cx={point.x} cy={point.y} r={unit * NODE_HIT_RADIUS} fill="transparent" />
             <circle cx={point.x} cy={point.y} r={unit * 7} className={styles.halo} />
-            <circle cx={point.x} cy={point.y} r={unit * 3.5} className={styles.previous} />
-            {labelOpacity > 0 && (
-              <text
-                aria-hidden="true"
-                className={styles.label}
-                fontSize={unit * 11}
-                opacity={labelOpacity}
-                strokeWidth={unit * 3}
-                x={point.x + unit * 10}
-                y={point.y + unit * 4}
-              >
-                {item.name}
-              </text>
-            )}
           </g>
         );
       })}
