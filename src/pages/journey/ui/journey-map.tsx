@@ -305,7 +305,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           session={session}
           weather={activeRecord?.weather}
           onRecover={journey.recover}
-          onFinishReplay={journey.finishReplay}
           onSelectPlace={journey.selectPlace}
           onPressPlace={journey.pressPlace}
         />
@@ -334,6 +333,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       >
         {sheet.content === "records" ? (
           <RegionRecords
+            onBack={sheet.back}
             region={region}
             homeReady={homeReady}
             homeUnavailable={homeUnavailable}
@@ -353,6 +353,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         ) : (
           sheet.content && (
             <RegionChoices
+              selectedRegionCode={region?.code}
               kind={sheet.content}
               regions={sheet.content === "choices" ? sheet.choices : regions}
               onRegion={openRegion}
@@ -374,6 +375,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       />
       <RecordDetailBottomSheet
         backLabel="지도로"
+        showBackButton={false}
         className={`${styles.sheet} dark`}
         member={member}
         onDeleted={() => {

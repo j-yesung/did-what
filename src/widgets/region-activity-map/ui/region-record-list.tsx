@@ -128,7 +128,7 @@ export function RegionRecordList({
       >
         {visibleRecords.length > 0 ? (
           <>
-            <h3 className="font-semibold text-sm">방문 기록</h3>
+            <h3 className="sr-only">방문 기록</h3>
             <ul>
               {visibleRecords.map(({ record, subregions }, index) => {
                 const commentCount = record.record_comments?.[0]?.count ?? 0;

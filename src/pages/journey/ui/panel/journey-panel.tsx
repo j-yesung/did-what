@@ -26,20 +26,11 @@ type JourneyPanelProps = {
   session: JourneySession;
   weather?: string;
   onRecover: (skip: boolean) => void;
-  onFinishReplay: () => void;
   onSelectPlace: (place: JourneyPlace) => void;
   onPressPlace: (place: JourneyPlace) => void;
 };
 
-export function JourneyPanel({
-  ref,
-  session,
-  weather,
-  onRecover,
-  onFinishReplay,
-  onSelectPlace,
-  onPressPlace,
-}: JourneyPanelProps) {
+export function JourneyPanel({ ref, session, weather, onRecover, onSelectPlace, onPressPlace }: JourneyPanelProps) {
   const [chipRow, setChipRow] = useState<HTMLDivElement | null>(null);
   const [chipFade, setChipFade] = useState<Edges>({ start: false, end: false });
 
@@ -77,44 +68,46 @@ export function JourneyPanel({
           </Button>
         </div>
       )}
-      {session.replaying && (
-        <div className={styles.replayStatus}>
-          <span>기억을 다시 잇고 있어요</span>
-          <Button color="dark" variant="weak" onClick={onFinishReplay} disabled={session.restored}>
-            바로 끝내기
-          </Button>
+      <div className={cn(styles.placesHeading, !session.record.places.length && styles.placesEmpty)}>
+        <p>
+          {session.record.places.length ? (
+            <>
+              방문 장소 <span>{session.record.places.length}</span>
+            </>
+          ) : (
+            "등록된 장소 없음"
+          )}
+        </p>
+        {session.replaying && <span role="status">재생 중</span>}
+      </div>
+      {session.record.places.length > 0 && (
+        <div
+          key={session.record.id}
+          ref={setChipRow}
+          className={styles.chips}
+          data-fade-end={chipFade.end ? "" : undefined}
+          data-fade-start={chipFade.start ? "" : undefined}
+          onScroll={(event) => setChipFade(keepIfSame(scrollEdges(event.currentTarget)))}
+        >
+          {session.record.places.map((place) => (
+            <button
+              key={place.id}
+              className={cn(PRESS_FEEDBACK, FOCUS_RING)}
+              type="button"
+              onClick={() => onSelectPlace(place)}
+              onPointerDown={(event) => {
+                if (event.button === 0) onPressPlace(place);
+              }}
+              data-selected={selectedPlaceIds.has(place.id) ? "" : undefined}
+              data-error={failedPlaceId === place.id ? "" : undefined}
+            >
+              {failedPlaceId === place.id && <WarningCircleIcon aria-hidden="true" size={16} />}
+              {place.name}
+              {selectedPlaceIds.has(place.id) && <span className="sr-only"> (선택됨)</span>}
+            </button>
+          ))}
         </div>
       )}
-      <p className={styles.placesHeading}>
-        방문 장소 {session.record.places.length > 0 && <span>{session.record.places.length}</span>}
-      </p>
-      {!session.record.places.length && <p className={styles.placesEmpty}>등록된 장소가 없어요</p>}
-      <div
-        key={session.record.id}
-        ref={setChipRow}
-        className={styles.chips}
-        data-fade-end={chipFade.end ? "" : undefined}
-        data-fade-start={chipFade.start ? "" : undefined}
-        onScroll={(event) => setChipFade(keepIfSame(scrollEdges(event.currentTarget)))}
-      >
-        {session.record.places.map((place) => (
-          <button
-            key={place.id}
-            className={cn(PRESS_FEEDBACK, FOCUS_RING)}
-            type="button"
-            onClick={() => onSelectPlace(place)}
-            onPointerDown={(event) => {
-              if (event.button === 0) onPressPlace(place);
-            }}
-            data-selected={selectedPlaceIds.has(place.id) ? "" : undefined}
-            data-error={failedPlaceId === place.id ? "" : undefined}
-          >
-            {failedPlaceId === place.id && <WarningCircleIcon aria-hidden="true" size={16} />}
-            {place.name}
-            {selectedPlaceIds.has(place.id) && <span className="sr-only"> (선택됨)</span>}
-          </button>
-        ))}
-      </div>
       <RouteMetrics segments={session.segments} weather={weather} instant={session.restored} />
       {session.segments.some((segment) => segment.route.straight) && (
         <p className={styles.note}>차로 갈 수 없는 구간은 직선으로 이었고 거리·시간에서 뺐어요</p>

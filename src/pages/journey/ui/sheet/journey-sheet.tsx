@@ -12,7 +12,7 @@ import { RegionRecordList } from "@/widgets/region-activity-map/ui/region-record
 import type { JourneyRegion } from "../../model/types";
 import styles from "../journey-map.module.css";
 import { HomeLoadError } from "../panel/journey-notices";
-import { SHEET_BODY_CLASS, SheetHeader } from "./region-choices";
+import { SHEET_BODY_CLASS, SheetHeader, SheetNavigation } from "./region-choices";
 
 type JourneySheetProps = {
   open: boolean;
@@ -52,6 +52,7 @@ type RegionRecordsProps = {
   homeUnavailable: boolean;
   currentRecordId?: string;
   subregion: string | null;
+  onBack: () => void;
   onSubregionChange: (subregion: string | null) => void;
   onRecordOpen: (recordId: string) => void;
   onRecordPress: (recordId: string) => void;
@@ -64,6 +65,7 @@ export function RegionRecords({
   homeUnavailable,
   currentRecordId,
   subregion,
+  onBack,
   onSubregionChange,
   onRecordOpen,
   onRecordPress,
@@ -78,7 +80,7 @@ export function RegionRecords({
   if (homeReady && locations.data && region)
     return (
       <>
-        <BottomSheet.CloseButton label="기록 목록 닫기" className="top-7" />
+        <SheetNavigation onBack={onBack} />
         <RegionRecordList
           isDetail={false}
           currentRecordId={currentRecordId}
@@ -94,7 +96,7 @@ export function RegionRecords({
 
   return (
     <>
-      <SheetHeader title={region?.name ?? ""} />
+      <SheetHeader title={region?.name ?? ""} onBack={onBack} />
       <div className={SHEET_BODY_CLASS}>
         {!homeReady && (
           <div className={styles.sheetNotice}>

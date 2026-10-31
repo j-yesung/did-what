@@ -10,6 +10,7 @@ import { RecordSheetDetail } from "./record-sheet-detail";
 
 type RecordDetailBottomSheetProps = {
   backLabel: string;
+  showBackButton?: boolean;
   /** 시트와 삭제 확인 창에 더할 클래스. 앱 테마와 상관없이 어두운 화면에서는 `dark`를 넘긴다. */
   className?: string;
   member: { id: string; name: string };
@@ -23,6 +24,7 @@ type RecordDetailBottomSheetProps = {
 
 export function RecordDetailBottomSheet({
   backLabel,
+  showBackButton,
   className,
   member,
   onDeleted,
@@ -56,6 +58,7 @@ export function RecordDetailBottomSheet({
           {record ? (
             <RecordSheetDetail
               backLabel={backLabel}
+              showBackButton={showBackButton}
               confirmClassName={className}
               draft={draft}
               key={record.id}
