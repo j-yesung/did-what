@@ -21,6 +21,7 @@ type RegionMiniMapProps = {
 export function RegionMiniMap({ className, label, map }: RegionMiniMapProps) {
   return (
     <svg
+      data-slot="region-mini-map"
       aria-hidden={label ? undefined : true}
       aria-label={label}
       className={cn("h-full w-full overflow-visible [shape-rendering:geometricPrecision]", className)}
@@ -32,6 +33,7 @@ export function RegionMiniMap({ className, label, map }: RegionMiniMapProps) {
       <g aria-hidden="true">
         {map.cells.map((cell) => (
           <rect
+            data-level={cell.level}
             className={MAP_LEVEL_CLASS_NAMES[cell.level]}
             height={KOREA_MAP_CELL_STYLE.size}
             key={cell.id}

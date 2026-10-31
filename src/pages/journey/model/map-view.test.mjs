@@ -76,9 +76,57 @@ test("그리는 중인 선은 지나온 길이만큼만 경로를 자른다", ()
   ];
   const lengths = pathLengths(points);
   assert.deepEqual(lengths, [0, 3, 7]);
-  assert.equal(partialPathData(points, lengths, 0), "M0,0L0,0");
-  assert.equal(partialPathData(points, lengths, 5), "M0,0L3,0L3,2");
-  assert.equal(partialPathData(points, lengths, 7), toPathData(points));
+  assert.equal(partialPathData(points, lengths, 0, 1), "M0,0L0,0");
+  assert.equal(partialPathData(points, lengths, 5, 1), "M0,0L2,0Q3,0 3,1L3,2");
+  assert.equal(partialPathData(points, lengths, 7, 1), toPathData(points, 1));
+});
+
+test("경로 모서리는 짧은 곡선으로 잇고 시작점과 도착점은 유지한다", () => {
+  const points = [
+    { x: 0, y: 0 },
+    { x: 40, y: 0 },
+    { x: 40, y: 40 },
+  ];
+  assert.equal(toPathData(points, 8), "M0,0L32,0Q40,0 40,8L40,40");
+  assert.equal(toPathData(points, 16), "M0,0L24,0Q40,0 40,16L40,40");
+  assert.equal(toPathData(points, 100), "M0,0L20,0Q40,0 40,20L40,40");
+});
+
+test("이어지는 곡선은 짧은 구간의 절반 안에서 만나 경로를 역주행하지 않는다", () => {
+  const points = [
+    { x: 0, y: 0 },
+    { x: 40, y: 0 },
+    { x: 40, y: 4 },
+    { x: 80, y: 4 },
+  ];
+  assert.equal(toPathData(points, 16), "M0,0L38,0Q40,0 40,2L40,2Q40,4 42,4L80,4");
+  assert.equal(partialPathData(points, pathLengths(points), 84, 16), toPathData(points, 16));
+});
+
+test("빈 경로와 직선, 중복 좌표에도 유효한 경로를 만든다", () => {
+  assert.equal(toPathData([], 8), "");
+  assert.equal(toPathData([{ x: 0, y: 0 }], 8), "M0,0");
+  assert.equal(
+    toPathData(
+      [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+      ],
+      8,
+    ),
+    "M0,0L10,0",
+  );
+  assert.equal(
+    toPathData(
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+      ],
+      8,
+    ),
+    "M0,0L0,0Q0,0 0,0L10,0",
+  );
 });
 
 test("가까운 장소 사이 구간은 화면 폭이 지도 단위 3보다 좁아지게 확대하지 않는다", () => {

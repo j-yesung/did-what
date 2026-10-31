@@ -42,6 +42,8 @@
   stroke: var(--journey-white);
   stroke-linecap: round;
   stroke-linejoin: round;
+  filter: drop-shadow(0 0 calc(var(--route-unit) * 2px) color-mix(in srgb, var(--journey-glow) 80%, transparent))
+    drop-shadow(0 0 calc(var(--route-unit) * 7px) color-mix(in srgb, var(--journey-gold) 50%, transparent));
 }
 .node {
   cursor: pointer;
@@ -121,6 +123,29 @@
   --border: var(--sheet-line);
   --border-default: var(--sheet-line);
   --color-border: var(--sheet-line);
+}
+.sheet [data-slot="region-mini-map"] rect {
+  rx: 50%;
+  transform: scale(0.75);
+  transform-box: fill-box;
+  transform-origin: center;
+  fill: color-mix(in srgb, var(--journey-line) 40%, transparent);
+}
+.sheet [data-slot="region-mini-map"] [data-level="1"] {
+  --mini-map-light: 12.5%;
+}
+.sheet [data-slot="region-mini-map"] [data-level="2"] {
+  --mini-map-light: 37.5%;
+}
+.sheet [data-slot="region-mini-map"] [data-level="3"] {
+  --mini-map-light: 62.5%;
+}
+.sheet [data-slot="region-mini-map"] [data-level="4"] {
+  --mini-map-light: 87.5%;
+}
+.sheet [data-slot="region-mini-map"] [data-level]:not([data-level="0"]) {
+  fill: color-mix(in srgb, var(--journey-glow) var(--mini-map-light), var(--journey-ember));
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--journey-amber) 45%, transparent));
 }
 .recordHeader {
   position: absolute;
