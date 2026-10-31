@@ -2,9 +2,7 @@
 
 import { CaretLeftIcon } from "@phosphor-icons/react";
 
-import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
-import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 
 type Props = {
@@ -26,7 +24,6 @@ export function BackButton({
   return (
     <LiquidGlassButton
       aria-label={ariaLabel}
-      className={cn("[&_svg]:size-6.75", ICON_WEIGHT_MEDIUM)}
       disabled={disabled}
       onClick={onClick ?? (() => goBackTo(fallbackHref))}
       shape="circle"

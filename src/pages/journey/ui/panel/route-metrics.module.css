@@ -1,5 +1,5 @@
 .metrics {
-  --metrics-size: 32px;
+  --metrics-size: 36px;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -17,12 +17,12 @@
   line-height: 1.1;
 }
 .metrics small {
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 0;
 }
 .metrics em {
   margin-top: 4px;
-  font-size: 13px;
+  font-size: 14px;
   font-style: normal;
   opacity: 0.75;
 }
@@ -40,6 +40,6 @@
 }
 .metrics b {
   margin-right: 2px;
-  font-size: 18px;
+  font-size: 20px;
   font-variant-numeric: tabular-nums;
 }

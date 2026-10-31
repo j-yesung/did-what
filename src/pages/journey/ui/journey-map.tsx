@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 
+import { ListBulletsIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
@@ -289,10 +290,11 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
             <div className={styles.actions}>
               <LiquidGlassButton
                 ref={regionsButton}
-                className="min-w-0 px-5 text-foreground text-sm"
+                aria-label="지역 목록"
+                shape="circle"
                 onClick={() => sheet.show("regions")}
               >
-                지역 목록
+                <ListBulletsIcon aria-hidden="true" />
               </LiquidGlassButton>
             </div>
           )

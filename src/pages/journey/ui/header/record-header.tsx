@@ -1,6 +1,8 @@
 import type { Ref } from "react";
 
-import { Button } from "@/shared/ui/button";
+import { BookOpenIcon } from "@phosphor-icons/react";
+
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
 import { formatShortPeriod } from "@/widgets/region-activity-map/model/region-record-list";
 
 import styles from "../journey-map.module.css";
@@ -19,9 +21,9 @@ export function RecordHeader({ ref, titleRef, regionName, record, onRead }: Reco
       <h1 ref={titleRef} tabIndex={-1}>
         {regionName}
       </h1>
-      <Button className={styles.hit} color="dark" onClick={onRead} size="medium" variant="weak">
-        기록 읽기
-      </Button>
+      <LiquidGlassButton aria-label="기록 읽기" title="기록 읽기" onClick={onRead} shape="circle">
+        <BookOpenIcon aria-hidden="true" />
+      </LiquidGlassButton>
       {record && (
         <p className={styles.recordMeta}>
           <span className="line-clamp-2">{record.activity}</span>

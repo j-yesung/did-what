@@ -1,6 +1,5 @@
 import { CaretRightIcon } from "@phosphor-icons/react";
 
-import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -17,10 +16,7 @@ export function SheetNavigation({ onBack }: { onBack: () => void }) {
   return (
     <div className="flex shrink-0 items-center justify-between px-3 pt-3">
       <BackButton aria-label="지역 목록으로" onClick={onBack} />
-      <BottomSheet.CloseButton
-        label="기록 목록 닫기"
-        className={cn("static [&_button]:size-(--toolbar-height) [&_button_svg]:size-6.75", ICON_WEIGHT_MEDIUM)}
-      />
+      <BottomSheet.CloseButton label="기록 목록 닫기" className="static" />
     </div>
   );
 }

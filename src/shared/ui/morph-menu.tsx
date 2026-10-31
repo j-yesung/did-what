@@ -163,7 +163,7 @@ export function MorphMenu({ actions, label, moreIcon = DotsThreeIcon, layout = "
             <motion.div
               animate={{ opacity: open ? 0 : 1 }}
               aria-hidden={open}
-              className="absolute top-0.5 right-0.5"
+              className="absolute top-0 right-0"
               inert={open}
               initial={false}
               transition={reduceMotion ? { duration: 0 } : open ? { duration: 0.12 } : { duration: 0.15, delay: 0.2 }}
@@ -172,9 +172,10 @@ export function MorphMenu({ actions, label, moreIcon = DotsThreeIcon, layout = "
                 aria-expanded={open}
                 ref={more}
                 aria-label="더 보기"
-                className="rounded-full text-foreground"
+                className={cn("size-(--toolbar-height) rounded-full text-foreground", ICON_WEIGHT_MEDIUM)}
                 icon={moreIcon}
-                iconWeight="bold"
+                iconSize={27}
+                iconWeight="regular"
                 onClick={() => setOpen(true)}
                 size="lg"
               />
@@ -194,7 +195,7 @@ export function MorphMenu({ actions, label, moreIcon = DotsThreeIcon, layout = "
           onAnimationComplete={() => {
             if (!open) setSettled(true);
           }}
-          className="app-toolbar liquid-glass-control pointer-events-auto relative flex h-(--toolbar-height) items-center justify-end overflow-hidden rounded-full p-0.5"
+          className="app-toolbar liquid-glass-control pointer-events-auto relative flex h-(--toolbar-height) items-center justify-end overflow-hidden rounded-full"
           initial={false}
           transition={
             reduceMotion
@@ -234,7 +235,7 @@ export function MorphMenu({ actions, label, moreIcon = DotsThreeIcon, layout = "
           <motion.div
             animate={{ opacity: open ? 0 : 1 }}
             aria-hidden={open}
-            className={cn("shrink-0", (open || !settled) && "absolute top-0.5 right-0.5")}
+            className={cn("shrink-0", (open || !settled) && "absolute top-0 right-0")}
             inert={open}
             initial={false}
             transition={reduceMotion ? { duration: 0 } : open ? { duration: 0.12 } : { duration: 0.15, delay: 0.1 }}
@@ -243,9 +244,10 @@ export function MorphMenu({ actions, label, moreIcon = DotsThreeIcon, layout = "
               aria-expanded={open}
               ref={more}
               aria-label="더 보기"
-              className="rounded-full text-foreground"
+              className={cn("size-(--toolbar-height) rounded-full text-foreground", ICON_WEIGHT_MEDIUM)}
               icon={moreIcon}
-              iconWeight="bold"
+              iconSize={27}
+              iconWeight="regular"
               onClick={() => {
                 setSettled(false);
                 setOpen(true);

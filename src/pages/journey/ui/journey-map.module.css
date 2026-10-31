@@ -401,10 +401,6 @@
 .error p {
   line-height: 1.6;
 }
-.node:active .halo {
-  opacity: 1;
-  stroke-width: 3px;
-}
 
 .recordMeta {
   grid-column: 1;
