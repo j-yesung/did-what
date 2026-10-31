@@ -213,7 +213,7 @@ function BottomSheetDescription({ className, ...props }: BottomSheetPrimitive.De
 function BottomSheetCloseButton({ label, className }: { label: string; className?: string }) {
   return (
     <div className={cn("absolute right-3 z-10", className)}>
-      <BottomSheetClose render={<LiquidGlassButton aria-label={label} className="size-11" shape="circle" />}>
+      <BottomSheetClose render={<LiquidGlassButton aria-label={label} shape="circle" />}>
         <XIcon aria-hidden="true" />
       </BottomSheetClose>
     </div>

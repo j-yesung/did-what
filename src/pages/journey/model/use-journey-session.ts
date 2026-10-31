@@ -70,7 +70,6 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
   const [highlight, setHighlight] = useState<{ place: JourneyPlace; key: number } | null>(null);
   const [arrivals, setArrivals] = useState<{ key: number; target: JourneyPlace | null }[]>([]);
   const generation = useRef(0);
-  const fastForward = useRef(false);
   const sketchDone = useRef<(() => void) | null>(null);
   const sheetClosed = useRef<Promise<unknown>>(Promise.resolve());
 
@@ -125,14 +124,13 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       await nextFrame();
       if (token !== generation.current) return;
       if ("error" in result) {
-        fastForward.current = false;
         setSessionValue({ ...sessionRef.current!, status: "error", ...toRouteError(result.error), replaying: false });
         return;
       }
 
       const route = result.route;
       const view = target ? camera.followRoute(route) : camera.fitRoutes([route]);
-      const moving = view && !fastForward.current ? camera.moveCamera(view) : null;
+      const moving = view ? camera.moveCamera(view) : null;
       setSessionValue({ ...sessionRef.current!, status: "moving" });
       await Promise.all([sheetClosed.current, moving]);
       if (token !== generation.current) return;
@@ -140,18 +138,16 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       const segment = toSegment(next.record, route, target, next.current);
       next = { ...sessionRef.current!, segments: [...sessionRef.current!.segments, segment], status: "drawing" };
       setSessionValue(next);
-      if (!prefersReducedMotion() && !fastForward.current) await waitForSketch();
+      if (!prefersReducedMotion()) await waitForSketch();
       if (token !== generation.current) return;
-      if (!prefersReducedMotion() && !fastForward.current) arrive(segment.key, target);
+      if (!prefersReducedMotion()) arrive(segment.key, target);
 
       next = { ...sessionRef.current!, current: target, active: null, status: "idle" };
       setSessionValue(next);
       if (!next.queue.length) {
         if (next.replaying) {
           setSessionValue({ ...next, replaying: false });
-          if (fastForward.current) camera.moveCamera(camera.fitRoutes(next.segments.map((item) => item.route)));
         }
-        fastForward.current = false;
         return;
       }
 
@@ -163,7 +159,6 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
 
   const begin = (record: JourneyRecord, region: JourneyRegion, queue: JourneyPlace[] = [], replaying = false) => {
     const token = ++generation.current;
-    fastForward.current = false;
     sketchDone.current?.();
     sheetClosed.current = closeSheet();
 
@@ -256,19 +251,9 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     if (next.status === "loading") void run(next, generation.current);
   };
 
-  const finishReplay = () => {
-    if (!sessionRef.current?.replaying) return;
-
-    fastForward.current = true;
-    setSessionValue({ ...sessionRef.current, restored: true });
-    camera.stop();
-    sketchDone.current?.();
-  };
-
   const clear = () => {
     generation.current++;
     sketchDone.current?.();
-    fastForward.current = false;
     setSessionValue(null);
     setHighlight(null);
     setArrivals([]);
@@ -282,11 +267,9 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     completeSegments,
     begin,
     restore,
-    focusPlace,
     selectPlace,
     pressPlace,
     recover,
-    finishReplay,
     handleSketchEnd,
     clear,
   };

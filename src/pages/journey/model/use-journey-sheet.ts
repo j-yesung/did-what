@@ -13,11 +13,14 @@ export const useJourneySheet = (keepOpener: boolean) => {
   const [content, setContent] = useState(kind);
   if (kind !== null && kind !== content) setContent(kind);
   const [choices, setChoices] = useState<JourneyRegion[]>([]);
+  const previousList = useRef<"regions" | "choices">("regions");
   const opener = useRef<Element | null>(null);
   const resolveClosed = useRef<(() => void) | null>(null);
 
   const show = (next: JourneySheetKind | null) => {
     if (next !== null && kind === null && !keepOpener) opener.current = document.activeElement;
+    if (next === "records" && (kind === "regions" || kind === "choices")) previousList.current = kind;
+    if (next === null) previousList.current = "regions";
     setKind(next);
   };
 
@@ -51,6 +54,7 @@ export const useJourneySheet = (keepOpener: boolean) => {
     choices,
     opener,
     show,
+    back: () => show(previousList.current),
     close,
     handleCloseComplete,
     showChoices,

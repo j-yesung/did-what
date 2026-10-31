@@ -2,7 +2,7 @@
 
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 
-import { FOCUS_RING } from "@/shared/lib/interaction";
+import { FOCUS_RING, ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { PressScale } from "@/shared/ui/press-scale";
 
@@ -29,7 +29,7 @@ export function LiquidGlassButton({
       className={cn(
         "inline-flex cursor-pointer touch-manipulation select-none items-center justify-center rounded-full font-semibold text-base [-webkit-tap-highlight-color:transparent] disabled:pointer-events-none disabled:opacity-45 [&_svg]:size-5 [&_svg]:shrink-0",
         shape === "circle"
-          ? "size-(--toolbar-height) min-w-0 p-0 text-foreground [&_svg]:size-6"
+          ? cn("size-(--toolbar-height) min-w-0 p-0 text-foreground [&_svg]:size-6.75", ICON_WEIGHT_MEDIUM)
           : "h-(--toolbar-height) min-w-37 px-6 text-light",
         SURFACE_CLASS[surface],
         FOCUS_RING,

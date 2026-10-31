@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { formatRecordRegionLabels, RecordDetailHeader, recordDetailQueryOptions } from "@/entities/record";
 import { DeleteRecordConfirm } from "@/features/record/delete-record";
 import { RecordComments } from "@/features/record-comment";
+import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -18,6 +19,7 @@ import { RecordDetailSections } from "./record-detail-sections";
 
 type RecordSheetDetailProps = {
   backLabel?: string;
+  showBackButton?: boolean;
   confirmClassName?: string;
   draft: string;
   member: { id: string; name: string };
@@ -29,6 +31,7 @@ type RecordSheetDetailProps = {
 
 export function RecordSheetDetail({
   backLabel = "이전 화면으로",
+  showBackButton = true,
   confirmClassName,
   draft,
   member,
@@ -44,8 +47,13 @@ export function RecordSheetDetail({
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <div className="pointer-events-none absolute inset-x-5 top-7 z-20 flex items-center justify-between gap-3 [&>*]:pointer-events-auto">
-        <BackButton aria-label={backLabel} onClick={onBack} />
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-5 top-7 z-20 flex items-center justify-end gap-3 [&>*]:pointer-events-auto",
+          showBackButton && "justify-between",
+        )}
+      >
+        {showBackButton && <BackButton aria-label={backLabel} onClick={onBack} />}
         {record ? (
           <MorphMenu
             label="기록 작업"

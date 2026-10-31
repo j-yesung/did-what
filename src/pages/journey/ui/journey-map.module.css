@@ -42,18 +42,22 @@
   stroke: var(--journey-white);
   stroke-linecap: round;
   stroke-linejoin: round;
+  filter: drop-shadow(0 0 calc(var(--route-unit) * 2px) color-mix(in srgb, var(--journey-glow) 80%, transparent))
+    drop-shadow(0 0 calc(var(--route-unit) * 7px) color-mix(in srgb, var(--journey-gold) 50%, transparent));
 }
 .node {
   cursor: pointer;
   outline: none;
 }
 .halo {
+  opacity: 0;
   fill: none;
-  stroke: var(--journey-white);
+  stroke: var(--journey-gold);
   stroke-width: 1px;
   vector-effect: non-scaling-stroke;
 }
 .node:focus-visible .halo {
+  opacity: 1;
   stroke-width: 2.5px;
 }
 .arrival {
@@ -64,9 +68,6 @@
 }
 .place .arrival {
   fill: var(--journey-sky);
-}
-.previous {
-  fill: var(--journey-white);
 }
 
 .visited {
@@ -122,6 +123,29 @@
   --border: var(--sheet-line);
   --border-default: var(--sheet-line);
   --color-border: var(--sheet-line);
+}
+.sheet [data-slot="region-mini-map"] rect {
+  rx: 50%;
+  transform: scale(0.75);
+  transform-box: fill-box;
+  transform-origin: center;
+  fill: color-mix(in srgb, var(--journey-line) 40%, transparent);
+}
+.sheet [data-slot="region-mini-map"] [data-level="1"] {
+  --mini-map-light: 12.5%;
+}
+.sheet [data-slot="region-mini-map"] [data-level="2"] {
+  --mini-map-light: 37.5%;
+}
+.sheet [data-slot="region-mini-map"] [data-level="3"] {
+  --mini-map-light: 62.5%;
+}
+.sheet [data-slot="region-mini-map"] [data-level="4"] {
+  --mini-map-light: 87.5%;
+}
+.sheet [data-slot="region-mini-map"] [data-level]:not([data-level="0"]) {
+  fill: color-mix(in srgb, var(--journey-glow) var(--mini-map-light), var(--journey-ember));
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--journey-amber) 45%, transparent));
 }
 .recordHeader {
   position: absolute;
@@ -184,8 +208,7 @@
   pointer-events: none;
 }
 .chips,
-.error,
-.replayStatus {
+.error {
   pointer-events: auto;
 }
 .status {
@@ -207,6 +230,10 @@
   }
 }
 .placesHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 8px;
   font-size: 11px;
   font-weight: 700;
@@ -218,8 +245,8 @@
   font-variant-numeric: tabular-nums;
 }
 .placesEmpty {
-  padding-bottom: 18px;
   font-size: 12px;
+  font-weight: 400;
   opacity: 0.6;
 }
 
@@ -249,6 +276,9 @@
   display: none;
 }
 .chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-height: 44px;
   white-space: nowrap;
   border: 1px solid color-mix(in srgb, var(--journey-white) 30%, transparent);
@@ -269,6 +299,10 @@
   gap: 8px;
   margin-bottom: 12px;
   font-size: 12px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--text-danger) 30%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--text-danger) 10%, var(--journey-background));
 }
 .homeNotice {
   position: absolute;
@@ -350,40 +384,10 @@
   color: var(--journey-white);
   pointer-events: none;
 }
-.label {
-  fill: var(--journey-white);
-  font-weight: 600;
-  paint-order: stroke;
-  stroke: var(--journey-background);
-  pointer-events: none;
-}
 
-.replayStatus {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  border: 1px solid var(--border-default);
-  border-radius: 16px;
-  padding: 10px 12px;
-  background: var(--fill-surface);
-  font-size: 12px;
-}
-.chips button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
 .chips button[data-error] {
   color: var(--text-danger);
   border-color: var(--text-danger);
-  background: color-mix(in srgb, var(--text-danger) 10%, var(--journey-background));
-}
-.error {
-  padding: 16px;
-  border: 1px solid color-mix(in srgb, var(--text-danger) 30%, transparent);
-  border-radius: 16px;
   background: color-mix(in srgb, var(--text-danger) 10%, var(--journey-background));
 }
 .error > div {
@@ -396,13 +400,6 @@
 }
 .error p {
   line-height: 1.6;
-}
-.node:active .halo {
-  stroke: var(--journey-green);
-  stroke-width: 3px;
-}
-.node:active .previous {
-  fill: var(--journey-green);
 }
 
 .recordMeta {

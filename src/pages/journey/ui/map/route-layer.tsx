@@ -1,4 +1,4 @@
-import { useEffectEvent, useLayoutEffect, useMemo, useRef } from "react";
+import { type CSSProperties, useEffectEvent, useLayoutEffect, useMemo, useRef } from "react";
 
 import { HouseIcon } from "@phosphor-icons/react";
 
@@ -24,7 +24,8 @@ function SegmentPath({ segment, drawing, unit, onSketchEnd }: SegmentPathProps) 
       ].map(({ longitude, latitude }) => project(longitude, latitude)),
     [segment],
   );
-  const path = useMemo(() => toPathData(points), [points]);
+  const radius = unit * 16;
+  const path = useMemo(() => toPathData(points, radius), [points, radius]);
   const element = useRef<SVGPathElement>(null);
   const finishSketch = useEffectEvent(onSketchEnd);
 
@@ -38,7 +39,7 @@ function SegmentPath({ segment, drawing, unit, onSketchEnd }: SegmentPathProps) 
     let frame = 0;
     const tick = (now: number) => {
       const progress = Math.min(1, Math.max(0, now - started) / SKETCH_MS);
-      target.setAttribute("d", partialPathData(points, lengths, total * progress));
+      target.setAttribute("d", partialPathData(points, lengths, total * progress, radius));
       if (progress < 1) frame = requestAnimationFrame(tick);
       else finishSketch();
     };
@@ -47,9 +48,17 @@ function SegmentPath({ segment, drawing, unit, onSketchEnd }: SegmentPathProps) 
       cancelAnimationFrame(frame);
       target.setAttribute("d", path);
     };
-  }, [drawing, points, path]);
+  }, [drawing, points, path, radius]);
 
-  return <path ref={element} className={styles.route} d={path} strokeWidth={unit * 2.5} />;
+  return (
+    <path
+      ref={element}
+      className={styles.route}
+      d={path}
+      strokeWidth={unit * 2.5}
+      style={{ "--route-unit": unit } as CSSProperties}
+    />
+  );
 }
 
 type RouteLayerProps = {

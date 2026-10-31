@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 
+import { ListBulletsIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
@@ -262,13 +263,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
                 return <Fireworks key={key} point={project(end.longitude, end.latitude)} unit={unit} />;
               })}
             {!session && !restoring && (
-              <RegionNodes
-                regions={regions}
-                unit={unit}
-                viewWidth={view.width}
-                canTap={canTap}
-                onChoose={chooseRegion}
-              />
+              <RegionNodes regions={regions} unit={unit} canTap={canTap} onChoose={chooseRegion} />
             )}
           </svg>
         </div>
@@ -295,10 +290,11 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
             <div className={styles.actions}>
               <LiquidGlassButton
                 ref={regionsButton}
-                className="min-w-0 px-5 text-foreground text-sm"
+                aria-label="지역 목록"
+                shape="circle"
                 onClick={() => sheet.show("regions")}
               >
-                지역 목록
+                <ListBulletsIcon aria-hidden="true" />
               </LiquidGlassButton>
             </div>
           )
@@ -311,7 +307,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           session={session}
           weather={activeRecord?.weather}
           onRecover={journey.recover}
-          onFinishReplay={journey.finishReplay}
           onSelectPlace={journey.selectPlace}
           onPressPlace={journey.pressPlace}
         />
@@ -340,6 +335,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       >
         {sheet.content === "records" ? (
           <RegionRecords
+            onBack={sheet.back}
             region={region}
             homeReady={homeReady}
             homeUnavailable={homeUnavailable}
@@ -359,6 +355,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         ) : (
           sheet.content && (
             <RegionChoices
+              selectedRegionCode={region?.code}
               kind={sheet.content}
               regions={sheet.content === "choices" ? sheet.choices : regions}
               onRegion={openRegion}
@@ -380,6 +377,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       />
       <RecordDetailBottomSheet
         backLabel="지도로"
+        showBackButton={false}
         className={`${styles.sheet} dark`}
         member={member}
         onDeleted={() => {

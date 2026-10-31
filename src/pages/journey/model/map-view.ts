@@ -134,8 +134,28 @@ export const followBox = (view: Box, route: Route, frame?: Frame): Box | null =>
 
 type Point = { x: number; y: number };
 
-export const toPathData = (points: Point[]) =>
-  points.map((point, index) => `${index ? "L" : "M"}${point.x},${point.y}`).join("");
+export const toPathData = (points: Point[], radius: number) =>
+  points
+    .map((point, index) => {
+      const before = points[index - 1];
+      const after = points[index + 1];
+      if (!before) return `M${point.x},${point.y}`;
+      if (!after) return `L${point.x},${point.y}`;
+
+      const incoming = Math.hypot(point.x - before.x, point.y - before.y);
+      const outgoing = Math.hypot(after.x - point.x, after.y - point.y);
+      const trim = Math.min(radius, incoming / 2, outgoing / 2);
+      const start = {
+        x: point.x + ((before.x - point.x) * trim) / (incoming || 1),
+        y: point.y + ((before.y - point.y) * trim) / (incoming || 1),
+      };
+      const end = {
+        x: point.x + ((after.x - point.x) * trim) / (outgoing || 1),
+        y: point.y + ((after.y - point.y) * trim) / (outgoing || 1),
+      };
+      return `L${start.x},${start.y}Q${point.x},${point.y} ${end.x},${end.y}`;
+    })
+    .join("");
 
 export const pathLengths = (points: Point[]) =>
   points.reduce<number[]>(
@@ -146,19 +166,19 @@ export const pathLengths = (points: Point[]) =>
     [],
   );
 
-export const partialPathData = (points: Point[], lengths: number[], length: number) => {
+export const partialPathData = (points: Point[], lengths: number[], length: number, radius: number) => {
   let end = 1;
   while (end < points.length && lengths[end] <= length) end++;
-  if (end >= points.length) return toPathData(points);
+  if (end >= points.length) return toPathData(points, radius);
 
   const from = points[end - 1];
   const to = points[end];
   const ratio = (length - lengths[end - 1]) / (lengths[end] - lengths[end - 1] || 1);
 
-  return toPathData([
-    ...points.slice(0, end),
-    { x: from.x + (to.x - from.x) * ratio, y: from.y + (to.y - from.y) * ratio },
-  ]);
+  return toPathData(
+    [...points.slice(0, end), { x: from.x + (to.x - from.x) * ratio, y: from.y + (to.y - from.y) * ratio }],
+    radius,
+  );
 };
 
 const worldStart = project(124.5, 39.4);

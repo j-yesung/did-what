@@ -1,5 +1,5 @@
 .metrics {
-  --metrics-size: clamp(40px, 13vw, 56px);
+  --metrics-size: 36px;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -17,12 +17,12 @@
   line-height: 1.1;
 }
 .metrics small {
-  font-size: calc(var(--metrics-size) * 0.38);
+  font-size: 14px;
   letter-spacing: 0;
 }
 .metrics em {
   margin-top: 4px;
-  font-size: calc(var(--metrics-size) * 0.3);
+  font-size: 14px;
   font-style: normal;
   opacity: 0.75;
 }
@@ -31,7 +31,7 @@
   align-items: center;
   gap: 4px;
   margin-left: auto;
-  font-size: calc(var(--metrics-size) * 0.3);
+  font-size: 13px;
   opacity: 0.75;
 }
 .weather svg {
@@ -40,6 +40,6 @@
 }
 .metrics b {
   margin-right: 2px;
-  font-size: calc(var(--metrics-size) * 0.56);
+  font-size: 20px;
   font-variant-numeric: tabular-nums;
 }
