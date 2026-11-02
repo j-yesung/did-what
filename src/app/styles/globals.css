@@ -166,7 +166,6 @@
   --nav-bottom-gap: 6px;
   --nav-bottom-offset: max(var(--nav-bottom-gap), calc(var(--nav-bottom-gap) + env(safe-area-inset-bottom) - 16px));
   --nav-content-gap: 16px;
-  --journey-nav-bottom-offset: max(32px, env(safe-area-inset-bottom));
   --nav-clearance: calc(var(--nav-height) + var(--nav-bottom-offset) + var(--nav-content-gap));
 
   /**

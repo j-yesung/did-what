@@ -1,5 +1,4 @@
 .page {
-  --nav-clearance: calc(var(--nav-height) + var(--journey-nav-bottom-offset) + var(--nav-content-gap));
   position: fixed;
   inset: 0;
   overflow: hidden;
@@ -179,18 +178,20 @@
 
 .details {
   position: absolute;
-  bottom: var(--nav-clearance);
+  bottom: 0;
   left: 0;
   right: 0;
-  padding: 20px 20px 0;
-  background: linear-gradient(transparent, var(--journey-background) 36%);
+  padding: 20px 20px var(--nav-clearance);
+  background: linear-gradient(transparent, var(--journey-background) 72px);
   pointer-events: none;
 }
 .routeSummary {
   min-height: var(--toolbar-height);
 }
 .chips,
-.error {
+.error,
+.homeNotice,
+.homeError {
   pointer-events: auto;
 }
 .status {
@@ -287,16 +288,19 @@
   background: color-mix(in srgb, var(--text-danger) 10%, var(--journey-background));
 }
 .homeNotice {
-  position: absolute;
-  bottom: var(--nav-clearance);
-  left: 20px;
-  right: 20px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px 12px 12px 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--journey-white) 8%, var(--journey-background));
   font-size: 13px;
+}
+.homeError {
+  margin-bottom: 12px;
 }
 .skeleton i {
   display: block;
@@ -441,6 +445,10 @@
     opacity: 0;
   }
 }
+.solidGlass [data-slot="liquid-glass-button"] {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 .regionAside {
   align-self: start;
 }
@@ -448,31 +456,46 @@
   height: 142px;
 }
 .regionMini rect {
-  fill: var(--journey-gold);
+  fill: color-mix(in srgb, var(--journey-line) 40%, transparent);
   rx: 50%;
 }
+.regionMini [data-level="1"] {
+  --mini-map-light: 12.5%;
+  --mini-map-glow: 0.2;
+}
+.regionMini [data-level="2"] {
+  --mini-map-light: 37.5%;
+  --mini-map-glow: 0.35;
+}
+.regionMini [data-level="3"] {
+  --mini-map-light: 62.5%;
+  --mini-map-glow: 0.5;
+}
+.regionMini [data-level="4"] {
+  --mini-map-light: 87.5%;
+  --mini-map-glow: 0.65;
+}
+.regionMini [data-level]:not([data-level="0"]) {
+  fill: color-mix(in srgb, var(--journey-glow) var(--mini-map-light), var(--journey-ember));
+  filter: drop-shadow(0 0 1px color-mix(in srgb, var(--journey-glow) calc(var(--mini-map-glow) * 120%), transparent))
+    drop-shadow(0 0 4px color-mix(in srgb, var(--journey-amber) calc(var(--mini-map-glow) * 100%), transparent));
+}
 .regionAside h1 {
-  margin-top: 22px;
+  margin-bottom: 16px;
   font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.03em;
 }
-.regionAside p {
-  margin-top: 8px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.nationalBack {
-  margin-top: 16px;
-  min-height: 44px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  cursor: pointer;
-}
 .regionListFrame {
   position: relative;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
+}
+.regionListHead {
+  flex-shrink: 0;
+  min-width: 0;
 }
 .regionListFrame::after {
   content: "";
@@ -483,47 +506,39 @@
   pointer-events: none;
 }
 .regionList {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
   padding-bottom: 72px;
+}
+.regionList::before {
+  content: "";
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: block;
+  height: 20px;
+  background: linear-gradient(var(--journey-background), transparent);
+  pointer-events: none;
 }
 .regionListLabel {
   margin-bottom: 16px;
   font-size: 11px;
   color: var(--muted-foreground);
 }
-.regionRecord {
-  display: block;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  padding-bottom: 20px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid color-mix(in srgb, var(--journey-line) 28%, transparent);
+.regionListLabel:last-child {
+  margin-bottom: 0;
 }
-.regionRecord time {
-  display: block;
-  font-size: 10px;
-  color: var(--muted-foreground);
-  line-height: 1.5;
-}
-.regionRecord strong {
-  display: block;
-  margin-top: 7px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-}
-.regionRecord small {
-  display: block;
-  margin-top: 7px;
-  font-size: 10px;
-  color: var(--muted-foreground);
+.regionListLabel span {
+  margin-left: 3px;
+  font-variant-numeric: tabular-nums;
 }
 .regionListEmpty {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
   font-size: 12px;
   color: var(--muted-foreground);
 }
@@ -531,7 +546,6 @@
   display: flex;
   overflow-x: auto;
   gap: 6px;
-  margin-bottom: 20px;
   padding-bottom: 4px;
   scrollbar-width: none;
 }
@@ -548,8 +562,6 @@
   border-color: var(--journey-gold);
   color: var(--journey-gold);
 }
-.regionRecord:focus-visible,
-.nationalBack:focus-visible,
 .subregionChoices button:focus-visible {
   outline: 2px solid var(--journey-gold);
   outline-offset: 3px;

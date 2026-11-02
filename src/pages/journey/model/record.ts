@@ -1,4 +1,4 @@
-import { getRegion, getRegionCode } from "@/entities/region/model/region";
+import { getRegion, getRegionCode, REGIONS } from "@/entities/region/model/region";
 import type { MapRecord } from "@/widgets/region-activity-map/model/record-map-points";
 
 import type { JourneyPlace, JourneyRegion, JourneyVisit, JourneyPoint as Point } from "./types";
@@ -75,7 +75,7 @@ export const toJourneyVisits = (
   });
 
 export const toJourneyRegions = (records: readonly Pick<JourneyRecordRow, "region_code" | "record_regions">[]) => {
-  const regions = new Map<string, JourneyRegion>();
+  const regions = new Map<string, JourneyRegion & Point>();
   for (const record of records)
     for (const code of new Set(record.record_regions.map((region) => getRegionCode(region.region_code)))) {
       if (!code) continue;
@@ -107,4 +107,12 @@ export const toJourneyRegions = (records: readonly Pick<JourneyRecordRow, "regio
     ...region,
     longitude: Math.min(MAINLAND_LONGITUDE.max, Math.max(MAINLAND_LONGITUDE.min, region.longitude)),
   }));
+};
+
+export const withUnvisitedRegions = (regions: readonly JourneyRegion[]): JourneyRegion[] => {
+  const visited = new Set(regions.map(({ code }) => code));
+  return [
+    ...regions,
+    ...REGIONS.filter(({ code }) => !visited.has(code)).map(({ code, label }) => ({ code, name: label, count: 0 })),
+  ];
 };

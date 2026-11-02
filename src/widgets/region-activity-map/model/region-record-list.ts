@@ -1,7 +1,7 @@
 import { getRegionCode, type RegionCode } from "@/entities/region/model/region";
 import { getSubregionName, type MapRecord } from "@/widgets/region-activity-map/model/record-map-points";
 
-export const getRegionRecords = (records: readonly MapRecord[], regionCode: RegionCode | undefined) => {
+export const getRegionRecords = <T extends MapRecord>(records: readonly T[], regionCode: RegionCode | undefined) => {
   if (!regionCode) return [];
 
   return records.flatMap((record) => {

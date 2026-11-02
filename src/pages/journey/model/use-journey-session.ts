@@ -33,6 +33,12 @@ const toRouteError = (error: unknown) => ({
   error: error instanceof Error ? error.message : "경로를 불러오지 못했어요. 다시 시도해 주세요.",
 });
 
+const recordRoute = ({ destination, places }: JourneyRecord): JourneyRoute => ({
+  points: [destination, ...places].map(({ longitude, latitude }) => [longitude, latitude]),
+  distance: 0,
+  duration: 0,
+});
+
 const startSession = (
   record: JourneyRecord,
   region: JourneyRegion,
@@ -166,6 +172,18 @@ export const useJourneySession = ({ routeQuery, camera }: JourneySessionOptions)
     void run(next, token);
   };
 
+  const preview = async (record: JourneyRecord, region: JourneyRegion, queue: JourneyPlace[] = []) => {
+    const token = ++generation.current;
+    sketchDone.current?.();
+
+    setSessionValue({ ...startSession(record, region, queue, false), status: "home" });
+    setHighlight(null);
+    setArrivals([]);
+
+    await nextFrame();
+    if (token === generation.current) void camera.moveCamera(camera.fitRoutes([recordRoute(record)]));
+  };
+
   const restore = async (record: JourneyRecord, region: JourneyRegion, places: JourneyPlace[]) => {
     const token = ++generation.current;
     const base = startSession(record, region, [], false);
@@ -263,6 +281,7 @@ export const useJourneySession = ({ routeQuery, camera }: JourneySessionOptions)
     arrivals,
     completeSegments,
     begin,
+    preview,
     restore,
     selectPlace,
     pressPlace,
