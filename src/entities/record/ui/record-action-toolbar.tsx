@@ -50,7 +50,7 @@ export function RecordActionToolbar({ children, disabled, onDelete, recordId }: 
             <Menu.Trigger
               aria-label="기록 더보기"
               disabled={disabled}
-              render={<LiquidGlassButton className="size-12" shape="circle" surface="group" />}
+              render={<LiquidGlassButton className="size-11" shape="circle" surface="group" />}
               title="기록 더보기"
             >
               <DotsThreeVerticalIcon aria-hidden="true" weight="bold" />

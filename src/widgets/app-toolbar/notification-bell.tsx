@@ -23,7 +23,7 @@ export function NotificationBell({ memberId }: NotificationBellProps) {
     <span className="relative inline-flex">
       <IconButton
         aria-label={accessibilityLabel}
-        className={cn("size-12 rounded-full text-foreground", ICON_WEIGHT_MEDIUM)}
+        className={cn("size-11 rounded-full text-foreground", ICON_WEIGHT_MEDIUM)}
         icon={BellIcon}
         iconSize={24}
         iconWeight="regular"
@@ -36,7 +36,7 @@ export function NotificationBell({ memberId }: NotificationBellProps) {
       {count > 0 ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute top-3 right-3.5 size-2 rounded-full bg-primary"
+          className="pointer-events-none absolute top-2.5 right-3 size-2 rounded-full bg-primary"
         />
       ) : null}
     </span>

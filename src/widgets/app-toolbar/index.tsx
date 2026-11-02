@@ -24,7 +24,7 @@ export function AppToolbar({ memberId }: { memberId: string }) {
   const recordId = RECORD_DETAIL_PATH.test(pathname) ? pathname.split("/")[2] : undefined;
   const primaryActions = (
     <>
-      <RecordCreateButton className="size-12 [&_svg]:size-6" surface="group" />
+      <RecordCreateButton className="size-11 [&_svg]:size-6" surface="group" />
       <NotificationBell memberId={memberId} />
     </>
   );
@@ -34,7 +34,7 @@ export function AppToolbar({ memberId }: { memberId: string }) {
       {pathname === "/" && (
         <PressScale className="app-toolbar liquid-glass-control pointer-events-auto rounded-full p-0.5">
           <PressLink
-            className="flex h-12 items-center gap-1.5 rounded-full px-4 font-semibold text-foreground text-sm"
+            className="flex h-11 items-center gap-1.5 rounded-full px-4 font-semibold text-foreground text-sm"
             href="/journey"
             prefetch={false}
           >

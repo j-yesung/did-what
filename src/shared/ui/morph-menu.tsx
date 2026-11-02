@@ -214,7 +214,7 @@ export function MorphMenu({
                 aria-label={triggerLabel}
                 className={cn("size-(--toolbar-height) rounded-full text-foreground", ICON_WEIGHT_MEDIUM)}
                 icon={moreIcon}
-                iconSize={27}
+                iconSize={24}
                 iconWeight="regular"
                 onClick={(event) => {
                   setKeyboardOpen(event.detail === 0);
@@ -289,7 +289,7 @@ export function MorphMenu({
               aria-label={triggerLabel}
               className={cn("size-(--toolbar-height) rounded-full text-foreground", ICON_WEIGHT_MEDIUM)}
               icon={moreIcon}
-              iconSize={27}
+              iconSize={24}
               iconWeight="regular"
               onClick={() => {
                 setSettled(false);

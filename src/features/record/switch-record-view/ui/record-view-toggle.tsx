@@ -20,7 +20,7 @@ export function RecordViewToggle({ view }: { view: RecordView }) {
   return (
     <LiquidGlassButton
       aria-label={calendar ? "달력" : "목록"}
-      className={cn("[&_svg]:size-6.75", ICON_WEIGHT_MEDIUM)}
+      className={cn("[&_svg]:size-6", ICON_WEIGHT_MEDIUM)}
       nativeButton={false}
       render={
         <PressLink
