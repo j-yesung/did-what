@@ -33,6 +33,8 @@ type MorphMenuProps = {
 
 const EASE = [0.32, 0.72, 0, 1] as const;
 const CLOSE_EASE = [0.4, 0, 0.2, 1] as const;
+// 항목마다 흐림을 걸면 합성 비용이 항목 수만큼 늘어 긴 목록은 지도 위에서 끊긴다.
+const MAX_BLURRED_ACTIONS = 6;
 
 /** 더 보기 버튼이 옆으로 늘어나며 작업 아이콘을 펼친다. column은 아래로 늘어나며 아이콘과 문구를 세로로 펼친다. */
 export function MorphMenu({
@@ -54,6 +56,7 @@ export function MorphMenu({
   const reduceMotion = reducedMotion || (layout === "column" && keyboardOpen);
   const [closingActions, setClosingActions] = useState(actions);
   const visibleActions = open ? actions : closingActions;
+  const blurred = visibleActions.length <= MAX_BLURRED_ACTIONS;
 
   useEffect(() => {
     if (open)
@@ -92,7 +95,7 @@ export function MorphMenu({
     <button
       type="button"
       tabIndex={-1}
-      className="pointer-events-auto fixed inset-0 z-0 touch-none bg-transparent"
+      className="pointer-events-auto fixed inset-0 z-15 touch-none bg-transparent"
       aria-label={`${label} 닫기`}
       onPointerDown={(event) => event.preventDefault()}
       onClick={() => {
@@ -107,7 +110,7 @@ export function MorphMenu({
     return (
       <>
         {backdrop}
-        <div className="pointer-events-auto relative z-10 size-(--toolbar-height)">
+        <div className={cn("pointer-events-auto relative size-(--toolbar-height)", open ? "z-20" : "z-10")}>
           <motion.div
             ref={root}
             animate={
@@ -117,7 +120,7 @@ export function MorphMenu({
             }
             className={cn(
               "app-toolbar liquid-glass-control absolute top-0 overflow-hidden rounded-[calc(var(--toolbar-height)/2)]",
-              align === "start" ? "left-0 max-w-[calc(100vw-160px)]" : "right-0",
+              align === "start" ? "left-0 max-w-[calc(100vw-40px)]" : "right-0",
             )}
             initial={false}
             transition={
@@ -132,12 +135,21 @@ export function MorphMenu({
               animate={open ? "open" : "closed"}
               aria-hidden={!open}
               aria-label={label}
-              className="flex max-h-[min(360px,calc(100dvh-var(--page-top)-var(--nav-clearance)-16px))] flex-col overflow-y-auto overscroll-contain p-1.5"
+              className={cn(
+                "flex max-h-[min(360px,calc(100dvh-var(--page-top)-var(--nav-clearance)-16px))] flex-col overflow-y-auto overscroll-contain p-1.5 [scrollbar-width:none]!",
+                // 바깥 상자의 기준이 트리거 크기라 너비를 주지 않으면 내용에 맞춰 늘어나지 못한다.
+                !menuWidth && "w-max",
+              )}
               style={menuWidth ? { width: `min(${menuWidth}px, calc(100vw - 160px))` } : undefined}
               inert={!open}
               initial={false}
               variants={{
-                open: { transition: { staggerChildren: 0.035, delayChildren: 0.06 } },
+                open: {
+                  transition: {
+                    staggerChildren: Math.min(0.035, 0.18 / Math.max(visibleActions.length - 1, 1)),
+                    delayChildren: 0.06,
+                  },
+                },
                 closed: {
                   transition: {
                     staggerChildren: Math.min(0.03, 0.12 / Math.max(visibleActions.length - 1, 1)),
@@ -160,7 +172,7 @@ export function MorphMenu({
                   </>
                 );
                 const className = cn(
-                  "flex min-h-12 w-full items-center gap-3 whitespace-normal rounded-2xl px-3 py-3 text-left font-medium text-[15px] text-foreground transition-colors active:bg-foreground/10 disabled:pointer-events-none disabled:opacity-45",
+                  "flex min-h-12 w-full items-center gap-3 whitespace-nowrap rounded-2xl px-3 py-3 text-left font-medium text-[15px] text-foreground transition-colors active:bg-foreground/10 disabled:pointer-events-none disabled:opacity-45",
                   FOCUS_RING,
                   action.selected && "bg-foreground/10",
                   action.className,
@@ -176,8 +188,8 @@ export function MorphMenu({
                           : { duration: 0.16, ease: CLOSE_EASE }
                     }
                     variants={{
-                      open: { opacity: 1, scale: 1, y: 0, filter: "blur(0px)" },
-                      closed: { opacity: 0, scale: 0.96, y: -4, filter: "blur(6px)" },
+                      open: { opacity: 1, scale: 1, y: 0, ...(blurred && { filter: "blur(0px)" }) },
+                      closed: { opacity: 0, scale: 0.96, y: -4, ...(blurred && { filter: "blur(6px)" }) },
                     }}
                   >
                     {action.href ? (
@@ -231,7 +243,7 @@ export function MorphMenu({
   return (
     <>
       {backdrop}
-      <div className="relative z-10">
+      <div className={cn("relative", open ? "z-20" : "z-10")}>
         <motion.div
           ref={root}
           animate={{ width: open ? "auto" : "var(--toolbar-height)" }}
