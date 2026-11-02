@@ -70,7 +70,7 @@ export function PlacePickerBottomSheet({
         {triggerLabel}
       </BottomSheet.Trigger>
       <BottomSheet.VirtualKeyboardProvider>
-        <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--drawer-content-max-height)]">
+        <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--bottom-sheet-content-max-height)]">
           <PlacePickerPanel
             mode={mode}
             draft={draft ?? localDraft}

@@ -50,7 +50,7 @@ export function RecordDetailBottomSheet({
         <BottomSheet.Content
           overlayHandle
           className={cn(
-            "bottom-(--drawer-keyboard-inset,0px) [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
+            "bottom-(--drawer-keyboard-inset,0px) [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
             className,
           )}
           style={{ height: FULL_SHEET_HEIGHT }}
