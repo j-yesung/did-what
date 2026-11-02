@@ -34,5 +34,3 @@ export type JourneySession = {
   replaying: boolean;
   restored?: boolean;
 };
-
-export type JourneySheetKind = "regions" | "choices" | "records";

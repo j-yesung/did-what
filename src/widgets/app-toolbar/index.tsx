@@ -11,7 +11,7 @@ import { NotificationBell } from "@/widgets/app-toolbar/notification-bell";
 
 import { RecordToolbarActions } from "./record-toolbar-actions";
 
-const TOOLBAR_ENTRY_PATHS = new Set(["/", "/records", "/places", "/settings"]);
+const TOOLBAR_ENTRY_PATHS = new Set(["/", "/journey", "/records", "/places", "/settings"]);
 
 /** 기록 상세. 작성(/records/new)과 수정(/records/{id}/edit)은 한 가지 일만 하는 화면이라 뺀다. */
 const RECORD_DETAIL_PATH = /^\/records\/(?!new$)[^/]+$/;

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { GearIcon, type Icon, MapPinAreaIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
@@ -25,7 +26,8 @@ const TABS: readonly Tab[] = [
 
 export function BottomNavigation() {
   const pathname = usePathname() ?? "";
-  const activeIndex = TABS.findIndex((tab) => tab.href === pathname);
+  const isJourney = pathname === "/journey";
+  const activeIndex = TABS.findIndex((tab) => tab.href === (pathname === "/journey" ? "/" : pathname));
 
   const activeIndexRef = useRef(activeIndex);
   const pressedTabRef = useRef<number | null>(null);
@@ -63,13 +65,19 @@ export function BottomNavigation() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="pointer-events-none fixed inset-x-0 bottom-(--nav-bottom-offset) z-40 pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]"
+      className={cn(
+        "pointer-events-none fixed inset-x-0 z-40 pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]",
+        isJourney ? "bottom-(--journey-nav-bottom-offset)" : "bottom-(--nav-bottom-offset)",
+      )}
     >
       <ul
-        className="liquid-glass pointer-events-auto relative mx-auto grid h-(--nav-height) w-[calc(100%-32px)] overflow-hidden rounded-full p-0.5"
+        className={cn(
+          "liquid-glass pointer-events-auto relative mx-auto grid h-(--nav-height) overflow-hidden rounded-full p-0.5",
+          isJourney ? "w-[calc(100%-56px)]" : "w-[calc(100%-32px)]",
+        )}
         style={{
           gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))`,
-          maxWidth: `calc(${TABS.length} * (var(--nav-height) + 16px))`,
+          maxWidth: isJourney ? "calc(var(--app-width) - 56px)" : `calc(${TABS.length} * (var(--nav-height) + 16px))`,
         }}
       >
         <li aria-hidden="true" className="pointer-events-none absolute inset-x-1 inset-y-0 z-3 flex items-center">

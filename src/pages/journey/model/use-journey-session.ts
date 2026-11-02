@@ -60,10 +60,9 @@ type RouteQuery = (
 type JourneySessionOptions = {
   routeQuery: RouteQuery;
   camera: Pick<MapCamera, "viewRef" | "setView" | "moveCamera" | "stop" | "fitRoutes" | "followRoute">;
-  closeSheet: () => Promise<unknown>;
 };
 
-export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySessionOptions) => {
+export const useJourneySession = ({ routeQuery, camera }: JourneySessionOptions) => {
   const queryClient = useQueryClient();
   const [session, setSession] = useState<JourneySession | null>(null);
   const sessionRef = useRef<JourneySession | null>(null);
@@ -71,7 +70,6 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
   const [arrivals, setArrivals] = useState<{ key: number; target: JourneyPlace | null }[]>([]);
   const generation = useRef(0);
   const sketchDone = useRef<(() => void) | null>(null);
-  const sheetClosed = useRef<Promise<unknown>>(Promise.resolve());
 
   useEffect(
     () => () => {
@@ -132,7 +130,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       const view = target ? camera.followRoute(route) : camera.fitRoutes([route]);
       const moving = view ? camera.moveCamera(view) : null;
       setSessionValue({ ...sessionRef.current!, status: "moving" });
-      await Promise.all([sheetClosed.current, moving]);
+      await moving;
       if (token !== generation.current) return;
 
       const segment = toSegment(next.record, route, target, next.current);
@@ -160,7 +158,6 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
   const begin = (record: JourneyRecord, region: JourneyRegion, queue: JourneyPlace[] = [], replaying = false) => {
     const token = ++generation.current;
     sketchDone.current?.();
-    sheetClosed.current = closeSheet();
 
     const next = startSession(record, region, queue, replaying);
     setSessionValue(next);
