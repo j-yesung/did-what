@@ -18,6 +18,5 @@ export const deleteRecord = async (recordId: string): Promise<ActionState> => {
 
   revalidatePath("/");
   revalidatePath("/records");
-  revalidatePath("/journey");
   return { status: "success" };
 };

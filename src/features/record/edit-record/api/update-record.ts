@@ -37,7 +37,6 @@ export const updateRecord = async (recordId: string, formData: FormData): Promis
   revalidatePath("/");
   revalidatePath("/records");
   revalidatePath("/places");
-  revalidatePath("/journey");
   revalidatePath(`/records/${recordId}`);
   return { status: "success" };
 };
