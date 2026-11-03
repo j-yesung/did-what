@@ -1,8 +1,13 @@
 import { useEffect, useMemo } from "react";
 
-import { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame, toRegionLocations } from "@/entities/record";
+import {
+  RECORD_CARD_BUTTON_CLASS,
+  RecordCardContent,
+  RecordCardFrame,
+  RecordDateGroups,
+  toRegionLocations,
+} from "@/entities/record";
 import { createRegionActivityMaps, RegionMiniMap } from "@/entities/region";
-import { getToday } from "@/shared/lib/date/get-today";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
@@ -52,7 +57,7 @@ export function RegionExplorer({
   const subdivisions = getSubregionCounts(entries);
   const selected = subdivisions.some(([name]) => name === subregion) ? subregion : null;
   const visible = selected ? entries.filter(({ subregions }) => subregions.includes(selected)) : entries;
-  const thisYear = getToday().slice(0, 4);
+  const visibleRecords = visible.map(({ record, subregions }) => ({ ...record, subregions }));
 
   useEffect(() => {
     if (subregion && !selected && !pending && !error) onSubregionChange(null);
@@ -72,7 +77,9 @@ export function RegionExplorer({
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="font-bold text-[28px] leading-tight tracking-[-0.04em]">{region.name}</h1>
+          <h1 className="font-bold text-[clamp(22px,3svh_+_4px,28px)] leading-tight tracking-[-0.04em]">
+            {region.name}
+          </h1>
           {map && (
             <>
               <p className="mt-1 text-[13px] text-muted-foreground">
@@ -132,30 +139,32 @@ export function RegionExplorer({
             </div>
           )}
           {homeUnavailable && <HomeLoadError />}
-          <ul>
-            {visible.map(({ record }, index) => (
-              <li key={record.id}>
-                {record.recorded_at.slice(0, 4) !== thisYear &&
-                  record.recorded_at.slice(0, 4) !== visible[index - 1]?.record.recorded_at.slice(0, 4) && (
-                    <p className={styles.yearDivider}>{record.recorded_at.slice(0, 4)}년</p>
-                  )}
-                <RecordCardFrame>
-                  <Button
-                    className={RECORD_CARD_BUTTON_CLASS}
-                    fullWidth
-                    onClick={() => onRecordOpen(record.id)}
-                    onFocus={() => onRecordPress(record.id)}
-                    onPointerDown={(event) => {
-                      if (event.button === 0) onRecordPress(record.id);
-                    }}
-                    variant="ghost"
-                  >
-                    <RecordCardContent record={record} showMemo={false} />
-                  </Button>
-                </RecordCardFrame>
-              </li>
-            ))}
-          </ul>
+          <RecordDateGroups
+            records={visibleRecords}
+            renderRecord={(record) => (
+              <RecordCardFrame>
+                <Button
+                  className={RECORD_CARD_BUTTON_CLASS}
+                  fullWidth
+                  onClick={() => onRecordOpen(record.id)}
+                  onFocus={() => onRecordPress(record.id)}
+                  onPointerDown={(event) => {
+                    if (event.button === 0) onRecordPress(record.id);
+                  }}
+                  variant="ghost"
+                >
+                  <RecordCardContent
+                    record={record}
+                    regionLabel={
+                      record.subregions.length > 1
+                        ? `${record.subregions[0]} 외 ${record.subregions.length - 1}개 지역`
+                        : record.subregions[0]
+                    }
+                  />
+                </Button>
+              </RecordCardFrame>
+            )}
+          />
         </div>
       </div>
     </section>

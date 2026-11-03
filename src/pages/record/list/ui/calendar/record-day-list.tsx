@@ -1,27 +1,20 @@
 "use client";
 
-import { ChatCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseISO } from "date-fns";
 
 import {
-  formatRecordRegionLabels,
-  formatRecordTimelineDate,
-  normalizeRecordCategory,
   prefetchRecordDetail,
-  RECORD_CATEGORY_DOT,
-  RecordCategoryBadge,
+  RECORD_CARD_BUTTON_CLASS,
+  RecordCardContent,
+  RecordCardFrame,
   type RecordSummary,
 } from "@/entities/record";
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { isPlainLeftClick } from "@/shared/lib/navigation/use-press-navigate";
-import { cn } from "@/shared/lib/utils";
-import { Button, buttonVariants } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button";
 import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { PressLink } from "@/shared/ui/press-link";
-import { Separator } from "@/shared/ui/separator";
-
-import { isMultiDayRecord } from "../../model/record-calendar";
 
 const DAY_TITLE = new Intl.DateTimeFormat("ko-KR", { day: "numeric", month: "long", weekday: "long" });
 
@@ -54,59 +47,34 @@ export function RecordDayList({ date, onRecordOpen, records }: RecordDayListProp
       {records ? (
         records.length > 0 ? (
           <ul>
-            {records.map((record, index) => {
-              const region = formatRecordRegionLabels(record);
-              const period = isMultiDayRecord(record)
-                ? formatRecordTimelineDate(record.recorded_at, record.recorded_until)
-                : null;
-              const commentCount = record.record_comments?.[0]?.count ?? 0;
-
-              return (
-                <li key={record.id}>
-                  {index > 0 ? <Separator className="bg-muted-foreground/20" /> : null}
-                  <PressLink
-                    className={cn(
-                      buttonVariants({ variant: "ghost" }),
-                      "h-auto min-h-15 w-full items-start justify-start gap-3 whitespace-normal rounded-none px-1 py-3.5 text-left font-normal after:hidden",
-                    )}
-                    href={`/records/${record.id}`}
-                    onClick={(event) => {
-                      if (!isPlainLeftClick(event)) return;
-                      event.preventDefault();
-                      onRecordOpen(record);
-                    }}
-                    onPointerDown={(event) => {
-                      if (event.button === 0) prefetchDetail(record);
-                    }}
-                    prefetch={false}
+            {records.map((record) => (
+              <li key={record.id}>
+                <RecordCardFrame>
+                  <Button
+                    className={RECORD_CARD_BUTTON_CLASS}
+                    fullWidth
+                    nativeButton={false}
+                    render={
+                      <PressLink
+                        href={`/records/${record.id}`}
+                        onClick={(event) => {
+                          if (!isPlainLeftClick(event)) return;
+                          event.preventDefault();
+                          onRecordOpen(record);
+                        }}
+                        onPointerDown={(event) => {
+                          if (event.button === 0) prefetchDetail(record);
+                        }}
+                        prefetch={false}
+                      />
+                    }
+                    variant="ghost"
                   >
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "mt-0.5 h-4 w-0.75 shrink-0 rounded-full",
-                        RECORD_CATEGORY_DOT[normalizeRecordCategory(record.category)],
-                      )}
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block break-words font-semibold text-base leading-5">{record.activity}</span>
-                      <span className="mt-1.5 flex min-w-0 flex-wrap items-center gap-1.5 text-muted-foreground text-xs">
-                        {period ? <span className="shrink-0 tabular-nums">{period}</span> : null}
-                        {period && region ? <span aria-hidden="true">·</span> : null}
-                        {region ? <span className="truncate">{region}</span> : null}
-                        <RecordCategoryBadge category={record.category} />
-                      </span>
-                    </span>
-                    {commentCount > 0 ? (
-                      <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground tabular-nums">
-                        <ChatCircleIcon aria-hidden="true" className="size-4" />
-                        <span className="sr-only">댓글</span>
-                        {commentCount}
-                      </span>
-                    ) : null}
-                  </PressLink>
-                </li>
-              );
-            })}
+                    <RecordCardContent record={record} />
+                  </Button>
+                </RecordCardFrame>
+              </li>
+            ))}
           </ul>
         ) : (
           <Empty className="py-10">

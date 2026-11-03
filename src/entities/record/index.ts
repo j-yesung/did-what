@@ -46,11 +46,7 @@ export {
   sortPrimaryRecordRegions,
   sortPrimaryRegionFirst,
 } from "./model/record-region";
-export {
-  formatRecordTimelineDate,
-  formatRecordTimelineMonth,
-  getRecordTimelineItemState,
-} from "./model/record-timeline";
+export { formatRecordTimelineDate } from "./model/record-timeline";
 export type { RecordFormState, RecordSummary } from "./model/types";
 export {
   DEFAULT_RECORD_WEATHER,
@@ -66,6 +62,7 @@ export { RecordBadges, RecordCategoryBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame } from "./ui/record-card-content";
 export { RecordCreateButton } from "./ui/record-create-button";
+export { RecordDateGroups } from "./ui/record-date-groups";
 export { RecordDetailHeader } from "./ui/record-detail-header";
 export { RecordTimelineItems } from "./ui/record-timeline-items";
 export { WeatherIcon } from "./ui/weather-icon";

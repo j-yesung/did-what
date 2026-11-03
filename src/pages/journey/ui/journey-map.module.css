@@ -384,13 +384,13 @@
 }
 .regionExplorer {
   position: absolute;
-  top: calc(var(--page-top) + var(--toolbar-height) + 28px);
-  bottom: var(--nav-clearance);
+  top: calc(var(--page-top) + var(--toolbar-height) + clamp(12px, 6svh - 20px, 28px));
+  bottom: 0;
   left: 20px;
   right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: clamp(8px, 4svh - 12px, 20px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -434,16 +434,16 @@
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 18px;
+  gap: clamp(10px, 3svh - 6px, 18px);
 }
 .regionMini {
   flex-shrink: 0;
-  width: 112px;
-  height: 104px;
+  width: clamp(72px, 20svh - 48px, 112px);
+  aspect-ratio: 14 / 13;
 }
 .visitBar {
   height: 6px;
-  margin: 12px 0 6px;
+  margin: clamp(6px, 1.5svh - 3px, 12px) 0 6px;
   border-radius: 3px;
   background: color-mix(in srgb, var(--journey-line) 25%, transparent);
 }
@@ -491,21 +491,13 @@
   min-width: 0;
   min-height: 0;
 }
-.regionListFrame::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0;
-  height: 72px;
-  background: linear-gradient(transparent, var(--journey-background) 36%);
-  pointer-events: none;
-}
 .regionList {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
-  padding-bottom: 72px;
+  padding-bottom: var(--nav-clearance);
 }
 .regionList::before {
   content: "";
@@ -513,25 +505,9 @@
   top: 0;
   z-index: 20;
   display: block;
-  height: 20px;
+  height: clamp(8px, 4svh - 12px, 20px);
   background: linear-gradient(var(--journey-background), transparent);
   pointer-events: none;
-}
-.yearDivider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 2px 0 22px;
-  font-size: 13px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted-foreground);
-}
-.yearDivider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--border);
 }
 .regionListEmpty {
   display: grid;
