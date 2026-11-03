@@ -2,6 +2,7 @@ import { MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
 import type { RecordInput } from "@/entities/record/model/record-form";
 import { getRecordRegionKey } from "@/entities/record/model/record-region";
 import type { RecordComment } from "@/entities/record-comment/model/record-comment";
+import { REGIONS } from "@/entities/region/model/region";
 
 import { DEMO_REGIONS, getDemoKakaoPlace } from "./samples.ts";
 import { shiftDate, toDemoPlace, toDemoRegion } from "./seed.ts";
@@ -417,4 +418,24 @@ export const receiveNotification = (state: DemoState, recipientId: string, conte
     state: result.state,
     title: target.activity,
   };
+};
+
+export const saveHomeAddress = (state: DemoState, memberId: string, address: string, now: string): DemoActionResult => {
+  const trimmed = address.trim();
+  if (trimmed.length < 5 || trimmed.length > 200) return fail("주소 찾기에서 주소를 다시 골라 주세요.");
+
+  const [province = "", district = ""] = trimmed.split(" ");
+  const label = REGIONS.find(({ name }) => name === province)?.label ?? province;
+  const region =
+    DEMO_REGIONS.find(({ fullName }) => fullName.startsWith(`${label} ${district} `)) ??
+    DEMO_REGIONS.find(({ fullName }) => fullName.startsWith(`${label} `));
+  if (!region) return fail("체험에서는 서울·부산·제주처럼 샘플 기록이 있는 시·도의 주소만 쓸 수 있어요.");
+
+  const home = { address: trimmed, latitude: region.latitude, longitude: region.longitude, updated_at: now };
+  return { ok: true, state: changed(state, { homes: { ...state.homes, [memberId]: home } }) };
+};
+
+export const deleteHomeAddress = (state: DemoState, memberId: string): DemoState => {
+  const { [memberId]: _removed, ...homes } = state.homes;
+  return changed(state, { homes });
 };

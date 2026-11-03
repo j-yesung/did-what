@@ -7,6 +7,8 @@ import {
   type RecordCursor,
 } from "@/entities/record/model/record-page";
 import type { RecordCommentCursor } from "@/entities/record-comment/model/record-comment";
+import { toJourneyRecord, toJourneyRegions, toJourneyVisits } from "@/pages/journey/model/record";
+import type { JourneyPoint, JourneyRoute } from "@/pages/journey/model/types";
 import type { KakaoPlace } from "@/shared/api/kakao-local/types";
 
 import { type DemoKakaoPlace, searchDemoKakaoPlaces, searchDemoRegions } from "./samples.ts";
@@ -81,6 +83,55 @@ export const toDetailRow = (state: DemoState, record: DemoRecord) => ({
   region_label: primaryRegionOf(record)?.region_label ?? "",
   weather: record.weather,
 });
+
+const toJourneyRow = (state: DemoState, record: DemoRecord) => ({
+  created_at: record.created_at,
+  id: record.id,
+  record_places: placesOf(state, record).map(({ id, latitude, longitude, name }) => ({
+    place: { id, latitude, longitude, name },
+  })),
+  record_regions: record.regions,
+  recorded_at: record.recorded_at,
+  region_code: primaryRegionOf(record)?.region_code,
+});
+
+export const getDemoJourneyMap = (state: DemoState) => {
+  const rows = sortRecent(state.records).map((record) => toJourneyRow(state, record));
+  return { regions: toJourneyRegions(rows), visits: toJourneyVisits(rows) };
+};
+
+const AVERAGE_SPEED_MPS = 40_000 / 3600;
+
+const distanceBetween = (from: JourneyPoint, to: JourneyPoint) => {
+  const radians = Math.PI / 180;
+  const x = (to.longitude - from.longitude) * radians * Math.cos(((from.latitude + to.latitude) * radians) / 2);
+  const y = (to.latitude - from.latitude) * radians;
+  return Math.hypot(x, y) * 6_371_000;
+};
+
+const getDemoJourneyRoute = (state: DemoState, memberId: unknown, search: unknown): JourneyRoute => {
+  const params = new URLSearchParams(String(search));
+  const record = state.records.find(({ id }) => id === params.get("recordId"));
+  const journey = record && toJourneyRecord(toJourneyRow(state, record), params.get("region") ?? "");
+  const target = params.get("placeId");
+  const from = params.get("fromPlaceId");
+  const destination = target ? journey?.places.find(({ id }) => id === target) : journey?.destination;
+  if (!journey || !destination) throw new Error("해당 장소를 찾을 수 없어요.");
+
+  const home = state.homes[String(memberId)];
+  const origin = from ? journey.places.find(({ id }) => id === from) : target ? journey.destination : home;
+  if (!origin) throw new Error(target ? "출발 장소를 찾을 수 없어요." : "집 주소를 등록해 주세요.");
+
+  const distance = Math.round(distanceBetween(origin, destination));
+  return {
+    distance,
+    duration: Math.round(distance / AVERAGE_SPEED_MPS),
+    points: [
+      [origin.longitude, origin.latitude],
+      [destination.longitude, destination.latitude],
+    ],
+  };
+};
 
 const toPlaceDetailRow = ({ ...place }: DemoPlace) => place;
 
@@ -267,6 +318,8 @@ export const resolveDemoQuery = (state: DemoState, queryKey: readonly unknown[],
     );
     return { comments: page, nextCursor };
   }
+
+  if (scope === "journey-route") return getDemoJourneyRoute(data, second, third);
 
   // 데모에서는 푸시를 지원하지 않는 기기로 보여 구독이 없다.
   if (scope === "push-endpoint") return null;

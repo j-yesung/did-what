@@ -35,7 +35,6 @@
   --neutral-800: #232526;
   --neutral-900: #111314;
 
-  --orange-50: #fff4e5;
   --orange-100: #ffecaa;
   --orange-200: #ffd678;
   --orange-300: #ffb84d;
@@ -87,7 +86,6 @@
 
   --text-primary: var(--neutral-900);
   --text-secondary: var(--neutral-500);
-  --text-brand: var(--text-accent);
   --text-dark-weak: var(--neutral-600);
   --text-danger: var(--red-600);
   --text-success: var(--green-400);
@@ -95,10 +93,10 @@
   --text-accent: var(--orange-700);
   --text-on-brand: var(--neutral-900);
   --text-on-danger: var(--neutral-0);
-  --text-on-light: var(--neutral-900);
   --text-on-dark: var(--neutral-0);
   --fill-toast: var(--neutral-750);
   --text-on-toast: var(--neutral-50);
+  --text-on-toast-danger: var(--red-300);
 
   --border-default: var(--neutral-100);
   --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.08);
@@ -115,6 +113,7 @@
   --journey-amber: var(--orange-400);
   --journey-ember: var(--orange-100);
   --journey-halo: 0.4;
+  --journey-neon: 0;
 }
 
 :root {
@@ -131,7 +130,7 @@
   --primary: var(--fill-brand);
   --primary-foreground: var(--text-on-brand);
   --secondary: var(--fill-brand-weak);
-  --secondary-foreground: var(--text-brand);
+  --secondary-foreground: var(--text-accent);
   --muted: var(--fill-muted);
   --muted-foreground: var(--text-secondary);
   --destructive: var(--text-danger);
@@ -169,13 +168,6 @@
   --page-top: calc(24px + env(safe-area-inset-top));
   --page-gap: 20px;
 
-  /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
-  --map-empty: var(--neutral-100);
-  --map-level-1: var(--orange-100);
-  --map-level-2: var(--orange-300);
-  --map-level-3: var(--orange-500);
-  --map-level-4: var(--orange-700);
-
   /* 기록 카테고리. 달력 제목 띠의 옅은 배경은 이 값을 섞어 만든다. */
   --category-daily: var(--green-600);
   --category-date: var(--pink-600);
@@ -206,11 +198,6 @@
   --color-place-cafe: var(--place-cafe);
   --color-place-park: var(--place-park);
   --color-place-attraction: var(--place-attraction);
-  --color-map-empty: var(--map-empty);
-  --color-map-level-1: var(--map-level-1);
-  --color-map-level-2: var(--map-level-2);
-  --color-map-level-3: var(--map-level-3);
-  --color-map-level-4: var(--map-level-4);
   --color-surface: var(--surface);
   --color-segmented: var(--fill-segmented);
   --color-segmented-active: var(--fill-segmented-active);
@@ -218,13 +205,13 @@
   --color-segmented-active-foreground: var(--text-segmented-active);
   --color-toast: var(--fill-toast);
   --color-toast-foreground: var(--text-on-toast);
+  --color-toast-danger: var(--text-on-toast-danger);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-danger-fill-foreground: var(--text-on-danger);
   --color-danger-fill: var(--fill-danger);
   --color-dimmed: var(--fill-dimmed);
-  --color-light-foreground: var(--text-on-light);
   --color-light: var(--fill-light);
   --color-dark-foreground: var(--text-on-dark);
   --color-dark: var(--fill-dark);
@@ -271,7 +258,7 @@
   --fill-surface: var(--neutral-800);
   --fill-elevated: var(--neutral-750);
   --fill-muted: var(--neutral-750);
-  --fill-segmented: var(--neutral-800);
+  --fill-segmented: rgb(244 246 244 / 0.08);
   --fill-segmented-active: var(--neutral-700);
   --text-segmented: var(--neutral-400);
   --text-segmented-active: var(--neutral-50);
@@ -297,8 +284,6 @@
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
   --input: var(--neutral-700);
 
-  --map-empty: var(--neutral-750);
-
   /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
   --category-daily: var(--green-400);
   --category-date: var(--pink-300);
@@ -317,6 +302,7 @@
   --journey-gold: var(--orange-200);
   --journey-ember: var(--orange-ember);
   --journey-halo: 1;
+  --journey-neon: 1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -328,7 +314,7 @@
     --fill-surface: var(--neutral-800);
     --fill-elevated: var(--neutral-750);
     --fill-muted: var(--neutral-750);
-    --fill-segmented: var(--neutral-800);
+    --fill-segmented: rgb(244 246 244 / 0.08);
     --fill-segmented-active: var(--neutral-700);
     --text-segmented: var(--neutral-400);
     --text-segmented-active: var(--neutral-50);
@@ -354,8 +340,6 @@
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
     --input: var(--neutral-700);
 
-    --map-empty: var(--neutral-750);
-
     /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
     --category-daily: var(--green-400);
     --category-date: var(--pink-300);
@@ -374,6 +358,7 @@
     --journey-gold: var(--orange-200);
     --journey-ember: var(--orange-ember);
     --journey-halo: 1;
+    --journey-neon: 1;
   }
 }
 

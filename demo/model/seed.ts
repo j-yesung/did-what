@@ -4,7 +4,7 @@ import type { RecordComment } from "@/entities/record-comment/model/record-comme
 import { DEMO_REGIONS, type DemoKakaoPlace, getDemoKakaoPlace } from "./samples.ts";
 import type { DemoNotification, DemoPlace, DemoRecord, DemoRegion, DemoState } from "./types.ts";
 
-export const DEMO_STATE_VERSION = 2;
+export const DEMO_STATE_VERSION = 3;
 
 /** 실제 앱이 uuid만 받으므로 같은 형식으로 고정 id를 만든다. 첫 글자로 종류를 구분한다. */
 export const demoId = (kind: "a" | "b" | "c" | "d" | "e", index: number) =>
@@ -306,6 +306,14 @@ export const createSeedState = (today: string): DemoState => {
     changed: false,
     comments,
     currentMemberId: jimin,
+    homes: {
+      [jimin]: {
+        address: "서울 마포구 망원로 1",
+        latitude: 37.5556,
+        longitude: 126.9019,
+        updated_at: `${firstDay}T00:00:00.000Z`,
+      },
+    },
     members: createMembers(firstDay),
     nextNotificationId: notificationId + 1,
     notifications,

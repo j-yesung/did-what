@@ -4,6 +4,7 @@ import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, use
 
 import { useRouter } from "next/navigation";
 
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
@@ -78,6 +79,7 @@ export function HomeAddressSheet({
   );
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const saveAddress = useDemoOverride(saveHomeAddress);
   return (
     <BottomSheet
       open={open}
@@ -132,7 +134,7 @@ export function HomeAddressSheet({
               }
               setError("");
               startTransition(async () => {
-                const result = await saveHomeAddress(value);
+                const result = await saveAddress(value);
                 if (result.error) setError(result.error);
                 else {
                   onOpenChange(false);

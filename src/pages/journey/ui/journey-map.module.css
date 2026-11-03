@@ -45,11 +45,11 @@
   stroke-linejoin: round;
   filter: drop-shadow(
       0 0 calc(var(--route-unit) * 2px)
-        color-mix(in srgb, var(--journey-glow) calc(var(--journey-halo) * 80%), transparent)
+        color-mix(in srgb, var(--journey-glow) calc(var(--journey-neon) * 80%), transparent)
     )
     drop-shadow(
       0 0 calc(var(--route-unit) * 7px)
-        color-mix(in srgb, var(--journey-gold) calc(var(--journey-halo) * 50%), transparent)
+        color-mix(in srgb, var(--journey-gold) calc(var(--journey-neon) * 50%), transparent)
     );
 }
 .arrival {

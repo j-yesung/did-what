@@ -117,7 +117,7 @@ export function ToastProvider() {
                   aria-hidden="true"
                   className={cn(
                     "size-5 shrink-0 self-start",
-                    toast.variant === "warning" ? "text-warning" : "text-destructive",
+                    toast.variant === "warning" ? "text-warning" : "text-toast-danger",
                   )}
                 />
               )}
