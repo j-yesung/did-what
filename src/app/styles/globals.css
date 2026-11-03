@@ -35,7 +35,6 @@
   --neutral-800: #232526;
   --neutral-900: #111314;
 
-  --orange-50: #fff4e5;
   --orange-100: #ffecaa;
   --orange-200: #ffd678;
   --orange-300: #ffb84d;
@@ -87,7 +86,6 @@
 
   --text-primary: var(--neutral-900);
   --text-secondary: var(--neutral-500);
-  --text-brand: var(--text-accent);
   --text-dark-weak: var(--neutral-600);
   --text-danger: var(--red-600);
   --text-success: var(--green-400);
@@ -95,7 +93,6 @@
   --text-accent: var(--orange-700);
   --text-on-brand: var(--neutral-900);
   --text-on-danger: var(--neutral-0);
-  --text-on-light: var(--neutral-900);
   --text-on-dark: var(--neutral-0);
   --fill-toast: var(--neutral-750);
   --text-on-toast: var(--neutral-50);
@@ -132,7 +129,7 @@
   --primary: var(--fill-brand);
   --primary-foreground: var(--text-on-brand);
   --secondary: var(--fill-brand-weak);
-  --secondary-foreground: var(--text-brand);
+  --secondary-foreground: var(--text-accent);
   --muted: var(--fill-muted);
   --muted-foreground: var(--text-secondary);
   --destructive: var(--text-danger);
@@ -226,7 +223,6 @@
   --color-danger-fill-foreground: var(--text-on-danger);
   --color-danger-fill: var(--fill-danger);
   --color-dimmed: var(--fill-dimmed);
-  --color-light-foreground: var(--text-on-light);
   --color-light: var(--fill-light);
   --color-dark-foreground: var(--text-on-dark);
   --color-dark: var(--fill-dark);
