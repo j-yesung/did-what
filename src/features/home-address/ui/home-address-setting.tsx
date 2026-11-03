@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
@@ -19,6 +20,7 @@ export function HomeAddressSetting({ address, memberName }: { address: string | 
   const [deleting, startDeleteTransition] = useTransition();
 
   const router = useRouter();
+  const removeAddress = useDemoOverride(deleteHomeAddress);
 
   return (
     <FieldSet>
@@ -63,7 +65,7 @@ export function HomeAddressSetting({ address, memberName }: { address: string | 
               onClick={() => {
                 setError("");
                 startDeleteTransition(async () => {
-                  const result = await deleteHomeAddress();
+                  const result = await removeAddress();
                   if (result.error) setError(result.error);
                   else {
                     setDeleteConfirmOpen(false);

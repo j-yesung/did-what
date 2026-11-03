@@ -1,17 +1,18 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { useSearchParams } from "next/navigation";
 
 import { AppNotFound } from "@/app/ui/app-not-found";
 import { LogoutButton } from "@/features/auth";
+import { HomeAddressSetting } from "@/features/home-address/ui/home-address-setting";
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
 import { toExistingRecordLocationPlace } from "@/features/record/select-record-location";
 import { RecordViewToggle } from "@/features/record/switch-record-view";
 import { ThemeSelect } from "@/features/switch-theme";
-import { HomeContent } from "@/pages/home/ui/home-content";
+import { JourneyMap } from "@/pages/journey/ui/journey-map";
 import { NotificationList } from "@/pages/notification/ui/notification-list";
 import { PlaceDetailContent } from "@/pages/place/detail/ui/place-detail-content";
 import { PlaceSearchBottomSheet } from "@/pages/place/list/ui/place-search-bottom-sheet";
@@ -34,7 +35,7 @@ import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-valu
 import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
 
 import { toDemoHref } from "../lib/demo-href";
-import { toDetailRow } from "../model/queries";
+import { getDemoJourneyMap, toDetailRow } from "../model/queries";
 import { demoStore, useDemoState } from "../model/store";
 import { useDemo } from "./demo-context";
 
@@ -57,15 +58,20 @@ export function DemoAppFrame({ children, member }: { children: ReactNode; member
   );
 }
 
-/** 이전 홈 지도. 실제 홈은 기록 지도로 옮겼고 체험은 샘플 데이터로 이 화면을 유지한다. */
 export function DemoHomeScreen({ member }: { member: Member }) {
+  const state = useDemoState();
+  const { regions, visits } = useMemo(() => getDemoJourneyMap(state), [state]);
+  const home = state.homes[member.id];
+
   return (
-    <PageShell className="motion-safe:animate-none" withBottomNavigation>
-      <div aria-hidden="true" className="h-(--toolbar-height) shrink-0" />
-      <div className="flex min-h-0 flex-1 flex-col gap-5 motion-safe:animate-[var(--tab-enter-name,tab-content-enter)_160ms_cubic-bezier(0.2,0,0,1)_both]">
-        <HomeContent member={member} />
-      </div>
-    </PageShell>
+    <JourneyMap
+      hasHome={Boolean(home)}
+      homeUnavailable={false}
+      homeVersion={home?.updated_at ?? null}
+      member={member}
+      regions={regions}
+      visits={visits}
+    />
   );
 }
 
@@ -202,7 +208,7 @@ export function DemoNotificationsScreen({ member }: { member: Member }) {
 }
 
 export function DemoSettingsScreen({ member }: { member: Member }) {
-  const { theme, members } = useDemoState();
+  const { homes, theme, members } = useDemoState();
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
@@ -213,6 +219,9 @@ export function DemoSettingsScreen({ member }: { member: Member }) {
       <div className="flex flex-1 flex-col">
         <PageSection className="pt-4 pb-4">
           <CurrentMemberSetting member={member} members={members} />
+        </PageSection>
+        <PageSection className="pt-4 pb-4">
+          <HomeAddressSetting address={homes[member.id]?.address ?? null} memberName={member.name} />
         </PageSection>
         <PageSection className="pt-4 pb-4">
           <ThemeSelect value={theme} />

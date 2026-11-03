@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { readRecordInput, validateRecordInput } from "@/entities/record";
 import { normalizeCommentBody } from "@/entities/record-comment";
 import { logout } from "@/features/auth/api/auth-actions";
+import { deleteHomeAddress, saveHomeAddress } from "@/features/home-address/api/actions";
 import { selectMember } from "@/features/member/select-member/api/select-member";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
 import { readRecordNotifications } from "@/features/notification/read-record-notifications";
@@ -193,6 +194,24 @@ export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): De
         update({ currentMemberId: member.id });
         void queryClient.invalidateQueries();
         return undefined;
+      },
+    ],
+    [
+      saveHomeAddress,
+      (address: string) =>
+        save(() => {
+          const result = actions.saveHomeAddress(demoStore.get(), memberId(), address, new Date().toISOString());
+          if (!result.ok) return { error: result.message };
+          demoStore.set(result.state);
+          return { success: true };
+        }),
+    ],
+    [
+      deleteHomeAddress,
+      async () => {
+        await delay(350);
+        demoStore.set(actions.deleteHomeAddress(demoStore.get(), memberId()));
+        return { success: true };
       },
     ],
     [saveTheme, (theme: Theme) => update({ theme })],

@@ -7,12 +7,14 @@ import {
   createComment,
   createRecord,
   deleteComment,
+  deleteHomeAddress,
   deletePlace,
   deleteRecord,
   receiveNotification,
+  saveHomeAddress,
   updateRecord,
 } from "./actions.ts";
-import { getRecordPage, resolveDemoQuery } from "./queries.ts";
+import { getDemoJourneyMap, getRecordPage, resolveDemoQuery } from "./queries.ts";
 import { createSeedState, DEMO_MEMBER_IDS, DEMO_RECORD_IDS, demoId } from "./seed.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -352,4 +354,33 @@ test("복수 카테고리는 각 카테고리 필터에서 조회되고 수정 �
       ({ id }) => id === created.recordId,
     ),
   );
+});
+
+test("기록 지도는 샘플 기록으로 지역·방문을 만들고 집에서 기록 지역까지 경로를 잇는다", () => {
+  const state = createSeedState(TODAY);
+  const { regions, visits } = getDemoJourneyMap(state);
+  assert.ok(regions.some(({ code }) => code === "KR-26"));
+  assert.ok(visits.length >= state.records.length);
+
+  const record = state.records.find(({ id }) => id === DEMO_RECORD_IDS.busan);
+  const params = new URLSearchParams({ recordId: record.id, region: "KR-26" }).toString();
+  const route = resolveDemoQuery(state, ["journey-route", DEMO_MEMBER_IDS.jimin, params], undefined);
+  const home = state.homes[DEMO_MEMBER_IDS.jimin];
+  assert.deepEqual(route.points[0], [home.longitude, home.latitude]);
+  assert.ok(route.distance > 300_000 && route.duration > 0, "서울에서 부산까지 거리와 시간을 어림한다.");
+
+  assert.throws(
+    () => resolveDemoQuery(state, ["journey-route", DEMO_MEMBER_IDS.seojun, params], undefined),
+    /집 주소를 등록해 주세요/,
+  );
+});
+
+test("집 주소는 시·도와 시·군·구로 샘플 지역 좌표를 찾고, 샘플이 없는 시·도는 받지 않는다", () => {
+  const state = createSeedState(TODAY);
+  const saved = saveHomeAddress(state, DEMO_MEMBER_IDS.seojun, "제주특별자치도 서귀포시 중문관광로 72", context().now);
+  assert.equal(saved.ok, true);
+  assert.equal(saved.state.homes[DEMO_MEMBER_IDS.seojun].latitude, 33.2541);
+
+  assert.equal(saveHomeAddress(state, DEMO_MEMBER_IDS.seojun, "울산 남구 삼산로 1", context().now).ok, false);
+  assert.equal(deleteHomeAddress(state, DEMO_MEMBER_IDS.jimin).homes[DEMO_MEMBER_IDS.jimin], undefined);
 });
