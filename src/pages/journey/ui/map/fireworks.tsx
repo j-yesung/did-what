@@ -4,7 +4,7 @@ import { pinAt } from "../../model/map-view";
 import journey from "../journey-map.module.css";
 import styles from "./fireworks.module.css";
 
-const COLORS = ["var(--journey-gold)", "var(--journey-amber)", "var(--journey-white)", "var(--journey-sky)"];
+const COLORS = ["var(--journey-gold)", "var(--journey-amber)", "var(--journey-white)", "var(--journey-glow)"];
 
 const SPARKS = Array.from({ length: 18 }, (_, index) => {
   const angle = (index / 18) * Math.PI * 2 + (index % 2) * 0.17;

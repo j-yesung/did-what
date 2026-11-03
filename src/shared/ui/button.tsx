@@ -44,7 +44,7 @@ const buttonVariants = cva(
       {
         color: "primary",
         variant: "fill",
-        class: "bg-primary text-primary-foreground",
+        class: "bg-foreground text-background",
       },
       {
         color: "danger",

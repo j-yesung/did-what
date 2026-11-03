@@ -22,115 +22,99 @@
 }
 
 :root {
-  --journey-background: rgb(17 19 20);
-  --journey-line: rgb(133 139 137);
-  --journey-white: rgb(244 246 244);
-  --journey-green: rgb(0 255 116);
-  --journey-sky: rgb(125 211 252);
-  --journey-glow: rgb(255 236 170);
-  --journey-gold: rgb(255 214 120);
-  --journey-amber: rgb(255 158 44);
-  --journey-ember: rgb(170 110 40);
+  --neutral-0: #ffffff;
+  --neutral-50: #f4f6f4;
+  --neutral-100: #e9ebea;
+  --neutral-200: #d4d6d5;
+  --neutral-300: #c6c8c7;
+  --neutral-400: #9ea0a0;
+  --neutral-500: #666b6a;
+  --neutral-600: #4a4f4e;
+  --neutral-700: #3c3e3e;
+  --neutral-750: #313333;
+  --neutral-800: #232526;
+  --neutral-900: #111314;
 
-  --grey-0: #ffffff;
-  --grey-50: #f9fafb;
-  --grey-100: #f2f4f6;
-  --grey-200: #e5e8eb;
-  --grey-300: #d1d6db;
-  --grey-400: #b0b8c1;
-  --grey-500: #8b95a1;
-  --grey-600: #6b7684;
-  --grey-700: #4e5968;
-  --grey-800: #333d4b;
-  --grey-850: #202632;
-  --grey-900: #191f28;
+  --orange-50: #fff4e5;
+  --orange-100: #ffecaa;
+  --orange-200: #ffd678;
+  --orange-300: #ffb84d;
+  --orange-400: #ff9e2c;
+  --orange-500: #e07800;
+  --orange-600: #c96a00;
+  --orange-700: #a35400;
+  --orange-ember: #aa6e28;
 
-  --blue-50: #e8f3ff;
-  --blue-100: #c9e2ff;
-  --blue-200: #90c2ff;
-  --blue-300: #64a8ff;
-  --blue-400: #4593fc;
-  --blue-500: #3182f6;
-  --blue-600: #2272eb;
-  --blue-700: #1b64da;
-  --blue-800: #1957c2;
-  --blue-900: #194aa6;
-
-  --red-50: #ffeeee;
-  --red-100: #ffd4d6;
-  --red-300: #fb8890;
-  --red-400: #f66570;
-  --red-500: #f04452;
-  --red-600: #e42939;
-  --red-700: #d22030;
-
-  --green-400: #3ddc9a;
-  --green-700: #0d9c63;
-
+  --red-300: #ff8a80;
+  --red-500: #e5484d;
+  --red-600: #d92d20;
+  --green-400: #3ddc84;
+  --green-600: #1f8a4c;
+  --pink-300: #ff8fb1;
+  --pink-600: #e0457b;
+  --blue-400: #6b9eff;
+  --blue-600: #2f6fe0;
+  --violet-300: #b79bff;
+  --violet-600: #7c5ce0;
   --teal-400: #3cc6cb;
-  --teal-600: #0e959b;
-
-  --yellow-500: #f5b700;
-
-  --rose-400: #ff8fb1;
-  --rose-500: #ef4f81;
-
-  --purple-400: #b79bff;
-  --purple-500: #7b5cf5;
-
-  --amber-400: #ffc043;
-  --amber-500: #d98600;
+  --teal-600: #0f9488;
+  --sky-300: #7dd3fc;
+  --sky-600: #0284c7;
+  --brown-400: #c8955f;
+  --brown-600: #8b5a2b;
 
   /* Semantic — 화면과 컴포넌트는 여기까지만 참조한다. */
-  --fill-base: var(--grey-50);
-  --fill-surface: var(--grey-0);
-  --fill-elevated: var(--grey-0);
-  --fill-muted: var(--grey-100);
-  --fill-segmented: var(--grey-200);
-  --fill-segmented-active: var(--grey-0);
+  --fill-base: var(--neutral-0);
+  --fill-surface: var(--neutral-0);
+  --fill-elevated: var(--neutral-0);
+  --fill-muted: var(--neutral-50);
+  --fill-segmented: var(--neutral-100);
+  --fill-segmented-active: var(--neutral-0);
   --text-segmented: var(--text-secondary);
-  --text-segmented-active: var(--grey-900);
-  --fill-brand: var(--blue-600);
-  --fill-brand-weak: var(--blue-50);
+  --text-segmented-active: var(--neutral-900);
+  --fill-brand: var(--orange-500);
+  --fill-brand-weak: color-mix(in srgb, var(--fill-brand) 12%, transparent);
   --fill-danger: var(--red-600);
-  --fill-dark-weak: rgb(2 32 71 / 0.05);
+  --fill-dark-weak: rgb(17 19 20 / 0.06);
   --fill-dimmed: rgb(0 0 0 / 0.2);
   --fill-nav-glass: rgb(255 255 255 / 0.25);
   --fill-nav-active: rgb(0 0 0 / 0.25);
-  --fill-light: var(--grey-0);
-  --fill-dark: var(--grey-900);
+  --fill-light: var(--neutral-0);
+  --fill-dark: var(--neutral-900);
 
-  --text-primary: var(--grey-900);
-  --text-secondary: var(--grey-600);
-  --text-brand: var(--grey-900);
-  --text-dark-weak: var(--grey-700);
-  /* 글자는 배경 대비 4.5:1 이상. red-500은 흰 배경에서 3.7:1이라 모자라 red-700을 쓴다. */
-  --text-danger: var(--red-700);
-  --text-success: var(--green-700);
-  --text-warning: var(--yellow-500);
-  /* 파란 글자 전용. 버튼 배경인 --fill-brand(blue-600)는 흰 배경에서 4.49:1이라 글자에는 한 단계 진하게 쓴다. */
-  --text-accent: var(--blue-700);
-  --text-on-brand: var(--grey-0);
-  --text-on-danger: var(--grey-0);
-  --text-on-light: var(--grey-900);
-  --text-on-dark: var(--grey-0);
-  --fill-toast: var(--grey-600);
-  --text-on-toast: var(--grey-0);
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-500);
+  --text-brand: var(--text-accent);
+  --text-dark-weak: var(--neutral-600);
+  --text-danger: var(--red-600);
+  --text-success: var(--green-400);
+  --text-warning: var(--orange-300);
+  --text-accent: var(--orange-700);
+  --text-on-brand: var(--neutral-900);
+  --text-on-danger: var(--neutral-0);
+  --text-on-light: var(--neutral-900);
+  --text-on-dark: var(--neutral-0);
+  --fill-toast: var(--neutral-750);
+  --text-on-toast: var(--neutral-50);
 
-  --border-default: var(--grey-200);
+  --border-default: var(--neutral-100);
   --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.08);
   --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.18), 0 0 20px rgb(0 0 0 / 0.1);
   --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.05);
   --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.1);
   --nav-glass-highlight: rgb(255 255 255 / 0.75);
+
+  --journey-background: var(--neutral-0);
+  --journey-line: var(--neutral-400);
+  --journey-white: var(--neutral-900);
+  --journey-glow: var(--orange-600);
+  --journey-gold: var(--orange-500);
+  --journey-amber: var(--orange-400);
+  --journey-ember: var(--orange-100);
+  --journey-halo: 0.4;
 }
 
-/*
- * 시맨틱 토큰을 가리키는 별칭은 선언된 요소에서 값이 정해진다. .dark 하위 영역(journey 지도 시트 등)에서도
- * 다크 토큰을 따르도록 같은 선언을 .dark에 다시 둔다.
- */
-:root,
-.dark {
+:root {
   /**
    * shadcn 컴포넌트가 참조하는 이름. 값을 직접 갖지 않고 시맨틱 토큰을 가리킨다.
    * 덕분에 컴포넌트를 고치지 않고도 팔레트를 통째로 바꿀 수 있다.
@@ -150,10 +134,10 @@
   --destructive: var(--text-danger);
   --success: var(--text-success);
   --warning: var(--text-warning);
-  --bookmark: var(--yellow-500);
+  --bookmark: var(--fill-brand);
   --border: var(--border-default);
-  --input: var(--grey-300);
-  --ring: var(--blue-300);
+  --input: var(--neutral-200);
+  --ring: var(--orange-400);
   --surface: var(--fill-surface);
   --radius: 0.875rem;
   color-scheme: light;
@@ -183,22 +167,23 @@
   --page-gap: 20px;
 
   /* 지도 농도. 기록이 없는 칸부터 가장 진한 칸까지 명도가 단계적으로 내려간다. */
-  --map-empty: var(--grey-200);
-  --map-level-1: var(--blue-200);
-  --map-level-2: var(--blue-300);
-  --map-level-3: var(--blue-500);
-  --map-level-4: var(--blue-700);
+  --map-empty: var(--neutral-100);
+  --map-level-1: var(--orange-100);
+  --map-level-2: var(--orange-300);
+  --map-level-3: var(--orange-500);
+  --map-level-4: var(--orange-700);
 
   /* 기록 카테고리. 달력 제목 띠의 옅은 배경은 이 값을 섞어 만든다. */
-  --category-daily: var(--green-700);
-  --category-date: var(--rose-500);
+  --category-daily: var(--green-600);
+  --category-date: var(--pink-600);
   --category-travel: var(--blue-600);
-  --category-anniversary: var(--amber-500);
-  --category-gathering: var(--purple-500);
-  --category-uncategorized: var(--grey-600);
+  --category-anniversary: var(--violet-600);
+  --category-gathering: var(--teal-600);
+  --category-uncategorized: var(--neutral-500);
 
-  /* 장소 아이콘. 카페(브랜드)·여행(파랑)과 구분되는 색이 필요한 종류만 따로 둔다. */
-  --place-attraction: var(--teal-600);
+  --place-cafe: var(--brown-600);
+  --place-park: var(--green-600);
+  --place-attraction: var(--sky-600);
 }
 
 @theme inline {
@@ -215,6 +200,8 @@
   --color-category-gathering-subtle: color-mix(in srgb, var(--category-gathering) 18%, transparent);
   --color-category-uncategorized: var(--category-uncategorized);
   --color-category-uncategorized-subtle: color-mix(in srgb, var(--category-uncategorized) 18%, transparent);
+  --color-place-cafe: var(--place-cafe);
+  --color-place-park: var(--place-park);
   --color-place-attraction: var(--place-attraction);
   --color-map-empty: var(--map-empty);
   --color-map-level-1: var(--map-level-1);
@@ -270,55 +257,60 @@
  * 다크 값. Base 팔레트는 그대로 두고 시맨틱 토큰이 가리키는 단계만 바꾼다.
  * 명시 선택(.dark)과 시스템 설정 두 경로가 모두 필요해 같은 선언을 두 번 쓴다.
  */
-:root.dark,
-/* 앱 테마와 상관없이 하위 영역만 다크로 칠할 때 쓴다(journey 지도 시트). */
-  .dark {
+:root.dark {
   color-scheme: dark;
 
   /* 배경과 카드 */
-  --fill-base: var(--grey-900);
-  --fill-segmented: var(--grey-800);
-  --fill-segmented-active: var(--grey-700);
-  --text-segmented: var(--grey-400);
-  --text-segmented-active: var(--grey-50);
-  --fill-surface: var(--grey-850);
-  --fill-elevated: var(--grey-800);
-  /* 배경(grey-900)과 같으면 빈 화면 아이콘 바탕이나 불러오는 자리 표시가 보이지 않는다. */
-  --fill-muted: var(--grey-850);
+  --fill-base: var(--neutral-900);
+  --fill-surface: var(--neutral-800);
+  --fill-elevated: var(--neutral-750);
+  --fill-muted: var(--neutral-750);
+  --fill-segmented: var(--neutral-800);
+  --fill-segmented-active: var(--neutral-700);
+  --text-segmented: var(--neutral-400);
+  --text-segmented-active: var(--neutral-50);
+  --fill-brand: var(--orange-400);
   --fill-danger: var(--red-500);
-  --fill-dark-weak: rgb(217 217 255 / 0.11);
+  --fill-dark-weak: rgb(244 246 244 / 0.1);
   --fill-dimmed: rgb(0 0 0 / 0.56);
   --fill-nav-glass: rgb(255 255 255 / 0.09);
   --fill-nav-active: rgb(255 255 255 / 0.14);
+  --fill-toast: var(--neutral-700);
 
   /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
-  --text-primary: var(--grey-50);
-  --text-secondary: var(--grey-400);
-  --text-brand: var(--grey-50);
-  --text-dark-weak: #c3c3c6;
+  --text-primary: var(--neutral-50);
+  --text-secondary: var(--neutral-400);
+  --text-dark-weak: var(--neutral-300);
   --text-danger: var(--red-300);
-  --text-success: var(--green-400);
-  /* 시트(grey-800) 위에서도 4.5:1을 넘는 가장 진한 파랑. */
-  --text-accent: var(--blue-300);
-  --border-default: var(--grey-800);
+  --text-accent: var(--orange-400);
+  --border-default: rgb(244 246 244 / 0.08);
   --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.28);
   --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
   --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
   --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.36);
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
-  --input: var(--grey-700);
+  --input: var(--neutral-700);
 
-  /* 기록 농도는 라이트와 같은 브랜드 색을 쓴다. 빈 칸만 표면을 따라간다. */
-  --map-empty: var(--grey-800);
+  --map-empty: var(--neutral-750);
 
   /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
   --category-daily: var(--green-400);
-  --category-date: var(--rose-400);
+  --category-date: var(--pink-300);
   --category-travel: var(--blue-400);
-  --category-anniversary: var(--amber-400);
-  --category-gathering: var(--purple-400);
-  --category-uncategorized: var(--grey-400);
-  --place-attraction: var(--teal-400);
+  --category-anniversary: var(--violet-300);
+  --category-gathering: var(--teal-400);
+  --category-uncategorized: var(--neutral-400);
+  --place-cafe: var(--brown-400);
+  --place-park: var(--green-400);
+  --place-attraction: var(--sky-300);
+
+  --journey-background: var(--neutral-900);
+  --journey-line: var(--neutral-400);
+  --journey-white: var(--neutral-50);
+  --journey-glow: var(--orange-100);
+  --journey-gold: var(--orange-200);
+  --journey-ember: var(--orange-ember);
+  --journey-halo: 1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -326,49 +318,56 @@
     color-scheme: dark;
 
     /* 배경과 카드 */
-    --fill-base: var(--grey-900);
-    --fill-segmented: var(--grey-800);
-    --fill-segmented-active: var(--grey-700);
-    --text-segmented: var(--grey-400);
-    --text-segmented-active: var(--grey-50);
-    --fill-surface: var(--grey-850);
-    --fill-elevated: var(--grey-800);
-    /* 배경(grey-900)과 같으면 빈 화면 아이콘 바탕이나 불러오는 자리 표시가 보이지 않는다. */
-    --fill-muted: var(--grey-850);
+    --fill-base: var(--neutral-900);
+    --fill-surface: var(--neutral-800);
+    --fill-elevated: var(--neutral-750);
+    --fill-muted: var(--neutral-750);
+    --fill-segmented: var(--neutral-800);
+    --fill-segmented-active: var(--neutral-700);
+    --text-segmented: var(--neutral-400);
+    --text-segmented-active: var(--neutral-50);
+    --fill-brand: var(--orange-400);
     --fill-danger: var(--red-500);
-    --fill-dark-weak: rgb(217 217 255 / 0.11);
+    --fill-dark-weak: rgb(244 246 244 / 0.1);
     --fill-dimmed: rgb(0 0 0 / 0.56);
     --fill-nav-glass: rgb(255 255 255 / 0.09);
     --fill-nav-active: rgb(255 255 255 / 0.14);
+    --fill-toast: var(--neutral-700);
 
     /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
-    --text-primary: var(--grey-50);
-    --text-secondary: var(--grey-400);
-    --text-brand: var(--grey-50);
-    --text-dark-weak: #c3c3c6;
+    --text-primary: var(--neutral-50);
+    --text-secondary: var(--neutral-400);
+    --text-dark-weak: var(--neutral-300);
     --text-danger: var(--red-300);
-    --text-success: var(--green-400);
-    /* 시트(grey-800) 위에서도 4.5:1을 넘는 가장 진한 파랑. */
-    --text-accent: var(--blue-300);
-    --border-default: var(--grey-800);
+    --text-accent: var(--orange-400);
+    --border-default: rgb(244 246 244 / 0.08);
     --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.28);
     --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
     --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
     --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.36);
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
-    --input: var(--grey-700);
+    --input: var(--neutral-700);
 
-    /* 기록 농도는 라이트와 같은 브랜드 색을 쓴다. 빈 칸만 표면을 따라간다. */
-    --map-empty: var(--grey-800);
+    --map-empty: var(--neutral-750);
 
     /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
     --category-daily: var(--green-400);
-    --category-date: var(--rose-400);
+    --category-date: var(--pink-300);
     --category-travel: var(--blue-400);
-    --category-anniversary: var(--amber-400);
-    --category-gathering: var(--purple-400);
-    --category-uncategorized: var(--grey-400);
-    --place-attraction: var(--teal-400);
+    --category-anniversary: var(--violet-300);
+    --category-gathering: var(--teal-400);
+    --category-uncategorized: var(--neutral-400);
+    --place-cafe: var(--brown-400);
+    --place-park: var(--green-400);
+    --place-attraction: var(--sky-300);
+
+    --journey-background: var(--neutral-900);
+    --journey-line: var(--neutral-400);
+    --journey-white: var(--neutral-50);
+    --journey-glow: var(--orange-100);
+    --journey-gold: var(--orange-200);
+    --journey-ember: var(--orange-ember);
+    --journey-halo: 1;
   }
 }
 

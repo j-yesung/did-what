@@ -13,15 +13,15 @@ type KakaoPostcode = new (options: {
 }) => { embed: (element: HTMLElement) => void };
 
 const DARK_THEME = {
-  bgColor: "#202632",
-  searchBgColor: "#191F28",
-  contentBgColor: "#202632",
-  pageBgColor: "#202632",
-  textColor: "#F9FAFB",
-  queryTextColor: "#F9FAFB",
-  postcodeTextColor: "#B0B8C1",
-  emphTextColor: "#4593FC",
-  outlineColor: "#333D4B",
+  bgColor: "#232526",
+  searchBgColor: "#111314",
+  contentBgColor: "#232526",
+  pageBgColor: "#232526",
+  textColor: "#F4F6F4",
+  queryTextColor: "#F4F6F4",
+  postcodeTextColor: "#9EA0A0",
+  emphTextColor: "#FF9E2C",
+  outlineColor: "#3C3E3E",
 };
 
 const getPostcode = () => (window as Window & { kakao?: { Postcode?: KakaoPostcode } }).kakao?.Postcode;
@@ -53,7 +53,6 @@ const loadPostcode = () => {
 };
 
 type KakaoAddressSearchProps = {
-  dark?: boolean;
   onSelect: (address: string) => void;
 };
 
@@ -62,7 +61,7 @@ export function KakaoAddressSearch(props: KakaoAddressSearchProps) {
   return <PostcodeFrame key={attempt} {...props} onRetry={() => setAttempt((count) => count + 1)} />;
 }
 
-function PostcodeFrame({ dark = false, onSelect, onRetry }: KakaoAddressSearchProps & { onRetry: () => void }) {
+function PostcodeFrame({ onSelect, onRetry }: KakaoAddressSearchProps & { onRetry: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -74,6 +73,7 @@ function PostcodeFrame({ dark = false, onSelect, onRetry }: KakaoAddressSearchPr
         if (cancelled || !containerRef.current) return;
         const Postcode = getPostcode();
         if (!Postcode) throw new Error("주소 찾기를 불러오지 못했어요.");
+        const dark = getComputedStyle(containerRef.current).colorScheme === "dark";
         new Postcode({
           oncomplete: (data) => {
             if (!cancelled) onSelect(data.address);
@@ -93,7 +93,7 @@ function PostcodeFrame({ dark = false, onSelect, onRetry }: KakaoAddressSearchPr
     return () => {
       cancelled = true;
     };
-  }, [dark, onSelect]);
+  }, [onSelect]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-5 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]">

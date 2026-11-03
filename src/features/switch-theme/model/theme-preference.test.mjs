@@ -38,15 +38,15 @@ test("화면 모드를 즉시 전환하고 시스템 모드에서 명시 클래�
 test("명시 모드는 시스템 설정과 무관하게 같은 색을, 시스템 모드는 각각 다른 색을 쓴다", () => {
   assert.deepEqual(
     getThemeColors("dark").map(({ color }) => color),
-    ["#191f28", "#191f28"],
+    ["#111314", "#111314"],
   );
   assert.deepEqual(
     getThemeColors("light").map(({ color }) => color),
-    ["#f9fafb", "#f9fafb"],
+    ["#ffffff", "#ffffff"],
   );
   assert.deepEqual(
     getThemeColors("system").map(({ color }) => color),
-    ["#f9fafb", "#191f28"],
+    ["#ffffff", "#111314"],
   );
   assert.equal(parseTheme("unknown"), "system");
 });

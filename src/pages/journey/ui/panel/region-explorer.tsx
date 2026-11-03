@@ -109,7 +109,6 @@ export function RegionExplorer({
             <div className={styles.regionListEmpty}>
               <p>이 지역의 기록이 없어요.</p>
               <Button
-                color="dark"
                 nativeButton={false}
                 render={<PressLink href={`/records/new?region=${region.code}`} />}
                 size="medium"

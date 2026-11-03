@@ -40,19 +40,21 @@ export function DotLand({ box, step, spots, arrivals }: DotLandProps) {
           <stop offset="1" style={{ stopColor: "color-mix(in srgb, var(--journey-amber) 0%, transparent)" }} />
         </radialGradient>
       </defs>
-      {dots.map(
-        ({ x, y, level }) =>
-          level >= 0 && (
-            <circle
-              key={`${x},${y}`}
-              cx={x}
-              cy={y}
-              r={step * 1.2}
-              fill={`url(#${glow})`}
-              opacity={0.2 + level * 0.15}
-            />
-          ),
-      )}
+      <g className={styles.halo}>
+        {dots.map(
+          ({ x, y, level }) =>
+            level >= 0 && (
+              <circle
+                key={`${x},${y}`}
+                cx={x}
+                cy={y}
+                r={step * 1.2}
+                fill={`url(#${glow})`}
+                opacity={0.2 + level * 0.15}
+              />
+            ),
+        )}
+      </g>
       <path
         className={styles.mutedDots}
         d={circlesPath(
