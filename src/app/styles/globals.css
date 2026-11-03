@@ -81,6 +81,9 @@
   --fill-nav-active: rgb(0 0 0 / 0.25);
   --fill-light: var(--neutral-0);
   --fill-dark: var(--neutral-900);
+  --fill-logo: var(--neutral-900);
+  --text-logo: var(--neutral-50);
+  --text-logo-accent: var(--orange-400);
 
   --text-primary: var(--neutral-900);
   --text-secondary: var(--neutral-500);
@@ -227,6 +230,9 @@
   --color-dark: var(--fill-dark);
   --color-dark-weak-foreground: var(--text-dark-weak);
   --color-dark-weak: var(--fill-dark-weak);
+  --color-logo: var(--fill-logo);
+  --color-logo-foreground: var(--text-logo);
+  --color-logo-accent: var(--text-logo-accent);
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-warning: var(--warning);
