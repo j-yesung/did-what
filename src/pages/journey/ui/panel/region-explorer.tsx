@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 
 import { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame, toRegionLocations } from "@/entities/record";
 import { createRegionActivityMaps, RegionMiniMap } from "@/entities/region";
+import { getToday } from "@/shared/lib/date/get-today";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
@@ -51,6 +52,7 @@ export function RegionExplorer({
   const subdivisions = getSubregionCounts(entries);
   const selected = subdivisions.some(([name]) => name === subregion) ? subregion : null;
   const visible = selected ? entries.filter(({ subregions }) => subregions.includes(selected)) : entries;
+  const thisYear = getToday().slice(0, 4);
 
   useEffect(() => {
     if (subregion && !selected && !pending && !error) onSubregionChange(null);
@@ -131,8 +133,12 @@ export function RegionExplorer({
           )}
           {homeUnavailable && <HomeLoadError />}
           <ul>
-            {visible.map(({ record }) => (
+            {visible.map(({ record }, index) => (
               <li key={record.id}>
+                {record.recorded_at.slice(0, 4) !== thisYear &&
+                  record.recorded_at.slice(0, 4) !== visible[index - 1]?.record.recorded_at.slice(0, 4) && (
+                    <p className={styles.yearDivider}>{record.recorded_at.slice(0, 4)}년</p>
+                  )}
                 <RecordCardFrame>
                   <Button
                     className={RECORD_CARD_BUTTON_CLASS}

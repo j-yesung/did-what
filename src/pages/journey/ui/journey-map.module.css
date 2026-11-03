@@ -517,6 +517,22 @@
   background: linear-gradient(var(--journey-background), transparent);
   pointer-events: none;
 }
+.yearDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 22px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+}
+.yearDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 .regionListEmpty {
   display: grid;
   justify-items: start;
