@@ -3,7 +3,7 @@ type JourneyUrlState = {
   subregion: string | null;
   record: string | null;
   places: string[];
-  detail: boolean;
+  detail: string | null;
 };
 
 const JOURNEY_PARAMS = ["region", "sub", "record", "places", "detail", "view", "period"];
@@ -16,7 +16,7 @@ export const readJourneyUrlState = (params: Pick<URLSearchParams, "get"> | null)
     subregion: (region && params?.get("sub")) || null,
     record: params?.get("record") ?? null,
     places: params?.get("places")?.split(",") ?? [],
-    detail: params?.get("detail") === "1",
+    detail: (region && params?.get("detail")) || null,
   };
 };
 
@@ -29,7 +29,7 @@ export const toJourneySearch = (search: string, state: JourneyUrlState | null) =
     if (state.subregion) params.set("sub", state.subregion);
     if (state.record) params.set("record", state.record);
     if (state.record && state.places.length) params.set("places", state.places.join(","));
-    if (state.record && state.detail) params.set("detail", "1");
+    if (state.detail) params.set("detail", state.detail);
   }
 
   const query = params.toString();

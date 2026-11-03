@@ -445,6 +445,21 @@
     opacity: 0;
   }
 }
+.backSlot {
+  flex-shrink: 0;
+  width: 0;
+  margin-right: -8px;
+  opacity: 0;
+  transition:
+    width 240ms cubic-bezier(0.23, 1, 0.32, 1),
+    margin-right 240ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.backSlot[data-visible] {
+  width: var(--toolbar-height);
+  margin-right: 0;
+  opacity: 1;
+}
 .solidGlass [data-slot="liquid-glass-button"] {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -571,7 +586,8 @@
   .page[data-mode="region"] .stage,
   .page[data-mode="restoring"] .stage,
   .regionExplorer,
-  .regionExplorer[data-active="true"] {
+  .regionExplorer[data-active="true"],
+  .backSlot {
     transition: none;
   }
 }

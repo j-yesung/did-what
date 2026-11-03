@@ -2,14 +2,15 @@
 
 import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import { ListBulletsIcon } from "@phosphor-icons/react";
+import { ListBulletsIcon, PathIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
-import { recordLocationsQueryOptions } from "@/entities/record";
+import { prefetchRecordDetail, recordLocationsQueryOptions } from "@/entities/record";
 import { HomeAddressSheet } from "@/features/home-address/ui/home-address-sheet";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 import { BackButton } from "@/shared/ui/back-button";
+import { Button } from "@/shared/ui/button";
 import { FixedToolbar } from "@/shared/ui/layouts";
 import { MorphMenu } from "@/shared/ui/morph-menu";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
@@ -53,6 +54,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
   const main = useRef<HTMLElement>(null);
   const title = useRef<HTMLHeadingElement>(null);
   const deletedRegion = useRef<JourneyRegion | null>(null);
+  const routeAfterClose = useRef<string | null>(null);
   const restored = useRef(false);
 
   const browsableRegions = useMemo(() => withUnvisitedRegions(regions), [regions]);
@@ -61,10 +63,10 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
     () => browsableRegions.find(({ code }) => code === initialUrl.region) ?? null,
   );
   const restoringRecord = Boolean(region && initialUrl.record);
-  const restoringDetail = restoringRecord && initialUrl.detail;
+  const initialDetail = region ? initialUrl.detail : null;
   const [restoring, setRestoring] = useState(restoringRecord);
-  const [detailRecordId, setDetailRecordId] = useState(restoringDetail ? initialUrl.record : null);
-  const [detailOpen, setDetailOpen] = useState(restoringDetail);
+  const [detailRecordId, setDetailRecordId] = useState(initialDetail);
+  const [detailOpen, setDetailOpen] = useState(Boolean(initialDetail));
   const [subregion, setSubregion] = useState(initialUrl.subregion);
   const [addressOpen, setAddressOpen] = useState(false);
   const [homeSaved, setHomeSaved] = useState(false);
@@ -127,12 +129,12 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         subregion,
         record: session?.record.id ?? null,
         places: session ? pickedJourneyPlaces(session).map(({ id }) => id) : [],
-        detail: Boolean(session && detailOpen),
+        detail: detailOpen ? detailRecordId : null,
       },
     );
     const url = `${window.location.pathname}${search}`;
     if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, "", url);
-  }, [session, detailOpen, region, subregion, restoring]);
+  }, [session, detailOpen, detailRecordId, region, subregion, restoring]);
 
   const restoreJourney = useEffectEvent((rows: NonNullable<typeof locations.data>) => {
     setRestoring(false);
@@ -226,10 +228,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
     if (!record || !region) return;
     if (homeReady) journey.begin(record, region);
     else void journey.preview(record, region);
-    requestAnimationFrame(() => {
-      title.current?.focus();
-      if (!homeReady) openDetail(recordId);
-    });
+    requestAnimationFrame(() => title.current?.focus());
   };
 
   const prefetchRoute = (recordId: string) => {
@@ -254,6 +253,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
   );
   const viewBox = `${drawn.x} ${drawn.y} ${drawn.width} ${drawn.height}`;
   const locationPoint = position && project(position.longitude, position.latitude);
+  const routableDetail = detailRecordId && !session ? journeyRecord(detailRecordId) : null;
 
   return (
     <main
@@ -318,17 +318,19 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         </div>
       </div>
       <FixedToolbar className="gap-2">
-        {browsingRegion && (
-          <div className={styles.solidGlass}>
-            <BackButton
-              aria-label="전국 지도로"
-              onClick={() => {
-                reset();
-                focusRegions();
-              }}
-            />
-          </div>
-        )}
+        <div
+          className={`${styles.backSlot} ${styles.solidGlass}`}
+          data-visible={browsingRegion ? "" : undefined}
+          inert={!browsingRegion}
+        >
+          <BackButton
+            aria-label="전국 지도로"
+            onClick={() => {
+              reset();
+              focusRegions();
+            }}
+          />
+        </div>
         {!restoring && (
           <MorphMenu
             label="지역"
@@ -392,8 +394,8 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           subregion={subregion}
           onRetry={() => void locations.refetch()}
           onSubregionChange={setSubregion}
-          onRecordOpen={startRecord}
-          onRecordPress={prefetchRoute}
+          onRecordOpen={openDetail}
+          onRecordPress={(recordId) => prefetchRecordDetail(queryClient, recordId)}
         />
       )}
       <HomeAddressSheet
@@ -409,16 +411,42 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         open={addressOpen}
       />
       <RecordDetailBottomSheet
+        action={
+          routableDetail && (
+            <Button
+              className="rounded-full border-0 bg-foreground text-background"
+              fullWidth
+              onClick={() => {
+                routeAfterClose.current = routableDetail.id;
+                setDetailOpen(false);
+              }}
+              onPointerDown={(event) => {
+                if (event.button === 0) prefetchRoute(routableDetail.id);
+              }}
+              size="xlarge"
+            >
+              <PathIcon aria-hidden="true" className="size-5" data-icon="inline-start" />
+              경로 보기
+            </Button>
+          )
+        }
         backLabel="지도로"
         showBackButton={false}
         className={`${styles.sheet} dark`}
         member={member}
         onDeleted={() => {
           setDetailOpen(false);
-          deletedRegion.current = sessionRef.current?.region ?? null;
+          deletedRegion.current = sessionRef.current?.region ?? region;
         }}
         onCloseComplete={() => {
           setDetailRecordId(null);
+          const routedRecordId = routeAfterClose.current;
+          routeAfterClose.current = null;
+          if (routedRecordId) {
+            startRecord(routedRecordId);
+            return;
+          }
+
           const previous = deletedRegion.current;
           if (!previous) return;
 
