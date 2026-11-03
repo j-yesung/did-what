@@ -164,7 +164,7 @@
   /* 플로팅 내비게이션과 콘텐츠 사이의 안전 여백. iOS 홈 인디케이터 영역도 포함한다. */
   --nav-height: clamp(48px, calc((100vw - 32px) / 6), 58px);
   --nav-bottom-gap: 6px;
-  --nav-bottom-offset: max(var(--nav-bottom-gap), calc(var(--nav-bottom-gap) + env(safe-area-inset-bottom) - 16px));
+  --nav-bottom-offset: max(var(--nav-bottom-gap), calc(var(--nav-bottom-gap) + env(safe-area-inset-bottom) - 19px));
   --nav-content-gap: 16px;
   --nav-clearance: calc(var(--nav-height) + var(--nav-bottom-offset) + var(--nav-content-gap));
 
@@ -176,7 +176,7 @@
   --screen-height: calc(100svh + env(safe-area-inset-top));
 
   /* 상단 툴바 버튼의 지름. 지도 화면의 상단 여백이 같은 값을 본다. */
-  --toolbar-height: 48px;
+  --toolbar-height: 44px;
 
   /* 화면 위 여백과 블록 사이 간격. 툴바가 같은 높이에 뜨고, 지도 화면은 이 값들을 더해 노치까지 끌어올린다. */
   --page-top: calc(24px + env(safe-area-inset-top));

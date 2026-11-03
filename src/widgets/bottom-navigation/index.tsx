@@ -72,11 +72,11 @@ export function BottomNavigation() {
       <ul
         className={cn(
           "liquid-glass pointer-events-auto relative mx-auto grid h-(--nav-height) overflow-hidden rounded-full p-0.5",
-          "w-[calc(100%-32px)]",
+          "w-[calc(100%-42px)]",
         )}
         style={{
           gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))`,
-          maxWidth: `calc(${TABS.length} * (var(--nav-height) + 16px))`,
+          maxWidth: "calc(var(--app-width) - 42px)",
         }}
       >
         <li aria-hidden="true" className="pointer-events-none absolute inset-x-1 inset-y-0 z-3 flex items-center">

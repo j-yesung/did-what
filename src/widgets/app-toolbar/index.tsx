@@ -38,7 +38,7 @@ export function AppToolbar({ memberId }: { memberId: string }) {
       ) : (
         <PressScale
           aria-label="빠른 작업"
-          className="app-toolbar liquid-glass-control pointer-events-auto ml-auto flex items-center gap-1 rounded-full p-0.5"
+          className="app-toolbar liquid-glass-control pointer-events-auto ml-auto flex items-center gap-1 rounded-full"
           role="group"
         >
           {primaryActions}
