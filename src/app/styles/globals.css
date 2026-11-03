@@ -99,6 +99,7 @@
   --text-on-dark: var(--neutral-0);
   --fill-toast: var(--neutral-750);
   --text-on-toast: var(--neutral-50);
+  --text-on-toast-danger: var(--red-300);
 
   --border-default: var(--neutral-100);
   --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.08);
@@ -218,6 +219,7 @@
   --color-segmented-active-foreground: var(--text-segmented-active);
   --color-toast: var(--fill-toast);
   --color-toast-foreground: var(--text-on-toast);
+  --color-toast-danger: var(--text-on-toast-danger);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -271,7 +273,7 @@
   --fill-surface: var(--neutral-800);
   --fill-elevated: var(--neutral-750);
   --fill-muted: var(--neutral-750);
-  --fill-segmented: var(--neutral-800);
+  --fill-segmented: rgb(244 246 244 / 0.08);
   --fill-segmented-active: var(--neutral-700);
   --text-segmented: var(--neutral-400);
   --text-segmented-active: var(--neutral-50);
@@ -328,7 +330,7 @@
     --fill-surface: var(--neutral-800);
     --fill-elevated: var(--neutral-750);
     --fill-muted: var(--neutral-750);
-    --fill-segmented: var(--neutral-800);
+    --fill-segmented: rgb(244 246 244 / 0.08);
     --fill-segmented-active: var(--neutral-700);
     --text-segmented: var(--neutral-400);
     --text-segmented-active: var(--neutral-50);
