@@ -17,7 +17,7 @@ export function RecordTimelineItems({ records, onDetailPrefetch }: RecordTimelin
   return (
     <>
       {records.map((record, index) => {
-        const { endsMonth, startsMonth } = getRecordTimelineItemState(records, index);
+        const { startsMonth } = getRecordTimelineItemState(records, index);
 
         return (
           <Fragment key={record.id}>
@@ -31,7 +31,7 @@ export function RecordTimelineItems({ records, onDetailPrefetch }: RecordTimelin
                 {formatRecordTimelineMonth(record.recorded_at)}
               </p>
             ) : null}
-            <RecordCard endsMonth={endsMonth} onDetailPrefetch={onDetailPrefetch} record={record} />
+            <RecordCard onDetailPrefetch={onDetailPrefetch} record={record} />
           </Fragment>
         );
       })}

@@ -9,8 +9,8 @@ export type RecordSummary = {
   memo: string | null;
   recorded_at: string;
   recorded_until: string | null;
-  // 상세 화면이 방문 장소를 받기 전에 그 자리를 잡아 두는 데 쓴다.
-  record_places?: { count: number }[];
+  // 목록 카드가 방문 장소를 잇고, 상세 화면이 장소를 받기 전에 그 자리를 잡아 두는 데 쓴다.
+  record_places?: { place: { id: string; name: string } | null }[];
   record_comments?: { count: number }[];
   record_regions?: { region_code: string; region_label: string }[];
   // 대표 지역. 방문 지역을 보여줄 때 이 지역을 맨 앞에 둔다.

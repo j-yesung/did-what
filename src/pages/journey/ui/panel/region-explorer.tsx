@@ -133,7 +133,7 @@ export function RegionExplorer({
           <ul>
             {visible.map(({ record }) => (
               <li key={record.id}>
-                <RecordCardFrame category={record.category} ringClassName="ring-(--journey-background)">
+                <RecordCardFrame>
                   <Button
                     className={RECORD_CARD_BUTTON_CLASS}
                     fullWidth
