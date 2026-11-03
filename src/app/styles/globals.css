@@ -113,6 +113,7 @@
   --journey-amber: var(--orange-400);
   --journey-ember: var(--orange-100);
   --journey-halo: 0.4;
+  --journey-neon: 0;
 }
 
 :root {
@@ -301,6 +302,7 @@
   --journey-gold: var(--orange-200);
   --journey-ember: var(--orange-ember);
   --journey-halo: 1;
+  --journey-neon: 1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -356,6 +358,7 @@
     --journey-gold: var(--orange-200);
     --journey-ember: var(--orange-ember);
     --journey-halo: 1;
+    --journey-neon: 1;
   }
 }
 
