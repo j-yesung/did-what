@@ -24,14 +24,14 @@ const setupDocument = (t) => {
   return { classes, document };
 };
 
-test("화면 모드를 즉시 전환하고 시스템 모드에서 명시 클래스를 제거한다", (t) => {
+test("기존 라이트·시스템 설정으로 적용해도 다크 모드를 유지한다", (t) => {
   const { classes } = setupDocument(t);
   for (const theme of ["dark", "light", "system"]) {
     applyTheme(theme);
-    assert.equal(getAppliedTheme(), theme);
+    assert.equal(getAppliedTheme(), "dark");
     assert.ok(classes.has("unrelated"));
-    assert.equal(classes.has("light"), theme === "light");
-    assert.equal(classes.has("dark"), theme === "dark");
+    assert.equal(classes.has("light"), false);
+    assert.equal(classes.has("dark"), true);
   }
 });
 

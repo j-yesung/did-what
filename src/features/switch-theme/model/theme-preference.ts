@@ -16,10 +16,10 @@ export const subscribeTheme = (onChange: () => void) => {
   return () => observer.disconnect();
 };
 
-export const applyTheme = (theme: Theme) => {
+export const applyTheme = (_theme: Theme) => {
   const root = document.documentElement;
   root.classList.remove("light", "dark");
-  if (theme !== "system") root.classList.add(theme);
+  root.classList.add("dark");
 };
 
 export const saveTheme = (theme: Theme) => {
