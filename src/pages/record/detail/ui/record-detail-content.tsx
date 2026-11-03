@@ -46,7 +46,7 @@ export function RecordDetailContent({ member, recordId }: RecordDetailContentPro
   const record = recordMissing ? null : pickNewerRecord(summary, recordQuery.data, recordQuery.dataUpdatedAt);
   const regionText = record ? formatRecordRegionLabels(record, Number.POSITIVE_INFINITY) : "";
   const recordPlaces = recordQuery.data?.record_places;
-  const placeCount = recordPlaces?.length ?? summary?.data.record_places?.[0]?.count ?? 0;
+  const placeCount = recordPlaces?.length ?? summary?.data.record_places?.length ?? 0;
 
   // 푸시와 알림 목록 모두 이 주소로 들어온다. 읽음 처리를 여기 한 곳에서 해서 알림을 연 곳과 상관없이 점이 사라진다.
   useEffect(() => {

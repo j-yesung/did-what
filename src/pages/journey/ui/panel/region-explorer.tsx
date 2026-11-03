@@ -1,6 +1,12 @@
 import { useEffect, useMemo } from "react";
 
-import { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame, toRegionLocations } from "@/entities/record";
+import {
+  RECORD_CARD_BUTTON_CLASS,
+  RecordCardContent,
+  RecordCardFrame,
+  RecordDateGroups,
+  toRegionLocations,
+} from "@/entities/record";
 import { createRegionActivityMaps, RegionMiniMap } from "@/entities/region";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -51,6 +57,7 @@ export function RegionExplorer({
   const subdivisions = getSubregionCounts(entries);
   const selected = subdivisions.some(([name]) => name === subregion) ? subregion : null;
   const visible = selected ? entries.filter(({ subregions }) => subregions.includes(selected)) : entries;
+  const visibleRecords = visible.map(({ record, subregions }) => ({ ...record, subregions }));
 
   useEffect(() => {
     if (subregion && !selected && !pending && !error) onSubregionChange(null);
@@ -63,34 +70,47 @@ export function RegionExplorer({
       inert={!active}
       aria-label={`${region.name}의 기록`}
     >
-      <aside className={styles.regionAside}>
-        <h1>{region.name}</h1>
+      <header className={styles.regionHead}>
         {map && (
           <div className={styles.regionMini}>
             <RegionMiniMap map={map} label={`${region.name} 미니 지도`} />
           </div>
         )}
-      </aside>
-      <div className={styles.regionListFrame}>
-        <div className={styles.regionListHead}>
-          <h2 className={styles.regionListLabel}>
-            기록 <span>{pending || error ? region.count : entries.length}</span>
-          </h2>
-          {subdivisions.length > 1 && (
-            <div className={styles.subregionChoices} aria-label="시·군·구">
-              {[null, ...subdivisions.map(([name]) => name)].map((name) => (
-                <button
-                  key={name ?? "all"}
-                  type="button"
-                  aria-pressed={selected === name}
-                  onClick={() => onSubregionChange(name)}
-                >
-                  {name ?? "전체"}
-                </button>
-              ))}
-            </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-[clamp(22px,3svh_+_4px,28px)] leading-tight tracking-[-0.04em]">
+            {region.name}
+          </h1>
+          {map && (
+            <>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                {map.totalCount}곳 중 <strong className="font-semibold text-foreground">{map.visitedCount}곳</strong>{" "}
+                다녀왔어요
+              </p>
+              <div aria-hidden="true" className={styles.visitBar}>
+                <i style={{ width: `${(map.visitedCount / map.totalCount) * 100}%` }} />
+              </div>
+            </>
           )}
+          <p className="text-[13px] text-muted-foreground tabular-nums">
+            기록 {pending || error ? region.count : entries.length}
+          </p>
         </div>
+      </header>
+      <div className={styles.regionListFrame}>
+        {subdivisions.length > 1 && (
+          <div className={styles.subregionChoices} aria-label="시·군·구">
+            {[[null, entries.length] as const, ...subdivisions].map(([name, count]) => (
+              <button
+                key={name ?? "all"}
+                type="button"
+                aria-pressed={selected === name}
+                onClick={() => onSubregionChange(name)}
+              >
+                {name ?? "전체"} <span>{count}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <div
           key={`${region.code}:${selected ?? "all"}`}
           className={styles.regionList}
@@ -119,26 +139,32 @@ export function RegionExplorer({
             </div>
           )}
           {homeUnavailable && <HomeLoadError />}
-          <ul>
-            {visible.map(({ record }) => (
-              <li key={record.id}>
-                <RecordCardFrame category={record.category} ringClassName="ring-(--journey-background)">
-                  <Button
-                    className={RECORD_CARD_BUTTON_CLASS}
-                    fullWidth
-                    onClick={() => onRecordOpen(record.id)}
-                    onFocus={() => onRecordPress(record.id)}
-                    onPointerDown={(event) => {
-                      if (event.button === 0) onRecordPress(record.id);
-                    }}
-                    variant="ghost"
-                  >
-                    <RecordCardContent record={record} showMemo={false} />
-                  </Button>
-                </RecordCardFrame>
-              </li>
-            ))}
-          </ul>
+          <RecordDateGroups
+            records={visibleRecords}
+            renderRecord={(record) => (
+              <RecordCardFrame>
+                <Button
+                  className={RECORD_CARD_BUTTON_CLASS}
+                  fullWidth
+                  onClick={() => onRecordOpen(record.id)}
+                  onFocus={() => onRecordPress(record.id)}
+                  onPointerDown={(event) => {
+                    if (event.button === 0) onRecordPress(record.id);
+                  }}
+                  variant="ghost"
+                >
+                  <RecordCardContent
+                    record={record}
+                    regionLabel={
+                      record.subregions.length > 1
+                        ? `${record.subregions[0]} 외 ${record.subregions.length - 1}개 지역`
+                        : record.subregions[0]
+                    }
+                  />
+                </Button>
+              </RecordCardFrame>
+            )}
+          />
         </div>
       </div>
     </section>

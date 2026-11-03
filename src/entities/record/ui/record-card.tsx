@@ -11,19 +11,18 @@ import type { RecordSummary } from "../model/types";
 import { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame } from "./record-card-content";
 
 type RecordCardProps = {
-  endsMonth: boolean;
   onDetailPrefetch?: (recordId: string) => void;
   record: RecordSummary;
 };
 
-export function RecordCard({ endsMonth, onDetailPrefetch, record }: RecordCardProps) {
+export function RecordCard({ onDetailPrefetch, record }: RecordCardProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const href = `/records/${record.id}`;
   const cacheSummary = () => cacheRecordSummary(queryClient, record);
 
   return (
-    <RecordCardFrame category={record.category} endsMonth={endsMonth}>
+    <RecordCardFrame>
       <Button
         className={RECORD_CARD_BUTTON_CLASS}
         fullWidth

@@ -8,6 +8,7 @@
 .stage {
   position: absolute;
   inset: 0;
+  top: calc(var(--page-top) + var(--toolbar-height) + var(--nav-content-gap));
   bottom: var(--nav-clearance);
   touch-action: none;
   cursor: grab;
@@ -383,13 +384,13 @@
 }
 .regionExplorer {
   position: absolute;
-  top: calc(var(--page-top) + var(--toolbar-height) + 40px);
-  bottom: var(--nav-clearance);
+  top: calc(var(--page-top) + var(--toolbar-height) + clamp(12px, 6svh - 20px, 28px));
+  bottom: 0;
   left: 20px;
   right: 20px;
-  display: grid;
-  grid-template-columns: clamp(80px, 24vw, 96px) minmax(0, 1fr);
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 4svh - 12px, 20px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -429,11 +430,28 @@
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-.regionAside {
-  align-self: start;
+.regionHead {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: clamp(10px, 3svh - 6px, 18px);
 }
 .regionMini {
-  height: 142px;
+  flex-shrink: 0;
+  width: clamp(72px, 20svh - 48px, 112px);
+  aspect-ratio: 14 / 13;
+}
+.visitBar {
+  height: 6px;
+  margin: clamp(6px, 1.5svh - 3px, 12px) 0 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--journey-line) 25%, transparent);
+}
+.visitBar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
 }
 .regionMini rect {
   fill: color-mix(in srgb, var(--journey-line) 40%, transparent);
@@ -466,12 +484,6 @@
         color-mix(in srgb, var(--journey-amber) calc(var(--mini-map-glow) * var(--journey-halo) * 100%), transparent)
     );
 }
-.regionAside h1 {
-  margin-bottom: 16px;
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-}
 .regionListFrame {
   position: relative;
   display: flex;
@@ -479,25 +491,13 @@
   min-width: 0;
   min-height: 0;
 }
-.regionListHead {
-  flex-shrink: 0;
-  min-width: 0;
-}
-.regionListFrame::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0;
-  height: 72px;
-  background: linear-gradient(transparent, var(--journey-background) 36%);
-  pointer-events: none;
-}
 .regionList {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
-  padding-bottom: 72px;
+  padding-bottom: var(--nav-clearance);
 }
 .regionList::before {
   content: "";
@@ -505,21 +505,9 @@
   top: 0;
   z-index: 20;
   display: block;
-  height: 20px;
+  height: clamp(8px, 4svh - 12px, 20px);
   background: linear-gradient(var(--journey-background), transparent);
   pointer-events: none;
-}
-.regionListLabel {
-  margin-bottom: 16px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.regionListLabel:last-child {
-  margin-bottom: 0;
-}
-.regionListLabel span {
-  margin-left: 3px;
-  font-variant-numeric: tabular-nums;
 }
 .regionListEmpty {
   display: grid;
@@ -530,19 +518,25 @@
 }
 .subregionChoices {
   display: flex;
+  flex-shrink: 0;
   overflow-x: auto;
-  gap: 6px;
-  padding-bottom: 4px;
+  gap: 8px;
+  margin-right: -20px;
+  padding: 0 20px 4px 0;
   scrollbar-width: none;
 }
 .subregionChoices button {
   flex-shrink: 0;
   min-height: 36px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border: 1px solid color-mix(in srgb, var(--journey-line) 30%, transparent);
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 12px;
+  white-space: nowrap;
   cursor: pointer;
+}
+.subregionChoices button span {
+  font-variant-numeric: tabular-nums;
 }
 .subregionChoices button[aria-pressed="true"] {
   border-color: var(--primary);

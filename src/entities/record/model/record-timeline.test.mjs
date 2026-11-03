@@ -1,37 +1,21 @@
-import {
-  formatRecordTimelineDate,
-  formatRecordTimelineMonth,
-  getRecordTimelineItemState,
-} from "@/entities/record/model/record-timeline";
+import { formatRecordTimelineDate, groupRecordsByDate } from "@/entities/record/model/record-timeline";
 
 import assert from "node:assert/strict";
 import test from "node:test";
 
-test("월이 시작하고 끝나는 지점을 표시한다", () => {
+test("같은 시작일의 기록을 묶고 연도 경계와 기록 순서를 보존한다", () => {
   const records = [
-    { recorded_at: "2026-09-17" },
-    { recorded_at: "2026-09-17" },
-    { recorded_at: "2026-09-14" },
-    { recorded_at: "2026-08-30" },
+    { id: "first", recorded_at: "2026-01-01", recorded_until: null },
+    { id: "period", recorded_at: "2026-01-01", recorded_until: "2026-01-03" },
+    { id: "last-year", recorded_at: "2025-12-31", recorded_until: "2026-01-02" },
   ];
-
-  assert.deepEqual(
-    records.map((_, index) => getRecordTimelineItemState(records, index)),
-    [
-      { endsMonth: false, startsMonth: true },
-      { endsMonth: false, startsMonth: false },
-      { endsMonth: true, startsMonth: false },
-      { endsMonth: true, startsMonth: true },
-    ],
-  );
-  assert.equal(formatRecordTimelineMonth(records[0].recorded_at), "2026년 9월");
-});
-
-test("기록 하나만 있어도 월의 시작과 끝을 표시한다", () => {
-  assert.deepEqual(getRecordTimelineItemState([{ recorded_at: "2026-10-04" }], 0), {
-    endsMonth: true,
-    startsMonth: true,
-  });
+  const original = structuredClone(records);
+  assert.deepEqual(groupRecordsByDate(records), [
+    { date: "2026-01-01", records: records.slice(0, 2) },
+    { date: "2025-12-31", records: [records[2]] },
+  ]);
+  assert.deepEqual(records, original);
+  assert.deepEqual(groupRecordsByDate([]), []);
 });
 
 test("타임라인 날짜는 짧은 기간을 표시하고 연도를 넘기면 양쪽 연도를 보존한다", () => {
