@@ -1,4 +1,4 @@
-import { toJourneyRecord, toJourneyRegions, toJourneyVisits } from "./record.ts";
+import { toJourneyRecord, toJourneyRegions, toJourneyVisits, withUnvisitedRegions } from "./record.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -114,4 +114,17 @@ test("장소가 있으면 장소마다, 없으면 겹치지 않는 지역마다 
       longitude: 128.6,
     },
   ]);
+});
+
+test("방문한 지역을 앞에 두고 기록이 없는 시·도도 탐색 목록에 넣는다", () => {
+  const visited = { code: "KR-27", name: "대구", count: 3 };
+  const regions = withUnvisitedRegions([visited]);
+
+  assert.equal(regions.length, 16);
+  assert.deepEqual(regions[0], visited);
+  assert.deepEqual(
+    regions.find(({ code }) => code === "KR-11"),
+    { code: "KR-11", name: "서울", count: 0 },
+  );
+  assert.equal(regions.filter(({ code }) => code === "KR-27").length, 1);
 });

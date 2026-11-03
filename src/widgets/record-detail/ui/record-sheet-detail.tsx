@@ -1,6 +1,6 @@
 "use client";
 
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { type Dispatch, type ReactNode, type SetStateAction, useState } from "react";
 
 import { DotsThreeVerticalIcon, NotePencilIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +18,7 @@ import { Spinner } from "@/shared/ui/spinner";
 import { RecordDetailSections } from "./record-detail-sections";
 
 type RecordSheetDetailProps = {
+  action?: ReactNode;
   backLabel?: string;
   showBackButton?: boolean;
   confirmClassName?: string;
@@ -30,6 +31,7 @@ type RecordSheetDetailProps = {
 };
 
 export function RecordSheetDetail({
+  action,
   backLabel = "이전 화면으로",
   showBackButton = true,
   confirmClassName,
@@ -46,7 +48,7 @@ export function RecordSheetDetail({
   const regionText = record ? formatRecordRegionLabels(record, Number.POSITIVE_INFINITY) : "";
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col">
+    <div className="group/sheet-detail relative flex min-h-0 flex-1 flex-col">
       <div
         className={cn(
           "pointer-events-none absolute inset-x-5 top-7 z-20 flex items-center justify-end gap-3 [&>*]:pointer-events-auto",
@@ -70,7 +72,14 @@ export function RecordSheetDetail({
           />
         ) : null}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]">
+      <div
+        className={cn(
+          "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+          action
+            ? "pb-[calc(--spacing(26)+env(safe-area-inset-bottom))]"
+            : "pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]",
+        )}
+      >
         <BottomSheet.Header className="pt-7 text-left" glass>
           <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title>
         </BottomSheet.Header>
@@ -107,6 +116,11 @@ export function RecordSheetDetail({
           )}
         </div>
       </div>
+      {action ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-[linear-gradient(transparent,var(--color-surface)_32px)] px-5 pt-8 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] group-has-[textarea:focus]/sheet-detail:hidden [&>*]:pointer-events-auto">
+          {action}
+        </div>
+      ) : null}
       <DeleteRecordConfirm
         activity={record?.activity ?? ""}
         className={confirmClassName}

@@ -1,11 +1,9 @@
 "use client";
 
-import { MapTrifoldIcon } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 
 import { RecordCreateButton } from "@/entities/record";
 import { FixedToolbar } from "@/shared/ui/layouts";
-import { PressLink } from "@/shared/ui/press-link";
 import { PressScale } from "@/shared/ui/press-scale";
 import { NotificationBell } from "@/widgets/app-toolbar/notification-bell";
 
@@ -24,24 +22,13 @@ export function AppToolbar({ memberId }: { memberId: string }) {
   const recordId = RECORD_DETAIL_PATH.test(pathname) ? pathname.split("/")[2] : undefined;
   const primaryActions = (
     <>
-      <RecordCreateButton className="size-12 [&_svg]:size-6" surface="group" />
+      <RecordCreateButton className="size-11 [&_svg]:size-6" surface="group" />
       <NotificationBell memberId={memberId} />
     </>
   );
 
   return (
     <FixedToolbar className="items-start">
-      {pathname === "/" && (
-        <PressScale className="app-toolbar liquid-glass-control pointer-events-auto rounded-full p-0.5">
-          <PressLink
-            className="flex h-12 items-center gap-1.5 rounded-full px-4 font-semibold text-foreground text-sm"
-            href="/journey"
-            prefetch={false}
-          >
-            <MapTrifoldIcon aria-hidden="true" size={20} />새 지도
-          </PressLink>
-        </PressScale>
-      )}
       {recordId ? (
         <div className="ml-auto">
           <RecordToolbarActions key={recordId} recordId={recordId}>
@@ -51,7 +38,7 @@ export function AppToolbar({ memberId }: { memberId: string }) {
       ) : (
         <PressScale
           aria-label="빠른 작업"
-          className="app-toolbar liquid-glass-control pointer-events-auto ml-auto flex items-center gap-1 rounded-full p-0.5"
+          className="app-toolbar liquid-glass-control pointer-events-auto ml-auto flex items-center gap-1 rounded-full"
           role="group"
         >
           {primaryActions}

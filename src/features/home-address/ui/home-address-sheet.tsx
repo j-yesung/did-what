@@ -106,7 +106,7 @@ export function HomeAddressSheet({
           dark && "dark",
           className,
         )}
-        style={{ "--drawer-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
+        style={{ "--bottom-sheet-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
       >
         <BottomSheet.Header ref={setHeader} className="relative">
           <BottomSheet.CloseButton label="주소 설정 닫기" className={searching ? "top-5" : "top-1"} />

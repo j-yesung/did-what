@@ -28,18 +28,19 @@ export function HomeLoadError() {
 }
 
 export function HomeNotice({ unavailable, onRegister }: { unavailable: boolean; onRegister: () => void }) {
+  if (unavailable)
+    return (
+      <div className={styles.homeError}>
+        <HomeLoadError />
+      </div>
+    );
+
   return (
     <div className={styles.homeNotice}>
-      {unavailable ? (
-        <HomeLoadError />
-      ) : (
-        <>
-          <p>길을 따라가려면 집 주소를 등록해 주세요.</p>
-          <Button className={styles.hit} color="dark" onClick={onRegister} size="medium" variant="weak">
-            등록하기
-          </Button>
-        </>
-      )}
+      <p>길을 따라가려면 집 주소를 등록해 주세요.</p>
+      <Button className={styles.hit} color="dark" onClick={onRegister} size="medium" variant="weak">
+        등록하기
+      </Button>
     </div>
   );
 }

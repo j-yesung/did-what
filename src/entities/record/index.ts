@@ -64,6 +64,7 @@ export { EmptyRecords } from "./ui/empty-records";
 export { RecordActionToolbar } from "./ui/record-action-toolbar";
 export { RecordBadges, RecordCategoryBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
+export { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame } from "./ui/record-card-content";
 export { RecordCreateButton } from "./ui/record-create-button";
 export { RecordDetailHeader } from "./ui/record-detail-header";
 export { RecordTimelineItems } from "./ui/record-timeline-items";

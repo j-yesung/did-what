@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import type { RecordSummary } from "@/entities/record";
 import { cn } from "@/shared/lib/utils";
@@ -9,6 +9,8 @@ import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { RecordSheetDetail } from "./record-sheet-detail";
 
 type RecordDetailBottomSheetProps = {
+  /** 시트 아래에 고정할 버튼. 댓글을 쓰는 동안에는 숨긴다. */
+  action?: ReactNode;
   backLabel: string;
   showBackButton?: boolean;
   /** 시트와 삭제 확인 창에 더할 클래스. 앱 테마와 상관없이 어두운 화면에서는 `dark`를 넘긴다. */
@@ -23,6 +25,7 @@ type RecordDetailBottomSheetProps = {
 };
 
 export function RecordDetailBottomSheet({
+  action,
   backLabel,
   showBackButton,
   className,
@@ -50,13 +53,14 @@ export function RecordDetailBottomSheet({
         <BottomSheet.Content
           overlayHandle
           className={cn(
-            "bottom-(--drawer-keyboard-inset,0px) [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
+            "bottom-(--drawer-keyboard-inset,0px) [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
             className,
           )}
           style={{ height: FULL_SHEET_HEIGHT }}
         >
           {record ? (
             <RecordSheetDetail
+              action={action}
               backLabel={backLabel}
               showBackButton={showBackButton}
               confirmClassName={className}

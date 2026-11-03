@@ -77,7 +77,7 @@ function BottomSheetOverlay({ className, ...props }: BottomSheetPrimitive.Backdr
     <BottomSheetPrimitive.Backdrop
       data-slot="bottom-sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 min-h-dvh select-none bg-background/20 opacity-[max(var(--drawer-overlay-min-opacity,0),calc(1-var(--drawer-swipe-progress)))] backdrop-blur-xs transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-swiping:duration-0 motion-reduce:transition-none data-snap-points:[--drawer-overlay-min-opacity:0.5]",
+        "fixed inset-0 z-50 min-h-dvh select-none bg-background/20 opacity-[max(var(--bottom-sheet-overlay-min-opacity,0),calc(1-var(--drawer-swipe-progress)))] backdrop-blur-xs transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:pointer-events-none data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-swiping:duration-0 motion-reduce:transition-none data-snap-points:[--bottom-sheet-overlay-min-opacity:0.5]",
         className,
       )}
       {...props}
@@ -118,22 +118,22 @@ function BottomSheetContent({
           data-snap-points={hasSnapPoints ? "" : undefined}
           className={cn(
             // Base.
-            "group/bottom-sheet-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 flex h-(--drawer-content-height) max-h-(--drawer-content-max-height) min-h-0 w-full select-none flex-col rounded-t-3xl border border-x-0 border-b-0 bg-surface text-foreground text-sm shadow-(--shadow-drawer) outline-none transition-[transform,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] motion-reduce:transition-none",
+            "group/bottom-sheet-popup transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] pointer-events-auto fixed z-50 flex h-(--bottom-sheet-content-height) max-h-(--bottom-sheet-content-max-height) min-h-0 w-full select-none flex-col rounded-t-3xl border border-x-0 border-b-0 bg-surface text-foreground text-sm shadow-(--shadow-bottom-sheet) outline-none transition-[transform,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [interpolate-size:allow-keywords] motion-reduce:transition-none",
             // Nested.
             "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95",
             // Bleed.
-            "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-(--bleed) after:bg-(--drawer-bleed-background,var(--color-surface))",
+            "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-(--bleed) after:bg-(--bottom-sheet-bleed-background,var(--color-surface))",
             // Sizing.
-            "[--drawer-content-height:var(--drawer-height,auto)] [--drawer-content-max-height:75dvh] data-snap-points:[--drawer-content-height:100dvh]",
+            "[--bottom-sheet-content-height:var(--drawer-height,auto)] [--bottom-sheet-content-max-height:75dvh] data-snap-points:[--bottom-sheet-content-height:100dvh]",
             // Stack.
             "[--bleed:3rem] [--peek:1rem] [--stack-height:var(--drawer-frontmost-height,var(--drawer-height,0px))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-scale-base:max(0,calc(1-(var(--nested-drawers)*var(--stack-step))))] [--stack-scale:clamp(0,calc(var(--stack-scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--stack-shrink:calc(1-var(--stack-scale))] [--stack-step:0.05]",
             // Transitions.
             "data-ending-style:transform-(--closed-transform) data-starting-style:transform-(--closed-transform) data-ending-style:data-nested-drawer-swiping:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-ending-style:opacity-[0.9999] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*500ms)] data-nested-drawer-swiping:duration-0 data-swiping:duration-0",
-            "[--drawer-bleed-background:var(--color-surface)] [--drawer-inset:0px]",
+            "[--bottom-sheet-bleed-background:var(--color-surface)] [--bottom-sheet-inset:0px]",
             // Axis: y. 넓은 화면에서는 앱 본문 폭 안에서만 열리게 한다.
             "inset-x-0 mx-auto min-[700px]:max-w-(--app-width)",
             "data-nested-drawer-open:h-(--stack-height)",
-            "bottom-0 origin-bottom [--closed-transform:translate3d(0,calc(100%+var(--drawer-inset,0px)+2px),0)] [--translate-y:calc(var(--drawer-snap-point-offset,0px)+var(--drawer-swipe-movement-y)-var(--stack-peek-offset)-(var(--stack-shrink)*var(--stack-height)))]",
+            "bottom-0 origin-bottom [--closed-transform:translate3d(0,calc(100%+var(--bottom-sheet-inset,0px)+2px),0)] [--translate-y:calc(var(--drawer-snap-point-offset,0px)+var(--drawer-swipe-movement-y)-var(--stack-peek-offset)-(var(--stack-shrink)*var(--stack-height)))]",
             className,
           )}
           {...props}
@@ -144,7 +144,7 @@ function BottomSheetContent({
           <BottomSheetPrimitive.Content
             data-slot="bottom-sheet-content"
             className={cn(
-              "flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain rounded-[inherit] transition-opacity duration-300 ease-[cubic-bezier(0.45,1.005,0,1.005)] group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100 motion-reduce:transition-none",
+              "flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain rounded-[inherit] transition-opacity duration-300 ease-[cubic-bezier(0.45,1.005,0,1.005)] has-data-[slot=bottom-sheet-glass]:rounded-none group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100 motion-reduce:transition-none",
             )}
           >
             {children}
@@ -154,6 +154,16 @@ function BottomSheetContent({
     </BottomSheetPortal>
   );
 }
+/**
+ * 위로 갈수록 블러가 겹쳐 쌓여 본문이 경계 없이 흐려진다.
+ * 둥글게 잘리는 조상 안에서는 Chrome이 backdrop-filter의 마스크를 무시하므로 콘텐츠의 모서리 클리핑을 끈다.
+ */
+const GLASS_BLUR_LAYERS = [
+  "backdrop-blur-[2px] mask-[linear-gradient(to_bottom,black_30%,transparent)]",
+  "backdrop-blur-[4px] mask-[linear-gradient(to_bottom,black_15%,transparent_70%)]",
+  "backdrop-blur-[8px] mask-[linear-gradient(to_bottom,black,transparent_45%)]",
+];
+
 function BottomSheetHeader({
   children,
   className,
@@ -173,8 +183,14 @@ function BottomSheetHeader({
       {glass ? (
         <span
           aria-hidden="true"
-          className="mask-[linear-gradient(to_bottom,black_calc(100%-1.5rem),rgb(0_0_0/0.6)_calc(100%-1rem),rgb(0_0_0/0.2)_calc(100%-0.5rem),transparent)] pointer-events-none absolute inset-x-0 top-0 -bottom-6 -z-10 bg-surface/40 backdrop-blur-xs"
-        />
+          className="pointer-events-none absolute inset-x-0 top-0 -bottom-16 -z-10"
+          data-slot="bottom-sheet-glass"
+        >
+          {GLASS_BLUR_LAYERS.map((layer) => (
+            <span className={cn("absolute inset-0 rounded-t-3xl", layer)} key={layer} />
+          ))}
+          <span className="absolute inset-0 rounded-t-3xl bg-linear-to-b from-surface/50 to-transparent" />
+        </span>
       ) : null}
       {children}
     </div>

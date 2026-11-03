@@ -8,9 +8,9 @@ export type JourneyVisit = JourneyPoint & {
   recordedAt: string;
   createdAt: string;
 };
-export type JourneyRegion = JourneyPoint & { code: string; name: string; count: number };
+export type JourneyRegion = { code: string; name: string; count: number };
 export type JourneyRoute = { points: [number, number][]; distance: number; duration: number; straight?: boolean };
-export type JourneyStatus = "loading" | "moving" | "drawing" | "idle" | "error";
+export type JourneyStatus = "home" | "loading" | "moving" | "drawing" | "idle" | "error";
 
 export type JourneySegment = {
   route: JourneyRoute;
@@ -34,5 +34,3 @@ export type JourneySession = {
   replaying: boolean;
   restored?: boolean;
 };
-
-export type JourneySheetKind = "regions" | "choices" | "records";

@@ -57,7 +57,7 @@ export function DemoAppFrame({ children, member }: { children: ReactNode; member
   );
 }
 
-/** app/(app)/(map)의 layout·template·page. */
+/** 이전 홈 지도. 실제 홈은 기록 지도로 옮겼고 체험은 샘플 데이터로 이 화면을 유지한다. */
 export function DemoHomeScreen({ member }: { member: Member }) {
   return (
     <PageShell className="motion-safe:animate-none" withBottomNavigation>

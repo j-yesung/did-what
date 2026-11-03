@@ -2,39 +2,41 @@
 
 import { type CSSProperties, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import { ListBulletsIcon } from "@phosphor-icons/react";
+import { ListBulletsIcon, PathIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
-import { recordLocationsQueryOptions } from "@/entities/record";
+import { prefetchRecordDetail, recordLocationsQueryOptions } from "@/entities/record";
 import { HomeAddressSheet } from "@/features/home-address/ui/home-address-sheet";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
+import { BackButton } from "@/shared/ui/back-button";
+import { Button } from "@/shared/ui/button";
 import { FixedToolbar } from "@/shared/ui/layouts";
-import { PageBackButton } from "@/shared/ui/layouts/page-back-button";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { MorphMenu } from "@/shared/ui/morph-menu";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
+import { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
+import { MapControls } from "@/widgets/region-activity-map/ui/map-controls";
 
 import { journeyRouteQuery } from "../api/route-query";
 import { arrivalLights, dotStep, toSpot } from "../model/dot-map";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
-import { expandView, national, project } from "../model/map-view";
+import { expandView, national, pinAt, project } from "../model/map-view";
 import { pickedJourneyPlaces } from "../model/queue";
-import { type JourneyRecord, toJourneyRecord } from "../model/record";
+import { type JourneyRecord, toJourneyRecord, withUnvisitedRegions } from "../model/record";
 import type { JourneyPlace, JourneyRegion, JourneyVisit } from "../model/types";
 import { useJourneySession } from "../model/use-journey-session";
-import { useJourneySheet } from "../model/use-journey-sheet";
 import { MAP_OVERSCAN, useMapCamera } from "../model/use-map-camera";
 import { JourneyActions } from "./header/journey-actions";
 import { RecordHeader } from "./header/record-header";
 import styles from "./journey-map.module.css";
 import { DotLand } from "./map/dot-land";
 import { Fireworks } from "./map/fireworks";
-import { NODE_HIT_RADIUS, RegionNodes } from "./map/region-nodes";
 import { RouteLayer } from "./map/route-layer";
-import { EmptyJourney, HomeNotice } from "./panel/journey-notices";
+import { EmptyJourney } from "./panel/journey-notices";
 import { JourneyPanel } from "./panel/journey-panel";
-import { JourneySheet, RegionRecords } from "./sheet/journey-sheet";
-import { RegionChoices } from "./sheet/region-choices";
+import { RegionExplorer } from "./panel/region-explorer";
+
+const EMPTY_RECORDS: [] = [];
 
 type JourneyMapProps = {
   regions: JourneyRegion[];
@@ -51,22 +53,25 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
   const locations = useQuery(recordLocationsQueryOptions);
   const main = useRef<HTMLElement>(null);
   const title = useRef<HTMLHeadingElement>(null);
-  const regionsButton = useRef<HTMLButtonElement>(null);
   const deletedRegion = useRef<JourneyRegion | null>(null);
+  const routeAfterClose = useRef<string | null>(null);
   const restored = useRef(false);
 
-  const [initialUrl] = useState(() =>
-    readJourneyUrlState(searchParams, typeof window !== "undefined" && getPageNavigation(window).traversal),
+  const browsableRegions = useMemo(() => withUnvisitedRegions(regions), [regions]);
+  const [initialUrl] = useState(() => readJourneyUrlState(searchParams));
+  const [region, setRegion] = useState<JourneyRegion | null>(
+    () => browsableRegions.find(({ code }) => code === initialUrl.region) ?? null,
   );
-  const restoringDetail = Boolean(initialUrl.region && initialUrl.record && initialUrl.detail);
-  const [restoring, setRestoring] = useState(Boolean(initialUrl.region && initialUrl.record));
-  const [detailRecordId, setDetailRecordId] = useState(restoringDetail ? initialUrl.record : null);
-  const [detailOpen, setDetailOpen] = useState(restoringDetail);
-  const [region, setRegion] = useState<JourneyRegion | null>(null);
-  const [subregion, setSubregion] = useState<string | null>(null);
+  const restoringRecord = Boolean(region && initialUrl.record);
+  const initialDetail = region ? initialUrl.detail : null;
+  const [restoring, setRestoring] = useState(restoringRecord);
+  const [detailRecordId, setDetailRecordId] = useState(initialDetail);
+  const [detailOpen, setDetailOpen] = useState(Boolean(initialDetail));
+  const [subregion, setSubregion] = useState(initialUrl.subregion);
   const [addressOpen, setAddressOpen] = useState(false);
   const [homeSaved, setHomeSaved] = useState(false);
   const homeReady = (hasHome || homeSaved) && !homeUnavailable;
+  const currentLocation = useCurrentMapLocation();
 
   const routeQuery = (
     record: JourneyRecord,
@@ -87,16 +92,12 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
     setView,
     moveCamera,
     stop,
-    toMapPoint,
-    canTap,
     fitRoutes,
     followRoute,
   } = useMapCamera();
-  const sheet = useJourneySheet(addressOpen);
   const journey = useJourneySession({
     routeQuery,
     camera: { viewRef, setView, moveCamera, stop, fitRoutes, followRoute },
-    closeSheet: sheet.close,
   });
   const { session, sessionRef } = journey;
 
@@ -120,45 +121,67 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
   );
 
   useEffect(() => {
+    if (restoring) return;
     const search = toJourneySearch(
       window.location.search,
-      session && {
-        region: session.region.code,
-        record: session.record.id,
-        places: session.segments.flatMap((segment) => (segment.target ? [segment.target.id] : [])),
-        detail: detailOpen,
+      region && {
+        region: region.code,
+        subregion,
+        record: session?.record.id ?? null,
+        places: session ? pickedJourneyPlaces(session).map(({ id }) => id) : [],
+        detail: detailOpen ? detailRecordId : null,
       },
     );
     const url = `${window.location.pathname}${search}`;
     if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, "", url);
-  }, [session, detailOpen]);
+  }, [session, detailOpen, detailRecordId, region, subregion, restoring]);
 
   const restoreJourney = useEffectEvent((rows: NonNullable<typeof locations.data>) => {
     setRestoring(false);
-    if (sessionRef.current || sheet.kind !== null) return;
+    if (sessionRef.current || !initialUrl.record) return;
 
-    const target = regions.find((item) => item.code === initialUrl.region);
     const row = rows.find((item) => item.id === initialUrl.record);
-    const record = target && row && homeReady ? toJourneyRecord(row, target.code) : null;
-    if (!target || !record) {
+    const record = region && row ? toJourneyRecord(row, region.code) : null;
+    if (!region || !record) {
       setDetailOpen(false);
       return;
     }
 
-    setRegion(target);
-    void journey.restore(
-      record,
-      target,
-      initialUrl.places.flatMap((id) => record.places.filter((place) => place.id === id)),
-    );
+    const places = initialUrl.places.flatMap((id) => record.places.filter((place) => place.id === id));
+    void (homeReady ? journey.restore(record, region, places) : journey.preview(record, region, places));
   });
 
   useEffect(() => {
-    if (restored.current || locations.isFetching || (!locations.data && !locations.isError)) return;
+    if (restored.current || locations.isFetching || !locations.isSuccess) return;
 
     restored.current = true;
-    restoreJourney(locations.data ?? []);
-  }, [locations.data, locations.isFetching, locations.isError]);
+    restoreJourney(locations.data);
+  }, [locations.data, locations.isFetching, locations.isSuccess]);
+
+  const resumeRoute = useEffectEvent(() => {
+    const current = sessionRef.current;
+    if (current?.status === "home") journey.begin(current.record, current.region, current.queue);
+  });
+
+  useEffect(() => {
+    if (homeReady) resumeRoute();
+  }, [homeReady]);
+
+  const revealLocation = useEffectEvent((point: { x: number; y: number }) => {
+    const current = viewRef.current;
+    const visible =
+      point.x >= current.x &&
+      point.x <= current.x + current.width &&
+      point.y >= current.y &&
+      point.y <= current.y + current.height;
+    if (!visible) moveCamera({ ...current, x: point.x - current.width / 2, y: point.y - current.height / 2 });
+  });
+
+  const { position } = currentLocation;
+
+  useEffect(() => {
+    if (position) revealLocation(project(position.longitude, position.latitude));
+  }, [position]);
 
   const journeyRecord = (recordId: string) => {
     const record = locations.data?.find((item) => item.id === recordId);
@@ -166,47 +189,58 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
   };
 
   const reset = () => {
+    restored.current = true;
+    setRestoring(false);
     journey.clear();
     setRegion(null);
-    sheet.show(null);
     moveCamera(national);
   };
 
-  const openRegion = (selected: JourneyRegion) => {
-    if (!homeReady && !homeUnavailable) {
-      setRegion(selected);
-      sheet.show(null);
-      setAddressOpen(true);
-      return;
-    }
+  const leaveRegionFromTab = useEffectEvent(() => {
+    if (region && !new URLSearchParams(window.location.search).has("region")) reset();
+  });
 
+  useEffect(() => {
+    if (searchParams) leaveRegionFromTab();
+  }, [searchParams]);
+
+  const openRegion = (selected: JourneyRegion) => {
+    journey.clear();
+    stop();
     if (selected.code !== region?.code) setSubregion(null);
     setRegion(selected);
-    sheet.show("records");
-  };
-
-  const chooseRegion = (selected: JourneyRegion, tap?: { clientX: number; clientY: number }) => {
-    const point = tap && toMapPoint(tap.clientX, tap.clientY);
-    const nearby = point
-      ? regions.filter((item) => {
-          const position = project(item.longitude, item.latitude);
-          return Math.hypot(position.x - point.x, position.y - point.y) <= unit * NODE_HIT_RADIUS;
-        })
-      : [];
-    if (nearby.length > 1) sheet.showChoices(nearby);
-    else openRegion(selected);
   };
 
   const showRegionRecords = (target: JourneyRegion) => {
+    journey.clear();
+    stop();
     setRegion(target);
-    setSubregion(null);
-    sheet.show("records");
+    focusRegions();
   };
 
-  const registerHome = () => {
-    sheet.show(null);
-    setAddressOpen(true);
+  const openDetail = (recordId: string) => {
+    setDetailRecordId(recordId);
+    setDetailOpen(true);
   };
+
+  const startRecord = (recordId: string) => {
+    const record = journeyRecord(recordId);
+    if (!record || !region) return;
+    if (homeReady) journey.begin(record, region);
+    else void journey.preview(record, region);
+    requestAnimationFrame(() => title.current?.focus());
+  };
+
+  const prefetchRoute = (recordId: string) => {
+    const record = journeyRecord(recordId);
+    if (record && region && homeReady) void queryClient.prefetchQuery(routeQuery(record, region, null, null));
+  };
+
+  const focusRegions = () =>
+    requestAnimationFrame(() => main.current?.querySelector<HTMLButtonElement>('[aria-label="지역 목록"]')?.focus());
+  const waiting = restoring && !locations.isError;
+  const browsingRegion = Boolean(region && !session && !waiting);
+  const mode = waiting ? "restoring" : session ? "journey" : region ? "region" : "map";
 
   const activeRecord = locations.data?.find((record) => record.id === session?.record.id);
   const drawn = expandView(view, MAP_OVERSCAN);
@@ -218,10 +252,13 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
     [visits, recordId, reachedKey, journey.arrivals],
   );
   const viewBox = `${drawn.x} ${drawn.y} ${drawn.width} ${drawn.height}`;
+  const locationPoint = position && project(position.longitude, position.latitude);
+  const routableDetail = detailRecordId && !session ? journeyRecord(detailRecordId) : null;
 
   return (
     <main
       ref={main}
+      data-mode={mode}
       data-empty={regions.length === 0 ? "" : undefined}
       className={`${styles.page} dark`}
       data-direction="forward"
@@ -233,15 +270,18 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           titleRef={title}
           regionName={session.region.name}
           record={activeRecord}
-          onRead={() => {
-            setDetailRecordId(session.record.id);
-            setDetailOpen(true);
-          }}
+          onRead={() => openDetail(session.record.id)}
         />
-      ) : (
+      ) : !region ? (
         <h1 className="sr-only">기록 지도</h1>
-      )}
-      <div ref={stageRef} className={styles.stage} {...handlers}>
+      ) : null}
+      <div
+        ref={stageRef}
+        className={styles.stage}
+        inert={browsingRegion || waiting}
+        aria-hidden={browsingRegion || waiting}
+        {...handlers}
+      >
         <div ref={layerRef} className={styles.layer} style={{ "--map-overscan": MAP_OVERSCAN } as CSSProperties}>
           <svg className={styles.base} viewBox={viewBox} aria-hidden="true">
             <DotLand box={drawn} step={dotStep(unit)} spots={spots} arrivals={lights} />
@@ -262,17 +302,56 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
                 const end = target ?? session.record.destination;
                 return <Fireworks key={key} point={project(end.longitude, end.latitude)} unit={unit} />;
               })}
-            {!session && !restoring && (
-              <RegionNodes regions={regions} unit={unit} canTap={canTap} onChoose={chooseRegion} />
+            {locationPoint && (
+              <g className={`${styles.pinned} ${styles.place}`} style={pinAt(locationPoint)}>
+                <circle cx={locationPoint.x} cy={locationPoint.y} r={unit * 4.5} className={styles.arrival} />
+                <circle
+                  cx={locationPoint.x}
+                  cy={locationPoint.y}
+                  r={unit * 9}
+                  strokeWidth={unit}
+                  className={styles.pulse}
+                />
+              </g>
             )}
           </svg>
         </div>
       </div>
-      <PageBackButton fallbackHref="/" />
-      <FixedToolbar className="justify-end">
-        {session ? (
+      <FixedToolbar className="gap-2">
+        <div
+          className={`${styles.backSlot} ${styles.solidGlass}`}
+          data-visible={browsingRegion ? "" : undefined}
+          inert={!browsingRegion}
+        >
+          <BackButton
+            aria-label="전국 지도로"
+            onClick={() => {
+              reset();
+              focusRegions();
+            }}
+          />
+        </div>
+        {!restoring && (
+          <MorphMenu
+            label="지역"
+            triggerLabel="지역 목록"
+            moreIcon={ListBulletsIcon}
+            layout="column"
+            align="start"
+            menuWidth={216}
+            actions={browsableRegions.map((item) => ({
+              label: item.name,
+              description: item.count ? `기록 ${item.count}개` : undefined,
+              className: item.count ? undefined : "text-muted-foreground",
+              selected: item.code === region?.code,
+              onSelect: () => openRegion(item),
+            }))}
+          />
+        )}
+        {session && (
           <JourneyActions
             replaying={session.replaying}
+            routed={session.status !== "home"}
             onFitRoutes={() => moveCamera(fitRoutes(session.segments.map((segment) => segment.route)))}
             onReplay={() => {
               journey.begin(session.record, session.region, pickedJourneyPlaces(session), true);
@@ -281,88 +360,44 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
             onShowRecords={() => showRegionRecords(session.region)}
             onReset={() => {
               reset();
-              requestAnimationFrame(() => regionsButton.current?.focus());
+              focusRegions();
             }}
           />
-        ) : (
-          !restoring &&
-          regions.length > 0 && (
-            <div className={styles.actions}>
-              <LiquidGlassButton
-                ref={regionsButton}
-                aria-label="지역 목록"
-                shape="circle"
-                onClick={() => sheet.show("regions")}
-              >
-                <ListBulletsIcon aria-hidden="true" />
-              </LiquidGlassButton>
-            </div>
-          )
         )}
       </FixedToolbar>
-      {!session && !restoring && !regions.length && <EmptyJourney />}
+      {mode === "map" && <MapControls currentLocation={currentLocation} />}
+      {mode === "map" && !regions.length && <EmptyJourney />}
       {session && (
         <JourneyPanel
           ref={panelRef}
           session={session}
           weather={activeRecord?.weather}
+          homeUnavailable={homeUnavailable}
+          onRegisterHome={() => setAddressOpen(true)}
           onRecover={journey.recover}
-          onSelectPlace={journey.selectPlace}
+          onSelectPlace={(place) => {
+            if (session.status !== "home") journey.selectPlace(place);
+            else if (!homeUnavailable) setAddressOpen(true);
+          }}
           onPressPlace={journey.pressPlace}
         />
       )}
-      {!session && regions.length > 0 && !homeReady && (
-        <HomeNotice unavailable={homeUnavailable} onRegister={() => setAddressOpen(true)} />
+      {region && (
+        <RegionExplorer
+          region={region}
+          records={locations.data ?? EMPTY_RECORDS}
+          active={browsingRegion}
+          pending={locations.isPending}
+          error={locations.isError}
+          homeUnavailable={homeUnavailable}
+          retrying={locations.isFetching}
+          subregion={subregion}
+          onRetry={() => void locations.refetch()}
+          onSubregionChange={setSubregion}
+          onRecordOpen={openDetail}
+          onRecordPress={(recordId) => prefetchRecordDetail(queryClient, recordId)}
+        />
       )}
-      <JourneySheet
-        open={sheet.kind !== null}
-        onClose={() => sheet.show(null)}
-        onCloseComplete={() => {
-          sheet.handleCloseComplete();
-          if (!sessionRef.current && !addressOpen) setRegion(null);
-        }}
-        finalFocus={() => {
-          if (addressOpen || detailOpen) return false;
-          if (sessionRef.current) return title.current;
-
-          const opener = sheet.opener.current;
-          if (opener instanceof SVGElement && opener.isConnected) {
-            opener.focus();
-            return false;
-          }
-          return true;
-        }}
-      >
-        {sheet.content === "records" ? (
-          <RegionRecords
-            onBack={sheet.back}
-            region={region}
-            homeReady={homeReady}
-            homeUnavailable={homeUnavailable}
-            currentRecordId={session?.record.id}
-            subregion={subregion}
-            onSubregionChange={setSubregion}
-            onRecordOpen={(recordId) => {
-              const record = journeyRecord(recordId);
-              if (record && region) journey.begin(record, region);
-            }}
-            onRecordPress={(recordId) => {
-              const record = journeyRecord(recordId);
-              if (record && region) void queryClient.prefetchQuery(routeQuery(record, region, null, null));
-            }}
-            onRegisterHome={registerHome}
-          />
-        ) : (
-          sheet.content && (
-            <RegionChoices
-              selectedRegionCode={region?.code}
-              kind={sheet.content}
-              regions={sheet.content === "choices" ? sheet.choices : regions}
-              onRegion={openRegion}
-            />
-          )
-        )}
-      </JourneySheet>
       <HomeAddressSheet
         address={null}
         className={styles.sheet}
@@ -370,22 +405,48 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         memberName={member.name}
         onOpenChange={setAddressOpen}
         onSaved={() => {
+          queryClient.removeQueries({ queryKey: ["journey-route", member.id] });
           setHomeSaved(true);
-          if (region) sheet.show("records");
         }}
         open={addressOpen}
       />
       <RecordDetailBottomSheet
+        action={
+          routableDetail && (
+            <Button
+              className="rounded-full border-0 bg-foreground text-background"
+              fullWidth
+              onClick={() => {
+                routeAfterClose.current = routableDetail.id;
+                setDetailOpen(false);
+              }}
+              onPointerDown={(event) => {
+                if (event.button === 0) prefetchRoute(routableDetail.id);
+              }}
+              size="xlarge"
+            >
+              <PathIcon aria-hidden="true" className="size-5" data-icon="inline-start" />
+              경로 보기
+            </Button>
+          )
+        }
         backLabel="지도로"
         showBackButton={false}
         className={`${styles.sheet} dark`}
         member={member}
         onDeleted={() => {
           setDetailOpen(false);
-          deletedRegion.current = sessionRef.current?.region ?? null;
+          deletedRegion.current = sessionRef.current?.region ?? region;
         }}
         onCloseComplete={() => {
           setDetailRecordId(null);
+          const routedRecordId = routeAfterClose.current;
+          routeAfterClose.current = null;
+          if (routedRecordId) {
+            startRecord(routedRecordId);
+            return;
+          }
+
           const previous = deletedRegion.current;
           if (!previous) return;
 

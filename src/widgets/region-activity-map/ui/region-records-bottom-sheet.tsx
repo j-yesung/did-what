@@ -69,7 +69,7 @@ export function RegionRecordsBottomSheet({
         <BottomSheet.Content
           overlayHandle
           className={cn(
-            "[--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
+            "[--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
             isDetail && "bottom-(--drawer-keyboard-inset,0px)",
           )}
           style={{ height: FULL_SHEET_HEIGHT }}

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { getKoreaMapPosition } from "@/entities/region";
 import { showToast } from "@/shared/lib/toast";
 
-type MapPosition = NonNullable<ReturnType<typeof getKoreaMapPosition>>;
+type MapPosition = NonNullable<ReturnType<typeof getKoreaMapPosition>> & { latitude: number; longitude: number };
 
 export const useCurrentMapLocation = () => {
   const [position, setPosition] = useState<MapPosition | null>(null);
@@ -25,7 +25,7 @@ export const useCurrentMapLocation = () => {
           showToast({ title: "현재 위치가 대한민국 지도 범위 밖에 있어요.", variant: "warning" });
           return;
         }
-        setPosition(position);
+        setPosition({ ...position, latitude: coords.latitude, longitude: coords.longitude });
       },
       (error) => {
         setIsPending(false);

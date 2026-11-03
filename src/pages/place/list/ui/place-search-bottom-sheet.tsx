@@ -30,7 +30,7 @@ export function PlaceSearchBottomSheet({ initialQuery }: { initialQuery?: string
         </div>
       </div>
       <BottomSheet.VirtualKeyboardProvider>
-        <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) [--drawer-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--drawer-content-max-height)]">
+        <BottomSheet.Content className="bottom-(--drawer-keyboard-inset,0px) [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))] [--drawer-height:var(--bottom-sheet-content-max-height)]">
           <BottomSheet.Header>
             <BottomSheet.Title className="text-left font-bold text-xl">새 장소 찾기</BottomSheet.Title>
             <BottomSheet.Description className="text-left">

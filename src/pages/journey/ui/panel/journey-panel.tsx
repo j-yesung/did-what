@@ -9,6 +9,7 @@ import { Button } from "@/shared/ui/button";
 import { pickedJourneyPlaces } from "../../model/queue";
 import type { JourneyPlace, JourneySession } from "../../model/types";
 import styles from "../journey-map.module.css";
+import { HomeNotice } from "./journey-notices";
 import { RouteMetrics } from "./route-metrics";
 
 type Edges = { start: boolean; end: boolean };
@@ -25,12 +26,23 @@ type JourneyPanelProps = {
   ref: Ref<HTMLDivElement>;
   session: JourneySession;
   weather?: string;
+  homeUnavailable: boolean;
+  onRegisterHome: () => void;
   onRecover: (skip: boolean) => void;
   onSelectPlace: (place: JourneyPlace) => void;
   onPressPlace: (place: JourneyPlace) => void;
 };
 
-export function JourneyPanel({ ref, session, weather, onRecover, onSelectPlace, onPressPlace }: JourneyPanelProps) {
+export function JourneyPanel({
+  ref,
+  session,
+  weather,
+  homeUnavailable,
+  onRegisterHome,
+  onRecover,
+  onSelectPlace,
+  onPressPlace,
+}: JourneyPanelProps) {
   const [chipRow, setChipRow] = useState<HTMLDivElement | null>(null);
   const [chipFade, setChipFade] = useState<Edges>({ start: false, end: false });
 
@@ -49,6 +61,7 @@ export function JourneyPanel({ ref, session, weather, onRecover, onSelectPlace, 
 
   return (
     <div ref={ref} className={styles.details}>
+      {session.status === "home" && <HomeNotice unavailable={homeUnavailable} onRegister={onRegisterHome} />}
       {session.status === "error" && (
         <div role="alert" className={styles.error}>
           <div>
@@ -108,10 +121,12 @@ export function JourneyPanel({ ref, session, weather, onRecover, onSelectPlace, 
           ))}
         </div>
       )}
-      <RouteMetrics segments={session.segments} weather={weather} instant={session.restored} />
-      {session.segments.some((segment) => segment.route.straight) && (
-        <p className={styles.note}>차로 갈 수 없는 구간은 직선으로 이었고 거리·시간에서 뺐어요</p>
-      )}
+      <div className={styles.routeSummary}>
+        <RouteMetrics segments={session.segments} weather={weather} instant={session.restored} />
+        {session.segments.some((segment) => segment.route.straight) && (
+          <p className={styles.note}>차로 갈 수 없는 구간은 직선으로 이었고 거리·시간에서 뺐어요</p>
+        )}
+      </div>
       {session.status === "loading" && (
         <p className={styles.status} role="status">
           경로를 불러오고 있어요

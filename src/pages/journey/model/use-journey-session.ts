@@ -33,6 +33,12 @@ const toRouteError = (error: unknown) => ({
   error: error instanceof Error ? error.message : "경로를 불러오지 못했어요. 다시 시도해 주세요.",
 });
 
+const recordRoute = ({ destination, places }: JourneyRecord): JourneyRoute => ({
+  points: [destination, ...places].map(({ longitude, latitude }) => [longitude, latitude]),
+  distance: 0,
+  duration: 0,
+});
+
 const startSession = (
   record: JourneyRecord,
   region: JourneyRegion,
@@ -60,10 +66,9 @@ type RouteQuery = (
 type JourneySessionOptions = {
   routeQuery: RouteQuery;
   camera: Pick<MapCamera, "viewRef" | "setView" | "moveCamera" | "stop" | "fitRoutes" | "followRoute">;
-  closeSheet: () => Promise<unknown>;
 };
 
-export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySessionOptions) => {
+export const useJourneySession = ({ routeQuery, camera }: JourneySessionOptions) => {
   const queryClient = useQueryClient();
   const [session, setSession] = useState<JourneySession | null>(null);
   const sessionRef = useRef<JourneySession | null>(null);
@@ -71,7 +76,6 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
   const [arrivals, setArrivals] = useState<{ key: number; target: JourneyPlace | null }[]>([]);
   const generation = useRef(0);
   const sketchDone = useRef<(() => void) | null>(null);
-  const sheetClosed = useRef<Promise<unknown>>(Promise.resolve());
 
   useEffect(
     () => () => {
@@ -132,7 +136,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
       const view = target ? camera.followRoute(route) : camera.fitRoutes([route]);
       const moving = view ? camera.moveCamera(view) : null;
       setSessionValue({ ...sessionRef.current!, status: "moving" });
-      await Promise.all([sheetClosed.current, moving]);
+      await moving;
       if (token !== generation.current) return;
 
       const segment = toSegment(next.record, route, target, next.current);
@@ -160,13 +164,24 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
   const begin = (record: JourneyRecord, region: JourneyRegion, queue: JourneyPlace[] = [], replaying = false) => {
     const token = ++generation.current;
     sketchDone.current?.();
-    sheetClosed.current = closeSheet();
 
     const next = startSession(record, region, queue, replaying);
     setSessionValue(next);
     setHighlight(null);
     setArrivals([]);
     void run(next, token);
+  };
+
+  const preview = async (record: JourneyRecord, region: JourneyRegion, queue: JourneyPlace[] = []) => {
+    const token = ++generation.current;
+    sketchDone.current?.();
+
+    setSessionValue({ ...startSession(record, region, queue, false), status: "home" });
+    setHighlight(null);
+    setArrivals([]);
+
+    await nextFrame();
+    if (token === generation.current) void camera.moveCamera(camera.fitRoutes([recordRoute(record)]));
   };
 
   const restore = async (record: JourneyRecord, region: JourneyRegion, places: JourneyPlace[]) => {
@@ -266,6 +281,7 @@ export const useJourneySession = ({ routeQuery, camera, closeSheet }: JourneySes
     arrivals,
     completeSegments,
     begin,
+    preview,
     restore,
     selectPlace,
     pressPlace,
