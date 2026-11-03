@@ -15,7 +15,7 @@ export function EmptyJourney() {
         <br />
         여기서 다시 돌아볼 수 있어요.
       </p>
-      <Button nativeButton={false} render={<PressLink href="/records/new" />} size="large">
+      <Button nativeButton={false} render={<PressLink href="/records/new" />} size="large" variant="weak">
         기록 남기기
       </Button>
     </div>
@@ -38,7 +38,7 @@ export function HomeNotice({ unavailable, onRegister }: { unavailable: boolean; 
   return (
     <div className={styles.homeNotice}>
       <p>길을 따라가려면 집 주소를 등록해 주세요.</p>
-      <Button className={styles.hit} color="dark" onClick={onRegister} size="medium" variant="weak">
+      <Button className={styles.hit} onClick={onRegister} size="medium" variant="weak">
         등록하기
       </Button>
     </div>

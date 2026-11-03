@@ -43,17 +43,23 @@
   stroke: var(--journey-white);
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 calc(var(--route-unit) * 2px) color-mix(in srgb, var(--journey-glow) 80%, transparent))
-    drop-shadow(0 0 calc(var(--route-unit) * 7px) color-mix(in srgb, var(--journey-gold) 50%, transparent));
+  filter: drop-shadow(
+      0 0 calc(var(--route-unit) * 2px)
+        color-mix(in srgb, var(--journey-glow) calc(var(--journey-halo) * 80%), transparent)
+    )
+    drop-shadow(
+      0 0 calc(var(--route-unit) * 7px)
+        color-mix(in srgb, var(--journey-gold) calc(var(--journey-halo) * 50%), transparent)
+    );
 }
 .arrival {
-  fill: var(--journey-green);
+  fill: var(--primary);
   stroke: var(--journey-white);
   stroke-width: 2px;
   vector-effect: non-scaling-stroke;
 }
 .place .arrival {
-  fill: var(--journey-sky);
+  fill: var(--journey-white);
 }
 
 .visited {
@@ -64,13 +70,13 @@
 }
 .pulse {
   fill: none;
-  stroke: var(--journey-green);
+  stroke: var(--primary);
   transform-box: fill-box;
   transform-origin: center;
   animation: pulse 1.8s ease-out infinite;
 }
 .place .pulse {
-  stroke: var(--journey-sky);
+  stroke: var(--journey-white);
 }
 @keyframes pulse {
   from {
@@ -83,48 +89,6 @@
   }
 }
 
-.sheet {
-  --sheet: color-mix(in srgb, var(--journey-white) 8%, var(--journey-background));
-  --sheet-raised: color-mix(in srgb, var(--journey-white) 14%, var(--journey-background));
-  --sheet-line: color-mix(in srgb, var(--journey-white) 8%, transparent);
-  --surface: var(--sheet);
-  --card: var(--sheet);
-  --fill-surface: var(--sheet);
-  --color-surface: var(--sheet);
-  --color-card: var(--sheet);
-  --muted: var(--sheet-raised);
-  --fill-muted: var(--sheet-raised);
-  --color-muted: var(--sheet-raised);
-  --fill-elevated: var(--sheet-raised);
-  --map-empty: var(--sheet-raised);
-  --color-map-empty: var(--sheet-raised);
-  --border: var(--sheet-line);
-  --border-default: var(--sheet-line);
-  --color-border: var(--sheet-line);
-}
-.sheet [data-slot="region-mini-map"] rect {
-  rx: 50%;
-  transform: scale(0.75);
-  transform-box: fill-box;
-  transform-origin: center;
-  fill: color-mix(in srgb, var(--journey-line) 40%, transparent);
-}
-.sheet [data-slot="region-mini-map"] [data-level="1"] {
-  --mini-map-light: 12.5%;
-}
-.sheet [data-slot="region-mini-map"] [data-level="2"] {
-  --mini-map-light: 37.5%;
-}
-.sheet [data-slot="region-mini-map"] [data-level="3"] {
-  --mini-map-light: 62.5%;
-}
-.sheet [data-slot="region-mini-map"] [data-level="4"] {
-  --mini-map-light: 87.5%;
-}
-.sheet [data-slot="region-mini-map"] [data-level]:not([data-level="0"]) {
-  fill: color-mix(in srgb, var(--journey-glow) var(--mini-map-light), var(--journey-ember));
-  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--journey-amber) 45%, transparent));
-}
 .recordHeader {
   position: absolute;
   z-index: 1;
@@ -271,8 +235,9 @@
   font-size: 13px;
 }
 .chips button[data-selected] {
-  border-color: var(--journey-green);
-  color: var(--journey-green);
+  border-color: var(--primary);
+  color: var(--text-accent);
+  background: color-mix(in srgb, var(--primary) 12%, var(--journey-background));
 }
 .error {
   display: flex;
@@ -318,7 +283,7 @@
 
 .focusRing {
   fill: none;
-  stroke: var(--journey-sky);
+  stroke: var(--primary);
   transform-box: fill-box;
   transform-origin: center;
   animation: focus-ring 900ms ease-out 2 both;
@@ -492,8 +457,14 @@
 }
 .regionMini [data-level]:not([data-level="0"]) {
   fill: color-mix(in srgb, var(--journey-glow) var(--mini-map-light), var(--journey-ember));
-  filter: drop-shadow(0 0 1px color-mix(in srgb, var(--journey-glow) calc(var(--mini-map-glow) * 120%), transparent))
-    drop-shadow(0 0 4px color-mix(in srgb, var(--journey-amber) calc(var(--mini-map-glow) * 100%), transparent));
+  filter: drop-shadow(
+      0 0 1px
+        color-mix(in srgb, var(--journey-glow) calc(var(--mini-map-glow) * var(--journey-halo) * 120%), transparent)
+    )
+    drop-shadow(
+      0 0 4px
+        color-mix(in srgb, var(--journey-amber) calc(var(--mini-map-glow) * var(--journey-halo) * 100%), transparent)
+    );
 }
 .regionAside h1 {
   margin-bottom: 16px;
@@ -574,11 +545,12 @@
   cursor: pointer;
 }
 .subregionChoices button[aria-pressed="true"] {
-  border-color: var(--journey-gold);
-  color: var(--journey-gold);
+  border-color: var(--primary);
+  color: var(--text-accent);
+  background: color-mix(in srgb, var(--primary) 12%, var(--journey-background));
 }
 .subregionChoices button:focus-visible {
-  outline: 2px solid var(--journey-gold);
+  outline: 2px solid var(--ring);
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {

@@ -24,7 +24,7 @@
 ## 스타일
 
 - 화면과 컴포넌트의 색은 `background`, `foreground`, `surface`, `muted`, `border`, `primary`, `destructive` 같은 시맨틱 토큰으로 참조한다.
-- `blue-500`, `grey-100` 같은 Base 팔레트와 raw hex는 `globals.css`의 토큰 정의 밖에서 직접 사용하지 않는다.
+- `orange-500`, `neutral-100` 같은 Base 팔레트와 raw hex는 `globals.css`의 토큰 정의 밖에서 직접 사용하지 않는다.
 - 라이트·다크 모드 차이는 컴포넌트의 `dark:` 색상 덮어쓰기보다 같은 시맨틱 토큰이 모드별 값을 가리키도록 해결한다.
 
 ## Next.js

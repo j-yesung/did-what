@@ -4,7 +4,6 @@ import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, use
 
 import { useRouter } from "next/navigation";
 
-import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
@@ -18,9 +17,6 @@ type HomeAddressSheetProps = {
   address: string | null;
 
   children?: ReactNode;
-  className?: string;
-
-  dark?: boolean;
   memberName: string;
   onOpenChange: (open: boolean) => void;
 
@@ -31,8 +27,6 @@ type HomeAddressSheetProps = {
 export function HomeAddressSheet({
   address,
   children,
-  className,
-  dark = false,
   memberName,
   onOpenChange,
   onSaved,
@@ -101,11 +95,7 @@ export function HomeAddressSheet({
     >
       {children}
       <BottomSheet.Content
-        className={cn(
-          "motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]",
-          dark && "dark",
-          className,
-        )}
+        className="motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
         style={{ "--bottom-sheet-content-max-height": `min(700px, ${FULL_SHEET_HEIGHT})` } as CSSProperties}
       >
         <BottomSheet.Header ref={setHeader} className="relative">
@@ -129,7 +119,7 @@ export function HomeAddressSheet({
           </BottomSheet.Description>
         </BottomSheet.Header>
         {searching ? (
-          <KakaoAddressSearch dark={dark} onSelect={selectAddress} />
+          <KakaoAddressSearch onSelect={selectAddress} />
         ) : (
           <form
             ref={setForm}

@@ -32,3 +32,6 @@
     opacity: 0;
   }
 }
+.halo {
+  opacity: var(--journey-halo);
+}

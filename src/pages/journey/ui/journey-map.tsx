@@ -105,14 +105,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
     if (main.current && getPageNavigation(window).traversal) main.current.style.animation = "none";
   }, []);
 
-  useLayoutEffect(() => {
-    const root = document.documentElement;
-    if (root.classList.contains("dark")) return;
-
-    root.classList.add("dark");
-    return () => root.classList.remove("dark");
-  }, []);
-
   useEffect(
     () => () => {
       restored.current = false;
@@ -260,7 +252,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       ref={main}
       data-mode={mode}
       data-empty={regions.length === 0 ? "" : undefined}
-      className={`${styles.page} dark`}
+      className={styles.page}
       data-direction="forward"
       data-funnel-step
     >
@@ -400,8 +392,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
       )}
       <HomeAddressSheet
         address={null}
-        className={styles.sheet}
-        dark
         memberName={member.name}
         onOpenChange={setAddressOpen}
         onSaved={() => {
@@ -414,7 +404,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         action={
           routableDetail && (
             <Button
-              className="rounded-full border-0 bg-foreground text-background"
+              className="rounded-full"
               fullWidth
               onClick={() => {
                 routeAfterClose.current = routableDetail.id;
@@ -432,7 +422,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         }
         backLabel="지도로"
         showBackButton={false}
-        className={`${styles.sheet} dark`}
         member={member}
         onDeleted={() => {
           setDetailOpen(false);

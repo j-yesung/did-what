@@ -21,7 +21,6 @@ type RecordSheetDetailProps = {
   action?: ReactNode;
   backLabel?: string;
   showBackButton?: boolean;
-  confirmClassName?: string;
   draft: string;
   member: { id: string; name: string };
   onBack: () => void;
@@ -34,7 +33,6 @@ export function RecordSheetDetail({
   action,
   backLabel = "이전 화면으로",
   showBackButton = true,
-  confirmClassName,
   draft,
   member,
   onBack,
@@ -123,7 +121,6 @@ export function RecordSheetDetail({
       ) : null}
       <DeleteRecordConfirm
         activity={record?.activity ?? ""}
-        className={confirmClassName}
         onClose={() => setDeleteOpen(false)}
         onDeleted={onDeleted}
         open={deleteOpen}

@@ -62,7 +62,7 @@ export const RECORD_CATEGORY_BADGE: Record<RecordCategory, string> = {
   daily: "bg-category-daily/8 text-category-daily",
   date: "bg-category-date/8 text-category-date",
   gathering: "bg-category-gathering/8 text-category-gathering",
-  travel: "bg-primary/15 text-accent-text",
+  travel: "bg-category-travel/8 text-category-travel",
   uncategorized: "bg-category-uncategorized/12 text-muted-foreground",
 };
 
@@ -73,6 +73,6 @@ export const RECORD_CATEGORY_SELECTED: Record<RecordCategory, string> = {
   date: "data-pressed:border-category-date data-pressed:bg-category-date/8 data-pressed:text-category-date",
   gathering:
     "data-pressed:border-category-gathering data-pressed:bg-category-gathering/8 data-pressed:text-category-gathering",
-  travel: "data-pressed:border-category-travel data-pressed:bg-category-travel/8 data-pressed:text-accent-text",
+  travel: "data-pressed:border-category-travel data-pressed:bg-category-travel/8 data-pressed:text-category-travel",
   uncategorized: "",
 };

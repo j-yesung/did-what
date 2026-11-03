@@ -14,21 +14,13 @@ import { deleteRecord } from "../api/delete-record";
 
 type DeleteRecordConfirmProps = {
   activity: string;
-  className?: string;
   onClose: () => void;
   onDeleted?: () => void;
   open: boolean;
   recordId: string;
 };
 
-export function DeleteRecordConfirm({
-  activity,
-  className,
-  onClose,
-  onDeleted,
-  open,
-  recordId,
-}: DeleteRecordConfirmProps) {
+export function DeleteRecordConfirm({ activity, onClose, onDeleted, open, recordId }: DeleteRecordConfirmProps) {
   const removeRecord = useDemoOverride(deleteRecord);
   const queryClient = useQueryClient();
   const removeAndRefresh = async () => {
@@ -55,7 +47,6 @@ export function DeleteRecordConfirm({
 
   return (
     <ConfirmDialog
-      className={className}
       cancelButton={
         <ConfirmDialogCancelButton disabled={remove.isPending} onClick={onClose}>
           취소

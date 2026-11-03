@@ -3,7 +3,6 @@
 import { type ReactNode, useState } from "react";
 
 import type { RecordSummary } from "@/entities/record";
-import { cn } from "@/shared/lib/utils";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 
 import { RecordSheetDetail } from "./record-sheet-detail";
@@ -13,8 +12,6 @@ type RecordDetailBottomSheetProps = {
   action?: ReactNode;
   backLabel: string;
   showBackButton?: boolean;
-  /** 시트와 삭제 확인 창에 더할 클래스. 앱 테마와 상관없이 어두운 화면에서는 `dark`를 넘긴다. */
-  className?: string;
   member: { id: string; name: string };
   /** 삭제한 뒤 할 일. 넘기지 않으면 시트를 닫는다. */
   onDeleted?: () => void;
@@ -28,7 +25,6 @@ export function RecordDetailBottomSheet({
   action,
   backLabel,
   showBackButton,
-  className,
   member,
   onDeleted,
   onOpenChange,
@@ -52,10 +48,7 @@ export function RecordDetailBottomSheet({
       <BottomSheet.VirtualKeyboardProvider>
         <BottomSheet.Content
           overlayHandle
-          className={cn(
-            "bottom-(--drawer-keyboard-inset,0px) [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
-            className,
-          )}
+          className="bottom-(--drawer-keyboard-inset,0px) [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]"
           style={{ height: FULL_SHEET_HEIGHT }}
         >
           {record ? (
@@ -63,7 +56,6 @@ export function RecordDetailBottomSheet({
               action={action}
               backLabel={backLabel}
               showBackButton={showBackButton}
-              confirmClassName={className}
               draft={draft}
               key={record.id}
               member={member}

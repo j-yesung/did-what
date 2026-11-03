@@ -22,7 +22,7 @@ export function EmptyRecords({ description, title }: EmptyRecordsProps) {
         {description && <EmptyDescription>{description}</EmptyDescription>}
       </EmptyHeader>
       <EmptyContent>
-        <Button nativeButton={false} render={<PressLink href="/records/new" />} size="medium">
+        <Button nativeButton={false} render={<PressLink href="/records/new" />} size="medium" variant="weak">
           기록 남기기
         </Button>
       </EmptyContent>
