@@ -33,6 +33,8 @@ type MorphMenuProps = {
 
 const EASE = [0.32, 0.72, 0, 1] as const;
 const CLOSE_EASE = [0.4, 0, 0.2, 1] as const;
+const CLOSE = { duration: 0.3, delay: 0.04 };
+const SELECT_AFTER_CLOSE_MS = (CLOSE.delay + CLOSE.duration * 0.75) * 1000;
 // 항목마다 흐림을 걸면 합성 비용이 항목 수만큼 늘어 긴 목록은 지도 위에서 끊긴다.
 const MAX_BLURRED_ACTIONS = 6;
 
@@ -51,12 +53,15 @@ export function MorphMenu({
   const root = useRef<HTMLDivElement>(null);
   const more = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
+  const selectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const reducedMotion = useReducedMotion();
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const reduceMotion = reducedMotion || (layout === "column" && keyboardOpen);
   const [closingActions, setClosingActions] = useState(actions);
   const visibleActions = open ? actions : closingActions;
   const blurred = visibleActions.length <= MAX_BLURRED_ACTIONS;
+
+  useEffect(() => () => clearTimeout(selectTimer.current), []);
 
   useEffect(() => {
     if (open)
@@ -88,7 +93,9 @@ export function MorphMenu({
     returnFocus.current = !action.href;
     setClosingActions(actions);
     setOpen(false);
-    action.onSelect?.();
+    if (layout === "column" && !reduceMotion && action.onSelect)
+      selectTimer.current = setTimeout(action.onSelect, SELECT_AFTER_CLOSE_MS);
+    else action.onSelect?.();
   };
 
   const backdrop = open && (
@@ -124,11 +131,7 @@ export function MorphMenu({
             )}
             initial={false}
             transition={
-              reduceMotion
-                ? { duration: 0 }
-                : open
-                  ? { duration: 0.34, ease: EASE }
-                  : { duration: 0.3, ease: CLOSE_EASE, delay: 0.04 }
+              reduceMotion ? { duration: 0 } : open ? { duration: 0.34, ease: EASE } : { ...CLOSE, ease: CLOSE_EASE }
             }
           >
             <motion.ul
@@ -229,6 +232,7 @@ export function MorphMenu({
                 iconSize={24}
                 iconWeight="regular"
                 onClick={(event) => {
+                  clearTimeout(selectTimer.current);
                   setKeyboardOpen(event.detail === 0);
                   setOpen(true);
                 }}
