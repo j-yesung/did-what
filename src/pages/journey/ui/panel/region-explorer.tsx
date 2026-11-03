@@ -63,34 +63,45 @@ export function RegionExplorer({
       inert={!active}
       aria-label={`${region.name}의 기록`}
     >
-      <aside className={styles.regionAside}>
-        <h1>{region.name}</h1>
+      <header className={styles.regionHead}>
         {map && (
           <div className={styles.regionMini}>
             <RegionMiniMap map={map} label={`${region.name} 미니 지도`} />
           </div>
         )}
-      </aside>
-      <div className={styles.regionListFrame}>
-        <div className={styles.regionListHead}>
-          <h2 className={styles.regionListLabel}>
-            기록 <span>{pending || error ? region.count : entries.length}</span>
-          </h2>
-          {subdivisions.length > 1 && (
-            <div className={styles.subregionChoices} aria-label="시·군·구">
-              {[null, ...subdivisions.map(([name]) => name)].map((name) => (
-                <button
-                  key={name ?? "all"}
-                  type="button"
-                  aria-pressed={selected === name}
-                  onClick={() => onSubregionChange(name)}
-                >
-                  {name ?? "전체"}
-                </button>
-              ))}
-            </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-[28px] leading-tight tracking-[-0.04em]">{region.name}</h1>
+          {map && (
+            <>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                {map.totalCount}곳 중 <strong className="font-semibold text-foreground">{map.visitedCount}곳</strong>{" "}
+                다녀왔어요
+              </p>
+              <div aria-hidden="true" className={styles.visitBar}>
+                <i style={{ width: `${(map.visitedCount / map.totalCount) * 100}%` }} />
+              </div>
+            </>
           )}
+          <p className="text-[13px] text-muted-foreground tabular-nums">
+            기록 {pending || error ? region.count : entries.length}
+          </p>
         </div>
+      </header>
+      <div className={styles.regionListFrame}>
+        {subdivisions.length > 1 && (
+          <div className={styles.subregionChoices} aria-label="시·군·구">
+            {[[null, entries.length] as const, ...subdivisions].map(([name, count]) => (
+              <button
+                key={name ?? "all"}
+                type="button"
+                aria-pressed={selected === name}
+                onClick={() => onSubregionChange(name)}
+              >
+                {name ?? "전체"} <span>{count}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <div
           key={`${region.code}:${selected ?? "all"}`}
           className={styles.regionList}

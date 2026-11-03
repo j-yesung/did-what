@@ -384,13 +384,13 @@
 }
 .regionExplorer {
   position: absolute;
-  top: calc(var(--page-top) + var(--toolbar-height) + 40px);
+  top: calc(var(--page-top) + var(--toolbar-height) + 28px);
   bottom: var(--nav-clearance);
   left: 20px;
   right: 20px;
-  display: grid;
-  grid-template-columns: clamp(80px, 24vw, 96px) minmax(0, 1fr);
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -430,11 +430,28 @@
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-.regionAside {
-  align-self: start;
+.regionHead {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 18px;
 }
 .regionMini {
-  height: 142px;
+  flex-shrink: 0;
+  width: 112px;
+  height: 104px;
+}
+.visitBar {
+  height: 6px;
+  margin: 12px 0 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--journey-line) 25%, transparent);
+}
+.visitBar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
 }
 .regionMini rect {
   fill: color-mix(in srgb, var(--journey-line) 40%, transparent);
@@ -467,22 +484,12 @@
         color-mix(in srgb, var(--journey-amber) calc(var(--mini-map-glow) * var(--journey-halo) * 100%), transparent)
     );
 }
-.regionAside h1 {
-  margin-bottom: 16px;
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-}
 .regionListFrame {
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-}
-.regionListHead {
-  flex-shrink: 0;
-  min-width: 0;
 }
 .regionListFrame::after {
   content: "";
@@ -510,18 +517,6 @@
   background: linear-gradient(var(--journey-background), transparent);
   pointer-events: none;
 }
-.regionListLabel {
-  margin-bottom: 16px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.regionListLabel:last-child {
-  margin-bottom: 0;
-}
-.regionListLabel span {
-  margin-left: 3px;
-  font-variant-numeric: tabular-nums;
-}
 .regionListEmpty {
   display: grid;
   justify-items: start;
@@ -531,19 +526,25 @@
 }
 .subregionChoices {
   display: flex;
+  flex-shrink: 0;
   overflow-x: auto;
-  gap: 6px;
-  padding-bottom: 4px;
+  gap: 8px;
+  margin-right: -20px;
+  padding: 0 20px 4px 0;
   scrollbar-width: none;
 }
 .subregionChoices button {
   flex-shrink: 0;
   min-height: 36px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border: 1px solid color-mix(in srgb, var(--journey-line) 30%, transparent);
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 12px;
+  white-space: nowrap;
   cursor: pointer;
+}
+.subregionChoices button span {
+  font-variant-numeric: tabular-nums;
 }
 .subregionChoices button[aria-pressed="true"] {
   border-color: var(--primary);
