@@ -8,6 +8,7 @@
 .stage {
   position: absolute;
   inset: 0;
+  top: calc(var(--page-top) + var(--toolbar-height) + var(--nav-content-gap));
   bottom: var(--nav-clearance);
   touch-action: none;
   cursor: grab;

@@ -7,8 +7,8 @@ export const project = (longitude: number, latitude: number) => ({
   y: 23 + (39.4 - latitude) * 49,
 });
 
-const homeTopLeft = project(125.5, 39.4);
-const homeBottomRight = project(130.2, 32.4);
+const homeTopLeft = project(125.5, 39.2);
+const homeBottomRight = project(130.2, 32.6);
 
 export const national: Box = {
   x: homeTopLeft.x,
