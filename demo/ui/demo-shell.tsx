@@ -16,7 +16,7 @@ import {
   NotepadIcon,
 } from "@phosphor-icons/react";
 
-import { THEME_OPTIONS, type Theme } from "@/features/switch-theme/model/theme";
+// import { THEME_OPTIONS, type Theme } from "@/features/switch-theme/model/theme";
 import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -119,7 +119,7 @@ const getEntryIds = (path: string): EntryId[] => {
 /** 작성·수정 중인 화면은 초기화하면 입력이 사라지므로 확인을 받는다. */
 const isFormPath = (path: string) => /^\/records\/(new|[^/?#]+\/edit)(?:[?#]|$)/.test(path);
 
-const THEME_LABELS: Record<Theme, string> = { dark: "어두운 화면", light: "밝은 화면", system: "시스템" };
+// const THEME_LABELS: Record<Theme, string> = { dark: "어두운 화면", light: "밝은 화면", system: "시스템" };
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return <h3 className="font-semibold text-muted-foreground text-xs">{children}</h3>;
@@ -363,6 +363,7 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
               </div>
             </section>
 
+            {/* 다크 모드 고정으로 화면 모드 선택을 잠시 숨긴다.
             <section className="flex flex-col gap-2 rounded-xl border bg-background p-3">
               <SectionTitle>앱 화면 모드</SectionTitle>
               <div className="flex flex-wrap gap-1.5">
@@ -378,6 +379,7 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
                 ))}
               </div>
             </section>
+            */}
 
             <section className="flex flex-col gap-1.5 rounded-xl border bg-background p-3">
               <Button color="danger" fullWidth onClick={requestReset} size="medium" type="button" variant="weak">

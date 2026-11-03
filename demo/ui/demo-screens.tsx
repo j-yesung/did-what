@@ -11,7 +11,7 @@ import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-mem
 import { PushToggle } from "@/features/push-notification";
 import { toExistingRecordLocationPlace } from "@/features/record/select-record-location";
 import { RecordViewToggle } from "@/features/record/switch-record-view";
-import { ThemeSelect } from "@/features/switch-theme";
+// import { ThemeSelect } from "@/features/switch-theme";
 import { JourneyMap } from "@/pages/journey/ui/journey-map";
 import { NotificationList } from "@/pages/notification/ui/notification-list";
 import { PlaceDetailContent } from "@/pages/place/detail/ui/place-detail-content";
@@ -208,7 +208,8 @@ export function DemoNotificationsScreen({ member }: { member: Member }) {
 }
 
 export function DemoSettingsScreen({ member }: { member: Member }) {
-  const { homes, theme, members } = useDemoState();
+  const { homes, members } = useDemoState();
+  // const { theme } = useDemoState();
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
@@ -223,9 +224,11 @@ export function DemoSettingsScreen({ member }: { member: Member }) {
         <PageSection className="pt-4 pb-4">
           <HomeAddressSetting address={homes[member.id]?.address ?? null} memberName={member.name} />
         </PageSection>
+        {/* 다크 모드 고정으로 화면 모드 선택을 잠시 숨긴다.
         <PageSection className="pt-4 pb-4">
           <ThemeSelect value={theme} />
         </PageSection>
+        */}
         <PageSection className="pt-4 pb-4">
           <PushToggle />
         </PageSection>
