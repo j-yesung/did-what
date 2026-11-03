@@ -144,7 +144,7 @@ function BottomSheetContent({
           <BottomSheetPrimitive.Content
             data-slot="bottom-sheet-content"
             className={cn(
-              "flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain rounded-[inherit] transition-opacity duration-300 ease-[cubic-bezier(0.45,1.005,0,1.005)] group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100 motion-reduce:transition-none",
+              "flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain rounded-[inherit] transition-opacity duration-300 ease-[cubic-bezier(0.45,1.005,0,1.005)] has-data-[slot=bottom-sheet-glass]:rounded-none group-data-nested-drawer-open/bottom-sheet-popup:opacity-0 group-data-nested-drawer-swiping/bottom-sheet-popup:opacity-100 motion-reduce:transition-none",
             )}
           >
             {children}
@@ -154,6 +154,16 @@ function BottomSheetContent({
     </BottomSheetPortal>
   );
 }
+/**
+ * 위로 갈수록 블러가 겹쳐 쌓여 본문이 경계 없이 흐려진다.
+ * 둥글게 잘리는 조상 안에서는 Chrome이 backdrop-filter의 마스크를 무시하므로 콘텐츠의 모서리 클리핑을 끈다.
+ */
+const GLASS_BLUR_LAYERS = [
+  "backdrop-blur-[2px] mask-[linear-gradient(to_bottom,black_30%,transparent)]",
+  "backdrop-blur-[4px] mask-[linear-gradient(to_bottom,black_15%,transparent_70%)]",
+  "backdrop-blur-[8px] mask-[linear-gradient(to_bottom,black,transparent_45%)]",
+];
+
 function BottomSheetHeader({
   children,
   className,
@@ -173,8 +183,14 @@ function BottomSheetHeader({
       {glass ? (
         <span
           aria-hidden="true"
-          className="mask-[linear-gradient(to_bottom,black_calc(100%-1.5rem),rgb(0_0_0/0.6)_calc(100%-1rem),rgb(0_0_0/0.2)_calc(100%-0.5rem),transparent)] pointer-events-none absolute inset-x-0 top-0 -bottom-6 -z-10 bg-surface/40 backdrop-blur-xs"
-        />
+          className="pointer-events-none absolute inset-x-0 top-0 -bottom-16 -z-10"
+          data-slot="bottom-sheet-glass"
+        >
+          {GLASS_BLUR_LAYERS.map((layer) => (
+            <span className={cn("absolute inset-0 rounded-t-3xl", layer)} key={layer} />
+          ))}
+          <span className="absolute inset-0 rounded-t-3xl bg-linear-to-b from-surface/50 to-transparent" />
+        </span>
       ) : null}
       {children}
     </div>
