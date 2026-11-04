@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
-import { recordDetailQueryOptions } from "@/entities/record";
+import { closeRecordSheet } from "@/entities/record/model/record-sheet";
 import { readRecordNotifications } from "@/features/notification/read-record-notifications";
 import { useDemoOverride } from "@/shared/lib/demo-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
@@ -28,10 +28,9 @@ function OpenRecordSheet({ member, recordId }: { member: Member; recordId: strin
   const pathname = usePathname();
   const params = useSearchParams();
   const [open, setOpen] = useState(false);
+  const closed = useRef(false);
   const queryClient = useQueryClient();
   const markRead = useDemoOverride(readRecordNotifications);
-  const recordQuery = useQuery({ ...recordDetailQueryOptions(recordId), refetchOnMount: "always" });
-  const missingRecord = recordQuery.isSuccess && !recordQuery.isFetching && !recordQuery.data;
   const fromNotification = params?.get("recordFrom") === "notification";
 
   // 처음부터 열린 상태로 마운트하면 Drawer가 진입 전환을 생략한다.
@@ -50,14 +49,16 @@ function OpenRecordSheet({ member, recordId }: { member: Member; recordId: strin
   const search = next.toString();
   const closeHref = `${pathname}${search ? `?${search}` : ""}`;
 
-  useEffect(() => {
-    if (!fromNotification || !missingRecord) return;
-    showToast({ title: "기록이 삭제됐어요", variant: "warning" });
-    // 캐시에 이미 없는 기록은 시트가 열리기 전에도 바로 목록으로 돌아간다.
-    window.history.replaceState(null, "", closeHref);
-  }, [fromNotification, missingRecord, closeHref]);
+  const close = useCallback(() => {
+    if (closed.current) return false;
+    closed.current = true;
+    closeRecordSheet(window.history, recordId, closeHref);
+    return true;
+  }, [recordId, closeHref]);
 
-  const close = () => window.history.replaceState(null, "", closeHref);
+  const handleMissing = useCallback(() => {
+    if (fromNotification && close()) showToast({ title: "기록이 삭제됐어요", variant: "warning" });
+  }, [fromNotification, close]);
 
   return (
     <RecordDetailBottomSheet
@@ -65,6 +66,7 @@ function OpenRecordSheet({ member, recordId }: { member: Member; recordId: strin
       showBackButton={false}
       member={member}
       onDeleted={() => setOpen(false)}
+      onMissing={handleMissing}
       onOpenChange={setOpen}
       onCloseComplete={close}
       open={open}

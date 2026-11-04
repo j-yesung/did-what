@@ -87,7 +87,7 @@ export function DemoApp() {
       case "home":
         return <DemoHomeScreen member={memberProps} />;
       case "records":
-        return <DemoRecordsScreen member={memberProps} />;
+        return <DemoRecordsScreen />;
       case "recordNew":
         return <DemoRecordNewScreen />;
       case "recordDetail":

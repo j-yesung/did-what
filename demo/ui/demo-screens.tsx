@@ -78,7 +78,7 @@ export function DemoHomeScreen({ member }: { member: Member }) {
 }
 
 /** pages/record/list의 RecordsPage. 보기 선택은 쿠키 대신 체험 데이터에 둔다. */
-export function DemoRecordsScreen({ member }: { member: Member }) {
+export function DemoRecordsScreen() {
   const searchParams = useSearchParams();
   const { recordView } = useDemoState();
   const search = searchParams?.toString() ?? "";
@@ -98,7 +98,7 @@ export function DemoRecordsScreen({ member }: { member: Member }) {
           <h1 className="sr-only">우리의 기록</h1>
         </header>
 
-        {view === "calendar" ? <RecordCalendar member={member} /> : <RecordListContent />}
+        {view === "calendar" ? <RecordCalendar /> : <RecordListContent />}
       </PageShell>
     </>
   );

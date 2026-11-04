@@ -1,4 +1,5 @@
 export { fetchRecordLocations } from "./api/client-queries";
+export { prefetchRecordDetail } from "./api/prefetch-record-detail";
 export {
   RECORD_DETAILS_QUERY_KEY,
   RECORDS_QUERY_KEY,
@@ -8,7 +9,6 @@ export {
   recordLocationsQueryOptions,
   recordMonthBoundsQueryOptions,
 } from "./api/queries";
-export { getRecordSummary, pickNewerRecord, prefetchRecordDetail } from "./api/record-summary";
 export {
   DEFAULT_RECORD_CATEGORY,
   getRecordCategoryLabel,

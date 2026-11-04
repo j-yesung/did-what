@@ -11,12 +11,11 @@ import { animate } from "motion/mini";
 import { motion, type PanInfo, useMotionTemplate, useMotionValue, useReducedMotion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 
-import { type RecordSummary, recordCalendarQueryOptions, recordMonthBoundsQueryOptions } from "@/entities/record";
+import { recordCalendarQueryOptions, recordMonthBoundsQueryOptions } from "@/entities/record";
 import { getToday } from "@/shared/lib/date/get-today";
 import { Button } from "@/shared/ui/button";
 import { IconButton } from "@/shared/ui/icon-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 
 import {
   getCalendarHref,
@@ -46,7 +45,7 @@ function CalendarMonthBuffer({ active, children }: { active: boolean; children: 
   return active ? children : deferredChildren;
 }
 
-export function RecordCalendar({ member }: { member: { id: string; name: string } }) {
+export function RecordCalendar() {
   const searchParams = useSearchParams();
   const shouldReduceMotion = useReducedMotion();
   const today = getToday();
@@ -55,8 +54,6 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
   const [selectedDate, setSelectedDate] = useState(
     () => parseCalendarDate(searchParams?.get("date"), initialMonth) ?? getDefaultCalendarDate(initialMonth, today),
   );
-  const [detailRecord, setDetailRecord] = useState<RecordSummary | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const snapAnimationRef = useRef<ReturnType<typeof animate> | null>(null);
@@ -163,11 +160,6 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
   );
   const handleMonthChange = useCallback((date: Date) => changeMonth(format(date, "yyyy-MM")), [changeMonth]);
 
-  const openRecord = (record: RecordSummary) => {
-    setDetailRecord(record);
-    setDetailOpen(true);
-  };
-
   return (
     <section className="relative flex min-h-0 flex-1 flex-col gap-2" data-screen="calendar">
       <header className="flex items-center justify-between gap-2 pl-1">
@@ -260,16 +252,7 @@ export function RecordCalendar({ member }: { member: { id: string; name: string 
       <RecordDayList
         date={selectedDate}
         key={selectedDate}
-        onRecordOpen={openRecord}
         records={recordsByDate ? (recordsByDate.get(selectedDate) ?? []) : undefined}
-      />
-
-      <RecordDetailBottomSheet
-        backLabel="달력으로"
-        member={member}
-        onOpenChange={setDetailOpen}
-        open={detailOpen}
-        record={detailRecord}
       />
     </section>
   );

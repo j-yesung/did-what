@@ -11,6 +11,7 @@ import {
   SearchParamsContext,
 } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 
+import { openRecordSheet } from "@/entities/record/model/record-sheet";
 import { setAppPathnameReader } from "@/shared/lib/navigation/app-pathname";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 
@@ -39,7 +40,8 @@ export const navigateDemo = (href: string, { replace = false, scroll = true } = 
   const sheetNavigation =
     sheetHref !== null || (current.searchParams.has("recordDetail") && current.pathname === target.pathname);
   const key = sheetNavigation ? window.history.state?.[DEMO_NAVIGATION_KEY] : crypto.randomUUID();
-  window.history[replace ? "replaceState" : "pushState"]({ [DEMO_NAVIGATION_KEY]: key }, "", url);
+  if (sheetHref && !replace) openRecordSheet(window.history, url);
+  else window.history[replace ? "replaceState" : "pushState"]({ [DEMO_NAVIGATION_KEY]: key }, "", url);
   if (scroll && !sheetNavigation) window.scrollTo(0, 0);
 };
 
