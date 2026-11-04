@@ -15,6 +15,7 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { MorphMenu } from "@/shared/ui/morph-menu";
 import { Spinner } from "@/shared/ui/spinner";
 
+import { useHeaderDrag } from "../model/use-header-drag";
 import { RecordDetailSections } from "./record-detail-sections";
 
 type RecordSheetDetailProps = {
@@ -28,6 +29,7 @@ type RecordSheetDetailProps = {
   onMissing?: () => void;
   onDraftChange: Dispatch<SetStateAction<string>>;
   recordId: string;
+  screen?: boolean;
 };
 
 export function RecordSheetDetail({
@@ -41,8 +43,10 @@ export function RecordSheetDetail({
   onMissing,
   onDraftChange,
   recordId,
+  screen,
 }: RecordSheetDetailProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const headerDrag = useHeaderDrag(onBack);
 
   const recordQuery = useQuery(recordDetailQueryOptions(recordId));
   const record = recordQuery.data;
@@ -53,10 +57,15 @@ export function RecordSheetDetail({
   }, [recordQuery.isSuccess, recordQuery.isFetching, record, onMissing]);
 
   return (
-    <div className="group/sheet-detail relative flex min-h-0 flex-1 flex-col">
+    <div
+      className="group/sheet-detail relative flex min-h-0 flex-1 flex-col"
+      data-base-ui-swipe-ignore={screen ? "" : undefined}
+    >
       <div
+        data-record-actions=""
         className={cn(
-          "pointer-events-none absolute inset-x-5 top-7 z-20 flex items-center justify-end gap-3 [&>*]:pointer-events-auto",
+          "pointer-events-none absolute inset-x-5 z-20 flex items-center justify-end gap-3 [&>*]:pointer-events-auto",
+          screen ? "top-(--page-top)" : "top-7",
           showBackButton && "justify-between",
         )}
       >
@@ -78,6 +87,7 @@ export function RecordSheetDetail({
         ) : null}
       </div>
       <div
+        data-record-scroll=""
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain",
           action
@@ -85,11 +95,35 @@ export function RecordSheetDetail({
             : "pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]",
         )}
       >
-        <BottomSheet.Header className="pt-7 text-left" glass>
-          <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title>
-        </BottomSheet.Header>
-        <div aria-hidden="true" className="h-(--toolbar-height)" />
-        <div className="px-5 pt-6">
+        {screen ? (
+          <>
+            <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title>
+            {record ? (
+              <section
+                aria-labelledby="sheet-record-activity-title"
+                className="cursor-grab touch-none select-none active:cursor-grabbing"
+                {...headerDrag}
+              >
+                <RecordDetailHeader
+                  bleed
+                  record={record}
+                  regionText={regionText}
+                  titleId="sheet-record-activity-title"
+                />
+              </section>
+            ) : (
+              <div aria-hidden="true" className="h-[calc(var(--page-top)+var(--toolbar-height))]" />
+            )}
+          </>
+        ) : (
+          <>
+            <BottomSheet.Header className="pt-7 text-left" glass>
+              <BottomSheet.Title className="sr-only">{record?.activity ?? "기록 상세"}</BottomSheet.Title>
+            </BottomSheet.Header>
+            <div aria-hidden="true" className="h-(--toolbar-height)" />
+          </>
+        )}
+        <div className="px-5 pt-6" data-record-body="">
           {recordQuery.isSuccess && !record ? (
             <LoadErrorAlert icon={<NotePencilIcon aria-hidden="true" />} title="기록을 찾을 수 없어요" />
           ) : recordQuery.isError ? (
@@ -101,11 +135,13 @@ export function RecordSheetDetail({
             />
           ) : record ? (
             <div className="flex flex-col gap-5">
-              <section aria-labelledby="sheet-record-activity-title">
-                <RecordDetailHeader record={record} regionText={regionText} titleId="sheet-record-activity-title" />
-              </section>
+              {screen ? null : (
+                <section aria-labelledby="sheet-record-activity-title">
+                  <RecordDetailHeader record={record} regionText={regionText} titleId="sheet-record-activity-title" />
+                </section>
+              )}
 
-              <RecordDetailSections memo={record.memo} places={record.record_places} />
+              <RecordDetailSections memo={record.memo} places={record.record_places} record={record} />
 
               <RecordComments draft={draft} member={member} onDraftChange={onDraftChange} recordId={record.id} />
             </div>

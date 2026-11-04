@@ -3,6 +3,7 @@
 import { type ReactNode, useState } from "react";
 
 import type { RecordSummary } from "@/entities/record";
+import { cn } from "@/shared/lib/utils";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 
 import { RecordSheetDetail } from "./record-sheet-detail";
@@ -20,6 +21,7 @@ type RecordDetailBottomSheetProps = {
   onCloseComplete?: () => void;
   open: boolean;
   record: Pick<RecordSummary, "id"> | null;
+  screen?: boolean;
 };
 
 export function RecordDetailBottomSheet({
@@ -33,6 +35,7 @@ export function RecordDetailBottomSheet({
   onCloseComplete,
   open,
   record,
+  screen,
 }: RecordDetailBottomSheetProps) {
   const [draft, setDraft] = useState("");
 
@@ -45,13 +48,19 @@ export function RecordDetailBottomSheet({
         onCloseComplete?.();
       }}
       open={open}
-      showSwipeHandle
+      showSwipeHandle={!screen}
     >
       <BottomSheet.VirtualKeyboardProvider>
         <BottomSheet.Content
+          data-record-sheet=""
           overlayHandle
-          className="bottom-(--drawer-keyboard-inset,0px) [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]"
-          style={{ height: FULL_SHEET_HEIGHT }}
+          className={cn(
+            "bottom-(--drawer-keyboard-inset,0px)",
+            screen
+              ? "rounded-none border-0 bg-background [--bottom-sheet-bleed-background:var(--color-background)] [--bottom-sheet-content-max-height:calc(100dvh-var(--drawer-keyboard-inset,0px))]"
+              : "[--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]",
+          )}
+          style={{ height: screen ? "calc(100dvh - var(--drawer-keyboard-inset, 0px))" : FULL_SHEET_HEIGHT }}
         >
           {record ? (
             <RecordSheetDetail
@@ -66,6 +75,7 @@ export function RecordDetailBottomSheet({
               onMissing={onMissing}
               onDraftChange={setDraft}
               recordId={record.id}
+              screen={screen}
             />
           ) : null}
         </BottomSheet.Content>

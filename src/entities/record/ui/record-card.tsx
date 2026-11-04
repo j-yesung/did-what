@@ -1,44 +1,61 @@
 "use client";
 
+import type { ComponentProps } from "react";
+
 import { useQueryClient } from "@tanstack/react-query";
 
+import { PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
 import { prefetchRecordDetail } from "../api/prefetch-record-detail";
-import type { RecordSummary } from "../model/types";
-import { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame } from "./record-card-content";
+import { normalizeRecordCategory, RECORD_CATEGORY_BADGE } from "../model/category";
+import { openRecordSheetFromCard } from "../model/record-sheet-morph";
+import { RECORD_CARD_BUTTON_CLASS, RecordCardContent } from "./record-card-content";
 import { RecordDetailLink } from "./record-detail-link";
 
 type RecordCardProps = {
   onDetailPrefetch?: (recordId: string) => void;
-  record: RecordSummary;
+  onOpen?: (recordId: string) => void;
+  record: ComponentProps<typeof RecordCardContent>["record"] & { id: string };
 };
 
-export function RecordCard({ onDetailPrefetch, record }: RecordCardProps) {
+export function RecordCard({ onDetailPrefetch, onOpen, record }: RecordCardProps) {
   const queryClient = useQueryClient();
-  const href = `/records/${record.id}`;
+  const href = `/records/${record.id}?from=card`;
 
   return (
-    <RecordCardFrame>
+    <article className="mt-2 min-w-0">
       <Button
-        className={RECORD_CARD_BUTTON_CLASS}
+        className={cn(
+          RECORD_CARD_BUTTON_CLASS,
+          "rounded-3xl px-4.5 py-4.5",
+          PRESS_FEEDBACK,
+          RECORD_CATEGORY_BADGE[normalizeRecordCategory(record.category)],
+        )}
         fullWidth
-        nativeButton={false}
+        nativeButton={Boolean(onOpen)}
+        onFocus={() => prefetchRecordDetail(queryClient, record.id)}
+        onPointerDown={(event) => {
+          if (event.button !== 0) return;
+          prefetchRecordDetail(queryClient, record.id);
+          onDetailPrefetch?.(record.id);
+        }}
         render={
-          <RecordDetailLink
-            href={href}
-            onPointerDown={(event) => {
-              if (event.button !== 0) return;
-              prefetchRecordDetail(queryClient, record.id);
-              onDetailPrefetch?.(record.id);
-            }}
-            prefetch={false}
-          />
+          onOpen ? (
+            <button
+              type="button"
+              data-record-card={record.id}
+              onClick={(event) => openRecordSheetFromCard(event.currentTarget, () => onOpen(record.id))}
+            />
+          ) : (
+            <RecordDetailLink data-record-card={record.id} href={href} morph prefetch={false} />
+          )
         }
         variant="ghost"
       >
         <RecordCardContent record={record} />
       </Button>
-    </RecordCardFrame>
+    </article>
   );
 }

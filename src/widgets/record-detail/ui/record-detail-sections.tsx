@@ -1,10 +1,13 @@
 import type { ComponentProps } from "react";
 
 import { PlaceIconTile } from "@/entities/place";
+import { type RecordSummary, RecordWeatherBadge } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
+import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 
 type RecordDetailSectionsProps = {
   memo: string | null;
+  record: Pick<RecordSummary, "recorded_at" | "recorded_until" | "weather">;
   places: {
     place: ComponentProps<typeof PlaceIconTile>["place"] & {
       id: string;
@@ -15,9 +18,18 @@ type RecordDetailSectionsProps = {
   }[];
 };
 
-export function RecordDetailSections({ memo, places }: RecordDetailSectionsProps) {
+export function RecordDetailSections({ memo, places, record }: RecordDetailSectionsProps) {
   return (
     <>
+      <section aria-labelledby="sheet-record-date-title" className="px-1 pt-1">
+        <h3 className="mb-3 font-semibold text-base" id="sheet-record-date-title">
+          우리 언제 갔지?
+        </h3>
+        <p className="flex flex-wrap items-center gap-2 text-sm">
+          {formatRecordPeriod(record.recorded_at, record.recorded_until)}
+          <RecordWeatherBadge weather={record.weather} />
+        </p>
+      </section>
       {places.length > 0 ? (
         <section aria-labelledby="sheet-record-places-title" className="px-1 pt-1">
           <div className="mb-3 flex items-center justify-between gap-3">

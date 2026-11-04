@@ -1,51 +1,32 @@
-import { HeartIcon, MapTrifoldIcon, NotebookIcon, SparkleIcon, UsersIcon } from "@phosphor-icons/react/dist/ssr";
-
-import { formatRecordPeriod } from "@/shared/lib/date/format-date";
 import { cn } from "@/shared/lib/utils";
 
 import { normalizeRecordCategory, RECORD_CATEGORY_BADGE } from "../model/category";
 import type { RecordSummary } from "../model/types";
-import { RecordBadges } from "./record-badges";
-
-const CATEGORY_ICONS = {
-  anniversary: SparkleIcon,
-  daily: NotebookIcon,
-  date: HeartIcon,
-  gathering: UsersIcon,
-  travel: MapTrifoldIcon,
-  uncategorized: NotebookIcon,
-};
+import { RecordCardContent } from "./record-card-content";
 
 type RecordDetailHeaderProps = {
-  heading?: "h1" | "h2" | "h3";
-  record: Pick<RecordSummary, "activity" | "category" | "weather" | "recorded_at" | "recorded_until">;
+  bleed?: boolean;
+  record: Pick<
+    RecordSummary,
+    "activity" | "category" | "record_comments" | "record_regions" | "region_code" | "region_label"
+  >;
   regionText: string;
   titleId?: string;
 };
 
-export function RecordDetailHeader({ heading: Heading = "h2", record, regionText, titleId }: RecordDetailHeaderProps) {
-  const category = normalizeRecordCategory(record.category);
-  const Icon = CATEGORY_ICONS[category];
+export function RecordDetailHeader({ bleed, record, regionText, titleId }: RecordDetailHeaderProps) {
   return (
-    <div className={cn("w-full min-w-0 rounded-3xl p-5", RECORD_CATEGORY_BADGE[category])}>
-      <div className="flex items-start justify-between gap-2">
-        <Heading
-          className="min-w-0 flex-1 break-words font-bold text-2xl text-foreground leading-tight tracking-[-0.045em]"
-          id={titleId}
-        >
-          {record.activity}
-        </Heading>
-        <span aria-hidden="true" className="flex size-6 shrink-0 -rotate-12 items-center justify-center">
-          <Icon className="size-5" />
-        </span>
-      </div>
-      <p className="mt-2.5 text-muted-foreground text-sm">
-        {formatRecordPeriod(record.recorded_at, record.recorded_until)}
-      </p>
-      {regionText ? <p className="mt-1 break-keep text-sm">{regionText}</p> : null}
-      <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
-        <RecordBadges className="px-2 py-1" record={record} />
-      </div>
+    <div
+      className={cn(
+        "min-w-0 text-left",
+        bleed
+          ? "flex flex-col justify-end overflow-hidden px-4.5 pt-[calc(var(--page-top)+var(--toolbar-height)+--spacing(8))] pb-4.5"
+          : "rounded-3xl p-4.5",
+        RECORD_CATEGORY_BADGE[normalizeRecordCategory(record.category)],
+      )}
+      data-record-header=""
+    >
+      <RecordCardContent heading="h2" record={record} regionLabel={regionText} size="header" titleId={titleId} />
     </div>
   );
 }
