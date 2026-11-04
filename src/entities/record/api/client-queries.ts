@@ -82,7 +82,7 @@ export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCurs
   if (filters.query) {
     const pattern = `*${filters.query}*`;
     query = query.or(
-      `activity.ilike.${pattern},memo.ilike.${pattern},region_label.ilike.${pattern},region_name.ilike.${pattern}`,
+      `activity.ilike.${pattern},memo.ilike.${pattern},region_label.ilike.${pattern},region_name.ilike.${pattern},place_names.ilike.${pattern}`,
     );
   }
   if (cursor) query = query.or(getRecordCursorFilter(cursor, filters.sort));

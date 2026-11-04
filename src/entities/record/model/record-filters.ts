@@ -68,3 +68,16 @@ export const setRecordFilterParams = (searchParams: URLSearchParams, filters: Re
 
   return params;
 };
+
+export const getRecordQueryHref = (search: string, query: string) => {
+  const params = new URLSearchParams(search);
+  const nextSearch = setRecordFilterParams(params, {
+    ...parseRecordFilters(Object.fromEntries(params)),
+    query,
+  }).toString();
+  return nextSearch ? `/records?${nextSearch}` : "/records";
+};
+
+export const readRecordQuery = (searchParams: Pick<URLSearchParams, "get"> | null) => {
+  return parseRecordFilters({ q: searchParams?.get("q") ?? "" }).query;
+};

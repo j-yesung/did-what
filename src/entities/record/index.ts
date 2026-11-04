@@ -24,11 +24,13 @@ export {
 } from "./model/category";
 export { MAX_ACTIVITY_LENGTH, MAX_MEMO_LENGTH, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";
 export {
+  getRecordQueryHref,
   hasRecordFilters,
   parseRecordFilters,
   type RecordFilters,
   type RecordSearchParams,
   type RecordSort,
+  readRecordQuery,
   setRecordFilterParams,
 } from "./model/record-filters";
 export {
@@ -46,6 +48,7 @@ export {
   sortPrimaryRecordRegions,
   sortPrimaryRegionFirst,
 } from "./model/record-region";
+export { applyRecordSearch, clearRecordSearch } from "./model/record-search";
 export { formatRecordTimelineDate } from "./model/record-timeline";
 export type { RecordFormState, RecordSummary } from "./model/types";
 export {

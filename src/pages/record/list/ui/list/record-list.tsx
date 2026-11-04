@@ -17,12 +17,12 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/em
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 
-type RecordListProps = {
-  filters: RecordFilters;
-  onFiltersReset: () => void;
-};
+type RecordListProps = { filters: RecordFilters } & (
+  | { emptyTitle?: never; onFiltersReset: () => void }
+  | { emptyTitle: string; onFiltersReset?: never }
+);
 
-export function RecordList({ filters, onFiltersReset }: RecordListProps) {
+export function RecordList({ emptyTitle, filters, onFiltersReset }: RecordListProps) {
   const queryClient = useQueryClient();
   const recordsQuery = useInfiniteQuery(recordListQueryOptions(filters));
   const prefetchComments = (recordId: string) => {
@@ -49,6 +49,16 @@ export function RecordList({ filters, onFiltersReset }: RecordListProps) {
   if (records.length === 0 && recordsQuery.isPlaceholderData) return null;
 
   if (records.length === 0) {
+    if (emptyTitle) {
+      return (
+        <Empty className="flex-1 px-1 py-10">
+          <EmptyHeader>
+            <EmptyTitle className="font-semibold text-base">{emptyTitle}</EmptyTitle>
+          </EmptyHeader>
+        </Empty>
+      );
+    }
+
     return isFiltered ? (
       <Empty className="flex-1 px-1 py-10">
         <EmptyHeader>
