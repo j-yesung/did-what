@@ -75,7 +75,7 @@ export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormP
             if (filters.query) updateFilters({ query: "" });
           }}
           onValueChange={setQuery}
-          placeholder="활동, 메모, 지역으로 검색"
+          placeholder="활동, 메모, 장소, 지역으로 검색"
           value={query}
         />
 
