@@ -7,9 +7,9 @@ import { AppLoadingFallback, AppShown } from "@/app/ui/app-loading-fallback";
 import { requireMember } from "@/entities/member/server";
 import { RETURN_TO_HEADER } from "@/shared/lib/navigation/return-to";
 import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
-import { AppToolbar } from "@/widgets/app-toolbar";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 import { RecordRouteSheet } from "@/widgets/record-detail";
+import { Toolbar } from "@/widgets/toolbar";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,7 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
     <>
       <MainDataPrefetch />
       <AppShown />
-      <AppToolbar memberId={member.id} />
+      <Toolbar memberId={member.id} />
       {/* 상세 화면의 고정 뒤로가기 버튼이 옮겨 오는 자리. 툴바 다음, 본문보다 앞에서 읽힌다. */}
       <PageBackSlot />
       {children}
