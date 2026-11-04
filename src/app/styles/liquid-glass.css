@@ -20,12 +20,12 @@
     box-shadow: var(--shadow-glass-control);
   }
 
-  .app-toolbar [data-slot="icon-button"]:active {
+  .toolbar [data-slot="icon-button"]:active {
     scale: 1;
     background: transparent;
   }
 
-  .app-toolbar [data-slot="icon-button"]:active::after {
+  .toolbar [data-slot="icon-button"]:active::after {
     opacity: 0;
   }
 

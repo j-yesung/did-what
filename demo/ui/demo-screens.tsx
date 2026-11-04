@@ -26,12 +26,12 @@ import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
 import { ListHeader } from "@/shared/ui/list-header";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
-import { AppToolbar } from "@/widgets/app-toolbar";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 import { RecordRouteSheet } from "@/widgets/record-detail";
 import { RecordCreateFunnel } from "@/widgets/record-form/funnel/create-record-funnel";
 import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
 import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
+import { Toolbar } from "@/widgets/toolbar";
 
 import { toDemoHref, toDemoRecordSheetHref } from "../lib/demo-href";
 import { getDemoJourneyMap, toDetailRow } from "../model/queries";
@@ -49,7 +49,7 @@ type Member = { id: string; name: string };
 export function DemoAppFrame({ children, member }: { children: ReactNode; member: Member }) {
   return (
     <>
-      <AppToolbar memberId={member.id} />
+      <Toolbar memberId={member.id} />
       <PageBackSlot />
       {children}
       <BottomNavigation />

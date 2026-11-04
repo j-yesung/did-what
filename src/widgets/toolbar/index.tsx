@@ -10,15 +10,15 @@ import { cn } from "@/shared/lib/utils";
 import { IconButton } from "@/shared/ui/icon-button";
 import { FixedToolbar } from "@/shared/ui/layouts";
 import { PressScale, PressScaleExempt } from "@/shared/ui/press-scale";
-import { useToolbarRecordSearch } from "@/widgets/app-toolbar/model/use-toolbar-record-search";
-import { NotificationBell } from "@/widgets/app-toolbar/notification-bell";
+import { useToolbarRecordSearch } from "@/widgets/toolbar/model/use-toolbar-record-search";
+import { NotificationBell } from "@/widgets/toolbar/notification-bell";
 
 const TOOLBAR_ENTRY_PATHS = new Set(["/", "/records", "/places", "/settings"]);
 const OPEN_SPRING: Transition = { type: "spring", bounce: 0, visualDuration: 0.3 };
 const CLOSE_SPRING: Transition = { type: "spring", bounce: 0, visualDuration: 0.2, delay: 0.06 };
 const INSTANT: Transition = { duration: 0 };
 
-export function AppToolbar({ memberId }: { memberId: string }) {
+export function Toolbar({ memberId }: { memberId: string }) {
   const pathname = usePathname() ?? "";
   const reduceMotion = useReducedMotion();
   const search = useToolbarRecordSearch();
@@ -34,7 +34,7 @@ export function AppToolbar({ memberId }: { memberId: string }) {
       <PressScale aria-label="빠른 작업" className="pointer-events-auto ml-auto" disabled={open} role="group">
         <motion.div
           animate={{ width: search.width }}
-          className="app-toolbar liquid-glass-control relative ml-auto flex h-(--toolbar-height) items-center justify-between gap-1 overflow-hidden rounded-full"
+          className="toolbar liquid-glass-control relative ml-auto flex h-(--toolbar-height) items-center justify-between gap-1 overflow-hidden rounded-full"
           data-record-search={open ? "open" : undefined}
           initial={false}
           onAnimationComplete={search.handleWidthSettled}

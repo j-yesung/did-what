@@ -126,7 +126,7 @@ export function MorphMenu({
                 : { width: "var(--toolbar-height)", height: "var(--toolbar-height)" }
             }
             className={cn(
-              "app-toolbar liquid-glass-control absolute top-0 overflow-hidden rounded-[calc(var(--toolbar-height)/2)]",
+              "toolbar liquid-glass-control absolute top-0 overflow-hidden rounded-[calc(var(--toolbar-height)/2)]",
               align === "start" ? "left-0 max-w-[calc(100vw-40px)]" : "right-0",
             )}
             initial={false}
@@ -254,7 +254,7 @@ export function MorphMenu({
           onAnimationComplete={() => {
             if (!open) setSettled(true);
           }}
-          className="app-toolbar liquid-glass-control pointer-events-auto relative flex h-(--toolbar-height) items-center justify-end overflow-hidden rounded-full"
+          className="toolbar liquid-glass-control pointer-events-auto relative flex h-(--toolbar-height) items-center justify-end overflow-hidden rounded-full"
           initial={false}
           transition={
             reduceMotion
