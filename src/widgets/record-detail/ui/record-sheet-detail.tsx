@@ -15,7 +15,7 @@ import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { MorphMenu } from "@/shared/ui/morph-menu";
 import { Spinner } from "@/shared/ui/spinner";
 
-import { useHeaderDrag } from "../model/use-header-drag";
+import { useRecordSheetDrag } from "../model/use-record-sheet-drag";
 import { RecordDetailSections } from "./record-detail-sections";
 
 type RecordSheetDetailProps = {
@@ -46,7 +46,7 @@ export function RecordSheetDetail({
   screen,
 }: RecordSheetDetailProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const headerDrag = useHeaderDrag(onBack);
+  const sheetDrag = useRecordSheetDrag(onBack, Boolean(screen));
 
   const recordQuery = useQuery(recordDetailQueryOptions(recordId));
   const record = recordQuery.data;
@@ -88,6 +88,8 @@ export function RecordSheetDetail({
       </div>
       <div
         data-record-scroll=""
+        ref={sheetDrag.scrollRef}
+        {...sheetDrag.handlers}
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain",
           action
@@ -102,7 +104,7 @@ export function RecordSheetDetail({
               <section
                 aria-labelledby="sheet-record-activity-title"
                 className="cursor-grab touch-none select-none active:cursor-grabbing"
-                {...headerDrag}
+                data-record-drag-header=""
               >
                 <RecordDetailHeader
                   bleed
