@@ -1,27 +1,27 @@
 import { getRegion, getRegionCode, REGIONS } from "./region.ts";
 import assert from "node:assert/strict";
 
-const { createKoreaMap, createRegionActivityMaps, getActivityLevel, getKoreaMapFrame, getKoreaMapPosition } =
-  await import("./korea-map.ts");
+const { createRegionActivityMaps, getActivityLevel, getKoreaMapPosition } = await import("./korea-map.ts");
 
 assert.deepEqual([0, 1, 2, 4, 7].map(getActivityLevel), [0, 1, 2, 3, 4]);
 
-const emptyMap = createKoreaMap([]);
-for (const cell of emptyMap.cells) {
-  const position = getKoreaMapPosition(cell);
+// 현재 위치 좌표와 섬의 표시 위치는 이전 전국 그리드 생성 없이 검증한다.
+for (const { latitude, longitude, x, y } of [
+  { latitude: 37.5445, longitude: 127.0557, x: 135.74405473802338, y: 73.94314783131767 },
+  { latitude: 33.4996, longitude: 126.5312, x: 106.47140390530349, y: 352.98330289096873 },
+  { latitude: 37.5, longitude: 130.87, x: 273.2780746561767, y: 77.01301034958865 },
+  { latitude: 37.96, longitude: 124.68, x: 89.66125627743882, y: 31.482465134782142 },
+]) {
+  const position = getKoreaMapPosition({ latitude, longitude });
   assert.ok(position);
-  assert.ok(Math.abs(position.x - (cell.x + 2.2)) < 1e-8, "경도를 해당 셀의 중심으로 변환합니다.");
-  assert.ok(Math.abs(position.y - (cell.y + 2.2)) < 1e-8, "위도를 해당 셀의 중심으로 변환합니다.");
+  assert.ok(Math.abs(position.x - x) < 1e-8);
+  assert.ok(Math.abs(position.y - y) < 1e-8);
 }
 assert.equal(getKoreaMapPosition({ latitude: 35.68, longitude: 139.69 }), null);
 assert.equal(getKoreaMapPosition({ latitude: 34.2, longitude: 129.3 }), null, "대마도는 지도 범위에서 제외합니다.");
 assert.equal(getKoreaMapPosition({ latitude: 36, longitude: 125.5 }), null, "서해는 지도 범위에서 제외합니다.");
 assert.equal(getKoreaMapPosition({ latitude: Number.NaN, longitude: 127 }), null);
 assert.equal(getKoreaMapPosition({ latitude: 37, longitude: Number.POSITIVE_INFINITY }), null);
-assert.equal(
-  emptyMap.cells.every((cell) => cell.count === 0),
-  true,
-);
 
 const emptyRegions = createRegionActivityMaps([]);
 assert.equal(REGIONS.length, 16);
@@ -69,6 +69,8 @@ const fullSeoul = createRegionActivityMaps(seoulCellRecords).find(({ code }) => 
 assert.ok(partialSeoul);
 assert.ok(fullSeoul);
 assert.equal(partialSeoul.visitedCount, 1);
+assert.equal(partialSeoul.cells.filter(({ count }) => count > 0).length, 1);
+assert.equal(partialSeoul.cells.find(({ count }) => count === 2)?.level, 2);
 assert.equal(fullSeoul.visitedCount, fullSeoul.totalCount);
 
 const sejongRecords = [
@@ -103,27 +105,6 @@ assert.equal(
   1,
 );
 
-const map = createKoreaMap([
-  ...Array.from({ length: 7 }, (_, index) => ({
-    id: `seoul-${index + 1}`,
-    latitude: 37.5445,
-    longitude: 127.0557,
-  })),
-  { id: "jeju-1", latitude: 33.4996, longitude: 126.5312 },
-]);
-
-assert.ok(map.cells.length > 500, "대한민국 실루엣은 500개 이상의 cell이어야 합니다.");
-assert.ok(
-  map.cells.some((cell) => cell.regionCode === "KR-49"),
-  "제주도 cell이 포함되어야 합니다.",
-);
-assert.ok(
-  map.cells.some((cell) => cell.regionCode === "KR-12"),
-  "전남광주통합특별시 cell이 포함되어야 합니다.",
-);
-assert.equal(map.cells.filter((cell) => cell.count > 0).length, 2);
-assert.equal(map.cells.find((cell) => cell.count === 7)?.level, 4);
-
 // 지역 지도는 윤곽이 딱 맞는 틀에 그리고, 기록 칸 가운데도 모두 그 틀 안에 놓인다.
 for (const regionMap of emptyRegions) {
   assert.ok(regionMap.path.startsWith("M"), `${regionMap.name} 윤곽`);
@@ -134,18 +115,3 @@ for (const regionMap of emptyRegions) {
     `${regionMap.name} 칸이 틀 안에 있다.`,
   );
 }
-
-// 먼 섬은 첫 화면 틀(본토와 제주) 안으로 옮겨 그리고, 섬 위의 기록과 칸도 함께 옮긴다.
-const homeFrame = getKoreaMapFrame({ east: 129.7, north: 38.7, south: 33.1, west: 126 });
-const isInside = ({ x, y }) =>
-  x >= homeFrame.x && x <= homeFrame.x + homeFrame.width && y >= homeFrame.y && y <= homeFrame.y + homeFrame.height;
-assert.ok(isInside(getKoreaMapPosition({ latitude: 37.5, longitude: 130.87 })), "울릉도");
-assert.ok(isInside(getKoreaMapPosition({ latitude: 37.96, longitude: 124.68 })), "백령도");
-assert.ok(
-  emptyMap.cells
-    .filter((cell) => cell.longitude > 130.5 || cell.longitude < 125)
-    .every((cell) => isInside({ x: cell.x + 2.2, y: cell.y + 2.2 })),
-  "두 섬의 칸도 틀 안으로 옮긴다.",
-);
-
-process.stdout.write(`${map.cells.length} cells, ${map.columns} × ${map.rows} grid\n`);

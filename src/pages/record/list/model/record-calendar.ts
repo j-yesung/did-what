@@ -56,10 +56,6 @@ export const getDefaultCalendarDate = (month: string, today: string) => {
   return today.startsWith(month) ? today : `${month}-01`;
 };
 
-export const isMultiDayRecord = (record: DatedRecord) => {
-  return Boolean(record.recorded_until && record.recorded_until !== record.recorded_at);
-};
-
 // 여러 날 기록은 범위 안의 모든 날짜에 넣는다. 날짜 안의 순서는 받은 순서(최신순)를 따른다.
 export const groupRecordsByDate = <T extends DatedRecord>(records: readonly T[], range: CalendarRange) => {
   const recordsByDate = new Map<string, T[]>();

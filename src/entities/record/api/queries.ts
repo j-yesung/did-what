@@ -16,10 +16,6 @@ import {
 export const RECORDS_QUERY_KEY = ["records"] as const;
 export const RECORD_DETAILS_QUERY_KEY = [...RECORDS_QUERY_KEY, "detail"] as const;
 
-export const recordSummaryQueryKey = (recordId: string) => {
-  return [...RECORDS_QUERY_KEY, "summary", recordId] as const;
-};
-
 export const recordDetailQueryOptions = (recordId: string) => {
   return queryOptions({
     ...MAIN_QUERY_OPTIONS,

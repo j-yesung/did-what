@@ -15,6 +15,7 @@ type RecordDetailBottomSheetProps = {
   member: { id: string; name: string };
   /** 삭제한 뒤 할 일. 넘기지 않으면 시트를 닫는다. */
   onDeleted?: () => void;
+  onMissing?: () => void;
   onOpenChange: (open: boolean) => void;
   onCloseComplete?: () => void;
   open: boolean;
@@ -27,6 +28,7 @@ export function RecordDetailBottomSheet({
   showBackButton,
   member,
   onDeleted,
+  onMissing,
   onOpenChange,
   onCloseComplete,
   open,
@@ -61,6 +63,7 @@ export function RecordDetailBottomSheet({
               member={member}
               onBack={() => onOpenChange(false)}
               onDeleted={onDeleted}
+              onMissing={onMissing}
               onDraftChange={setDraft}
               recordId={record.id}
             />

@@ -11,10 +11,11 @@ import {
   SearchParamsContext,
 } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 
+import { openRecordSheet } from "@/entities/record/model/record-sheet";
 import { setAppPathnameReader } from "@/shared/lib/navigation/app-pathname";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 
-import { isDemoAppHref, readAppLocation, toDemoHref } from "./demo-href";
+import { isDemoAppHref, readAppLocation, toAppHref, toDemoHref, toDemoRecordSheetHref } from "./demo-href";
 
 type HistoryMethod = History["pushState"];
 
@@ -32,9 +33,16 @@ const rewriteHistoryUrl = (method: HistoryMethod): HistoryMethod =>
  * 로그인 여부처럼 화면 가드가 보는 상태를 함께 바꿀 때는 이동을 먼저 한다. 상태가 먼저 바뀌면 가드가 옛 경로로 판단해 다른 곳으로 보낸다.
  */
 export const navigateDemo = (href: string, { replace = false, scroll = true } = {}) => {
-  const url = toDemoHref(href);
-  window.history[replace ? "replaceState" : "pushState"]({ [DEMO_NAVIGATION_KEY]: crypto.randomUUID() }, "", url);
-  if (scroll) window.scrollTo(0, 0);
+  const current = readAppLocation(window.location.search);
+  const sheetHref = toDemoRecordSheetHref(href, toAppHref(window.location.search));
+  const url = toDemoHref(sheetHref ?? href);
+  const target = readAppLocation(new URL(url, window.location.href).search);
+  const sheetNavigation =
+    sheetHref !== null || (current.searchParams.has("recordDetail") && current.pathname === target.pathname);
+  const key = sheetNavigation ? window.history.state?.[DEMO_NAVIGATION_KEY] : crypto.randomUUID();
+  if (sheetHref && !replace) openRecordSheet(window.history, url);
+  else window.history[replace ? "replaceState" : "pushState"]({ [DEMO_NAVIGATION_KEY]: key }, "", url);
+  if (scroll && !sheetNavigation) window.scrollTo(0, 0);
 };
 
 /**

@@ -137,45 +137,6 @@ const getBounds = (geometries: Geometry[]) => {
   return { minLongitude, maxLongitude, minLatitude, maxLatitude };
 };
 
-const generateCells = (columns: number): KoreaMapGrid => {
-  const bounds = getBounds(BOUNDARIES.map(({ geometry }) => geometry));
-  const projectedWidth = (bounds.maxLongitude - bounds.minLongitude) * LONGITUDE_SCALE;
-  const projectedStep = projectedWidth / columns;
-  const rows = Math.ceil((bounds.maxLatitude - bounds.minLatitude) / projectedStep);
-  const cells: KoreaMapCell[] = [];
-
-  for (let row = 0; row < rows; row++) {
-    const latitude = bounds.maxLatitude - (row + 0.5) * projectedStep;
-
-    for (let column = 0; column < columns; column++) {
-      const longitude = bounds.minLongitude + ((column + 0.5) * projectedStep) / LONGITUDE_SCALE;
-      const region = BOUNDARIES.find((feature) => containsPoint(feature.geometry, [longitude, latitude]));
-      const regionCode = region ? getBoundaryRegionCode(region.properties.shapeISO) : null;
-
-      if (!regionCode) continue;
-
-      cells.push({
-        id: `${row}-${column}`,
-        x: column * CELL_PITCH,
-        y: row * CELL_PITCH,
-        latitude,
-        longitude,
-        count: 0,
-        level: 0,
-        regionCode,
-      });
-    }
-  }
-
-  return {
-    cells,
-    columns,
-    rows,
-    width: columns * CELL_PITCH - CELL_GAP,
-    height: rows * CELL_PITCH - CELL_GAP,
-  };
-};
-
 /**
  * 가장 큰 땅에서 멀리 떨어진 작은 섬은 지역 지도 틀에서 뺀다. 울릉도나 경계 데이터에 경기로 잘못 든 백령도·연평도까지
  * 틀에 넣으면 본토가 한쪽으로 쪼그라든다. 그 섬의 기록은 가장 가까운 칸에 모인다.
@@ -346,16 +307,6 @@ const projectDisplayPosition = (position: Position) => {
   return projectPosition(inset ? [position[0] + inset.longitudeShift, position[1] + inset.latitudeShift] : position);
 };
 
-const getKoreaMapGrid = once((): KoreaMapGrid => {
-  const grid = generateCells(GRID_COLUMNS);
-  const cells = grid.cells.map((cell) => {
-    if (!findIslandInset([cell.longitude, cell.latitude])) return cell;
-    const { x, y } = projectDisplayPosition([cell.longitude, cell.latitude]);
-    return { ...cell, x: x - CELL_SIZE / 2, y: y - CELL_SIZE / 2 };
-  });
-  return { ...grid, cells };
-});
-
 export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation, "latitude" | "longitude">) => {
   if (
     !Number.isFinite(latitude) ||
@@ -365,28 +316,6 @@ export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation
     return null;
 
   return projectDisplayPosition([longitude, latitude]);
-};
-
-// 바다 위 모서리도 지도 좌표로 옮겨야 해서 육지 검사 없이 투영한다. 첫 화면에 담을 틀을 잡을 때 쓴다.
-export const getKoreaMapFrame = ({
-  east,
-  north,
-  south,
-  west,
-}: {
-  east: number;
-  north: number;
-  south: number;
-  west: number;
-}) => {
-  const topLeft = projectPosition([west, north]);
-  const bottomRight = projectPosition([east, south]);
-  return { x: topLeft.x, y: topLeft.y, width: bottomRight.x - topLeft.x, height: bottomRight.y - topLeft.y };
-};
-
-export const createKoreaMap = (records: RecordLocation[]): KoreaMapGrid => {
-  const grid = getKoreaMapGrid();
-  return { ...grid, cells: mapRecordsToCells(grid.cells, records) };
 };
 
 export const createRegionActivityMaps = (records: RegionRecordLocation[]): RegionActivityMap[] => {

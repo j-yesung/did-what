@@ -1,6 +1,6 @@
 "use client";
 
-import { type Dispatch, type ReactNode, type SetStateAction, useState } from "react";
+import { type Dispatch, type ReactNode, type SetStateAction, useEffect, useState } from "react";
 
 import { DotsThreeVerticalIcon, NotePencilIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ type RecordSheetDetailProps = {
   member: { id: string; name: string };
   onBack: () => void;
   onDeleted?: () => void;
+  onMissing?: () => void;
   onDraftChange: Dispatch<SetStateAction<string>>;
   recordId: string;
 };
@@ -37,13 +38,19 @@ export function RecordSheetDetail({
   member,
   onBack,
   onDeleted = onBack,
+  onMissing,
   onDraftChange,
   recordId,
 }: RecordSheetDetailProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+
   const recordQuery = useQuery(recordDetailQueryOptions(recordId));
   const record = recordQuery.data;
   const regionText = record ? formatRecordRegionLabels(record, Number.POSITIVE_INFINITY) : "";
+
+  useEffect(() => {
+    if (recordQuery.isSuccess && !recordQuery.isFetching && !record) onMissing?.();
+  }, [recordQuery.isSuccess, recordQuery.isFetching, record, onMissing]);
 
   return (
     <div className="group/sheet-detail relative flex min-h-0 flex-1 flex-col">
@@ -98,12 +105,7 @@ export function RecordSheetDetail({
                 <RecordDetailHeader record={record} regionText={regionText} titleId="sheet-record-activity-title" />
               </section>
 
-              <RecordDetailSections
-                heading="h3"
-                idPrefix="sheet-record"
-                memo={record.memo}
-                places={record.record_places}
-              />
+              <RecordDetailSections memo={record.memo} places={record.record_places} />
 
               <RecordComments draft={draft} member={member} onDraftChange={onDraftChange} recordId={record.id} />
             </div>

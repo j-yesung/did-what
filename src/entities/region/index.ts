@@ -1,7 +1,5 @@
 export {
-  createKoreaMap,
   createRegionActivityMaps,
-  getKoreaMapFrame,
   getKoreaMapPosition,
   KOREA_MAP_CELL_STYLE,
   type KoreaMapCell,

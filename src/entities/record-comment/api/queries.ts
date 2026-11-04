@@ -15,8 +15,7 @@ export const RECORD_COMMENTS_QUERY_KEY = ["record-comments"] as const;
 const RECORD_COMMENT_COLUMNS =
   "id, record_id, author_member_id, body, created_at, author:account_members!record_comments_owner_author_member_fkey(name)";
 
-// 알림으로 여는 기록 상세가 첫 화면에 댓글까지 그릴 수 있게 서버에서도 쓴다.
-export const fetchRecordCommentPage = async (
+const fetchRecordCommentPage = async (
   client: SupabaseClient<Database>,
   recordId: string,
   cursor: RecordCommentCursor | null,

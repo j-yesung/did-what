@@ -1,40 +1,39 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
+import { AppLoading } from "@/app/ui/app-loading";
 import { AppNotFound } from "@/app/ui/app-not-found";
 import { LogoutButton } from "@/features/auth";
 import { HomeAddressSetting } from "@/features/home-address/ui/home-address-setting";
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
 import { toExistingRecordLocationPlace } from "@/features/record/select-record-location";
-import { RecordViewToggle } from "@/features/record/switch-record-view";
 // import { ThemeSelect } from "@/features/switch-theme";
 import { JourneyMap } from "@/pages/journey/ui/journey-map";
 import { NotificationList } from "@/pages/notification/ui/notification-list";
 import { PlaceDetailContent } from "@/pages/place/detail/ui/place-detail-content";
 import { PlaceSearchBottomSheet } from "@/pages/place/list/ui/place-search-bottom-sheet";
 import { SavedPlaceList } from "@/pages/place/list/ui/saved-place-list";
-import { RecordDetailContent } from "@/pages/record/detail/ui/record-detail-content";
-import { RecordCalendar } from "@/pages/record/list/ui/calendar/record-calendar";
-import { RecordListContent } from "@/pages/record/list/ui/list/record-list-content";
+import { getRecordViewFromParams } from "@/pages/record/list/model/record-view";
+import { RecordsContent } from "@/pages/record/list/ui/records-content";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
-import { cn } from "@/shared/lib/utils";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
-import { FixedToolbar, PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
+import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
 import { ListHeader } from "@/shared/ui/list-header";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
 import { AppToolbar } from "@/widgets/app-toolbar";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
+import { RecordRouteSheet } from "@/widgets/record-detail";
 import { RecordCreateFunnel } from "@/widgets/record-form/funnel/create-record-funnel";
 import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
 import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
 
-import { toDemoHref } from "../lib/demo-href";
+import { toDemoHref, toDemoRecordSheetHref } from "../lib/demo-href";
 import { getDemoJourneyMap, toDetailRow } from "../model/queries";
 import { demoStore, useDemoState } from "../model/store";
 import { useDemo } from "./demo-context";
@@ -54,6 +53,7 @@ export function DemoAppFrame({ children, member }: { children: ReactNode; member
       <PageBackSlot />
       {children}
       <BottomNavigation />
+      <RecordRouteSheet member={member} />
     </>
   );
 }
@@ -76,28 +76,12 @@ export function DemoHomeScreen({ member }: { member: Member }) {
 }
 
 /** pages/record/list의 RecordsPage. 보기 선택은 쿠키 대신 체험 데이터에 둔다. */
-export function DemoRecordsScreen({ member }: { member: Member }) {
+export function DemoRecordsScreen() {
   const searchParams = useSearchParams();
   const { recordView } = useDemoState();
   const search = searchParams?.toString() ?? "";
-  const params = Object.fromEntries(new URLSearchParams(search));
-  const view =
-    params.view === "calendar" || (Object.keys(params).length === 0 && recordView === "calendar") ? "calendar" : "list";
-
-  return (
-    <>
-      <FixedToolbar className="items-start">
-        <RecordViewToggle view={view} />
-      </FixedToolbar>
-      <PageShell className={cn("gap-4", view === "calendar" && "h-(--screen-height)")} withBottomNavigation>
-        <header className="min-h-13">
-          <h1 className="sr-only">우리의 기록</h1>
-        </header>
-
-        {view === "calendar" ? <RecordCalendar member={member} /> : <RecordListContent />}
-      </PageShell>
-    </>
-  );
+  const view = getRecordViewFromParams(Object.fromEntries(new URLSearchParams(search))) ?? recordView ?? "list";
+  return <RecordsContent view={view} />;
 }
 
 /** pages/record/new. 기본 날짜는 샘플 데이터의 기준일(오늘)이다. */
@@ -131,9 +115,20 @@ export function DemoRecordNewScreen() {
   );
 }
 
-export function DemoRecordDetailScreen({ member, recordId }: { member: Member; recordId: string }) {
+export function DemoRecordDetailScreen({ recordId }: { recordId: string }) {
   if (!isUuid(recordId)) return <AppNotFound />;
-  return <RecordDetailContent key={recordId} member={member} recordId={recordId} />;
+  return <DemoRecordDetailRedirect recordId={recordId} />;
+}
+
+function DemoRecordDetailRedirect({ recordId }: { recordId: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const query = searchParams?.toString() ?? "";
+  useEffect(() => {
+    const href = toDemoRecordSheetHref(`/records/${recordId}?${query}${window.location.hash}`, "/records");
+    if (href) router.replace(href, { scroll: false });
+  }, [recordId, query, router]);
+  return <AppLoading />;
 }
 
 /** pages/record/edit. 초기값을 만드는 규칙도 실제 화면과 같다. */

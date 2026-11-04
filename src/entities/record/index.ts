@@ -1,4 +1,5 @@
 export { fetchRecordLocations } from "./api/client-queries";
+export { prefetchRecordDetail } from "./api/prefetch-record-detail";
 export {
   RECORD_DETAILS_QUERY_KEY,
   RECORDS_QUERY_KEY,
@@ -8,7 +9,6 @@ export {
   recordLocationsQueryOptions,
   recordMonthBoundsQueryOptions,
 } from "./api/queries";
-export { getRecordSummary, pickNewerRecord, prefetchRecordDetail } from "./api/record-summary";
 export {
   DEFAULT_RECORD_CATEGORY,
   getRecordCategoryLabel,
@@ -57,12 +57,12 @@ export {
   type RecordWeather,
 } from "./model/weather";
 export { EmptyRecords } from "./ui/empty-records";
-export { RecordActionToolbar } from "./ui/record-action-toolbar";
 export { RecordBadges, RecordCategoryBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame } from "./ui/record-card-content";
 export { RecordCreateButton } from "./ui/record-create-button";
 export { RecordDateGroups } from "./ui/record-date-groups";
 export { RecordDetailHeader } from "./ui/record-detail-header";
+export { RecordDetailLink } from "./ui/record-detail-link";
 export { RecordTimelineItems } from "./ui/record-timeline-items";
 export { WeatherIcon } from "./ui/weather-icon";

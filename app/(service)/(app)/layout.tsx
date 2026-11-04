@@ -9,6 +9,7 @@ import { RETURN_TO_HEADER } from "@/shared/lib/navigation/return-to";
 import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
 import { AppToolbar } from "@/widgets/app-toolbar";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
+import { RecordRouteSheet } from "@/widgets/record-detail";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
       <PageBackSlot />
       {children}
       <BottomNavigation />
+      <RecordRouteSheet member={{ id: member.id, name: member.name }} />
     </>
   );
 }
