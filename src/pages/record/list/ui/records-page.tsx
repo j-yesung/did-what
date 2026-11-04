@@ -13,7 +13,9 @@ type RecordsPageProps = {
 };
 
 export async function RecordsPage({ searchParams }: RecordsPageProps) {
-  const params = await searchParams;
+  const params = { ...(await searchParams) };
+  delete params.recordDetail;
+  delete params.recordFrom;
 
   const view =
     params.view === "calendar" || (Object.keys(params).length === 0 && (await getRecordView()) === "calendar")

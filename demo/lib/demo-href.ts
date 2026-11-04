@@ -1,3 +1,5 @@
+import { toRecordSheetHref } from "@/entities/record/model/record-sheet";
+
 /**
  * 체험 페이지 가운데 iframe이 여는 앱 주소. 앱 경로는 path 쿼리에 담는다.
  * 페이지가 하나라 화면을 옮겨도 서버를 다시 부르지 않고 브라우저 안에서만 바뀐다.
@@ -51,3 +53,15 @@ export const toAppHref = (search: string) => {
 
 /** 체험 페이지 주소나 메시지로 받은 앱 경로. 앱 내부 경로만 받고 아니면 지도로 보낸다. */
 export const toSafeAppPath = (value: unknown) => (isAppPathname(value) ? value : "/");
+
+/** 기록 링크를 현재 탐색 화면 위의 시트 주소로 바꾼다. 직접 진입은 기록 목록을 배경으로 쓴다. */
+export const toDemoRecordSheetHref = (href: string, backgroundHref: string) => {
+  const target = new URL(href, "http://demo.invalid");
+  if (isDemoAppHref(href)) {
+    const app = readAppLocation(target.search);
+    target.pathname = app.pathname;
+    target.search = app.searchParams.toString();
+  }
+  if (target.origin !== "http://demo.invalid") return null;
+  return toRecordSheetHref(`${target.pathname}${target.search}${target.hash}`, backgroundHref);
+};

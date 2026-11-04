@@ -91,7 +91,7 @@ export function DemoApp() {
       case "recordNew":
         return <DemoRecordNewScreen />;
       case "recordDetail":
-        return <DemoRecordDetailScreen member={memberProps} recordId={route.id} />;
+        return <DemoRecordDetailScreen recordId={route.id} />;
       case "recordEdit":
         return <DemoRecordEditScreen recordId={route.id} />;
       case "places":

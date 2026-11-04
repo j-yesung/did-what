@@ -1,10 +1,10 @@
 import { CaretRightIcon } from "@phosphor-icons/react";
 
 import { getNotificationHref, type NotificationItem } from "@/entities/notification";
+import { RecordDetailLink } from "@/entities/record";
 import { formatCommentTime } from "@/entities/record-comment";
 import { cn } from "@/shared/lib/utils";
 import { ListRow } from "@/shared/ui/list-row";
-import { PressLink } from "@/shared/ui/press-link";
 
 type NotificationRowProps = {
   notification: NotificationItem;
@@ -28,7 +28,7 @@ export function NotificationRow({ notification, onOpen }: NotificationRowProps) 
       disabled={!href}
       nativeButton={!href}
       onClick={() => onOpen(notification)}
-      render={href ? <PressLink href={href} /> : undefined}
+      render={href ? <RecordDetailLink href={href} /> : undefined}
       type={href ? undefined : "button"}
     >
       <span className="flex min-w-0 items-start gap-3">

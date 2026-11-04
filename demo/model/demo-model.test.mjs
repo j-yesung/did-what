@@ -1,6 +1,6 @@
 import { sortPrimaryRecordRegions } from "@/entities/record/model/record-region";
 
-import { toAppHref, toDemoHref, toSafeAppPath } from "../lib/demo-href.ts";
+import { toAppHref, toDemoHref, toDemoRecordSheetHref, toSafeAppPath } from "../lib/demo-href.ts";
 import { readDemoCommand, toCommandMessage } from "../lib/messages.ts";
 import {
   addSampleRecord,
@@ -383,4 +383,20 @@ test("집 주소는 시·도와 시·군·구로 샘플 지역 좌표를 찾고,
 
   assert.equal(saveHomeAddress(state, DEMO_MEMBER_IDS.seojun, "울산 남구 삼산로 1", context().now).ok, false);
   assert.equal(deleteHomeAddress(state, DEMO_MEMBER_IDS.jimin).homes[DEMO_MEMBER_IDS.jimin], undefined);
+});
+
+test("기록 상세 링크는 필터와 장소 화면을 유지한 채 기존 시트를 연다", () => {
+  assert.equal(
+    toDemoRecordSheetHref("/records/abc", "/records?view=list&query=산책"),
+    "/records?view=list&query=%EC%82%B0%EC%B1%85&recordDetail=abc",
+  );
+  assert.equal(
+    toDemoRecordSheetHref(toDemoHref("/records/abc?from=notification#comment-1"), "/notifications"),
+    "/notifications?recordDetail=abc&recordFrom=notification#comment-1",
+  );
+  assert.equal(toDemoRecordSheetHref("/records/abc", "/places/place-1"), "/places/place-1?recordDetail=abc");
+  assert.equal(toDemoRecordSheetHref("/records/abc", "/records/abc/edit"), "/records?recordDetail=abc");
+  assert.equal(toDemoRecordSheetHref("/records/new", "/records"), null);
+  assert.equal(toDemoRecordSheetHref("/records/abc/edit", "/records"), null);
+  assert.equal(toDemoRecordSheetHref("https://example.com/records/abc", "/records"), null);
 });

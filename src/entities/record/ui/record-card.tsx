@@ -1,14 +1,13 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
-import { PressLink } from "@/shared/ui/press-link";
 
 import { cacheRecordSummary, prefetchRecordDetail } from "../api/record-summary";
 import type { RecordSummary } from "../model/types";
 import { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame } from "./record-card-content";
+import { RecordDetailLink } from "./record-detail-link";
 
 type RecordCardProps = {
   onDetailPrefetch?: (recordId: string) => void;
@@ -16,7 +15,6 @@ type RecordCardProps = {
 };
 
 export function RecordCard({ onDetailPrefetch, record }: RecordCardProps) {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const href = `/records/${record.id}`;
   const cacheSummary = () => cacheRecordSummary(queryClient, record);
@@ -28,12 +26,11 @@ export function RecordCard({ onDetailPrefetch, record }: RecordCardProps) {
         fullWidth
         nativeButton={false}
         render={
-          <PressLink
+          <RecordDetailLink
             href={href}
             onClick={cacheSummary}
             onPointerDown={(event) => {
               if (event.button !== 0) return;
-              router.prefetch(href);
               prefetchRecordDetail(queryClient, record.id, record);
               onDetailPrefetch?.(record.id);
             }}
