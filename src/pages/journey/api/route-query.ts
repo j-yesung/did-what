@@ -5,7 +5,7 @@ import type { JourneyPlace, JourneyRegion, JourneyRoute } from "../model/types";
 
 const ROUTE_ERROR = "경로를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.";
 
-export const legParams = (
+const legParams = (
   record: Pick<JourneyRecord, "id">,
   region: Pick<JourneyRegion, "code">,
   target: JourneyPlace | null,

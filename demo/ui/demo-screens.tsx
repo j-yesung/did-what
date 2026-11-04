@@ -11,20 +11,18 @@ import { HomeAddressSetting } from "@/features/home-address/ui/home-address-sett
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
 import { toExistingRecordLocationPlace } from "@/features/record/select-record-location";
-import { RecordViewToggle } from "@/features/record/switch-record-view";
 // import { ThemeSelect } from "@/features/switch-theme";
 import { JourneyMap } from "@/pages/journey/ui/journey-map";
 import { NotificationList } from "@/pages/notification/ui/notification-list";
 import { PlaceDetailContent } from "@/pages/place/detail/ui/place-detail-content";
 import { PlaceSearchBottomSheet } from "@/pages/place/list/ui/place-search-bottom-sheet";
 import { SavedPlaceList } from "@/pages/place/list/ui/saved-place-list";
-import { RecordCalendar } from "@/pages/record/list/ui/calendar/record-calendar";
-import { RecordListContent } from "@/pages/record/list/ui/list/record-list-content";
+import { getRecordViewFromParams } from "@/pages/record/list/model/record-view";
+import { RecordsContent } from "@/pages/record/list/ui/records-content";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
-import { cn } from "@/shared/lib/utils";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
-import { FixedToolbar, PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
+import { PageHeader, PageSection, PageShell } from "@/shared/ui/layouts";
 import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
 import { ListHeader } from "@/shared/ui/list-header";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
@@ -82,26 +80,8 @@ export function DemoRecordsScreen() {
   const searchParams = useSearchParams();
   const { recordView } = useDemoState();
   const search = searchParams?.toString() ?? "";
-  const params = Object.fromEntries(new URLSearchParams(search));
-  delete params.recordDetail;
-  delete params.recordFrom;
-  const view =
-    params.view === "calendar" || (Object.keys(params).length === 0 && recordView === "calendar") ? "calendar" : "list";
-
-  return (
-    <>
-      <FixedToolbar className="items-start">
-        <RecordViewToggle view={view} />
-      </FixedToolbar>
-      <PageShell className={cn("gap-4", view === "calendar" && "h-(--screen-height)")} withBottomNavigation>
-        <header className="min-h-13">
-          <h1 className="sr-only">우리의 기록</h1>
-        </header>
-
-        {view === "calendar" ? <RecordCalendar /> : <RecordListContent />}
-      </PageShell>
-    </>
-  );
+  const view = getRecordViewFromParams(Object.fromEntries(new URLSearchParams(search))) ?? recordView ?? "list";
+  return <RecordsContent view={view} />;
 }
 
 /** pages/record/new. 기본 날짜는 샘플 데이터의 기준일(오늘)이다. */

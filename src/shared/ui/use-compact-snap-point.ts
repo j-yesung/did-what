@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 
 export const SHEET_EXPAND_MS = 250;
-export const SHEET_HANDLE_HEIGHT = 29;
+const SHEET_HANDLE_HEIGHT = 29;
 
 export const useCompactSnapPoint = (measureContent: boolean) => {
   const [header, setHeader] = useState<HTMLElement | null>(null);

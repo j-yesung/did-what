@@ -6,8 +6,8 @@ import { DotsThreeVerticalIcon, NotePencilIcon, PencilSimpleIcon, TrashIcon } fr
 import { useQuery } from "@tanstack/react-query";
 
 import { formatRecordRegionLabels, RecordDetailHeader, recordDetailQueryOptions } from "@/entities/record";
-import { RecordComments } from "@/features/record-comment";
 import { DeleteRecordConfirm } from "@/features/record/delete-record";
+import { RecordComments } from "@/features/record-comment";
 import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -105,12 +105,7 @@ export function RecordSheetDetail({
                 <RecordDetailHeader record={record} regionText={regionText} titleId="sheet-record-activity-title" />
               </section>
 
-              <RecordDetailSections
-                heading="h3"
-                idPrefix="sheet-record"
-                memo={record.memo}
-                places={record.record_places}
-              />
+              <RecordDetailSections memo={record.memo} places={record.record_places} />
 
               <RecordComments draft={draft} member={member} onDraftChange={onDraftChange} recordId={record.id} />
             </div>
