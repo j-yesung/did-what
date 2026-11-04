@@ -156,11 +156,12 @@ const inPeriod = (record: DemoRecord, { from, to }: Pick<RecordFilters, "from" |
   return true;
 };
 
-const matchesQuery = (record: DemoRecord, query: string) => {
+const matchesQuery = (state: DemoState, record: DemoRecord, query: string) => {
   if (!query) return true;
   const primary = primaryRegionOf(record);
   const needle = query.toLocaleLowerCase("ko-KR");
-  return [record.activity, record.memo, primary?.region_label, primary?.region_name].some((value) =>
+  const placeNames = placesOf(state, record).map((place) => place.name);
+  return [record.activity, record.memo, primary?.region_label, primary?.region_name, ...placeNames].some((value) =>
     value?.toLocaleLowerCase("ko-KR").includes(needle),
   );
 };
@@ -180,7 +181,7 @@ export const getRecordPage = (state: DemoState, filters: RecordFilters, cursor: 
     state.records.filter(
       (record) =>
         inPeriod(record, filters) &&
-        matchesQuery(record, filters.query) &&
+        matchesQuery(state, record, filters.query) &&
         (!filters.category ||
           (filters.category === "uncategorized"
             ? record.category.length === 0

@@ -4,19 +4,27 @@ import { cn } from "@/shared/lib/utils";
 import { FixedToolbar, PageShell } from "@/shared/ui/layouts";
 
 import { RecordCalendar } from "./calendar/record-calendar";
+import { RecordSearchSheet } from "./calendar/record-search-sheet";
 import { RecordListContent } from "./list/record-list-content";
 
 export function RecordsContent({ view }: { view: RecordView }) {
   return (
     <>
-      <FixedToolbar className="items-start">
+      <FixedToolbar className="hide-during-record-search items-start">
         <RecordViewToggle view={view} />
       </FixedToolbar>
       <PageShell className={cn("gap-4", view === "calendar" && "h-(--screen-height)")} withBottomNavigation>
         <header className="min-h-13">
           <h1 className="sr-only">우리의 기록</h1>
         </header>
-        {view === "calendar" ? <RecordCalendar /> : <RecordListContent />}
+        {view === "calendar" ? (
+          <>
+            <RecordCalendar />
+            <RecordSearchSheet />
+          </>
+        ) : (
+          <RecordListContent />
+        )}
       </PageShell>
     </>
   );

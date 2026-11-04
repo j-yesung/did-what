@@ -15,10 +15,11 @@ type PressScaleProps = {
   "aria-label"?: string;
   children: ReactNode;
   className?: string;
+  disabled?: boolean;
   role?: AriaRole;
 };
 
-export function PressScale({ "aria-label": ariaLabel, children, className, role }: PressScaleProps) {
+export function PressScale({ "aria-label": ariaLabel, children, className, disabled, role }: PressScaleProps) {
   const shouldReduceMotion = useReducedMotion();
   const scale = useSpring(1, TAP_SPRING);
   const transform = useMotionTemplate`scale(${scale})`;
@@ -35,7 +36,7 @@ export function PressScale({ "aria-label": ariaLabel, children, className, role 
   }, [scale, shouldReduceMotion]);
 
   const handleTapStart = () => {
-    if (shouldReduceMotion) return;
+    if (shouldReduceMotion || disabled) return;
     if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
 
     pressedAtRef.current = performance.now();
@@ -70,6 +71,16 @@ export function PressScale({ "aria-label": ariaLabel, children, className, role 
       role={role}
       style={{ transform }}
     >
+      {children}
+    </motion.div>
+  );
+}
+
+const claimTap = () => {};
+
+export function PressScaleExempt({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <motion.div className={className} onTapStart={claimTap} propagate={{ tap: false }}>
       {children}
     </motion.div>
   );

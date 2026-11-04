@@ -1,4 +1,4 @@
-import { hasRecordFilters, parseRecordFilters, setRecordFilterParams } from "./record-filters.ts";
+import { getRecordQueryHref, hasRecordFilters, parseRecordFilters, setRecordFilterParams } from "./record-filters.ts";
 import assert from "node:assert/strict";
 
 const EMPTY = { category: "", from: "", query: "", sort: "recent", to: "" };
@@ -38,3 +38,10 @@ assert.deepEqual(
   parseRecordFilters(Object.fromEntries(setRecordFilterParams(new URLSearchParams(), categoryFilters))),
   categoryFilters,
 );
+
+assert.equal(
+  getRecordQueryHref("view=calendar&month=2026-10&sort=oldest", "카페"),
+  "/records?view=calendar&month=2026-10&sort=oldest&q=%EC%B9%B4%ED%8E%98",
+);
+assert.equal(getRecordQueryHref("view=calendar&q=%EC%B9%B4%ED%8E%98", ""), "/records?view=calendar");
+assert.equal(getRecordQueryHref("q=%EC%B9%B4%ED%8E%98", ""), "/records");
