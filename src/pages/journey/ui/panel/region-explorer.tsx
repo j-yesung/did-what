@@ -1,12 +1,6 @@
 import { useEffect, useMemo } from "react";
 
-import {
-  RECORD_CARD_BUTTON_CLASS,
-  RecordCardContent,
-  RecordCardFrame,
-  RecordDateGroups,
-  toRegionLocations,
-} from "@/entities/record";
+import { RecordCard, RecordDateGroups, toRegionLocations } from "@/entities/record";
 import { createRegionActivityMaps, RegionMiniMap } from "@/entities/region";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
@@ -34,7 +28,6 @@ type RegionExplorerProps = {
   onRetry: () => void;
   onSubregionChange: (value: string | null) => void;
   onRecordOpen: (id: string) => void;
-  onRecordPress: (id: string) => void;
 };
 
 export function RegionExplorer({
@@ -49,7 +42,6 @@ export function RegionExplorer({
   onRetry,
   onSubregionChange,
   onRecordOpen,
-  onRecordPress,
 }: RegionExplorerProps) {
   const maps = useMemo(() => createRegionActivityMaps(toRegionLocations(records)), [records]);
   const map = maps.find(({ code }) => code === region.code);
@@ -57,7 +49,7 @@ export function RegionExplorer({
   const subdivisions = getSubregionCounts(entries);
   const selected = subdivisions.some(([name]) => name === subregion) ? subregion : null;
   const visible = selected ? entries.filter(({ subregions }) => subregions.includes(selected)) : entries;
-  const visibleRecords = visible.map(({ record, subregions }) => ({ ...record, subregions }));
+  const visibleRecords = visible.map(({ record }) => record);
 
   useEffect(() => {
     if (subregion && !selected && !pending && !error) onSubregionChange(null);
@@ -141,29 +133,7 @@ export function RegionExplorer({
           {homeUnavailable && <HomeLoadError />}
           <RecordDateGroups
             records={visibleRecords}
-            renderRecord={(record) => (
-              <RecordCardFrame>
-                <Button
-                  className={RECORD_CARD_BUTTON_CLASS}
-                  fullWidth
-                  onClick={() => onRecordOpen(record.id)}
-                  onFocus={() => onRecordPress(record.id)}
-                  onPointerDown={(event) => {
-                    if (event.button === 0) onRecordPress(record.id);
-                  }}
-                  variant="ghost"
-                >
-                  <RecordCardContent
-                    record={record}
-                    regionLabel={
-                      record.subregions.length > 1
-                        ? `${record.subregions[0]} 외 ${record.subregions.length - 1}개 지역`
-                        : record.subregions[0]
-                    }
-                  />
-                </Button>
-              </RecordCardFrame>
-            )}
+            renderRecord={(record) => <RecordCard onOpen={onRecordOpen} record={record} />}
           />
         </div>
       </div>

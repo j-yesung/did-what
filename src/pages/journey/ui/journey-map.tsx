@@ -6,7 +6,8 @@ import { ListBulletsIcon, PathIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
-import { prefetchRecordDetail, recordLocationsQueryOptions } from "@/entities/record";
+import { recordLocationsQueryOptions } from "@/entities/record";
+import { closeRecordSheetIntoCard } from "@/entities/record/model/record-sheet-morph";
 import { HomeAddressSheet } from "@/features/home-address/ui/home-address-sheet";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 import { BackButton } from "@/shared/ui/back-button";
@@ -215,6 +216,11 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
     setDetailOpen(true);
   };
 
+  const closeDetail = () => {
+    if (!session && detailRecordId) closeRecordSheetIntoCard(detailRecordId, () => setDetailOpen(false));
+    else setDetailOpen(false);
+  };
+
   const startRecord = (recordId: string) => {
     const record = journeyRecord(recordId);
     if (!record || !region) return;
@@ -387,7 +393,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           onRetry={() => void locations.refetch()}
           onSubregionChange={setSubregion}
           onRecordOpen={openDetail}
-          onRecordPress={(recordId) => prefetchRecordDetail(queryClient, recordId)}
         />
       )}
       <HomeAddressSheet
@@ -408,7 +413,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
               fullWidth
               onClick={() => {
                 routeAfterClose.current = routableDetail.id;
-                setDetailOpen(false);
+                closeDetail();
               }}
               onPointerDown={(event) => {
                 if (event.button === 0) prefetchRoute(routableDetail.id);
@@ -421,7 +426,8 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           )
         }
         backLabel="지도로"
-        showBackButton={false}
+        screen={!session}
+        showBackButton={!session}
         member={member}
         onDeleted={() => {
           setDetailOpen(false);
@@ -447,7 +453,10 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           if (remaining.length) showRegionRecords(previous);
           else reset();
         }}
-        onOpenChange={setDetailOpen}
+        onOpenChange={(nextOpen) => {
+          if (nextOpen) setDetailOpen(true);
+          else closeDetail();
+        }}
         open={detailOpen}
         record={detailRecordId ? { id: detailRecordId } : null}
       />

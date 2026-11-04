@@ -62,6 +62,7 @@ export const toDetailRow = (state: DemoState, record: DemoRecord) => ({
   category: record.category,
   id: record.id,
   memo: record.memo,
+  record_comments: [{ count: state.comments.filter((comment) => comment.record_id === record.id).length }],
   record_places: placesOf(state, record).map((place) => ({
     place: {
       address: place.address,

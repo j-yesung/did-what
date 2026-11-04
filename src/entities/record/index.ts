@@ -60,7 +60,7 @@ export {
   type RecordWeather,
 } from "./model/weather";
 export { EmptyRecords } from "./ui/empty-records";
-export { RecordBadges, RecordCategoryBadge } from "./ui/record-badges";
+export { RecordCategoryBadge, RecordWeatherBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RECORD_CARD_BUTTON_CLASS, RecordCardContent, RecordCardFrame } from "./ui/record-card-content";
 export { RecordCreateButton } from "./ui/record-create-button";

@@ -595,3 +595,19 @@ body:has([data-record-search="open"]) .hide-during-record-search {
   opacity: 0;
   scale: 0.92;
 }
+
+html[data-record-morph] [data-slot="bottom-sheet-overlay"] {
+  opacity: 0;
+  transition: none;
+}
+
+html[data-record-morph="opening"] [data-record-sheet] {
+  transform: none;
+  transition: none;
+  clip-path: inset(50%);
+}
+
+html[data-record-morph="closed"] [data-record-sheet] {
+  visibility: hidden;
+  transition: none;
+}

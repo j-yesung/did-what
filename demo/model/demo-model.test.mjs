@@ -107,7 +107,10 @@ test("댓글을 남기면 다른 구성원에게 알림이 가고, 남의 댓글
   const commentCount = (data) =>
     resolveDemoQuery(data, ["records", "locations"], undefined).find(({ id }) => id === DEMO_RECORD_IDS.seongsu)
       .record_comments[0].count;
+  const detailCount = (data) =>
+    resolveDemoQuery(data, ["records", "detail", DEMO_RECORD_IDS.seongsu], undefined).record_comments[0].count;
   const initialCount = commentCount(state);
+  assert.equal(detailCount(state), initialCount);
   const created = createComment(
     state,
     { body: "좋았어", commentId: demoId("d", 50), recordId: DEMO_RECORD_IDS.seongsu },
@@ -117,6 +120,7 @@ test("댓글을 남기면 다른 구성원에게 알림이 가고, 남의 댓글
 
   assert.equal(created.ok, true);
   assert.equal(commentCount(created.state), initialCount + 1);
+  assert.equal(detailCount(created.state), initialCount + 1);
   const notification = created.state.notifications.at(-1);
   assert.equal(notification.recipient_member_id, DEMO_MEMBER_IDS.seojun);
   assert.equal(notification.comment_id, demoId("d", 50));
@@ -140,6 +144,7 @@ test("댓글을 남기면 다른 구성원에게 알림이 가고, 남의 댓글
   );
   assert.equal(own.ok, true);
   assert.equal(commentCount(own.state), initialCount);
+  assert.equal(detailCount(own.state), initialCount);
   assert.equal(own.state.notifications.at(-1).comment_id, null);
 });
 

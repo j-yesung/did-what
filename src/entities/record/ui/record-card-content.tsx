@@ -2,11 +2,19 @@
 
 import type { ReactNode } from "react";
 
-import { ChatCircleIcon } from "@phosphor-icons/react";
+import {
+  ChatCircleIcon,
+  HeartIcon,
+  MapTrifoldIcon,
+  NotebookIcon,
+  SparkleIcon,
+  UsersIcon,
+} from "@phosphor-icons/react/dist/ssr";
 
-import { normalizeRecordCategories } from "../model/category";
+import { cn } from "@/shared/lib/utils";
+
+import { normalizeRecordCategories, normalizeRecordCategory } from "../model/category";
 import { formatRecordRegionLabels } from "../model/record-region";
-import { formatRecordTimelineDate } from "../model/record-timeline";
 import type { RecordSummary } from "../model/types";
 import { RecordCategoryBadge } from "./record-badges";
 
@@ -17,45 +25,55 @@ export function RecordCardFrame({ children }: { children: ReactNode }) {
   return <article className="min-w-0 border-border border-b">{children}</article>;
 }
 
+const CATEGORY_ICONS = {
+  anniversary: SparkleIcon,
+  daily: NotebookIcon,
+  date: HeartIcon,
+  gathering: UsersIcon,
+  travel: MapTrifoldIcon,
+  uncategorized: NotebookIcon,
+};
+
 type RecordCardContentProps = {
+  heading?: "h2" | "h3";
   record: Pick<
     RecordSummary,
-    | "activity"
-    | "category"
-    | "record_comments"
-    | "record_places"
-    | "record_regions"
-    | "recorded_at"
-    | "recorded_until"
-    | "region_code"
-    | "region_label"
+    "activity" | "category" | "record_comments" | "record_regions" | "region_code" | "region_label"
   >;
   regionLabel?: string;
+  size?: "card" | "header";
+  titleId?: string;
 };
 
 export function RecordCardContent({
+  heading: Heading = "h3",
   record,
-  regionLabel = formatRecordRegionLabels(record, 1),
+  regionLabel = formatRecordRegionLabels(record, Number.POSITIVE_INFINITY),
+  size = "card",
+  titleId,
 }: RecordCardContentProps) {
-  const places = (record.record_places ?? []).flatMap(({ place }) => (place ? [place.name] : []));
   const categories = normalizeRecordCategories(record.category);
+  const Icon = CATEGORY_ICONS[normalizeRecordCategory(record.category)];
   const commentCount = record.record_comments?.[0]?.count ?? 0;
+  const header = size === "header";
 
   return (
     <span className="block min-w-0">
-      <h3 className="min-w-0 truncate font-semibold text-[14px] leading-5 tracking-[-0.025em]">{record.activity}</h3>
-      <span className="mt-1 flex min-w-0 items-center gap-1 text-[12px] text-muted-foreground leading-4">
-        <span className="truncate">
-          {regionLabel}
-          {places.length > 0 && `${regionLabel ? " · " : ""}${places[0]}`}
-        </span>
-        {places.length > 1 && <span className="shrink-0 text-accent">외 {places.length - 1}곳</span>}
+      <span className="flex min-w-0 items-start justify-between gap-2">
+        <Heading
+          className={cn(
+            "min-w-0 font-bold text-[18px] text-foreground leading-6 tracking-[-0.03em]",
+            header ? "break-words" : "truncate",
+          )}
+          id={titleId}
+        >
+          {record.activity}
+        </Heading>
+        <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 -rotate-12" />
       </span>
-      {record.recorded_until && record.recorded_until !== record.recorded_at && (
-        <span className="mt-1 block text-[11px] text-muted-foreground">
-          {formatRecordTimelineDate(record.recorded_at, record.recorded_until)}
-        </span>
-      )}
+      {regionLabel ? (
+        <span className="mt-1 block truncate text-[12px] text-muted-foreground leading-4">{regionLabel}</span>
+      ) : null}
       {(categories.length > 0 || commentCount > 0) && (
         <span className="mt-1.5 flex min-w-0 items-center justify-between gap-2">
           <span className="flex min-w-0 items-center gap-1">

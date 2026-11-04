@@ -98,7 +98,8 @@ export const useRecordComments = ({
       applyCommentCacheAction(current, action),
     );
     void queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
-    // 기록 목록의 댓글 수도 돌아갔을 때 다시 받는다.
+    // 상세 헤더와 목록의 댓글 수도 함께 갱신한다.
+    void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "detail", recordId] });
     void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "list"] });
     void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "calendar"] });
     void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "locations"] });
