@@ -104,6 +104,17 @@
   --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.05);
   --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.1);
   --nav-glass-highlight: rgb(255 255 255 / 0.75);
+  --nav-lens-shine: -1.5;
+  --nav-rim-shine: 0.3;
+  --navigation-glass: rgb(248 248 250 / 0.82);
+  --navigation-solid: rgb(248 248 250);
+  --navigation-label: rgb(60 60 67 / 0.88);
+  --navigation-selected: var(--text-accent);
+  --navigation-selection: rgb(0 0 0 / 0.07);
+  --navigation-edge: rgb(0 0 0 / 0.12);
+  --navigation-lens: rgb(255 255 255 / 0.03);
+  --navigation-lens-shadow: rgb(0 0 0 / 0.16);
+  --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.1);
 
   --journey-background: var(--neutral-0);
   --journey-line: var(--neutral-400);
@@ -148,9 +159,9 @@
   --app-width: 430px;
 
   /* 플로팅 내비게이션과 콘텐츠 사이의 안전 여백. iOS 홈 인디케이터 영역도 포함한다. */
-  --nav-height: clamp(48px, calc((100vw - 32px) / 6), 58px);
-  --nav-bottom-gap: 6px;
-  --nav-bottom-offset: max(var(--nav-bottom-gap), calc(var(--nav-bottom-gap) + env(safe-area-inset-bottom) - 19px));
+  --nav-height: max(64px, 4rem);
+  --nav-bottom-gap: 8px;
+  --nav-bottom-offset: max(var(--nav-bottom-gap), env(safe-area-inset-bottom));
   --nav-content-gap: 16px;
   --nav-clearance: calc(var(--nav-height) + var(--nav-bottom-offset) + var(--nav-content-gap));
 
@@ -282,6 +293,18 @@
   --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
   --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.36);
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
+  --nav-lens-shine: 1;
+  --nav-rim-shine: 0.13;
+  --navigation-glass: rgb(32 32 34 / 0.88);
+  --navigation-solid: rgb(32 32 34);
+  --navigation-label: rgb(235 235 245 / 0.86);
+  --navigation-selected: var(--text-accent);
+  --navigation-selection: rgb(255 255 255 / 0.12);
+  --navigation-edge: rgb(255 255 255 / 0.18);
+  --navigation-lens: rgb(255 255 255 / 0.055);
+  --navigation-lens-shadow: rgb(0 0 0 / 0.32);
+  --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.24), 0 8px 24px rgb(0 0 0 / 0.28);
+
   --input: var(--neutral-700);
 
   /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
@@ -338,6 +361,18 @@
     --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
     --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.36);
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
+    --nav-lens-shine: 1;
+    --nav-rim-shine: 0.13;
+    --navigation-glass: rgb(32 32 34 / 0.88);
+    --navigation-solid: rgb(32 32 34);
+    --navigation-label: rgb(235 235 245 / 0.86);
+    --navigation-selected: var(--text-accent);
+    --navigation-selection: rgb(255 255 255 / 0.12);
+    --navigation-edge: rgb(255 255 255 / 0.18);
+    --navigation-lens: rgb(255 255 255 / 0.055);
+    --navigation-lens-shadow: rgb(0 0 0 / 0.32);
+    --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.24), 0 8px 24px rgb(0 0 0 / 0.28);
+
     --input: var(--neutral-700);
 
     /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
@@ -610,4 +645,10 @@ html[data-record-morph="opening"] [data-record-sheet] {
 html[data-record-morph="closed"] [data-record-sheet] {
   visibility: hidden;
   transition: none;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --nav-height: max(52px, 3.25rem);
+  }
 }

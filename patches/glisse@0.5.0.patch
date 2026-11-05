@@ -1,0 +1,802 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9490253f7 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -65,7 +65,7 @@ function tick(time) {
+ 		}
+ 		s.paint(s.value);
+ 	}
+-	if (moving.size) frame = requestAnimationFrame(tick);
++	if (moving.size && !frame) frame = requestAnimationFrame(tick);
+ }
+ function prefersReducedMotion() {
+ 	return matchMedia("(prefers-reduced-motion: reduce)").matches;
+@@ -80,6 +80,8 @@ function createSpring(value, stiffness, damping, paint) {
+ 		paint
+ 	};
+ 	return {
++		get velocity() { return s.velocity; },
++		get acceleration() { return s.stiffness * (s.target - s.value) - s.damping * s.velocity; },
+ 		paint: () => paint(s.value),
+ 		set(target, instant = false) {
+ 			s.target = target;
+@@ -502,7 +504,10 @@ function graph(lenses, box, standIn) {
+ 				result: `neutral-${k}`
+ 			})
+ 		];
+-		if (standIn) boxed.push(image(maps.shape, merged("shape")));
++		if (standIn) {
++			const shapeImage = image(maps.shape, merged("shape"));
++			boxed.push(shapeImage);
++		}
+ 		filter.append(...boxed);
+ 		for (const pull of ["across", "down"]) {
+ 			const half = svg("feComponentTransfer", {
+@@ -641,14 +646,21 @@ function graph(lenses, box, standIn) {
+ 		k3: 1,
+ 		result: "seen"
+ 	}));
++	// Fade optical shading as well as displacement back to the original pixels.
++	const opticalBlend = svg("feComposite", {
++		in: "seen", in2: "SourceGraphic", operator: "arithmetic", k2: 1, k3: 0,
++		result: "optical-blend"
++	});
++	filter.append(opticalBlend);
+ 	if (standIn) filter.append(svg("feComposite", {
+-		in: "seen",
++		in: "optical-blend",
+ 		in2: "shape",
+ 		operator: "in"
+ 	}));
+ 	return {
+ 		filter,
+-		parts
++		parts,
++		opticalBlend
+ 	};
+ }
+ function place(graph, placed, across, down, box) {
+@@ -658,6 +670,9 @@ function place(graph, placed, across, down, box) {
+ 		width: across,
+ 		height: down
+ 	})) graph.filter.setAttribute(key, String(value));
++	const optics = Math.max(0, ...placed.map((lens) => lens.optics ?? 1));
++	graph.opticalBlend.setAttribute("k2", String(optics));
++	graph.opticalBlend.setAttribute("k3", String(1 - optics));
+ 	placed.forEach((lens, k) => {
+ 		const part = graph.parts[k];
+ 		const spectrum = [
+@@ -740,6 +755,15 @@ function fit(glass, options) {
+ }
+ const surfaces = /* @__PURE__ */ new Map();
+ let made = 0;
++// Clip with live vector paths: changing feImage URLs can blank Safari while it decodes.
++function placedContour(contour, x, y, width, height) {
++	let axis = 0;
++	return contour.path.replace(/-?\d*\.?\d+/g, (value) => {
++		const horizontal = axis++ % 2 === 0;
++		return String(Number((Number(value) * (horizontal ? width / contour.width : height / contour.height)
++			+ (horizontal ? x : y)).toFixed(3)));
++	});
++}
+ function render(surface) {
+ 	const { content } = surface;
+ 	const across = content.offsetWidth;
+@@ -763,7 +787,9 @@ function render(surface) {
+ 				height,
+ 				reach,
+ 				dispersion,
+-				blur
++				blur,
++				optics: member.fit.ink ? clamp$3((member.amount - .02) / .3, 0, 1) : 1,
++				contour: member.glass.__glisseContour
+ 			};
+ 			shown.push(member);
+ 		}
+@@ -771,6 +797,7 @@ function render(surface) {
+ 	if (!shown.length) {
+ 		surface.placed = "";
+ 		content.style.removeProperty("filter");
++		content.style.removeProperty("clip-path");
+ 		if (surface.standIn) content.style.removeProperty("visibility");
+ 		surface.standIn = false;
+ 		return;
+@@ -790,27 +817,44 @@ function render(surface) {
+ 	const next = [
+ 		across,
+ 		down,
+-		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur }) => [
++		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur, optics }) => [
+ 			x,
+ 			y,
+ 			width,
+ 			height,
+ 			reach,
+ 			dispersion,
+-			blur
++			blur,
++			optics
+ 		])
+-	].map((value) => value.toFixed(2)).join(" ");
++	].map((value) => value.toFixed(2)).join(" ") + placed.map((lens) => lens.contour?.path ?? "").join("|");
+ 	if (next === surface.placed) return;
+ 	surface.placed = next;
+ 	place(surface.graph, placed, across, down, box);
+ 	surface.graph.filter.id = `${surface.name}-${++surface.version}`;
+ 	content.style.filter = `url("#${surface.graph.filter.id}")`;
++	const contour = shown.length === 1 && shown[0].placed.contour;
++	if (contour && standIn) {
++		const { x, y, width, height } = placed[0];
++		content.style.clipPath = `path("${placedContour(contour, x, y, width, height)}")`;
++	} else content.style.removeProperty("clip-path");
+ 	for (const member of shown) {
+ 		if (!member.replaces) continue;
+ 		content.style.visibility = "visible";
+ 		const { x, y, width, height } = member.placed;
+ 		const behind = member.replaces.getBoundingClientRect();
+ 		const unit = from.width / across || 1;
++		if (member.placed.contour) {
++			mask(member.replaces);
++			// Clip faces only: clipping the links themselves would cut holes in their hit areas.
++			for (const face of member.replaces.querySelectorAll(".lg-tab-face")) {
++				const at = face.getBoundingClientRect();
++				const path = placedContour(member.placed.contour, x + (from.left - at.left) / unit,
++					y + (from.top - at.top) / unit, width, height);
++				face.style.clipPath = `path(evenodd, "M 0 0 H ${face.offsetWidth} V ${face.offsetHeight} H 0 Z ${path}")`;
++			}
++			continue;
++		}
+ 		mask(member.replaces, {
+ 			image: `url("${member.fit.maps.shape}"), linear-gradient(#000, #000)`,
+ 			position: `${x + (from.left - behind.left) / unit}px ${y + (from.top - behind.top) / unit}px, 0 0`,
+@@ -826,6 +870,8 @@ const MASKING = [
+ 	"composite"
+ ];
+ function mask(element, layers) {
++	element.style.removeProperty("clip-path");
++	for (const face of element.querySelectorAll(".lg-tab-face")) face.style.removeProperty("clip-path");
+ 	for (const part of MASKING) {
+ 		element.style.removeProperty(`-webkit-mask-${part}`);
+ 		element.style.removeProperty(`mask-${part}`);
+@@ -1129,10 +1175,12 @@ function onThemeChange(repaint) {
+ 	repaints.add(repaint);
+ 	if (!unwatch) {
+ 		const run = () => repaints.forEach((each) => each());
+-		const observer = new MutationObserver(run);
++		const observer = new MutationObserver((mutations) => {
++      if (mutations.some((mutation) => mutation.attributeName === "data-theme" || mutation.target === document.documentElement)) run();
++    });
+ 		observer.observe(document.documentElement, {
+ 			attributes: true,
+-			attributeFilter: ["data-theme"],
++			attributeFilter: ["data-theme", "class"],
+ 			subtree: true
+ 		});
+ 		const scheme = matchMedia("(prefers-color-scheme: dark)");
+@@ -1903,11 +1951,13 @@ const keys = [
+ 	"Home",
+ 	"End"
+ ];
++// iOS 26 WWDC25/102 tab demo (11:47): brisk travel with a short settle.
++// Web approximation: response 0.3s, damping ratio 1; not UIKit timing constants.
+ const REST = [
+-	1024,
+-	58.9,
+-	676,
+-	47.8
++	438.65,
++	41.888,
++	438.65,
++	41.888
+ ];
+ const UNDER = .5;
+ const DRAG = [
+@@ -1935,6 +1985,26 @@ const SEGMENT_LENS = {
+ 	dome: 0,
+ 	splay: 1
+ };
++// Eight connected cubic segments let each side deform without scaling the labels.
++function contourPath(width, height, padding, edges) {
++	const [left, right, top, bottom] = edges.map((value) => clamp(value, -3, 3));
++	const l = padding, r = width - padding, t = padding, b = height - padding;
++	const radius = Math.min((b - t) / 2, (r - l) / 2);
++	const a = l + radius, z = r - radius, middle = width / 2, center = height / 2;
++	const span = (z - a) / 4, k = radius * .55228475;
++	const point = (x, y) => `${Number(x.toFixed(3))} ${Number(y.toFixed(3))}`;
++	return [
++		`M ${point(a, t)}`,
++		`C ${point(a + span, t)} ${point(middle - span, t + top)} ${point(middle, t + top)}`,
++		`C ${point(middle + span, t + top)} ${point(z - span, t)} ${point(z, t)}`,
++		`C ${point(z + k, t)} ${point(r + right, center - k)} ${point(r + right, center)}`,
++		`C ${point(r + right, center + k)} ${point(z + k, b)} ${point(z, b)}`,
++		`C ${point(z - span, b)} ${point(middle + span, b + bottom)} ${point(middle, b + bottom)}`,
++		`C ${point(middle - span, b + bottom)} ${point(a + span, b)} ${point(a, b)}`,
++		`C ${point(a - k, b)} ${point(l - left, center + k)} ${point(l - left, center)}`,
++		`C ${point(l - left, center - k)} ${point(a - k, t)} ${point(a, t)} Z`
++	].join(" ");
++}
+ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options, bendsBackdrop, select) {
+ 	const tabs = [...bar.querySelectorAll(".lg-tab")];
+ 	let slot = 0;
+@@ -1948,14 +2018,54 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	let shown = false;
+ 	let settleFrame = 0;
+ 	let gesture = null;
++	let interactive = false;
+ 	const state = {
+ 		x: 0,
+-		lift: 0
++		lift: 0,
++		edges: [0, 0, 0, 0]
++	};
++	const contour = getComputedStyle(bar).getPropertyValue("--lg-contour").trim() === "1";
++	const rimId = `glisse-contour-rim-${made++}`;
++	const surface = svg("svg", { class: "lg-tab-contour", "aria-hidden": "true" });
++	const gradient = svg("linearGradient", { id: rimId, x1: 0, y1: 0, x2: 1, y2: 1 });
++	gradient.append(
++		svg("stop", { offset: 0, "stop-color": "var(--nav-glass-highlight)", "stop-opacity": .9 }),
++		svg("stop", { offset: .5, "stop-color": "var(--navigation-edge)", "stop-opacity": .3 }),
++		svg("stop", { offset: 1, "stop-color": "var(--nav-glass-highlight)", "stop-opacity": .7 })
++	);
++	const surfaceDefs = svg("defs", {});
++	surfaceDefs.append(gradient);
++	const restSurface = svg("path", { fill: "var(--lg-selection)" });
++	const glassSurface = svg("path", { fill: "var(--lg-lens)" });
++	const rimSurface = svg("path", { fill: "none", stroke: `url(#${rimId})`, "stroke-width": 1.1, "vector-effect": "non-scaling-stroke" });
++	surface.append(surfaceDefs, restSurface, glassSurface, rimSurface);
++	if (contour) {
++		lens.dataset.contour = "";
++		lens.append(surface);
++	}
++	let lastContour = "";
++	let disposed = false;
++	let paintPending = false;
++	const schedulePaint = () => {
++		if (disposed || paintPending) return;
++		paintPending = true;
++		queueMicrotask(() => { paintPending = false; if (!disposed) paint(); });
+ 	};
+ 	const refraction = createLens(lens, lensed, options, labels);
+ 	const backdrop = bendsBackdrop && refractsBackdrop() ? createBackdropLens(lens, options) : null;
+ 	let lensing = false;
+-	const mark = () => bar.toggleAttribute("data-away", active < 0 || Math.abs(state.x - active * slot) > .5);
++	// Include deformation in the settled state without swapping label renderers.
++	const isSettled = () => !gesture && active >= 0 && Math.abs(state.x - active * slot) < .5
++		&& Math.abs(state.lift) < .01 && Math.abs(x.velocity) < 1 && Math.abs(lift.velocity) < .05
++		&& state.edges.every((value) => Math.abs(value) < .01)
++		&& edges.every((spring) => Math.abs(spring.velocity) < .05);
++	const mark = () => {
++		const settled = isSettled();
++		if (settled) interactive = false;
++		bar.toggleAttribute("data-away", !settled);
++		bar.toggleAttribute("data-settled", settled);
++		return settled;
++	};
+ 	const measure = () => {
+ 		const style = getComputedStyle(bar);
+ 		padding = parseFloat(style.paddingLeft) || 0;
+@@ -1965,43 +2075,69 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		height = lens.offsetHeight;
+ 		growX = parseFloat(style.getPropertyValue("--lg-lens-grow-x")) || 0;
+ 		growY = parseFloat(style.getPropertyValue("--lg-lens-grow-y")) || 0;
++
+ 	};
+ 	const paint = () => {
+ 		const { x, lift } = state;
+-		const sx = 1 + growX / width * lift;
+-		const sy = 1 + growY / height * lift;
++		const magnitude = Math.min(3, Math.max(...state.edges.map(Math.abs)));
++		const elevation = Math.max(lift, Math.min(magnitude / 3, 1));
++		const sx = 1 + growX / width * elevation;
++		const sy = 1 + growY / height * elevation;
+ 		const transform = `translateX(${x}px) scale(${sx}, ${sy})`;
+ 		lens.style.transform = tint.style.transform = transform;
++		if (contour && width && height) {
++			const path = contourPath(width, height, magnitude, state.edges);
++			if (path !== lastContour) {
++				lastContour = path;
++				surface.setAttribute("viewBox", `0 0 ${width} ${height}`);
++				for (const layer of [restSurface, glassSurface, rimSurface]) layer.setAttribute("d", path);
++				lens.__glisseContour = { path, width, height };
++			}
++			restSurface.setAttribute("opacity", String(1 - clamp(elevation, 0, 1)));
++			glassSurface.setAttribute("opacity", String(clamp(elevation, 0, 1)));
++			rimSurface.setAttribute("opacity", String(clamp(elevation, 0, 1)));
++		}
+ 		if (thumb) thumb.style.transform = transform;
+-		lens.style.setProperty("--lg-lift", String(clamp(lift, 0, 1)));
++		lens.style.setProperty("--lg-lift", String(clamp(elevation, 0, 1)));
+ 		lens.style.setProperty("--lg-lift-y", String(sy));
+ 		row.style.transform = `scale(${1 / sx}, ${1 / sy}) translate(${-x + (sx - 1) * (inset + width / 2)}px, ${(sy - 1) * (inset + height / 2)}px)`;
+-		if (!gesture && lift < .01) delete bar.dataset.refracting;
+-		mark();
+-		if (lift > .01 !== lensing) {
+-			lensing = lift > .01;
++		const settled = mark();
++		if (settled) delete bar.dataset.refracting;
++		// Keep one renderer at rest, so landing never swaps filtered and DOM text.
++		const nextLensing = shown || active >= 0;
++		if (nextLensing !== lensing) {
++			lensing = nextLensing;
+ 			bar.toggleAttribute("data-lensing", lensing);
+ 			refraction.setActive(lensing);
+ 		}
+-		const amount = clamp(lift, 0, 1);
+-		const under = clamp((lift - UNDER) / .5, 0, 1);
+-		lens.style.setProperty("--lg-rest", String(clamp(1 - lift / UNDER, 0, 1)));
++		const amount = clamp(elevation, 0, 1);
++		const under = clamp((elevation - UNDER) / .5, 0, 1);
++		lens.style.setProperty("--lg-rest", String(clamp(1 - elevation / UNDER, 0, 1)));
+ 		lens.style.setProperty("--lg-under", String(under));
+-		bar.toggleAttribute("data-under", lift > UNDER);
++		bar.toggleAttribute("data-under", elevation > UNDER);
+ 		refraction.update(amount);
+ 		backdrop?.update(under);
+ 	};
++	// Each edge keeps its own velocity; pressure bends top and bottom in different phases.
++	const edges = [[246.74, 25.13], [438.65, 33.51], [438.65, 33.51], [246.74, 25.13]].map(([stiffness, damping], index) =>
++		createSpring(0, stiffness, damping, (value) => { state.edges[index] = value; schedulePaint(); })
++	);
+ 	const x = createSpring(0, REST[0], REST[1], (value) => {
+ 		state.x = value;
+-		paint();
+-	});
+-	const lift = createSpring(0, REST[2], REST[3], (value) => {
+-		state.lift = value;
+-		paint();
++		const speed = interactive ? clamp(x.velocity / Math.max(width, 1) / 8, -1, 1) : 0;
++		const pressure = interactive ? clamp(x.acceleration / Math.max(width, 1) / 160, -1, 1) : 0;
++		edges[0].tune(speed < 0 ? 438.65 : 246.74, speed < 0 ? 33.51 : 25.13);
++		edges[1].tune(speed < 0 ? 246.74 : 438.65, speed < 0 ? 25.13 : 33.51);
++		const targets = [Math.abs(speed) * 1.8 - speed * 1.2, Math.abs(speed) * 1.8 + speed * 1.2,
++			-Math.abs(speed) * 1.5 - pressure * 1.5, Math.abs(speed) * 1.5 - pressure * 1.5];
++		edges.forEach((spring, index) => spring.set(targets[index], !shown));
++		schedulePaint();
+ 	});
++	const lift = createSpring(0, REST[2], REST[3], (value) => { state.lift = value; schedulePaint(); });
+ 	const move = (target, lifted, instant = false) => {
+ 		const [slideStiffness, slideDamping, liftStiffness, liftDamping] = gesture ? DRAG : REST;
+-		x.tune(slideStiffness, slideDamping);
++		// Keep direct tracking fast once the pointer starts dragging.
++		x.tune(gesture?.moved ? slideStiffness : REST[0], gesture?.moved ? slideDamping : REST[1]);
+ 		lift.tune(liftStiffness, liftDamping);
+ 		x.set(target, instant);
+ 		lift.set(lifted ? 1 : 0, instant);
+@@ -2037,8 +2173,10 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		settleFrame = 0;
+ 		measure();
+ 		bar.toggleAttribute("data-light", parseFloat(getComputedStyle(lens).getPropertyValue("--lg-lens-shine")) < 0);
++		refraction.refit();
+ 		backdrop?.refit();
+ 		const box = bar.getBoundingClientRect();
++		interactive = true;
+ 		gesture = {
+ 			id: event.pointerId,
+ 			x: event.clientX,
+@@ -2121,6 +2259,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	};
+ 	const observer = new ResizeObserver(() => {
+ 		measure();
++		refraction.refit();
+ 		if (!gesture) settle(true);
+ 	});
+ 	measure();
+@@ -2147,11 +2286,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 			cancelAnimationFrame(settleFrame);
+ 			x.stop();
+ 			lift.stop();
++			disposed = true;
++			edges.forEach((spring) => spring.stop());
++			surface.remove();
++			delete lens.__glisseContour;
++			delete lens.dataset.contour;
+ 			refraction.destroy();
+ 			backdrop?.destroy();
+ 			observer.disconnect();
+ 			for (const key of [
+ 				"ready",
++				"settled",
+ 				"hidden",
+ 				"lifted",
+ 				"refracting",
+diff --git a/dist/index.js b/dist/index.js
+index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c034cbf98 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -64,7 +64,7 @@ function tick(time) {
+ 		}
+ 		s.paint(s.value);
+ 	}
+-	if (moving.size) frame = requestAnimationFrame(tick);
++	if (moving.size && !frame) frame = requestAnimationFrame(tick);
+ }
+ function prefersReducedMotion() {
+ 	return matchMedia("(prefers-reduced-motion: reduce)").matches;
+@@ -79,6 +79,8 @@ function createSpring(value, stiffness, damping, paint) {
+ 		paint
+ 	};
+ 	return {
++		get velocity() { return s.velocity; },
++		get acceleration() { return s.stiffness * (s.target - s.value) - s.damping * s.velocity; },
+ 		paint: () => paint(s.value),
+ 		set(target, instant = false) {
+ 			s.target = target;
+@@ -501,7 +503,10 @@ function graph(lenses, box, standIn) {
+ 				result: `neutral-${k}`
+ 			})
+ 		];
+-		if (standIn) boxed.push(image(maps.shape, merged("shape")));
++		if (standIn) {
++			const shapeImage = image(maps.shape, merged("shape"));
++			boxed.push(shapeImage);
++		}
+ 		filter.append(...boxed);
+ 		for (const pull of ["across", "down"]) {
+ 			const half = svg("feComponentTransfer", {
+@@ -640,14 +645,21 @@ function graph(lenses, box, standIn) {
+ 		k3: 1,
+ 		result: "seen"
+ 	}));
++	// Fade optical shading as well as displacement back to the original pixels.
++	const opticalBlend = svg("feComposite", {
++		in: "seen", in2: "SourceGraphic", operator: "arithmetic", k2: 1, k3: 0,
++		result: "optical-blend"
++	});
++	filter.append(opticalBlend);
+ 	if (standIn) filter.append(svg("feComposite", {
+-		in: "seen",
++		in: "optical-blend",
+ 		in2: "shape",
+ 		operator: "in"
+ 	}));
+ 	return {
+ 		filter,
+-		parts
++		parts,
++		opticalBlend
+ 	};
+ }
+ function place(graph, placed, across, down, box) {
+@@ -657,6 +669,9 @@ function place(graph, placed, across, down, box) {
+ 		width: across,
+ 		height: down
+ 	})) graph.filter.setAttribute(key, String(value));
++	const optics = Math.max(0, ...placed.map((lens) => lens.optics ?? 1));
++	graph.opticalBlend.setAttribute("k2", String(optics));
++	graph.opticalBlend.setAttribute("k3", String(1 - optics));
+ 	placed.forEach((lens, k) => {
+ 		const part = graph.parts[k];
+ 		const spectrum = [
+@@ -739,6 +754,15 @@ function fit(glass, options) {
+ }
+ const surfaces = /* @__PURE__ */ new Map();
+ let made = 0;
++// Clip with live vector paths: changing feImage URLs can blank Safari while it decodes.
++function placedContour(contour, x, y, width, height) {
++	let axis = 0;
++	return contour.path.replace(/-?\d*\.?\d+/g, (value) => {
++		const horizontal = axis++ % 2 === 0;
++		return String(Number((Number(value) * (horizontal ? width / contour.width : height / contour.height)
++			+ (horizontal ? x : y)).toFixed(3)));
++	});
++}
+ function render(surface) {
+ 	const { content } = surface;
+ 	const across = content.offsetWidth;
+@@ -762,7 +786,9 @@ function render(surface) {
+ 				height,
+ 				reach,
+ 				dispersion,
+-				blur
++				blur,
++				optics: member.fit.ink ? clamp$3((member.amount - .02) / .3, 0, 1) : 1,
++				contour: member.glass.__glisseContour
+ 			};
+ 			shown.push(member);
+ 		}
+@@ -770,6 +796,7 @@ function render(surface) {
+ 	if (!shown.length) {
+ 		surface.placed = "";
+ 		content.style.removeProperty("filter");
++		content.style.removeProperty("clip-path");
+ 		if (surface.standIn) content.style.removeProperty("visibility");
+ 		surface.standIn = false;
+ 		return;
+@@ -789,27 +816,44 @@ function render(surface) {
+ 	const next = [
+ 		across,
+ 		down,
+-		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur }) => [
++		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur, optics }) => [
+ 			x,
+ 			y,
+ 			width,
+ 			height,
+ 			reach,
+ 			dispersion,
+-			blur
++			blur,
++			optics
+ 		])
+-	].map((value) => value.toFixed(2)).join(" ");
++	].map((value) => value.toFixed(2)).join(" ") + placed.map((lens) => lens.contour?.path ?? "").join("|");
+ 	if (next === surface.placed) return;
+ 	surface.placed = next;
+ 	place(surface.graph, placed, across, down, box);
+ 	surface.graph.filter.id = `${surface.name}-${++surface.version}`;
+ 	content.style.filter = `url("#${surface.graph.filter.id}")`;
++	const contour = shown.length === 1 && shown[0].placed.contour;
++	if (contour && standIn) {
++		const { x, y, width, height } = placed[0];
++		content.style.clipPath = `path("${placedContour(contour, x, y, width, height)}")`;
++	} else content.style.removeProperty("clip-path");
+ 	for (const member of shown) {
+ 		if (!member.replaces) continue;
+ 		content.style.visibility = "visible";
+ 		const { x, y, width, height } = member.placed;
+ 		const behind = member.replaces.getBoundingClientRect();
+ 		const unit = from.width / across || 1;
++		if (member.placed.contour) {
++			mask(member.replaces);
++			// Clip faces only: clipping the links themselves would cut holes in their hit areas.
++			for (const face of member.replaces.querySelectorAll(".lg-tab-face")) {
++				const at = face.getBoundingClientRect();
++				const path = placedContour(member.placed.contour, x + (from.left - at.left) / unit,
++					y + (from.top - at.top) / unit, width, height);
++				face.style.clipPath = `path(evenodd, "M 0 0 H ${face.offsetWidth} V ${face.offsetHeight} H 0 Z ${path}")`;
++			}
++			continue;
++		}
+ 		mask(member.replaces, {
+ 			image: `url("${member.fit.maps.shape}"), linear-gradient(#000, #000)`,
+ 			position: `${x + (from.left - behind.left) / unit}px ${y + (from.top - behind.top) / unit}px, 0 0`,
+@@ -825,6 +869,8 @@ const MASKING = [
+ 	"composite"
+ ];
+ function mask(element, layers) {
++	element.style.removeProperty("clip-path");
++	for (const face of element.querySelectorAll(".lg-tab-face")) face.style.removeProperty("clip-path");
+ 	for (const part of MASKING) {
+ 		element.style.removeProperty(`-webkit-mask-${part}`);
+ 		element.style.removeProperty(`mask-${part}`);
+@@ -1128,10 +1174,12 @@ function onThemeChange(repaint) {
+ 	repaints.add(repaint);
+ 	if (!unwatch) {
+ 		const run = () => repaints.forEach((each) => each());
+-		const observer = new MutationObserver(run);
++		const observer = new MutationObserver((mutations) => {
++      if (mutations.some((mutation) => mutation.attributeName === "data-theme" || mutation.target === document.documentElement)) run();
++    });
+ 		observer.observe(document.documentElement, {
+ 			attributes: true,
+-			attributeFilter: ["data-theme"],
++			attributeFilter: ["data-theme", "class"],
+ 			subtree: true
+ 		});
+ 		const scheme = matchMedia("(prefers-color-scheme: dark)");
+@@ -1902,11 +1950,13 @@ const keys = [
+ 	"Home",
+ 	"End"
+ ];
++// iOS 26 WWDC25/102 tab demo (11:47): brisk travel with a short settle.
++// Web approximation: response 0.3s, damping ratio 1; not UIKit timing constants.
+ const REST = [
+-	1024,
+-	58.9,
+-	676,
+-	47.8
++	438.65,
++	41.888,
++	438.65,
++	41.888
+ ];
+ const UNDER = .5;
+ const DRAG = [
+@@ -1934,6 +1984,26 @@ const SEGMENT_LENS = {
+ 	dome: 0,
+ 	splay: 1
+ };
++// Eight connected cubic segments let each side deform without scaling the labels.
++function contourPath(width, height, padding, edges) {
++	const [left, right, top, bottom] = edges.map((value) => clamp(value, -3, 3));
++	const l = padding, r = width - padding, t = padding, b = height - padding;
++	const radius = Math.min((b - t) / 2, (r - l) / 2);
++	const a = l + radius, z = r - radius, middle = width / 2, center = height / 2;
++	const span = (z - a) / 4, k = radius * .55228475;
++	const point = (x, y) => `${Number(x.toFixed(3))} ${Number(y.toFixed(3))}`;
++	return [
++		`M ${point(a, t)}`,
++		`C ${point(a + span, t)} ${point(middle - span, t + top)} ${point(middle, t + top)}`,
++		`C ${point(middle + span, t + top)} ${point(z - span, t)} ${point(z, t)}`,
++		`C ${point(z + k, t)} ${point(r + right, center - k)} ${point(r + right, center)}`,
++		`C ${point(r + right, center + k)} ${point(z + k, b)} ${point(z, b)}`,
++		`C ${point(z - span, b)} ${point(middle + span, b + bottom)} ${point(middle, b + bottom)}`,
++		`C ${point(middle - span, b + bottom)} ${point(a + span, b)} ${point(a, b)}`,
++		`C ${point(a - k, b)} ${point(l - left, center + k)} ${point(l - left, center)}`,
++		`C ${point(l - left, center - k)} ${point(a - k, t)} ${point(a, t)} Z`
++	].join(" ");
++}
+ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options, bendsBackdrop, select) {
+ 	const tabs = [...bar.querySelectorAll(".lg-tab")];
+ 	let slot = 0;
+@@ -1947,14 +2017,54 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	let shown = false;
+ 	let settleFrame = 0;
+ 	let gesture = null;
++	let interactive = false;
+ 	const state = {
+ 		x: 0,
+-		lift: 0
++		lift: 0,
++		edges: [0, 0, 0, 0]
++	};
++	const contour = getComputedStyle(bar).getPropertyValue("--lg-contour").trim() === "1";
++	const rimId = `glisse-contour-rim-${made++}`;
++	const surface = svg("svg", { class: "lg-tab-contour", "aria-hidden": "true" });
++	const gradient = svg("linearGradient", { id: rimId, x1: 0, y1: 0, x2: 1, y2: 1 });
++	gradient.append(
++		svg("stop", { offset: 0, "stop-color": "var(--nav-glass-highlight)", "stop-opacity": .9 }),
++		svg("stop", { offset: .5, "stop-color": "var(--navigation-edge)", "stop-opacity": .3 }),
++		svg("stop", { offset: 1, "stop-color": "var(--nav-glass-highlight)", "stop-opacity": .7 })
++	);
++	const surfaceDefs = svg("defs", {});
++	surfaceDefs.append(gradient);
++	const restSurface = svg("path", { fill: "var(--lg-selection)" });
++	const glassSurface = svg("path", { fill: "var(--lg-lens)" });
++	const rimSurface = svg("path", { fill: "none", stroke: `url(#${rimId})`, "stroke-width": 1.1, "vector-effect": "non-scaling-stroke" });
++	surface.append(surfaceDefs, restSurface, glassSurface, rimSurface);
++	if (contour) {
++		lens.dataset.contour = "";
++		lens.append(surface);
++	}
++	let lastContour = "";
++	let disposed = false;
++	let paintPending = false;
++	const schedulePaint = () => {
++		if (disposed || paintPending) return;
++		paintPending = true;
++		queueMicrotask(() => { paintPending = false; if (!disposed) paint(); });
+ 	};
+ 	const refraction = createLens(lens, lensed, options, labels);
+ 	const backdrop = bendsBackdrop && refractsBackdrop() ? createBackdropLens(lens, options) : null;
+ 	let lensing = false;
+-	const mark = () => bar.toggleAttribute("data-away", active < 0 || Math.abs(state.x - active * slot) > .5);
++	// Include deformation in the settled state without swapping label renderers.
++	const isSettled = () => !gesture && active >= 0 && Math.abs(state.x - active * slot) < .5
++		&& Math.abs(state.lift) < .01 && Math.abs(x.velocity) < 1 && Math.abs(lift.velocity) < .05
++		&& state.edges.every((value) => Math.abs(value) < .01)
++		&& edges.every((spring) => Math.abs(spring.velocity) < .05);
++	const mark = () => {
++		const settled = isSettled();
++		if (settled) interactive = false;
++		bar.toggleAttribute("data-away", !settled);
++		bar.toggleAttribute("data-settled", settled);
++		return settled;
++	};
+ 	const measure = () => {
+ 		const style = getComputedStyle(bar);
+ 		padding = parseFloat(style.paddingLeft) || 0;
+@@ -1964,43 +2074,69 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		height = lens.offsetHeight;
+ 		growX = parseFloat(style.getPropertyValue("--lg-lens-grow-x")) || 0;
+ 		growY = parseFloat(style.getPropertyValue("--lg-lens-grow-y")) || 0;
++
+ 	};
+ 	const paint = () => {
+ 		const { x, lift } = state;
+-		const sx = 1 + growX / width * lift;
+-		const sy = 1 + growY / height * lift;
++		const magnitude = Math.min(3, Math.max(...state.edges.map(Math.abs)));
++		const elevation = Math.max(lift, Math.min(magnitude / 3, 1));
++		const sx = 1 + growX / width * elevation;
++		const sy = 1 + growY / height * elevation;
+ 		const transform = `translateX(${x}px) scale(${sx}, ${sy})`;
+ 		lens.style.transform = tint.style.transform = transform;
++		if (contour && width && height) {
++			const path = contourPath(width, height, magnitude, state.edges);
++			if (path !== lastContour) {
++				lastContour = path;
++				surface.setAttribute("viewBox", `0 0 ${width} ${height}`);
++				for (const layer of [restSurface, glassSurface, rimSurface]) layer.setAttribute("d", path);
++				lens.__glisseContour = { path, width, height };
++			}
++			restSurface.setAttribute("opacity", String(1 - clamp(elevation, 0, 1)));
++			glassSurface.setAttribute("opacity", String(clamp(elevation, 0, 1)));
++			rimSurface.setAttribute("opacity", String(clamp(elevation, 0, 1)));
++		}
+ 		if (thumb) thumb.style.transform = transform;
+-		lens.style.setProperty("--lg-lift", String(clamp(lift, 0, 1)));
++		lens.style.setProperty("--lg-lift", String(clamp(elevation, 0, 1)));
+ 		lens.style.setProperty("--lg-lift-y", String(sy));
+ 		row.style.transform = `scale(${1 / sx}, ${1 / sy}) translate(${-x + (sx - 1) * (inset + width / 2)}px, ${(sy - 1) * (inset + height / 2)}px)`;
+-		if (!gesture && lift < .01) delete bar.dataset.refracting;
+-		mark();
+-		if (lift > .01 !== lensing) {
+-			lensing = lift > .01;
++		const settled = mark();
++		if (settled) delete bar.dataset.refracting;
++		// Keep one renderer at rest, so landing never swaps filtered and DOM text.
++		const nextLensing = shown || active >= 0;
++		if (nextLensing !== lensing) {
++			lensing = nextLensing;
+ 			bar.toggleAttribute("data-lensing", lensing);
+ 			refraction.setActive(lensing);
+ 		}
+-		const amount = clamp(lift, 0, 1);
+-		const under = clamp((lift - UNDER) / .5, 0, 1);
+-		lens.style.setProperty("--lg-rest", String(clamp(1 - lift / UNDER, 0, 1)));
++		const amount = clamp(elevation, 0, 1);
++		const under = clamp((elevation - UNDER) / .5, 0, 1);
++		lens.style.setProperty("--lg-rest", String(clamp(1 - elevation / UNDER, 0, 1)));
+ 		lens.style.setProperty("--lg-under", String(under));
+-		bar.toggleAttribute("data-under", lift > UNDER);
++		bar.toggleAttribute("data-under", elevation > UNDER);
+ 		refraction.update(amount);
+ 		backdrop?.update(under);
+ 	};
++	// Each edge keeps its own velocity; pressure bends top and bottom in different phases.
++	const edges = [[246.74, 25.13], [438.65, 33.51], [438.65, 33.51], [246.74, 25.13]].map(([stiffness, damping], index) =>
++		createSpring(0, stiffness, damping, (value) => { state.edges[index] = value; schedulePaint(); })
++	);
+ 	const x = createSpring(0, REST[0], REST[1], (value) => {
+ 		state.x = value;
+-		paint();
+-	});
+-	const lift = createSpring(0, REST[2], REST[3], (value) => {
+-		state.lift = value;
+-		paint();
++		const speed = interactive ? clamp(x.velocity / Math.max(width, 1) / 8, -1, 1) : 0;
++		const pressure = interactive ? clamp(x.acceleration / Math.max(width, 1) / 160, -1, 1) : 0;
++		edges[0].tune(speed < 0 ? 438.65 : 246.74, speed < 0 ? 33.51 : 25.13);
++		edges[1].tune(speed < 0 ? 246.74 : 438.65, speed < 0 ? 25.13 : 33.51);
++		const targets = [Math.abs(speed) * 1.8 - speed * 1.2, Math.abs(speed) * 1.8 + speed * 1.2,
++			-Math.abs(speed) * 1.5 - pressure * 1.5, Math.abs(speed) * 1.5 - pressure * 1.5];
++		edges.forEach((spring, index) => spring.set(targets[index], !shown));
++		schedulePaint();
+ 	});
++	const lift = createSpring(0, REST[2], REST[3], (value) => { state.lift = value; schedulePaint(); });
+ 	const move = (target, lifted, instant = false) => {
+ 		const [slideStiffness, slideDamping, liftStiffness, liftDamping] = gesture ? DRAG : REST;
+-		x.tune(slideStiffness, slideDamping);
++		// Keep direct tracking fast once the pointer starts dragging.
++		x.tune(gesture?.moved ? slideStiffness : REST[0], gesture?.moved ? slideDamping : REST[1]);
+ 		lift.tune(liftStiffness, liftDamping);
+ 		x.set(target, instant);
+ 		lift.set(lifted ? 1 : 0, instant);
+@@ -2036,8 +2172,10 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		settleFrame = 0;
+ 		measure();
+ 		bar.toggleAttribute("data-light", parseFloat(getComputedStyle(lens).getPropertyValue("--lg-lens-shine")) < 0);
++		refraction.refit();
+ 		backdrop?.refit();
+ 		const box = bar.getBoundingClientRect();
++		interactive = true;
+ 		gesture = {
+ 			id: event.pointerId,
+ 			x: event.clientX,
+@@ -2120,6 +2258,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	};
+ 	const observer = new ResizeObserver(() => {
+ 		measure();
++		refraction.refit();
+ 		if (!gesture) settle(true);
+ 	});
+ 	measure();
+@@ -2146,11 +2285,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 			cancelAnimationFrame(settleFrame);
+ 			x.stop();
+ 			lift.stop();
++			disposed = true;
++			edges.forEach((spring) => spring.stop());
++			surface.remove();
++			delete lens.__glisseContour;
++			delete lens.dataset.contour;
+ 			refraction.destroy();
+ 			backdrop?.destroy();
+ 			observer.disconnect();
+ 			for (const key of [
+ 				"ready",
++				"settled",
+ 				"hidden",
+ 				"lifted",
+ 				"refracting",

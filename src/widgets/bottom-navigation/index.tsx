@@ -1,136 +1,77 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useSyncExternalStore } from "react";
 
-import { GearIcon, type Icon, MapPinAreaIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
+import { GearIcon, MapPinAreaIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
+import { TabBar } from "glisse";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
-import { animateIndicator, cancelIndicatorMotion } from "./motion";
+import "./navigation.css";
 
-type Tab = {
-  href: string;
-  icon: Icon;
-  label: string;
-};
-
-const TABS: readonly Tab[] = [
+const TABS = [
   { href: "/", icon: MapPinAreaIcon, label: "지도" },
   { href: "/records", icon: NotepadIcon, label: "기록" },
   { href: "/places", icon: MapPinIcon, label: "장소" },
   { href: "/settings", icon: GearIcon, label: "설정" },
 ];
 
+const SIMPLIFIED_NAVIGATION_QUERY =
+  "(prefers-reduced-motion: reduce), (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active)";
+
+const subscribeSimplifiedNavigation = (onChange: () => void) => {
+  const media = window.matchMedia(SIMPLIFIED_NAVIGATION_QUERY);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+};
+const getSimplifiedNavigation = () => window.matchMedia(SIMPLIFIED_NAVIGATION_QUERY).matches;
+const getServerSimplifiedNavigation = () => false;
+
 export function BottomNavigation() {
   const pathname = usePathname() ?? "";
-  const activeIndex = TABS.findIndex((tab) => tab.href === pathname);
+  const simplifiedNavigation = useSyncExternalStore(
+    subscribeSimplifiedNavigation,
+    getSimplifiedNavigation,
+    getServerSimplifiedNavigation,
+  );
 
-  const activeIndexRef = useRef(activeIndex);
-  const pressedTabRef = useRef<number | null>(null);
-  const indicatorRef = useRef<HTMLSpanElement>(null);
+  if (!TABS.some((tab) => tab.href === pathname)) return null;
 
-  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
-
-  const displayedActiveIndex = pendingIndex ?? activeIndex;
-
-  useEffect(() => {
-    const previousActiveIndex = activeIndexRef.current;
-    activeIndexRef.current = activeIndex;
-    if (previousActiveIndex === activeIndex) return;
-
-    if (pendingIndex === activeIndex) {
-      setPendingIndex(null);
-      pressedTabRef.current = null;
-      return;
-    }
-
-    setPendingIndex(null);
-    animateIndicator(indicatorRef.current, previousActiveIndex, activeIndex, TABS.length);
-  }, [activeIndex, pendingIndex]);
-
-  const handleCancelPendingTab = (index: number) => {
-    if (pressedTabRef.current !== index) return;
-
-    pressedTabRef.current = null;
-    cancelIndicatorMotion(indicatorRef.current);
-    setPendingIndex((current) => (current === index ? null : current));
-  };
-
-  if (activeIndex === -1) return null;
+  const items = TABS.map(({ href, icon: TabIcon, label }) => ({
+    href,
+    value: href,
+    label,
+    icon: <TabIcon aria-hidden="true" weight="fill" />,
+  }));
 
   return (
-    <nav
-      aria-label="주요 메뉴"
+    <div
       className={cn(
         "pointer-events-none fixed inset-x-0 z-40 pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]",
         "bottom-(--nav-bottom-offset)",
       )}
     >
-      <ul
-        className={cn(
-          "liquid-glass pointer-events-auto relative mx-auto grid h-(--nav-height) overflow-hidden rounded-full p-0.5",
-          "w-[calc(100%-42px)]",
-        )}
-        style={{
-          gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))`,
-          maxWidth: "calc(var(--app-width) - 42px)",
-        }}
-      >
-        <li aria-hidden="true" className="pointer-events-none absolute inset-x-1 inset-y-0 z-3 flex items-center">
-          <span
-            className="block h-[calc(100%-8px)] transition-transform duration-280 ease-[cubic-bezier(0.77,0,0.175,1)] motion-reduce:transition-none"
-            style={{ transform: `translateX(${displayedActiveIndex * 100}%)`, width: `${100 / TABS.length}%` }}
-          >
-            <span className="liquid-glass-navigation-active block size-full rounded-full" ref={indicatorRef} />
-          </span>
-        </li>
-        {TABS.map(({ href, icon: TabIcon, label }, index) => {
-          const active = index === activeIndex;
-
-          return (
-            <li className="relative z-10 min-w-0" key={href}>
-              <Button
-                aria-label={label}
-                aria-current={active ? "page" : undefined}
-                className="h-full rounded-full px-0 transition-colors duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] after:hidden focus-visible:outline focus-visible:outline-ring focus-visible:-outline-offset-2 active:scale-100 data-[active=false]:text-muted-foreground data-[active=true]:text-foreground [&>span]:flex-col [&>span]:gap-0.5"
-                data-active={active}
-                fullWidth
-                nativeButton={false}
-                onPointerDown={(event) => {
-                  if (event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-
-                  if (index === activeIndex) {
-                    pressedTabRef.current = null;
-                    cancelIndicatorMotion(indicatorRef.current);
-                    setPendingIndex(null);
-                    return;
-                  }
-
-                  const fromIndex = pendingIndex ?? activeIndex;
-                  pressedTabRef.current = index;
-                  setPendingIndex(index);
-                  animateIndicator(indicatorRef.current, fromIndex, index, TABS.length);
-                }}
-                onPointerLeave={(event) => {
-                  if (event.pointerType === "touch" && event.buttons === 0) return;
-                  handleCancelPendingTab(index);
-                }}
-                onPointerCancel={() => handleCancelPendingTab(index)}
-                render={<PressLink href={href} prefetch />}
-                variant="ghost"
-              >
-                <TabIcon aria-hidden="true" className="size-5" weight={active ? "fill" : "regular"} />
-                <span aria-hidden="true" className="text-[11px] leading-none">
-                  {label}
-                </span>
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+      {/* 접근성 설정에서는 렌즈 변형과 스프링이 없는 메뉴를 사용한다. */}
+      {simplifiedNavigation ? (
+        <nav aria-label="주요 메뉴" className="bottom-navigation-static">
+          {items.map(({ href, icon, label }) => (
+            <PressLink aria-current={href === pathname ? "page" : undefined} href={href} key={href}>
+              {icon}
+              <span>{label}</span>
+            </PressLink>
+          ))}
+        </nav>
+      ) : (
+        <TabBar
+          aria-label="주요 메뉴"
+          className="bottom-navigation-glisse"
+          items={items}
+          link={PressLink}
+          value={pathname}
+        />
+      )}
+    </div>
   );
 }
