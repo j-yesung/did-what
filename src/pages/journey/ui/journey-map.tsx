@@ -13,7 +13,7 @@ import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 import { BackButton } from "@/shared/ui/back-button";
 import { Button } from "@/shared/ui/button";
 import { FixedToolbar } from "@/shared/ui/layouts";
-import { MorphMenu } from "@/shared/ui/morph-menu";
+import { LiquidGlassMenu } from "@/shared/ui/liquid-glass/menu/liquid-glass-menu";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 import { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 import { MapControls } from "@/widgets/region-activity-map/ui/map-controls";
@@ -330,13 +330,11 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           />
         </div>
         {!restoring && (
-          <MorphMenu
+          <LiquidGlassMenu
             label="지역"
             triggerLabel="지역 목록"
-            moreIcon={ListBulletsIcon}
-            layout="column"
+            icon={ListBulletsIcon}
             align="start"
-            menuWidth={216}
             actions={browsableRegions.map((item) => ({
               label: item.name,
               description: item.count ? `기록 ${item.count}개` : undefined,

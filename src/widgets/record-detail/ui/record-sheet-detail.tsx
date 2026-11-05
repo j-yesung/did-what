@@ -11,8 +11,8 @@ import { RecordComments } from "@/features/record-comment";
 import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
+import { LiquidGlassMenu } from "@/shared/ui/liquid-glass/menu/liquid-glass-menu";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { MorphMenu } from "@/shared/ui/morph-menu";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { useRecordSheetDrag } from "../model/use-record-sheet-drag";
@@ -71,16 +71,16 @@ export function RecordSheetDetail({
       >
         {showBackButton && <BackButton aria-label={backLabel} onClick={onBack} />}
         {record ? (
-          <MorphMenu
+          <LiquidGlassMenu
             label="기록 작업"
-            moreIcon={DotsThreeVerticalIcon}
+            icon={DotsThreeVerticalIcon}
             actions={[
               { label: "수정하기", icon: PencilSimpleIcon, href: `/records/${recordId}/edit` },
               {
                 label: "삭제하기",
                 icon: TrashIcon,
                 onSelect: () => setDeleteOpen(true),
-                className: "text-destructive",
+                destructive: true,
               },
             ]}
           />
