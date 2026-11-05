@@ -405,3 +405,17 @@ test("기록 상세 링크는 필터와 장소 화면을 유지한 채 기존 �
   assert.equal(toDemoRecordSheetHref("/records/abc/edit", "/records"), null);
   assert.equal(toDemoRecordSheetHref("https://example.com/records/abc", "/records"), null);
 });
+
+test("대표 지역이 아닌 방문 지역의 표시명과 전체명도 검색한다", () => {
+  const state = createSeedState(TODAY);
+  const record = state.records[0];
+  record.regions.push({
+    ...record.regions[0],
+    region_code: "9999999999",
+    region_label: "두번째방문지",
+    region_name: "가상의 전체지역명",
+  });
+  for (const query of ["두번째방문지", "전체지역명"]) {
+    assert.ok(getRecordPage(state, { ...FILTERS, query }, null).records.some(({ id }) => id === record.id));
+  }
+});

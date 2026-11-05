@@ -16,20 +16,35 @@ import { Button } from "@/shared/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
+import { Spinner } from "@/shared/ui/spinner";
 
-type RecordListProps = { filters: RecordFilters } & (
+type RecordListProps = { filters: RecordFilters; searchLoading?: boolean } & (
   | { emptyTitle?: never; onFiltersReset: () => void }
   | { emptyTitle: string; onFiltersReset?: never }
 );
 
-export function RecordList({ emptyTitle, filters, onFiltersReset }: RecordListProps) {
+export function RecordList({ emptyTitle, filters, onFiltersReset, searchLoading }: RecordListProps) {
   const queryClient = useQueryClient();
   const recordsQuery = useInfiniteQuery(recordListQueryOptions(filters));
   const prefetchComments = (recordId: string) => {
     void queryClient.prefetchInfiniteQuery(recordCommentListQueryOptions(recordId));
   };
 
-  if (recordsQuery.isPending) return null;
+  if (recordsQuery.isPending || (filters.query && recordsQuery.isPlaceholderData)) {
+    if (searchLoading) {
+      return (
+        <div className="grid flex-1 place-items-center text-muted-foreground">
+          <Spinner aria-label="검색 중" />
+        </div>
+      );
+    }
+    return (
+      <div role="status" className="flex items-center gap-2 py-6 text-muted-foreground text-sm">
+        <Spinner />
+        {filters.query ? `“${filters.query}” 검색 중이에요` : "기록을 불러오는 중이에요"}
+      </div>
+    );
+  }
 
   if (recordsQuery.isError) {
     return (
@@ -37,7 +52,7 @@ export function RecordList({ emptyTitle, filters, onFiltersReset }: RecordListPr
         icon={<NotePencilIcon aria-hidden="true" />}
         onRetry={() => void recordsQuery.refetch()}
         retrying={recordsQuery.isFetching}
-        title="기록을 불러오지 못했어요"
+        title={filters.query ? `“${filters.query}” 검색을 완료하지 못했어요` : "기록을 불러오지 못했어요"}
       />
     );
   }
@@ -83,6 +98,12 @@ export function RecordList({ emptyTitle, filters, onFiltersReset }: RecordListPr
         recordsQuery.isPlaceholderData && "opacity-50",
       )}
     >
+      {filters.query ? (
+        <p role="status" className="sr-only">
+          “{filters.query}” 검색 완료.{" "}
+          {recordsQuery.hasNextPage ? "결과를 더 불러올 수 있어요." : `${records.length}개의 기록을 찾았어요.`}
+        </p>
+      ) : null}
       <RecordTimelineItems records={records} onDetailPrefetch={prefetchComments} />
       {recordsQuery.hasNextPage ? (
         <LoadMoreButton

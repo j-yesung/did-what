@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { MainDataPrefetch } from "@/app/providers/main-data-prefetch";
 import { AppLoadingFallback, AppShown } from "@/app/ui/app-loading-fallback";
 import { requireMember } from "@/entities/member/server";
+import { RecordSearchProvider } from "@/entities/record/ui/record-search-provider";
 import { RETURN_TO_HEADER } from "@/shared/lib/navigation/return-to";
 import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
@@ -30,7 +31,7 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
   const { member } = await requireMember();
 
   return (
-    <>
+    <RecordSearchProvider>
       <MainDataPrefetch />
       <AppShown />
       <Toolbar memberId={member.id} />
@@ -39,6 +40,6 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
       {children}
       <BottomNavigation />
       <RecordRouteSheet member={{ id: member.id, name: member.name }} />
-    </>
+    </RecordSearchProvider>
   );
 }

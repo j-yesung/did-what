@@ -5,12 +5,11 @@ import { ToggleGroup } from "@base-ui/react/toggle-group";
 import { XIcon } from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
 
-import { hasRecordFilters, isRecordCategory, RECORD_CATEGORY_OPTIONS, type RecordFilters } from "@/entities/record";
+import { isRecordCategory, RECORD_CATEGORY_OPTIONS, type RecordFilters } from "@/entities/record";
 import { formatDateRange } from "@/shared/lib/date/format-date";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 
-import { useResetFiltersOnExit } from "../../model/use-reset-filters-on-exit";
 import { RecordFilterBottomSheet } from "./record-filter-bottom-sheet";
 
 type RecordFilterFormProps = {
@@ -24,8 +23,6 @@ const getPeriodChipLabel = (period: Pick<RecordFilters, "from" | "to">) => forma
 
 export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormProps) {
   const updateFilters = (overrides: Partial<RecordFilters>) => onFiltersChange({ ...filters, ...overrides });
-
-  useResetFiltersOnExit(hasRecordFilters(filters));
 
   const handleFilterApply = (nextFilters: Pick<RecordFilters, "from" | "sort" | "to">) => {
     updateFilters(nextFilters);

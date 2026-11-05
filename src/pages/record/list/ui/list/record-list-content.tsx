@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { parseRecordFilters, type RecordFilters, setRecordFilterParams } from "@/entities/record";
+import { useRecordSearch } from "@/entities/record/ui/record-search-provider";
 
 import { RecordFilterForm } from "../filter/record-filter-form";
 import { RecordList } from "./record-list";
@@ -13,8 +14,12 @@ import { RecordList } from "./record-list";
 export function RecordListContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const recordSearch = useRecordSearch();
   const search = searchParams?.toString() ?? "";
-  const filters = useMemo(() => parseRecordFilters(Object.fromEntries(new URLSearchParams(search))), [search]);
+  const filters = useMemo(
+    () => parseRecordFilters({ ...Object.fromEntries(new URLSearchParams(search)), q: "" }),
+    [search],
+  );
 
   const changeFilters = (nextFilters: RecordFilters) => {
     const nextSearch = setRecordFilterParams(new URLSearchParams(search), nextFilters).toString();
@@ -23,8 +28,12 @@ export function RecordListContent() {
 
   return (
     <>
-      <RecordFilterForm filters={filters} onFiltersChange={changeFilters} />
-      <RecordList filters={filters} onFiltersReset={() => changeFilters(parseRecordFilters({}))} />
+      <div data-record-filters inert={Boolean(recordSearch.query)}>
+        <RecordFilterForm filters={filters} onFiltersChange={changeFilters} />
+      </div>
+      <div className={recordSearch.query ? "invisible" : undefined} inert={Boolean(recordSearch.query)}>
+        <RecordList filters={filters} onFiltersReset={() => changeFilters(parseRecordFilters({}))} />
+      </div>
     </>
   );
 }

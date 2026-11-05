@@ -6,12 +6,12 @@ import { motion, type Transition, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 
 import { RecordCreateButton } from "@/entities/record";
+import { useRecordSearch } from "@/entities/record/ui/record-search-provider";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { IconButton } from "@/shared/ui/icon-button";
 import { FixedToolbar } from "@/shared/ui/layouts";
 import { PressScale, PressScaleExempt } from "@/shared/ui/press-scale";
-import { useToolbarRecordSearch } from "@/widgets/toolbar/model/use-toolbar-record-search";
 import { NotificationBell } from "@/widgets/toolbar/notification-bell";
 
 const TOOLBAR_ENTRY_PATHS = new Set(["/", "/records", "/places", "/settings"]);
@@ -23,7 +23,7 @@ const MotionGlass = motion.create(Glass);
 export function Toolbar({ memberId }: { memberId: string }) {
   const pathname = usePathname() ?? "";
   const reduceMotion = useReducedMotion();
-  const search = useToolbarRecordSearch();
+  const search = useRecordSearch();
   const { open, searchable } = search;
 
   if (!TOOLBAR_ENTRY_PATHS.has(pathname)) return null;
@@ -33,7 +33,12 @@ export function Toolbar({ memberId }: { memberId: string }) {
 
   return (
     <FixedToolbar className="@container items-start" ref={search.rowRef}>
-      <PressScale aria-label="빠른 작업" className="pointer-events-auto ml-auto" disabled={open} role="group">
+      <PressScale
+        aria-label="빠른 작업"
+        className="pointer-events-auto ml-auto flex items-center gap-2"
+        disabled={open}
+        role="group"
+      >
         <MotionGlass
           animate={{ width: search.width }}
           className="toolbar relative ml-auto flex h-(--toolbar-height) items-center justify-between gap-1 overflow-hidden rounded-full"
@@ -47,7 +52,7 @@ export function Toolbar({ memberId }: { memberId: string }) {
               <PressScaleExempt className="shrink-0">
                 <IconButton
                   aria-expanded={open}
-                  aria-label="기록 검색"
+                  aria-label={open ? "검색 닫기" : "기록 검색"}
                   className={cn(
                     "size-11 shrink-0 rounded-full text-foreground aria-expanded:bg-transparent",
                     ICON_WEIGHT_MEDIUM,
@@ -55,14 +60,14 @@ export function Toolbar({ memberId }: { memberId: string }) {
                   icon={MagnifyingGlassIcon}
                   iconSize={24}
                   iconWeight="regular"
-                  onClick={search.openSearch}
+                  onClick={open ? search.closeSearch : search.openSearch}
                   ref={search.triggerRef}
                   size="lg"
                 />
               </PressScaleExempt>
               <motion.input
                 animate={{ opacity: open ? 1 : 0 }}
-                aria-hidden={!open}
+                inert={!open}
                 aria-label="기록 검색어"
                 className={cn(
                   "absolute inset-y-0 right-11 left-11 min-w-0 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:appearance-none",
@@ -71,7 +76,6 @@ export function Toolbar({ memberId }: { memberId: string }) {
                 enterKeyHint="search"
                 initial={false}
                 maxLength={100}
-                onBlur={search.handleBlur}
                 onChange={(event) => search.setDraft(event.target.value)}
                 onKeyDown={search.handleKeyDown}
                 placeholder="활동, 메모, 장소, 지역으로 검색"
@@ -97,9 +101,9 @@ export function Toolbar({ memberId }: { memberId: string }) {
 
           {searchable ? (
             <motion.div
-              animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.6 }}
+              animate={{ opacity: open && search.draft ? 1 : 0, scale: open ? 1 : 0.6 }}
               className="absolute top-0 right-0"
-              inert={!open}
+              inert={!open || !search.draft}
               initial={false}
               transition={transition(
                 { type: "spring", bounce: 0, visualDuration: 0.2, delay: 0.08 },
@@ -107,11 +111,11 @@ export function Toolbar({ memberId }: { memberId: string }) {
               )}
             >
               <IconButton
-                aria-label="검색 닫기"
+                aria-label="검색어 지우기"
                 className="size-11 rounded-full text-muted-foreground"
                 icon={XIcon}
                 iconSize={20}
-                onClick={search.closeSearch}
+                onClick={search.clearDraft}
                 size="lg"
               />
             </motion.div>
