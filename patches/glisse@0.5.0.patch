@@ -1,5 +1,5 @@
 diff --git a/dist/index.cjs b/dist/index.cjs
-index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287efc93251b 100644
+index 28f5d34cfd831154aa8a64b3ddf135be3072475d..0eac5f22b4326eb6d029b4074f9d9277210568cc 100644
 --- a/dist/index.cjs
 +++ b/dist/index.cjs
 @@ -65,7 +65,7 @@ function tick(time) {
@@ -94,7 +94,34 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  	placed.forEach((lens, k) => {
  		const part = graph.parts[k];
  		const spectrum = [
-@@ -740,6 +756,15 @@ function fit(glass, options) {
+@@ -667,7 +683,8 @@ function place(graph, placed, across, down, box) {
+ 		];
+ 		part.rays.forEach(([pullAcross, pullDown], i) => {
+ 			pullAcross.setAttribute("scale", String((box ? lens.reach / across : lens.reach) * spectrum[i]));
+-			pullDown.setAttribute("scale", String((box ? lens.reach / down : lens.reach) * spectrum[i]));
++			const verticalReach = lens.verticalReach ?? lens.reach;
++			pullDown.setAttribute("scale", String((box ? verticalReach / down : verticalReach) * spectrum[i]));
+ 		});
+ 		const blur = Math.max(lens.blur, .01);
+ 		part.soften?.setAttribute("stdDeviation", box ? `${blur / across} ${blur / down}` : String(blur));
+@@ -707,6 +724,8 @@ function fit(glass, options) {
+ 	const tuned = options.strengthProperty ? parseFloat(style.getPropertyValue(options.strengthProperty)) : NaN;
+ 	const own = page > 0 ? options.darkStrength ?? options.strength : options.strength;
+ 	const strength = Number.isFinite(tuned) ? tuned : own;
++	const tunedVertical = options.verticalStrengthProperty ? parseFloat(style.getPropertyValue(options.verticalStrengthProperty)) : NaN;
++	const verticalStrength = Number.isFinite(tunedVertical) ? Math.max(0, tunedVertical) : strength;
+ 	const split = options.dispersionProperty ? parseFloat(style.getPropertyValue(options.dispersionProperty)) : NaN;
+ 	const dispersion = Number.isFinite(split) ? Math.max(0, split) : options.dispersion;
+ 	const density = Math.min(devicePixelRatio || 1, 2);
+@@ -733,6 +752,7 @@ function fit(glass, options) {
+ 		ink,
+ 		blur,
+ 		strength,
++		verticalStrength,
+ 		dispersion,
+ 		width,
+ 		height
+@@ -740,6 +760,15 @@ function fit(glass, options) {
  }
  const surfaces = /* @__PURE__ */ new Map();
  let made = 0;
@@ -110,9 +137,19 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  function render(surface) {
  	const { content } = surface;
  	const across = content.offsetWidth;
-@@ -763,7 +788,9 @@ function render(surface) {
+@@ -754,6 +783,7 @@ function render(surface) {
+ 			const width = at.width / unit;
+ 			const height = at.height / unit;
+ 			const reach = member.fit.strength * Math.min(width, height) * member.amount;
++			const verticalReach = member.fit.verticalStrength * Math.min(width, height) * member.amount;
+ 			const { dispersion } = member.fit;
+ 			const blur = member.fit.blur * member.amount;
+ 			member.placed = {
+@@ -762,8 +792,11 @@ function render(surface) {
+ 				width,
  				height,
  				reach,
++				verticalReach,
  				dispersion,
 -				blur
 +				blur,
@@ -121,7 +158,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  			};
  			shown.push(member);
  		}
-@@ -771,6 +798,7 @@ function render(surface) {
+@@ -771,6 +804,7 @@ function render(surface) {
  	if (!shown.length) {
  		surface.placed = "";
  		content.style.removeProperty("filter");
@@ -129,17 +166,18 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  		if (surface.standIn) content.style.removeProperty("visibility");
  		surface.standIn = false;
  		return;
-@@ -790,27 +818,44 @@ function render(surface) {
+@@ -790,27 +824,45 @@ function render(surface) {
  	const next = [
  		across,
  		down,
 -		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur }) => [
-+		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur, optics }) => [
++		...placed.flatMap(({ x, y, width, height, reach, verticalReach, dispersion, blur, optics }) => [
  			x,
  			y,
  			width,
  			height,
  			reach,
++			verticalReach,
  			dispersion,
 -			blur
 +			blur,
@@ -177,7 +215,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  		mask(member.replaces, {
  			image: `url("${member.fit.maps.shape}"), linear-gradient(#000, #000)`,
  			position: `${x + (from.left - behind.left) / unit}px ${y + (from.top - behind.top) / unit}px, 0 0`,
-@@ -826,6 +871,8 @@ const MASKING = [
+@@ -826,6 +878,8 @@ const MASKING = [
  	"composite"
  ];
  function mask(element, layers) {
@@ -186,7 +224,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  	for (const part of MASKING) {
  		element.style.removeProperty(`-webkit-mask-${part}`);
  		element.style.removeProperty(`mask-${part}`);
-@@ -1129,10 +1176,12 @@ function onThemeChange(repaint) {
+@@ -1129,10 +1183,12 @@ function onThemeChange(repaint) {
  	repaints.add(repaint);
  	if (!unwatch) {
  		const run = () => repaints.forEach((each) => each());
@@ -201,7 +239,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  			subtree: true
  		});
  		const scheme = matchMedia("(prefers-color-scheme: dark)");
-@@ -1463,12 +1512,12 @@ function fitSelection(element, filtered) {
+@@ -1463,12 +1519,12 @@ function fitSelection(element, filtered) {
  	element.style.setProperty("--lg-rim-bright", brightRim);
  }
  // src/button.tsx
@@ -216,7 +254,80 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  		ref,
  		type,
  		className: cx("lg-glass lg-button", className),
-@@ -1903,11 +1952,13 @@ const keys = [
+@@ -1581,7 +1637,7 @@ const ellipsis = /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+ 		})
+ 	]
+ });
+-function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", className, style }) {
++function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", className, style, link = "a" }) {
+ 	const [phase, setPhase] = (0, react.useState)("closed");
+ 	const triggerRef = (0, react.useRef)(null);
+ 	const cardRef = (0, react.useRef)(null);
+@@ -1664,7 +1720,11 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 		morphRef.current = morph;
+ 		shape.paint();
+ 		morph.set(1);
+-		const rows = () => [...card.querySelectorAll(".lg-menu-item:not(:disabled)")];
++		const syncScrollable = () => card.toggleAttribute("data-scrollable", content.scrollHeight > content.clientHeight + 1);
++		syncScrollable();
++		const resize = new ResizeObserver(syncScrollable);
++		resize.observe(content);
++		const rows = () => [...card.querySelectorAll(".lg-menu-item:not(:disabled):not([aria-disabled=true])")];
+ 		rows()[0]?.focus({ preventScroll: true });
+ 		const offset = {
+ 			scale: 1,
+@@ -1716,10 +1776,11 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 		};
+ 		const rowAt = (clientX, clientY) => {
+ 			const row = document.elementFromPoint(clientX, clientY)?.closest(".lg-menu-item");
+-			return row && !row.disabled && card.contains(row) ? row : null;
++			return row && !row.disabled && row.getAttribute("aria-disabled") !== "true" && card.contains(row) ? row : null;
+ 		};
+ 		const down = (event) => {
+ 			if (!event.isPrimary || event.button !== 0) return;
++			if (card.hasAttribute("data-scrollable") && event.pointerType !== "mouse") return;
+ 			gesture = {
+ 				id: event.pointerId,
+ 				x: event.clientX,
+@@ -1761,6 +1822,7 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 			if (!row || event.detail !== 0 && performance.now() < suppressClickUntil) return;
+ 			const item = latest.current[Number(row.dataset.index)];
+ 			if (!item || item === "separator") return;
++			if (item.disabled) { event.preventDefault(); return; }
+ 			close();
+ 			item.onSelect?.();
+ 		};
+@@ -1802,6 +1864,7 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 				x,
+ 				y
+ 			].forEach((spring) => spring.stop());
++			resize.disconnect();
+ 			morphRef.current = null;
+ 			trigger.style.opacity = "";
+ 			card.removeEventListener("pointerdown", down);
+@@ -1856,13 +1919,17 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 					}), items.map((item, index) => item === "separator" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+ 						role: "separator",
+ 						className: "lg-menu-separator"
+-					}, index) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+-						type: "button",
+-						role: "menuitem",
++					}, index) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(item.href ? link : "button", {
++						type: item.href ? void 0 : "button",
++						href: item.href,
++						tabIndex: item.href && item.disabled ? -1 : void 0,
++						role: item.selected === void 0 ? "menuitem" : "menuitemradio",
++						"aria-checked": item.selected,
++						"aria-disabled": item.href && item.disabled ? true : void 0,
+ 						className: "lg-menu-item",
+ 						"data-index": index,
+ 						"data-destructive": item.destructive ? "" : void 0,
+-						disabled: item.disabled,
++						disabled: item.href ? void 0 : item.disabled,
+ 						children: [item.icon, item.label]
+ 					}, index))]
+ 				})
+@@ -1903,11 +1970,13 @@ const keys = [
  	"Home",
  	"End"
  ];
@@ -234,13 +345,21 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  ];
  const UNDER = .5;
  const DRAG = [
-@@ -1935,6 +1986,26 @@ const SEGMENT_LENS = {
+@@ -1919,6 +1988,7 @@ const DRAG = [
+ const LENS$2 = {
+ 	strength: .2,
+ 	strengthProperty: "--lg-tab-bend",
++	verticalStrengthProperty: "--lg-tab-bend-y",
+ 	dispersion: 2,
+ 	dispersionProperty: "--lg-tab-dispersion",
+ 	depth: 4,
+@@ -1935,6 +2005,26 @@ const SEGMENT_LENS = {
  	dome: 0,
  	splay: 1
  };
 +// Eight connected cubic segments let each side deform without scaling the labels.
-+function contourPath(width, height, padding, edges) {
-+	const [left, right, top, bottom] = edges.map((value) => clamp(value, -3, 3));
++function contourPath(width, height, padding, edges, limit) {
++	const [left, right, top, bottom] = edges.map((value) => clamp(value, -limit, limit));
 +	const l = padding, r = width - padding, t = padding, b = height - padding;
 +	const radius = Math.min((b - t) / 2, (r - l) / 2);
 +	const a = l + radius, z = r - radius, middle = width / 2, center = height / 2;
@@ -261,7 +380,12 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options, bendsBackdrop, select) {
  	const tabs = [...bar.querySelectorAll(".lg-tab")];
  	let slot = 0;
-@@ -1948,14 +2019,54 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -1944,18 +2034,59 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	let padding = 0;
+ 	let growX = 16;
+ 	let growY = 12;
++	let wobble = 1;
+ 	let active = -1;
  	let shown = false;
  	let settleFrame = 0;
  	let gesture = null;
@@ -318,24 +442,26 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  	const measure = () => {
  		const style = getComputedStyle(bar);
  		padding = parseFloat(style.paddingLeft) || 0;
-@@ -1965,43 +2076,69 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -1965,43 +2096,71 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  		height = lens.offsetHeight;
  		growX = parseFloat(style.getPropertyValue("--lg-lens-grow-x")) || 0;
  		growY = parseFloat(style.getPropertyValue("--lg-lens-grow-y")) || 0;
++		wobble = parseFloat(style.getPropertyValue("--lg-tab-wobble")) || 1;
 +
  	};
  	const paint = () => {
  		const { x, lift } = state;
 -		const sx = 1 + growX / width * lift;
 -		const sy = 1 + growY / height * lift;
-+		const magnitude = Math.min(3, Math.max(...state.edges.map(Math.abs)));
-+		const elevation = Math.max(lift, Math.min(magnitude / 3, 1));
++		const limit = 3 * wobble;
++		const magnitude = Math.min(limit, Math.max(...state.edges.map(Math.abs)));
++		const elevation = Math.max(lift, Math.min(magnitude / limit, 1));
 +		const sx = 1 + growX / width * elevation;
 +		const sy = 1 + growY / height * elevation;
  		const transform = `translateX(${x}px) scale(${sx}, ${sy})`;
  		lens.style.transform = tint.style.transform = transform;
 +		if (contour && width && height) {
-+			const path = contourPath(width, height, magnitude, state.edges);
++			const path = contourPath(width, height, magnitude, state.edges, limit);
 +			if (path !== lastContour) {
 +				lastContour = path;
 +				surface.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -393,7 +519,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
 +		edges[1].tune(speed < 0 ? 246.74 : 438.65, speed < 0 ? 25.13 : 33.51);
 +		const targets = [Math.abs(speed) * 1.8 - speed * 1.2, Math.abs(speed) * 1.8 + speed * 1.2,
 +			-Math.abs(speed) * 1.5 - pressure * 1.5, Math.abs(speed) * 1.5 - pressure * 1.5];
-+		edges.forEach((spring, index) => spring.set(targets[index], !shown));
++		edges.forEach((spring, index) => spring.set(targets[index] * wobble, !shown));
 +		schedulePaint();
  	});
 +	const lift = createSpring(0, REST[2], REST[3], (value) => { state.lift = value; schedulePaint(); });
@@ -405,18 +531,36 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  		lift.tune(liftStiffness, liftDamping);
  		x.set(target, instant);
  		lift.set(lifted ? 1 : 0, instant);
-@@ -2037,8 +2174,10 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2037,12 +2196,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  		settleFrame = 0;
  		measure();
  		bar.toggleAttribute("data-light", parseFloat(getComputedStyle(lens).getPropertyValue("--lg-lens-shine")) < 0);
 +		refraction.refit();
  		backdrop?.refit();
  		const box = bar.getBoundingClientRect();
++		const offset = event.clientX - box.left - padding - state.x;
++		const caught = shown && !isSettled() && offset >= 0 && offset < slot;
++		if (caught) x.set(state.x, true);
 +		interactive = true;
  		gesture = {
  			id: event.pointerId,
  			x: event.clientX,
-@@ -2121,6 +2260,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+-			anchor: tabs.indexOf(tab) * slot,
++			anchor: caught ? state.x : tabs.indexOf(tab) * slot,
+ 			moved: false,
+ 			box,
+ 			at: performance.now()
+@@ -2071,7 +2235,8 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		const index = Math.round(position(event) / slot);
+ 		const { moved, box } = release();
+ 		const near = event.clientY >= box.top - 24 && event.clientY <= box.bottom + 24;
+-		if (event.type === "pointerup" && (moved || near)) {
++		// Releasing away from the bar cancels, including a horizontal drag.
++		if (event.type === "pointerup" && near) {
+ 			suppressClick = true;
+ 			settleFrame = requestAnimationFrame(() => {
+ 				settleFrame = 0;
+@@ -2121,6 +2286,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  	};
  	const observer = new ResizeObserver(() => {
  		measure();
@@ -424,7 +568,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  		if (!gesture) settle(true);
  	});
  	measure();
-@@ -2147,11 +2287,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2147,11 +2313,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  			cancelAnimationFrame(settleFrame);
  			x.stop();
  			lift.stop();
@@ -442,14 +586,14 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287e
  				"hidden",
  				"lifted",
  				"refracting",
-@@ -2681,3 +2827,5 @@ exports.SegmentedControl = SegmentedControl;
+@@ -2681,3 +2853,5 @@ exports.SegmentedControl = SegmentedControl;
  exports.Slider = Slider;
  exports.Switch = Switch;
  exports.TabBar = TabBar;
 +
 +exports.usePress = usePress;
 diff --git a/dist/index.d.cts b/dist/index.d.cts
-index 19092e551b0fc8b84ac68249ebd11190404a1710..0027ee9b3ac65a312fa82cfb13461314eeab76dd 100644
+index 19092e551b0fc8b84ac68249ebd11190404a1710..d521e5812837826b387026b7d8f745d8927275f4 100644
 --- a/dist/index.d.cts
 +++ b/dist/index.d.cts
 @@ -1,6 +1,8 @@
@@ -462,14 +606,32 @@ index 19092e551b0fc8b84ac68249ebd11190404a1710..0027ee9b3ac65a312fa82cfb13461314
    /** Shown before the label. On its own, the button is a circle; give it an `aria-label`. */
    icon?: ReactNode;
    /** `glass` is clear; `filled` fills it with the accent colour, for the primary action. */
-@@ -99,3 +101,5 @@ interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue
+@@ -22,6 +24,8 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value"
+ }
+ export declare const Input: ForwardRefExoticComponent<InputProps & RefAttributes<HTMLInputElement>>;
+ interface MenuItem {
++  href?: string;
++  selected?: boolean;
+   label: ReactNode;
+   icon?: ReactNode;
+   onSelect?: () => void;
+@@ -30,6 +34,8 @@ interface MenuItem {
+ }
+ type MenuEntry = MenuItem | "separator";
+ interface MenuProps {
++  /** Link component for menu entries with an href. */
++  link?: ElementType;
+   items: MenuEntry[];
+   /** Names the trigger and the menu for assistive technology. */
+   "aria-label": string;
+@@ -99,3 +105,5 @@ interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue
   */
  export declare function TabBar(props: TabBarProps): JSX.Element;
  export type { ButtonProps, GlassProps, InputProps, MenuEntry, MenuItem, MenuProps, SearchFieldProps, SegmentedControlItem, SegmentedControlProps, SliderProps, SwitchProps, TabBarItem, TabBarProps };
 +/** The same interruptible press springs used by Button, for grouped controls. */
 +export declare function usePress(ref: RefObject<HTMLElement | null>, ignoreSelector?: string): void;
 diff --git a/dist/index.d.ts b/dist/index.d.ts
-index 19092e551b0fc8b84ac68249ebd11190404a1710..0027ee9b3ac65a312fa82cfb13461314eeab76dd 100644
+index 19092e551b0fc8b84ac68249ebd11190404a1710..d521e5812837826b387026b7d8f745d8927275f4 100644
 --- a/dist/index.d.ts
 +++ b/dist/index.d.ts
 @@ -1,6 +1,8 @@
@@ -482,14 +644,32 @@ index 19092e551b0fc8b84ac68249ebd11190404a1710..0027ee9b3ac65a312fa82cfb13461314
    /** Shown before the label. On its own, the button is a circle; give it an `aria-label`. */
    icon?: ReactNode;
    /** `glass` is clear; `filled` fills it with the accent colour, for the primary action. */
-@@ -99,3 +101,5 @@ interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue
+@@ -22,6 +24,8 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value"
+ }
+ export declare const Input: ForwardRefExoticComponent<InputProps & RefAttributes<HTMLInputElement>>;
+ interface MenuItem {
++  href?: string;
++  selected?: boolean;
+   label: ReactNode;
+   icon?: ReactNode;
+   onSelect?: () => void;
+@@ -30,6 +34,8 @@ interface MenuItem {
+ }
+ type MenuEntry = MenuItem | "separator";
+ interface MenuProps {
++  /** Link component for menu entries with an href. */
++  link?: ElementType;
+   items: MenuEntry[];
+   /** Names the trigger and the menu for assistive technology. */
+   "aria-label": string;
+@@ -99,3 +105,5 @@ interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue
   */
  export declare function TabBar(props: TabBarProps): JSX.Element;
  export type { ButtonProps, GlassProps, InputProps, MenuEntry, MenuItem, MenuProps, SearchFieldProps, SegmentedControlItem, SegmentedControlProps, SliderProps, SwitchProps, TabBarItem, TabBarProps };
 +/** The same interruptible press springs used by Button, for grouped controls. */
 +export declare function usePress(ref: RefObject<HTMLElement | null>, ignoreSelector?: string): void;
 diff --git a/dist/index.js b/dist/index.js
-index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f2382a8069c 100644
+index 02d488ace3671da61835b1d629c1714cc92fb52c..27b903860d1809c72d09e65015f5e1bb972e6a08 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -64,7 +64,7 @@ function tick(time) {
@@ -584,7 +764,34 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  	placed.forEach((lens, k) => {
  		const part = graph.parts[k];
  		const spectrum = [
-@@ -739,6 +755,15 @@ function fit(glass, options) {
+@@ -666,7 +682,8 @@ function place(graph, placed, across, down, box) {
+ 		];
+ 		part.rays.forEach(([pullAcross, pullDown], i) => {
+ 			pullAcross.setAttribute("scale", String((box ? lens.reach / across : lens.reach) * spectrum[i]));
+-			pullDown.setAttribute("scale", String((box ? lens.reach / down : lens.reach) * spectrum[i]));
++			const verticalReach = lens.verticalReach ?? lens.reach;
++			pullDown.setAttribute("scale", String((box ? verticalReach / down : verticalReach) * spectrum[i]));
+ 		});
+ 		const blur = Math.max(lens.blur, .01);
+ 		part.soften?.setAttribute("stdDeviation", box ? `${blur / across} ${blur / down}` : String(blur));
+@@ -706,6 +723,8 @@ function fit(glass, options) {
+ 	const tuned = options.strengthProperty ? parseFloat(style.getPropertyValue(options.strengthProperty)) : NaN;
+ 	const own = page > 0 ? options.darkStrength ?? options.strength : options.strength;
+ 	const strength = Number.isFinite(tuned) ? tuned : own;
++	const tunedVertical = options.verticalStrengthProperty ? parseFloat(style.getPropertyValue(options.verticalStrengthProperty)) : NaN;
++	const verticalStrength = Number.isFinite(tunedVertical) ? Math.max(0, tunedVertical) : strength;
+ 	const split = options.dispersionProperty ? parseFloat(style.getPropertyValue(options.dispersionProperty)) : NaN;
+ 	const dispersion = Number.isFinite(split) ? Math.max(0, split) : options.dispersion;
+ 	const density = Math.min(devicePixelRatio || 1, 2);
+@@ -732,6 +751,7 @@ function fit(glass, options) {
+ 		ink,
+ 		blur,
+ 		strength,
++		verticalStrength,
+ 		dispersion,
+ 		width,
+ 		height
+@@ -739,6 +759,15 @@ function fit(glass, options) {
  }
  const surfaces = /* @__PURE__ */ new Map();
  let made = 0;
@@ -600,9 +807,19 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  function render(surface) {
  	const { content } = surface;
  	const across = content.offsetWidth;
-@@ -762,7 +787,9 @@ function render(surface) {
+@@ -753,6 +782,7 @@ function render(surface) {
+ 			const width = at.width / unit;
+ 			const height = at.height / unit;
+ 			const reach = member.fit.strength * Math.min(width, height) * member.amount;
++			const verticalReach = member.fit.verticalStrength * Math.min(width, height) * member.amount;
+ 			const { dispersion } = member.fit;
+ 			const blur = member.fit.blur * member.amount;
+ 			member.placed = {
+@@ -761,8 +791,11 @@ function render(surface) {
+ 				width,
  				height,
  				reach,
++				verticalReach,
  				dispersion,
 -				blur
 +				blur,
@@ -611,7 +828,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  			};
  			shown.push(member);
  		}
-@@ -770,6 +797,7 @@ function render(surface) {
+@@ -770,6 +803,7 @@ function render(surface) {
  	if (!shown.length) {
  		surface.placed = "";
  		content.style.removeProperty("filter");
@@ -619,17 +836,18 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  		if (surface.standIn) content.style.removeProperty("visibility");
  		surface.standIn = false;
  		return;
-@@ -789,27 +817,44 @@ function render(surface) {
+@@ -789,27 +823,45 @@ function render(surface) {
  	const next = [
  		across,
  		down,
 -		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur }) => [
-+		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur, optics }) => [
++		...placed.flatMap(({ x, y, width, height, reach, verticalReach, dispersion, blur, optics }) => [
  			x,
  			y,
  			width,
  			height,
  			reach,
++			verticalReach,
  			dispersion,
 -			blur
 +			blur,
@@ -667,7 +885,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  		mask(member.replaces, {
  			image: `url("${member.fit.maps.shape}"), linear-gradient(#000, #000)`,
  			position: `${x + (from.left - behind.left) / unit}px ${y + (from.top - behind.top) / unit}px, 0 0`,
-@@ -825,6 +870,8 @@ const MASKING = [
+@@ -825,6 +877,8 @@ const MASKING = [
  	"composite"
  ];
  function mask(element, layers) {
@@ -676,7 +894,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  	for (const part of MASKING) {
  		element.style.removeProperty(`-webkit-mask-${part}`);
  		element.style.removeProperty(`mask-${part}`);
-@@ -1128,10 +1175,12 @@ function onThemeChange(repaint) {
+@@ -1128,10 +1182,12 @@ function onThemeChange(repaint) {
  	repaints.add(repaint);
  	if (!unwatch) {
  		const run = () => repaints.forEach((each) => each());
@@ -691,7 +909,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  			subtree: true
  		});
  		const scheme = matchMedia("(prefers-color-scheme: dark)");
-@@ -1462,12 +1511,12 @@ function fitSelection(element, filtered) {
+@@ -1462,12 +1518,12 @@ function fitSelection(element, filtered) {
  	element.style.setProperty("--lg-rim-bright", brightRim);
  }
  // src/button.tsx
@@ -706,7 +924,80 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  		ref,
  		type,
  		className: cx("lg-glass lg-button", className),
-@@ -1902,11 +1951,13 @@ const keys = [
+@@ -1580,7 +1636,7 @@ const ellipsis = /* @__PURE__ */ jsxs("svg", {
+ 		})
+ 	]
+ });
+-function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", className, style }) {
++function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", className, style, link = "a" }) {
+ 	const [phase, setPhase] = useState("closed");
+ 	const triggerRef = useRef(null);
+ 	const cardRef = useRef(null);
+@@ -1663,7 +1719,11 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 		morphRef.current = morph;
+ 		shape.paint();
+ 		morph.set(1);
+-		const rows = () => [...card.querySelectorAll(".lg-menu-item:not(:disabled)")];
++		const syncScrollable = () => card.toggleAttribute("data-scrollable", content.scrollHeight > content.clientHeight + 1);
++		syncScrollable();
++		const resize = new ResizeObserver(syncScrollable);
++		resize.observe(content);
++		const rows = () => [...card.querySelectorAll(".lg-menu-item:not(:disabled):not([aria-disabled=true])")];
+ 		rows()[0]?.focus({ preventScroll: true });
+ 		const offset = {
+ 			scale: 1,
+@@ -1715,10 +1775,11 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 		};
+ 		const rowAt = (clientX, clientY) => {
+ 			const row = document.elementFromPoint(clientX, clientY)?.closest(".lg-menu-item");
+-			return row && !row.disabled && card.contains(row) ? row : null;
++			return row && !row.disabled && row.getAttribute("aria-disabled") !== "true" && card.contains(row) ? row : null;
+ 		};
+ 		const down = (event) => {
+ 			if (!event.isPrimary || event.button !== 0) return;
++			if (card.hasAttribute("data-scrollable") && event.pointerType !== "mouse") return;
+ 			gesture = {
+ 				id: event.pointerId,
+ 				x: event.clientX,
+@@ -1760,6 +1821,7 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 			if (!row || event.detail !== 0 && performance.now() < suppressClickUntil) return;
+ 			const item = latest.current[Number(row.dataset.index)];
+ 			if (!item || item === "separator") return;
++			if (item.disabled) { event.preventDefault(); return; }
+ 			close();
+ 			item.onSelect?.();
+ 		};
+@@ -1801,6 +1863,7 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 				x,
+ 				y
+ 			].forEach((spring) => spring.stop());
++			resize.disconnect();
+ 			morphRef.current = null;
+ 			trigger.style.opacity = "";
+ 			card.removeEventListener("pointerdown", down);
+@@ -1855,13 +1918,17 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 					}), items.map((item, index) => item === "separator" ? /* @__PURE__ */ jsx("div", {
+ 						role: "separator",
+ 						className: "lg-menu-separator"
+-					}, index) : /* @__PURE__ */ jsxs("button", {
+-						type: "button",
+-						role: "menuitem",
++					}, index) : /* @__PURE__ */ jsxs(item.href ? link : "button", {
++						type: item.href ? void 0 : "button",
++						href: item.href,
++						tabIndex: item.href && item.disabled ? -1 : void 0,
++						role: item.selected === void 0 ? "menuitem" : "menuitemradio",
++						"aria-checked": item.selected,
++						"aria-disabled": item.href && item.disabled ? true : void 0,
+ 						className: "lg-menu-item",
+ 						"data-index": index,
+ 						"data-destructive": item.destructive ? "" : void 0,
+-						disabled: item.disabled,
++						disabled: item.href ? void 0 : item.disabled,
+ 						children: [item.icon, item.label]
+ 					}, index))]
+ 				})
+@@ -1902,11 +1969,13 @@ const keys = [
  	"Home",
  	"End"
  ];
@@ -724,13 +1015,21 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  ];
  const UNDER = .5;
  const DRAG = [
-@@ -1934,6 +1985,26 @@ const SEGMENT_LENS = {
+@@ -1918,6 +1987,7 @@ const DRAG = [
+ const LENS$2 = {
+ 	strength: .2,
+ 	strengthProperty: "--lg-tab-bend",
++	verticalStrengthProperty: "--lg-tab-bend-y",
+ 	dispersion: 2,
+ 	dispersionProperty: "--lg-tab-dispersion",
+ 	depth: 4,
+@@ -1934,6 +2004,26 @@ const SEGMENT_LENS = {
  	dome: 0,
  	splay: 1
  };
 +// Eight connected cubic segments let each side deform without scaling the labels.
-+function contourPath(width, height, padding, edges) {
-+	const [left, right, top, bottom] = edges.map((value) => clamp(value, -3, 3));
++function contourPath(width, height, padding, edges, limit) {
++	const [left, right, top, bottom] = edges.map((value) => clamp(value, -limit, limit));
 +	const l = padding, r = width - padding, t = padding, b = height - padding;
 +	const radius = Math.min((b - t) / 2, (r - l) / 2);
 +	const a = l + radius, z = r - radius, middle = width / 2, center = height / 2;
@@ -751,7 +1050,12 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options, bendsBackdrop, select) {
  	const tabs = [...bar.querySelectorAll(".lg-tab")];
  	let slot = 0;
-@@ -1947,14 +2018,54 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -1943,18 +2033,59 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	let padding = 0;
+ 	let growX = 16;
+ 	let growY = 12;
++	let wobble = 1;
+ 	let active = -1;
  	let shown = false;
  	let settleFrame = 0;
  	let gesture = null;
@@ -808,24 +1112,26 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  	const measure = () => {
  		const style = getComputedStyle(bar);
  		padding = parseFloat(style.paddingLeft) || 0;
-@@ -1964,43 +2075,69 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -1964,43 +2095,71 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  		height = lens.offsetHeight;
  		growX = parseFloat(style.getPropertyValue("--lg-lens-grow-x")) || 0;
  		growY = parseFloat(style.getPropertyValue("--lg-lens-grow-y")) || 0;
++		wobble = parseFloat(style.getPropertyValue("--lg-tab-wobble")) || 1;
 +
  	};
  	const paint = () => {
  		const { x, lift } = state;
 -		const sx = 1 + growX / width * lift;
 -		const sy = 1 + growY / height * lift;
-+		const magnitude = Math.min(3, Math.max(...state.edges.map(Math.abs)));
-+		const elevation = Math.max(lift, Math.min(magnitude / 3, 1));
++		const limit = 3 * wobble;
++		const magnitude = Math.min(limit, Math.max(...state.edges.map(Math.abs)));
++		const elevation = Math.max(lift, Math.min(magnitude / limit, 1));
 +		const sx = 1 + growX / width * elevation;
 +		const sy = 1 + growY / height * elevation;
  		const transform = `translateX(${x}px) scale(${sx}, ${sy})`;
  		lens.style.transform = tint.style.transform = transform;
 +		if (contour && width && height) {
-+			const path = contourPath(width, height, magnitude, state.edges);
++			const path = contourPath(width, height, magnitude, state.edges, limit);
 +			if (path !== lastContour) {
 +				lastContour = path;
 +				surface.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -883,7 +1189,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
 +		edges[1].tune(speed < 0 ? 246.74 : 438.65, speed < 0 ? 25.13 : 33.51);
 +		const targets = [Math.abs(speed) * 1.8 - speed * 1.2, Math.abs(speed) * 1.8 + speed * 1.2,
 +			-Math.abs(speed) * 1.5 - pressure * 1.5, Math.abs(speed) * 1.5 - pressure * 1.5];
-+		edges.forEach((spring, index) => spring.set(targets[index], !shown));
++		edges.forEach((spring, index) => spring.set(targets[index] * wobble, !shown));
 +		schedulePaint();
  	});
 +	const lift = createSpring(0, REST[2], REST[3], (value) => { state.lift = value; schedulePaint(); });
@@ -895,18 +1201,36 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  		lift.tune(liftStiffness, liftDamping);
  		x.set(target, instant);
  		lift.set(lifted ? 1 : 0, instant);
-@@ -2036,8 +2173,10 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2036,12 +2195,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  		settleFrame = 0;
  		measure();
  		bar.toggleAttribute("data-light", parseFloat(getComputedStyle(lens).getPropertyValue("--lg-lens-shine")) < 0);
 +		refraction.refit();
  		backdrop?.refit();
  		const box = bar.getBoundingClientRect();
++		const offset = event.clientX - box.left - padding - state.x;
++		const caught = shown && !isSettled() && offset >= 0 && offset < slot;
++		if (caught) x.set(state.x, true);
 +		interactive = true;
  		gesture = {
  			id: event.pointerId,
  			x: event.clientX,
-@@ -2120,6 +2259,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+-			anchor: tabs.indexOf(tab) * slot,
++			anchor: caught ? state.x : tabs.indexOf(tab) * slot,
+ 			moved: false,
+ 			box,
+ 			at: performance.now()
+@@ -2070,7 +2234,8 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		const index = Math.round(position(event) / slot);
+ 		const { moved, box } = release();
+ 		const near = event.clientY >= box.top - 24 && event.clientY <= box.bottom + 24;
+-		if (event.type === "pointerup" && (moved || near)) {
++		// Releasing away from the bar cancels, including a horizontal drag.
++		if (event.type === "pointerup" && near) {
+ 			suppressClick = true;
+ 			settleFrame = requestAnimationFrame(() => {
+ 				settleFrame = 0;
+@@ -2120,6 +2285,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  	};
  	const observer = new ResizeObserver(() => {
  		measure();
@@ -914,7 +1238,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  		if (!gesture) settle(true);
  	});
  	measure();
-@@ -2146,11 +2286,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2146,11 +2312,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  			cancelAnimationFrame(settleFrame);
  			x.stop();
  			lift.stop();
@@ -932,7 +1256,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f23
  				"hidden",
  				"lifted",
  				"refracting",
-@@ -2671,4 +2817,4 @@ function TabBar(props) {
+@@ -2671,4 +2843,4 @@ function TabBar(props) {
  }
  // src/index.ts
  insertStyles(styles_default);

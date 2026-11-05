@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  glisse@0.5.0: a8646394d3d1f1c338eae93c7ef9095fba385cad73da483fbe6a2dcfbc733e34
+  glisse@0.5.0: e8deb32942daf71ceea5d45057bd6c2e4a65eb464624f95b89fc5c62935435f4
 
 importers:
 
@@ -43,7 +43,7 @@ importers:
         version: 4.4.0
       glisse:
         specifier: 0.5.0
-        version: 0.5.0(patch_hash=a8646394d3d1f1c338eae93c7ef9095fba385cad73da483fbe6a2dcfbc733e34)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 0.5.0(patch_hash=e8deb32942daf71ceea5d45057bd6c2e4a65eb464624f95b89fc5c62935435f4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       motion:
         specifier: ^13.3.0
         version: 13.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -3460,7 +3460,7 @@ snapshots:
       '@sec-ant/readable-stream': 0.4.1
       is-stream: 4.0.1
 
-  glisse@0.5.0(patch_hash=a8646394d3d1f1c338eae93c7ef9095fba385cad73da483fbe6a2dcfbc733e34)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  glisse@0.5.0(patch_hash=e8deb32942daf71ceea5d45057bd6c2e4a65eb464624f95b89fc5c62935435f4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
