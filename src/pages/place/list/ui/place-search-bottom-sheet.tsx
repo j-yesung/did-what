@@ -23,7 +23,14 @@ export function PlaceSearchBottomSheet({ initialQuery }: { initialQuery?: string
       <div className="pointer-events-none fixed inset-x-0 bottom-(--nav-clearance) z-30">
         <div className="mx-auto flex w-full max-w-(--app-width) justify-end px-5">
           <BottomSheet.Trigger
-            render={<LiquidGlassButton aria-label="새 장소 찾기" shape="circle" title="새 장소 찾기" />}
+            render={
+              <LiquidGlassButton
+                aria-label="새 장소 찾기"
+                shape="circle"
+                className="backdrop-filter-none!"
+                title="새 장소 찾기"
+              />
+            }
           >
             <PlusIcon aria-hidden="true" weight="bold" />
           </BottomSheet.Trigger>
