@@ -3,7 +3,7 @@
 import { CaretLeftIcon } from "@phosphor-icons/react";
 
 import { useGoBack } from "@/shared/lib/navigation/use-go-back";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 
 type Props = {
   "aria-label"?: string;

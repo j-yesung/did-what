@@ -11,7 +11,7 @@ import { EmptyRecords, RecordCreateButton, RecordTimelineItems } from "@/entitie
 import { recordCommentListQueryOptions } from "@/entities/record-comment";
 import { DeletePlaceConfirm } from "@/features/place/delete-place/ui/delete-place-confirm";
 import { FixedToolbar, PageHeader, PageShell } from "@/shared/ui/layouts";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
 

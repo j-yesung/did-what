@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { CheckIcon } from "@/shared/ui/animated-icons";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { IconButton } from "@/shared/ui/icon-button";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 import { Spinner } from "@/shared/ui/spinner";
 
 import {

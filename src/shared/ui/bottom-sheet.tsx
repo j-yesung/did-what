@@ -5,7 +5,7 @@ import { Drawer as BottomSheetPrimitive } from "@base-ui/react/drawer";
 import { XIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/shared/lib/utils";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 
 type BottomSheetContextProps = {
   hasSnapPoints: boolean;

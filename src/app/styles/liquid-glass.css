@@ -1,23 +1,15 @@
+.toolbar.lg-glass {
+  --lg-glass: var(--fill-nav-glass);
+  --lg-edge: var(--navigation-edge);
+  --lg-drop: var(--navigation-lens-shadow);
+  --lg-lens-shine: var(--nav-lens-shine);
+  --lg-rim-shine: var(--nav-rim-shine);
+  --lg-blur: 3px;
+}
+
 @layer utilities {
-  .liquid-glass,
-  .liquid-glass-control {
-    background: var(--fill-nav-glass);
-  }
-
-  .liquid-glass {
-    -webkit-backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
-    backdrop-filter: blur(4px) saturate(1.2) brightness(1.15);
-    border-color: color-mix(in oklab, var(--nav-glass-highlight) 45%, transparent);
-    box-shadow:
-      inset 1px 1px 0 var(--nav-glass-highlight),
-      inset 0 0 5px var(--nav-glass-highlight),
-      var(--shadow-nav-glass);
-  }
-
-  .liquid-glass-control {
-    -webkit-backdrop-filter: blur(4px) saturate(1.2);
-    backdrop-filter: blur(4px) saturate(1.2);
-    box-shadow: var(--shadow-glass-control);
+  .toolbar [data-slot="icon-button"] {
+    touch-action: none;
   }
 
   .toolbar [data-slot="icon-button"]:active {
@@ -28,21 +20,14 @@
   .toolbar [data-slot="icon-button"]:active::after {
     opacity: 0;
   }
-
-  .liquid-glass-navigation-active {
-    background: color-mix(in oklab, var(--fill-nav-active) 55%, transparent);
-  }
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  .liquid-glass,
-  .liquid-glass-control {
-    background-color: var(--surface);
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  .toolbar.lg-glass {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-  }
-
-  .liquid-glass-navigation-active {
-    background: var(--background);
+    background-color: var(--surface);
+    background-image: none;
+    box-shadow: inset 0 0 0 1px var(--foreground);
   }
 }

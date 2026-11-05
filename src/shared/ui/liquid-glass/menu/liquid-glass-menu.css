@@ -1,0 +1,96 @@
+.liquid-glass-menu.lg-menu {
+  --lg-foreground: var(--foreground);
+  --lg-muted: var(--muted-foreground);
+  --lg-glass: var(--fill-nav-glass);
+  --lg-glass-active: color-mix(in srgb, var(--fill-nav-glass) 85%, var(--foreground) 15%);
+  --lg-edge: var(--navigation-edge);
+  --lg-drop: var(--navigation-lens-shadow);
+  --lg-ring: var(--ring);
+  --lg-lens-shine: var(--nav-lens-shine);
+  --lg-rim-shine: var(--nav-rim-shine);
+  --lg-surface: var(--navigation-glass);
+  --lg-surface-edge: var(--navigation-edge);
+  --lg-shadow: var(--navigation-lens-shadow);
+  --lg-highlight: var(--navigation-selection);
+  --lg-destructive: var(--destructive);
+  pointer-events: auto;
+}
+
+.liquid-glass-menu:has(.lg-menu-card) {
+  z-index: 40;
+}
+
+.liquid-glass-menu.lg-menu > .lg-button {
+  width: var(--toolbar-height);
+  height: var(--toolbar-height);
+  padding: 0;
+  border-radius: calc(var(--toolbar-height) / 2);
+  touch-action: none;
+}
+
+.liquid-glass-menu.lg-menu > .lg-button > svg {
+  width: 24px;
+  height: 24px;
+}
+
+.liquid-glass-menu .lg-menu-card {
+  max-width: calc(100vw - 40px);
+}
+
+.liquid-glass-menu .lg-menu-content {
+  max-height: min(360px, calc(100dvh - var(--page-top) - 24px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  touch-action: none;
+}
+
+.liquid-glass-menu .lg-menu-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* 긴 지역 목록에서는 카드 당김 대신 목록의 세로 스크롤을 허용한다. */
+.liquid-glass-menu .lg-menu-card[data-scrollable],
+.liquid-glass-menu .lg-menu-card[data-scrollable] .lg-menu-content {
+  touch-action: pan-y;
+}
+
+.liquid-glass-menu .lg-menu-item {
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  text-decoration: none;
+}
+
+.liquid-glass-menu .lg-menu-item > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.liquid-glass-menu .lg-menu-item[aria-checked="true"] {
+  background: var(--lg-highlight);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liquid-glass-menu > .lg-button,
+  .liquid-glass-menu .lg-menu-card {
+    scale: none !important;
+    translate: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  .liquid-glass-menu.lg-menu {
+    --lg-glass: var(--surface);
+    --lg-glass-active: var(--muted);
+    --lg-surface: var(--surface);
+  }
+
+  .liquid-glass-menu > .lg-button,
+  .liquid-glass-menu .lg-menu-surface {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-image: none;
+    box-shadow: inset 0 0 0 1px var(--foreground);
+  }
+}

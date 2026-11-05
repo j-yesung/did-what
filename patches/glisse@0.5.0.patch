@@ -1,0 +1,1264 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 28f5d34cfd831154aa8a64b3ddf135be3072475d..0eac5f22b4326eb6d029b4074f9d9277210568cc 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -65,7 +65,7 @@ function tick(time) {
+ 		}
+ 		s.paint(s.value);
+ 	}
+-	if (moving.size) frame = requestAnimationFrame(tick);
++	if (moving.size && !frame) frame = requestAnimationFrame(tick);
+ }
+ function prefersReducedMotion() {
+ 	return matchMedia("(prefers-reduced-motion: reduce)").matches;
+@@ -80,6 +80,8 @@ function createSpring(value, stiffness, damping, paint) {
+ 		paint
+ 	};
+ 	return {
++		get velocity() { return s.velocity; },
++		get acceleration() { return s.stiffness * (s.target - s.value) - s.damping * s.velocity; },
+ 		paint: () => paint(s.value),
+ 		set(target, instant = false) {
+ 			s.target = target;
+@@ -116,7 +118,7 @@ const TOUCH = {
+ 	press: [515, 27.3],
+ 	release: [250, 11.8]
+ };
+-function usePress(ref) {
++function usePress(ref, ignoreSelector) {
+ 	(0, react.useEffect)(() => {
+ 		const el = ref.current;
+ 		if (!el) return;
+@@ -189,7 +191,8 @@ function usePress(ref) {
+ 			], feel.release);
+ 		};
+ 		const down = (event) => {
+-			if (!event.isPrimary || event.button !== 0 || pointer || el.matches(":disabled")) return;
++			if (!event.isPrimary || event.button !== 0 || pointer || el.matches(":disabled, [aria-disabled=true], [data-disabled]")) return;
++			if (ignoreSelector && event.target instanceof Element && event.target.closest(ignoreSelector)) return;
+ 			pointer = {
+ 				id: event.pointerId,
+ 				x: event.clientX,
+@@ -214,7 +217,7 @@ function usePress(ref) {
+ 			el.style.removeProperty("scale");
+ 			el.style.removeProperty("translate");
+ 		};
+-	}, [ref]);
++	}, [ref, ignoreSelector]);
+ }
+ // src/internal/svg.ts
+ const SVG = "http://www.w3.org/2000/svg";
+@@ -502,7 +505,10 @@ function graph(lenses, box, standIn) {
+ 				result: `neutral-${k}`
+ 			})
+ 		];
+-		if (standIn) boxed.push(image(maps.shape, merged("shape")));
++		if (standIn) {
++			const shapeImage = image(maps.shape, merged("shape"));
++			boxed.push(shapeImage);
++		}
+ 		filter.append(...boxed);
+ 		for (const pull of ["across", "down"]) {
+ 			const half = svg("feComponentTransfer", {
+@@ -641,14 +647,21 @@ function graph(lenses, box, standIn) {
+ 		k3: 1,
+ 		result: "seen"
+ 	}));
++	// Fade optical shading as well as displacement back to the original pixels.
++	const opticalBlend = svg("feComposite", {
++		in: "seen", in2: "SourceGraphic", operator: "arithmetic", k2: 1, k3: 0,
++		result: "optical-blend"
++	});
++	filter.append(opticalBlend);
+ 	if (standIn) filter.append(svg("feComposite", {
+-		in: "seen",
++		in: "optical-blend",
+ 		in2: "shape",
+ 		operator: "in"
+ 	}));
+ 	return {
+ 		filter,
+-		parts
++		parts,
++		opticalBlend
+ 	};
+ }
+ function place(graph, placed, across, down, box) {
+@@ -658,6 +671,9 @@ function place(graph, placed, across, down, box) {
+ 		width: across,
+ 		height: down
+ 	})) graph.filter.setAttribute(key, String(value));
++	const optics = Math.max(0, ...placed.map((lens) => lens.optics ?? 1));
++	graph.opticalBlend.setAttribute("k2", String(optics));
++	graph.opticalBlend.setAttribute("k3", String(1 - optics));
+ 	placed.forEach((lens, k) => {
+ 		const part = graph.parts[k];
+ 		const spectrum = [
+@@ -667,7 +683,8 @@ function place(graph, placed, across, down, box) {
+ 		];
+ 		part.rays.forEach(([pullAcross, pullDown], i) => {
+ 			pullAcross.setAttribute("scale", String((box ? lens.reach / across : lens.reach) * spectrum[i]));
+-			pullDown.setAttribute("scale", String((box ? lens.reach / down : lens.reach) * spectrum[i]));
++			const verticalReach = lens.verticalReach ?? lens.reach;
++			pullDown.setAttribute("scale", String((box ? verticalReach / down : verticalReach) * spectrum[i]));
+ 		});
+ 		const blur = Math.max(lens.blur, .01);
+ 		part.soften?.setAttribute("stdDeviation", box ? `${blur / across} ${blur / down}` : String(blur));
+@@ -707,6 +724,8 @@ function fit(glass, options) {
+ 	const tuned = options.strengthProperty ? parseFloat(style.getPropertyValue(options.strengthProperty)) : NaN;
+ 	const own = page > 0 ? options.darkStrength ?? options.strength : options.strength;
+ 	const strength = Number.isFinite(tuned) ? tuned : own;
++	const tunedVertical = options.verticalStrengthProperty ? parseFloat(style.getPropertyValue(options.verticalStrengthProperty)) : NaN;
++	const verticalStrength = Number.isFinite(tunedVertical) ? Math.max(0, tunedVertical) : strength;
+ 	const split = options.dispersionProperty ? parseFloat(style.getPropertyValue(options.dispersionProperty)) : NaN;
+ 	const dispersion = Number.isFinite(split) ? Math.max(0, split) : options.dispersion;
+ 	const density = Math.min(devicePixelRatio || 1, 2);
+@@ -733,6 +752,7 @@ function fit(glass, options) {
+ 		ink,
+ 		blur,
+ 		strength,
++		verticalStrength,
+ 		dispersion,
+ 		width,
+ 		height
+@@ -740,6 +760,15 @@ function fit(glass, options) {
+ }
+ const surfaces = /* @__PURE__ */ new Map();
+ let made = 0;
++// Clip with live vector paths: changing feImage URLs can blank Safari while it decodes.
++function placedContour(contour, x, y, width, height) {
++	let axis = 0;
++	return contour.path.replace(/-?\d*\.?\d+/g, (value) => {
++		const horizontal = axis++ % 2 === 0;
++		return String(Number((Number(value) * (horizontal ? width / contour.width : height / contour.height)
++			+ (horizontal ? x : y)).toFixed(3)));
++	});
++}
+ function render(surface) {
+ 	const { content } = surface;
+ 	const across = content.offsetWidth;
+@@ -754,6 +783,7 @@ function render(surface) {
+ 			const width = at.width / unit;
+ 			const height = at.height / unit;
+ 			const reach = member.fit.strength * Math.min(width, height) * member.amount;
++			const verticalReach = member.fit.verticalStrength * Math.min(width, height) * member.amount;
+ 			const { dispersion } = member.fit;
+ 			const blur = member.fit.blur * member.amount;
+ 			member.placed = {
+@@ -762,8 +792,11 @@ function render(surface) {
+ 				width,
+ 				height,
+ 				reach,
++				verticalReach,
+ 				dispersion,
+-				blur
++				blur,
++				optics: member.fit.ink ? clamp$3((member.amount - .02) / .3, 0, 1) : 1,
++				contour: member.glass.__glisseContour
+ 			};
+ 			shown.push(member);
+ 		}
+@@ -771,6 +804,7 @@ function render(surface) {
+ 	if (!shown.length) {
+ 		surface.placed = "";
+ 		content.style.removeProperty("filter");
++		content.style.removeProperty("clip-path");
+ 		if (surface.standIn) content.style.removeProperty("visibility");
+ 		surface.standIn = false;
+ 		return;
+@@ -790,27 +824,45 @@ function render(surface) {
+ 	const next = [
+ 		across,
+ 		down,
+-		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur }) => [
++		...placed.flatMap(({ x, y, width, height, reach, verticalReach, dispersion, blur, optics }) => [
+ 			x,
+ 			y,
+ 			width,
+ 			height,
+ 			reach,
++			verticalReach,
+ 			dispersion,
+-			blur
++			blur,
++			optics
+ 		])
+-	].map((value) => value.toFixed(2)).join(" ");
++	].map((value) => value.toFixed(2)).join(" ") + placed.map((lens) => lens.contour?.path ?? "").join("|");
+ 	if (next === surface.placed) return;
+ 	surface.placed = next;
+ 	place(surface.graph, placed, across, down, box);
+ 	surface.graph.filter.id = `${surface.name}-${++surface.version}`;
+ 	content.style.filter = `url("#${surface.graph.filter.id}")`;
++	const contour = shown.length === 1 && shown[0].placed.contour;
++	if (contour && standIn) {
++		const { x, y, width, height } = placed[0];
++		content.style.clipPath = `path("${placedContour(contour, x, y, width, height)}")`;
++	} else content.style.removeProperty("clip-path");
+ 	for (const member of shown) {
+ 		if (!member.replaces) continue;
+ 		content.style.visibility = "visible";
+ 		const { x, y, width, height } = member.placed;
+ 		const behind = member.replaces.getBoundingClientRect();
+ 		const unit = from.width / across || 1;
++		if (member.placed.contour) {
++			mask(member.replaces);
++			// Clip faces only: clipping the links themselves would cut holes in their hit areas.
++			for (const face of member.replaces.querySelectorAll(".lg-tab-face")) {
++				const at = face.getBoundingClientRect();
++				const path = placedContour(member.placed.contour, x + (from.left - at.left) / unit,
++					y + (from.top - at.top) / unit, width, height);
++				face.style.clipPath = `path(evenodd, "M 0 0 H ${face.offsetWidth} V ${face.offsetHeight} H 0 Z ${path}")`;
++			}
++			continue;
++		}
+ 		mask(member.replaces, {
+ 			image: `url("${member.fit.maps.shape}"), linear-gradient(#000, #000)`,
+ 			position: `${x + (from.left - behind.left) / unit}px ${y + (from.top - behind.top) / unit}px, 0 0`,
+@@ -826,6 +878,8 @@ const MASKING = [
+ 	"composite"
+ ];
+ function mask(element, layers) {
++	element.style.removeProperty("clip-path");
++	for (const face of element.querySelectorAll(".lg-tab-face")) face.style.removeProperty("clip-path");
+ 	for (const part of MASKING) {
+ 		element.style.removeProperty(`-webkit-mask-${part}`);
+ 		element.style.removeProperty(`mask-${part}`);
+@@ -1129,10 +1183,12 @@ function onThemeChange(repaint) {
+ 	repaints.add(repaint);
+ 	if (!unwatch) {
+ 		const run = () => repaints.forEach((each) => each());
+-		const observer = new MutationObserver(run);
++		const observer = new MutationObserver((mutations) => {
++      if (mutations.some((mutation) => mutation.attributeName === "data-theme" || mutation.target === document.documentElement)) run();
++    });
+ 		observer.observe(document.documentElement, {
+ 			attributes: true,
+-			attributeFilter: ["data-theme"],
++			attributeFilter: ["data-theme", "class"],
+ 			subtree: true
+ 		});
+ 		const scheme = matchMedia("(prefers-color-scheme: dark)");
+@@ -1463,12 +1519,12 @@ function fitSelection(element, filtered) {
+ 	element.style.setProperty("--lg-rim-bright", brightRim);
+ }
+ // src/button.tsx
+-const Button = /* @__PURE__ */ (0, react.forwardRef)(function Button({ icon, variant = "glass", destructive, tint, children, className, style, type = "button", ...props }, forwardedRef) {
++const Button = /* @__PURE__ */ (0, react.forwardRef)(function Button({ as: Root = "button", icon, variant = "glass", destructive, tint, children, className, style, type = "button", ...props }, forwardedRef) {
+ 	const ref = (0, react.useRef)(null);
+ 	(0, react.useImperativeHandle)(forwardedRef, () => ref.current);
+ 	usePress(ref);
+ 	useRefraction(ref);
+-	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
++	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(Root, {
+ 		ref,
+ 		type,
+ 		className: cx("lg-glass lg-button", className),
+@@ -1581,7 +1637,7 @@ const ellipsis = /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+ 		})
+ 	]
+ });
+-function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", className, style }) {
++function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", className, style, link = "a" }) {
+ 	const [phase, setPhase] = (0, react.useState)("closed");
+ 	const triggerRef = (0, react.useRef)(null);
+ 	const cardRef = (0, react.useRef)(null);
+@@ -1664,7 +1720,11 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 		morphRef.current = morph;
+ 		shape.paint();
+ 		morph.set(1);
+-		const rows = () => [...card.querySelectorAll(".lg-menu-item:not(:disabled)")];
++		const syncScrollable = () => card.toggleAttribute("data-scrollable", content.scrollHeight > content.clientHeight + 1);
++		syncScrollable();
++		const resize = new ResizeObserver(syncScrollable);
++		resize.observe(content);
++		const rows = () => [...card.querySelectorAll(".lg-menu-item:not(:disabled):not([aria-disabled=true])")];
+ 		rows()[0]?.focus({ preventScroll: true });
+ 		const offset = {
+ 			scale: 1,
+@@ -1716,10 +1776,11 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 		};
+ 		const rowAt = (clientX, clientY) => {
+ 			const row = document.elementFromPoint(clientX, clientY)?.closest(".lg-menu-item");
+-			return row && !row.disabled && card.contains(row) ? row : null;
++			return row && !row.disabled && row.getAttribute("aria-disabled") !== "true" && card.contains(row) ? row : null;
+ 		};
+ 		const down = (event) => {
+ 			if (!event.isPrimary || event.button !== 0) return;
++			if (card.hasAttribute("data-scrollable") && event.pointerType !== "mouse") return;
+ 			gesture = {
+ 				id: event.pointerId,
+ 				x: event.clientX,
+@@ -1761,6 +1822,7 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 			if (!row || event.detail !== 0 && performance.now() < suppressClickUntil) return;
+ 			const item = latest.current[Number(row.dataset.index)];
+ 			if (!item || item === "separator") return;
++			if (item.disabled) { event.preventDefault(); return; }
+ 			close();
+ 			item.onSelect?.();
+ 		};
+@@ -1802,6 +1864,7 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 				x,
+ 				y
+ 			].forEach((spring) => spring.stop());
++			resize.disconnect();
+ 			morphRef.current = null;
+ 			trigger.style.opacity = "";
+ 			card.removeEventListener("pointerdown", down);
+@@ -1856,13 +1919,17 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 					}), items.map((item, index) => item === "separator" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+ 						role: "separator",
+ 						className: "lg-menu-separator"
+-					}, index) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+-						type: "button",
+-						role: "menuitem",
++					}, index) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(item.href ? link : "button", {
++						type: item.href ? void 0 : "button",
++						href: item.href,
++						tabIndex: item.href && item.disabled ? -1 : void 0,
++						role: item.selected === void 0 ? "menuitem" : "menuitemradio",
++						"aria-checked": item.selected,
++						"aria-disabled": item.href && item.disabled ? true : void 0,
+ 						className: "lg-menu-item",
+ 						"data-index": index,
+ 						"data-destructive": item.destructive ? "" : void 0,
+-						disabled: item.disabled,
++						disabled: item.href ? void 0 : item.disabled,
+ 						children: [item.icon, item.label]
+ 					}, index))]
+ 				})
+@@ -1903,11 +1970,13 @@ const keys = [
+ 	"Home",
+ 	"End"
+ ];
++// iOS 26 WWDC25/102 tab demo (11:47): brisk travel with a short settle.
++// Web approximation: response 0.3s, damping ratio 1; not UIKit timing constants.
+ const REST = [
+-	1024,
+-	58.9,
+-	676,
+-	47.8
++	438.65,
++	41.888,
++	438.65,
++	41.888
+ ];
+ const UNDER = .5;
+ const DRAG = [
+@@ -1919,6 +1988,7 @@ const DRAG = [
+ const LENS$2 = {
+ 	strength: .2,
+ 	strengthProperty: "--lg-tab-bend",
++	verticalStrengthProperty: "--lg-tab-bend-y",
+ 	dispersion: 2,
+ 	dispersionProperty: "--lg-tab-dispersion",
+ 	depth: 4,
+@@ -1935,6 +2005,26 @@ const SEGMENT_LENS = {
+ 	dome: 0,
+ 	splay: 1
+ };
++// Eight connected cubic segments let each side deform without scaling the labels.
++function contourPath(width, height, padding, edges, limit) {
++	const [left, right, top, bottom] = edges.map((value) => clamp(value, -limit, limit));
++	const l = padding, r = width - padding, t = padding, b = height - padding;
++	const radius = Math.min((b - t) / 2, (r - l) / 2);
++	const a = l + radius, z = r - radius, middle = width / 2, center = height / 2;
++	const span = (z - a) / 4, k = radius * .55228475;
++	const point = (x, y) => `${Number(x.toFixed(3))} ${Number(y.toFixed(3))}`;
++	return [
++		`M ${point(a, t)}`,
++		`C ${point(a + span, t)} ${point(middle - span, t + top)} ${point(middle, t + top)}`,
++		`C ${point(middle + span, t + top)} ${point(z - span, t)} ${point(z, t)}`,
++		`C ${point(z + k, t)} ${point(r + right, center - k)} ${point(r + right, center)}`,
++		`C ${point(r + right, center + k)} ${point(z + k, b)} ${point(z, b)}`,
++		`C ${point(z - span, b)} ${point(middle + span, b + bottom)} ${point(middle, b + bottom)}`,
++		`C ${point(middle - span, b + bottom)} ${point(a + span, b)} ${point(a, b)}`,
++		`C ${point(a - k, b)} ${point(l - left, center + k)} ${point(l - left, center)}`,
++		`C ${point(l - left, center - k)} ${point(a - k, t)} ${point(a, t)} Z`
++	].join(" ");
++}
+ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options, bendsBackdrop, select) {
+ 	const tabs = [...bar.querySelectorAll(".lg-tab")];
+ 	let slot = 0;
+@@ -1944,18 +2034,59 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	let padding = 0;
+ 	let growX = 16;
+ 	let growY = 12;
++	let wobble = 1;
+ 	let active = -1;
+ 	let shown = false;
+ 	let settleFrame = 0;
+ 	let gesture = null;
++	let interactive = false;
+ 	const state = {
+ 		x: 0,
+-		lift: 0
++		lift: 0,
++		edges: [0, 0, 0, 0]
++	};
++	const contour = getComputedStyle(bar).getPropertyValue("--lg-contour").trim() === "1";
++	const rimId = `glisse-contour-rim-${made++}`;
++	const surface = svg("svg", { class: "lg-tab-contour", "aria-hidden": "true" });
++	const gradient = svg("linearGradient", { id: rimId, x1: 0, y1: 0, x2: 1, y2: 1 });
++	gradient.append(
++		svg("stop", { offset: 0, "stop-color": "var(--nav-glass-highlight)", "stop-opacity": .9 }),
++		svg("stop", { offset: .5, "stop-color": "var(--navigation-edge)", "stop-opacity": .3 }),
++		svg("stop", { offset: 1, "stop-color": "var(--nav-glass-highlight)", "stop-opacity": .7 })
++	);
++	const surfaceDefs = svg("defs", {});
++	surfaceDefs.append(gradient);
++	const restSurface = svg("path", { fill: "var(--lg-selection)" });
++	const glassSurface = svg("path", { fill: "var(--lg-lens)" });
++	const rimSurface = svg("path", { fill: "none", stroke: `url(#${rimId})`, "stroke-width": 1.1, "vector-effect": "non-scaling-stroke" });
++	surface.append(surfaceDefs, restSurface, glassSurface, rimSurface);
++	if (contour) {
++		lens.dataset.contour = "";
++		lens.append(surface);
++	}
++	let lastContour = "";
++	let disposed = false;
++	let paintPending = false;
++	const schedulePaint = () => {
++		if (disposed || paintPending) return;
++		paintPending = true;
++		queueMicrotask(() => { paintPending = false; if (!disposed) paint(); });
+ 	};
+ 	const refraction = createLens(lens, lensed, options, labels);
+ 	const backdrop = bendsBackdrop && refractsBackdrop() ? createBackdropLens(lens, options) : null;
+ 	let lensing = false;
+-	const mark = () => bar.toggleAttribute("data-away", active < 0 || Math.abs(state.x - active * slot) > .5);
++	// Include deformation in the settled state without swapping label renderers.
++	const isSettled = () => !gesture && active >= 0 && Math.abs(state.x - active * slot) < .5
++		&& Math.abs(state.lift) < .01 && Math.abs(x.velocity) < 1 && Math.abs(lift.velocity) < .05
++		&& state.edges.every((value) => Math.abs(value) < .01)
++		&& edges.every((spring) => Math.abs(spring.velocity) < .05);
++	const mark = () => {
++		const settled = isSettled();
++		if (settled) interactive = false;
++		bar.toggleAttribute("data-away", !settled);
++		bar.toggleAttribute("data-settled", settled);
++		return settled;
++	};
+ 	const measure = () => {
+ 		const style = getComputedStyle(bar);
+ 		padding = parseFloat(style.paddingLeft) || 0;
+@@ -1965,43 +2096,71 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		height = lens.offsetHeight;
+ 		growX = parseFloat(style.getPropertyValue("--lg-lens-grow-x")) || 0;
+ 		growY = parseFloat(style.getPropertyValue("--lg-lens-grow-y")) || 0;
++		wobble = parseFloat(style.getPropertyValue("--lg-tab-wobble")) || 1;
++
+ 	};
+ 	const paint = () => {
+ 		const { x, lift } = state;
+-		const sx = 1 + growX / width * lift;
+-		const sy = 1 + growY / height * lift;
++		const limit = 3 * wobble;
++		const magnitude = Math.min(limit, Math.max(...state.edges.map(Math.abs)));
++		const elevation = Math.max(lift, Math.min(magnitude / limit, 1));
++		const sx = 1 + growX / width * elevation;
++		const sy = 1 + growY / height * elevation;
+ 		const transform = `translateX(${x}px) scale(${sx}, ${sy})`;
+ 		lens.style.transform = tint.style.transform = transform;
++		if (contour && width && height) {
++			const path = contourPath(width, height, magnitude, state.edges, limit);
++			if (path !== lastContour) {
++				lastContour = path;
++				surface.setAttribute("viewBox", `0 0 ${width} ${height}`);
++				for (const layer of [restSurface, glassSurface, rimSurface]) layer.setAttribute("d", path);
++				lens.__glisseContour = { path, width, height };
++			}
++			restSurface.setAttribute("opacity", String(1 - clamp(elevation, 0, 1)));
++			glassSurface.setAttribute("opacity", String(clamp(elevation, 0, 1)));
++			rimSurface.setAttribute("opacity", String(clamp(elevation, 0, 1)));
++		}
+ 		if (thumb) thumb.style.transform = transform;
+-		lens.style.setProperty("--lg-lift", String(clamp(lift, 0, 1)));
++		lens.style.setProperty("--lg-lift", String(clamp(elevation, 0, 1)));
+ 		lens.style.setProperty("--lg-lift-y", String(sy));
+ 		row.style.transform = `scale(${1 / sx}, ${1 / sy}) translate(${-x + (sx - 1) * (inset + width / 2)}px, ${(sy - 1) * (inset + height / 2)}px)`;
+-		if (!gesture && lift < .01) delete bar.dataset.refracting;
+-		mark();
+-		if (lift > .01 !== lensing) {
+-			lensing = lift > .01;
++		const settled = mark();
++		if (settled) delete bar.dataset.refracting;
++		// Keep one renderer at rest, so landing never swaps filtered and DOM text.
++		const nextLensing = shown || active >= 0;
++		if (nextLensing !== lensing) {
++			lensing = nextLensing;
+ 			bar.toggleAttribute("data-lensing", lensing);
+ 			refraction.setActive(lensing);
+ 		}
+-		const amount = clamp(lift, 0, 1);
+-		const under = clamp((lift - UNDER) / .5, 0, 1);
+-		lens.style.setProperty("--lg-rest", String(clamp(1 - lift / UNDER, 0, 1)));
++		const amount = clamp(elevation, 0, 1);
++		const under = clamp((elevation - UNDER) / .5, 0, 1);
++		lens.style.setProperty("--lg-rest", String(clamp(1 - elevation / UNDER, 0, 1)));
+ 		lens.style.setProperty("--lg-under", String(under));
+-		bar.toggleAttribute("data-under", lift > UNDER);
++		bar.toggleAttribute("data-under", elevation > UNDER);
+ 		refraction.update(amount);
+ 		backdrop?.update(under);
+ 	};
++	// Each edge keeps its own velocity; pressure bends top and bottom in different phases.
++	const edges = [[246.74, 25.13], [438.65, 33.51], [438.65, 33.51], [246.74, 25.13]].map(([stiffness, damping], index) =>
++		createSpring(0, stiffness, damping, (value) => { state.edges[index] = value; schedulePaint(); })
++	);
+ 	const x = createSpring(0, REST[0], REST[1], (value) => {
+ 		state.x = value;
+-		paint();
+-	});
+-	const lift = createSpring(0, REST[2], REST[3], (value) => {
+-		state.lift = value;
+-		paint();
++		const speed = interactive ? clamp(x.velocity / Math.max(width, 1) / 8, -1, 1) : 0;
++		const pressure = interactive ? clamp(x.acceleration / Math.max(width, 1) / 160, -1, 1) : 0;
++		edges[0].tune(speed < 0 ? 438.65 : 246.74, speed < 0 ? 33.51 : 25.13);
++		edges[1].tune(speed < 0 ? 246.74 : 438.65, speed < 0 ? 25.13 : 33.51);
++		const targets = [Math.abs(speed) * 1.8 - speed * 1.2, Math.abs(speed) * 1.8 + speed * 1.2,
++			-Math.abs(speed) * 1.5 - pressure * 1.5, Math.abs(speed) * 1.5 - pressure * 1.5];
++		edges.forEach((spring, index) => spring.set(targets[index] * wobble, !shown));
++		schedulePaint();
+ 	});
++	const lift = createSpring(0, REST[2], REST[3], (value) => { state.lift = value; schedulePaint(); });
+ 	const move = (target, lifted, instant = false) => {
+ 		const [slideStiffness, slideDamping, liftStiffness, liftDamping] = gesture ? DRAG : REST;
+-		x.tune(slideStiffness, slideDamping);
++		// Keep direct tracking fast once the pointer starts dragging.
++		x.tune(gesture?.moved ? slideStiffness : REST[0], gesture?.moved ? slideDamping : REST[1]);
+ 		lift.tune(liftStiffness, liftDamping);
+ 		x.set(target, instant);
+ 		lift.set(lifted ? 1 : 0, instant);
+@@ -2037,12 +2196,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		settleFrame = 0;
+ 		measure();
+ 		bar.toggleAttribute("data-light", parseFloat(getComputedStyle(lens).getPropertyValue("--lg-lens-shine")) < 0);
++		refraction.refit();
+ 		backdrop?.refit();
+ 		const box = bar.getBoundingClientRect();
++		const offset = event.clientX - box.left - padding - state.x;
++		const caught = shown && !isSettled() && offset >= 0 && offset < slot;
++		if (caught) x.set(state.x, true);
++		interactive = true;
+ 		gesture = {
+ 			id: event.pointerId,
+ 			x: event.clientX,
+-			anchor: tabs.indexOf(tab) * slot,
++			anchor: caught ? state.x : tabs.indexOf(tab) * slot,
+ 			moved: false,
+ 			box,
+ 			at: performance.now()
+@@ -2071,7 +2235,8 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		const index = Math.round(position(event) / slot);
+ 		const { moved, box } = release();
+ 		const near = event.clientY >= box.top - 24 && event.clientY <= box.bottom + 24;
+-		if (event.type === "pointerup" && (moved || near)) {
++		// Releasing away from the bar cancels, including a horizontal drag.
++		if (event.type === "pointerup" && near) {
+ 			suppressClick = true;
+ 			settleFrame = requestAnimationFrame(() => {
+ 				settleFrame = 0;
+@@ -2121,6 +2286,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	};
+ 	const observer = new ResizeObserver(() => {
+ 		measure();
++		refraction.refit();
+ 		if (!gesture) settle(true);
+ 	});
+ 	measure();
+@@ -2147,11 +2313,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 			cancelAnimationFrame(settleFrame);
+ 			x.stop();
+ 			lift.stop();
++			disposed = true;
++			edges.forEach((spring) => spring.stop());
++			surface.remove();
++			delete lens.__glisseContour;
++			delete lens.dataset.contour;
+ 			refraction.destroy();
+ 			backdrop?.destroy();
+ 			observer.disconnect();
+ 			for (const key of [
+ 				"ready",
++				"settled",
+ 				"hidden",
+ 				"lifted",
+ 				"refracting",
+@@ -2681,3 +2853,5 @@ exports.SegmentedControl = SegmentedControl;
+ exports.Slider = Slider;
+ exports.Switch = Switch;
+ exports.TabBar = TabBar;
++
++exports.usePress = usePress;
+diff --git a/dist/index.d.cts b/dist/index.d.cts
+index 19092e551b0fc8b84ac68249ebd11190404a1710..d521e5812837826b387026b7d8f745d8927275f4 100644
+--- a/dist/index.d.cts
++++ b/dist/index.d.cts
+@@ -1,6 +1,8 @@
+ 
+-import { ButtonHTMLAttributes, CSSProperties, ElementType, ForwardRefExoticComponent, HTMLAttributes, InputHTMLAttributes, JSX, ReactNode, RefAttributes } from "react";
++import { ButtonHTMLAttributes, CSSProperties, ElementType, ForwardRefExoticComponent, HTMLAttributes, InputHTMLAttributes, JSX, ReactNode, RefAttributes, RefObject } from "react";
+ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
++  /** The root component; forwards refs and native button props (for example Base UI Button). */
++  as?: ElementType;
+   /** Shown before the label. On its own, the button is a circle; give it an `aria-label`. */
+   icon?: ReactNode;
+   /** `glass` is clear; `filled` fills it with the accent colour, for the primary action. */
+@@ -22,6 +24,8 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value"
+ }
+ export declare const Input: ForwardRefExoticComponent<InputProps & RefAttributes<HTMLInputElement>>;
+ interface MenuItem {
++  href?: string;
++  selected?: boolean;
+   label: ReactNode;
+   icon?: ReactNode;
+   onSelect?: () => void;
+@@ -30,6 +34,8 @@ interface MenuItem {
+ }
+ type MenuEntry = MenuItem | "separator";
+ interface MenuProps {
++  /** Link component for menu entries with an href. */
++  link?: ElementType;
+   items: MenuEntry[];
+   /** Names the trigger and the menu for assistive technology. */
+   "aria-label": string;
+@@ -99,3 +105,5 @@ interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue
+  */
+ export declare function TabBar(props: TabBarProps): JSX.Element;
+ export type { ButtonProps, GlassProps, InputProps, MenuEntry, MenuItem, MenuProps, SearchFieldProps, SegmentedControlItem, SegmentedControlProps, SliderProps, SwitchProps, TabBarItem, TabBarProps };
++/** The same interruptible press springs used by Button, for grouped controls. */
++export declare function usePress(ref: RefObject<HTMLElement | null>, ignoreSelector?: string): void;
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 19092e551b0fc8b84ac68249ebd11190404a1710..d521e5812837826b387026b7d8f745d8927275f4 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,6 +1,8 @@
+ 
+-import { ButtonHTMLAttributes, CSSProperties, ElementType, ForwardRefExoticComponent, HTMLAttributes, InputHTMLAttributes, JSX, ReactNode, RefAttributes } from "react";
++import { ButtonHTMLAttributes, CSSProperties, ElementType, ForwardRefExoticComponent, HTMLAttributes, InputHTMLAttributes, JSX, ReactNode, RefAttributes, RefObject } from "react";
+ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
++  /** The root component; forwards refs and native button props (for example Base UI Button). */
++  as?: ElementType;
+   /** Shown before the label. On its own, the button is a circle; give it an `aria-label`. */
+   icon?: ReactNode;
+   /** `glass` is clear; `filled` fills it with the accent colour, for the primary action. */
+@@ -22,6 +24,8 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value"
+ }
+ export declare const Input: ForwardRefExoticComponent<InputProps & RefAttributes<HTMLInputElement>>;
+ interface MenuItem {
++  href?: string;
++  selected?: boolean;
+   label: ReactNode;
+   icon?: ReactNode;
+   onSelect?: () => void;
+@@ -30,6 +34,8 @@ interface MenuItem {
+ }
+ type MenuEntry = MenuItem | "separator";
+ interface MenuProps {
++  /** Link component for menu entries with an href. */
++  link?: ElementType;
+   items: MenuEntry[];
+   /** Names the trigger and the menu for assistive technology. */
+   "aria-label": string;
+@@ -99,3 +105,5 @@ interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue
+  */
+ export declare function TabBar(props: TabBarProps): JSX.Element;
+ export type { ButtonProps, GlassProps, InputProps, MenuEntry, MenuItem, MenuProps, SearchFieldProps, SegmentedControlItem, SegmentedControlProps, SliderProps, SwitchProps, TabBarItem, TabBarProps };
++/** The same interruptible press springs used by Button, for grouped controls. */
++export declare function usePress(ref: RefObject<HTMLElement | null>, ignoreSelector?: string): void;
+diff --git a/dist/index.js b/dist/index.js
+index 02d488ace3671da61835b1d629c1714cc92fb52c..27b903860d1809c72d09e65015f5e1bb972e6a08 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -64,7 +64,7 @@ function tick(time) {
+ 		}
+ 		s.paint(s.value);
+ 	}
+-	if (moving.size) frame = requestAnimationFrame(tick);
++	if (moving.size && !frame) frame = requestAnimationFrame(tick);
+ }
+ function prefersReducedMotion() {
+ 	return matchMedia("(prefers-reduced-motion: reduce)").matches;
+@@ -79,6 +79,8 @@ function createSpring(value, stiffness, damping, paint) {
+ 		paint
+ 	};
+ 	return {
++		get velocity() { return s.velocity; },
++		get acceleration() { return s.stiffness * (s.target - s.value) - s.damping * s.velocity; },
+ 		paint: () => paint(s.value),
+ 		set(target, instant = false) {
+ 			s.target = target;
+@@ -115,7 +117,7 @@ const TOUCH = {
+ 	press: [515, 27.3],
+ 	release: [250, 11.8]
+ };
+-function usePress(ref) {
++function usePress(ref, ignoreSelector) {
+ 	useEffect(() => {
+ 		const el = ref.current;
+ 		if (!el) return;
+@@ -188,7 +190,8 @@ function usePress(ref) {
+ 			], feel.release);
+ 		};
+ 		const down = (event) => {
+-			if (!event.isPrimary || event.button !== 0 || pointer || el.matches(":disabled")) return;
++			if (!event.isPrimary || event.button !== 0 || pointer || el.matches(":disabled, [aria-disabled=true], [data-disabled]")) return;
++			if (ignoreSelector && event.target instanceof Element && event.target.closest(ignoreSelector)) return;
+ 			pointer = {
+ 				id: event.pointerId,
+ 				x: event.clientX,
+@@ -213,7 +216,7 @@ function usePress(ref) {
+ 			el.style.removeProperty("scale");
+ 			el.style.removeProperty("translate");
+ 		};
+-	}, [ref]);
++	}, [ref, ignoreSelector]);
+ }
+ // src/internal/svg.ts
+ const SVG = "http://www.w3.org/2000/svg";
+@@ -501,7 +504,10 @@ function graph(lenses, box, standIn) {
+ 				result: `neutral-${k}`
+ 			})
+ 		];
+-		if (standIn) boxed.push(image(maps.shape, merged("shape")));
++		if (standIn) {
++			const shapeImage = image(maps.shape, merged("shape"));
++			boxed.push(shapeImage);
++		}
+ 		filter.append(...boxed);
+ 		for (const pull of ["across", "down"]) {
+ 			const half = svg("feComponentTransfer", {
+@@ -640,14 +646,21 @@ function graph(lenses, box, standIn) {
+ 		k3: 1,
+ 		result: "seen"
+ 	}));
++	// Fade optical shading as well as displacement back to the original pixels.
++	const opticalBlend = svg("feComposite", {
++		in: "seen", in2: "SourceGraphic", operator: "arithmetic", k2: 1, k3: 0,
++		result: "optical-blend"
++	});
++	filter.append(opticalBlend);
+ 	if (standIn) filter.append(svg("feComposite", {
+-		in: "seen",
++		in: "optical-blend",
+ 		in2: "shape",
+ 		operator: "in"
+ 	}));
+ 	return {
+ 		filter,
+-		parts
++		parts,
++		opticalBlend
+ 	};
+ }
+ function place(graph, placed, across, down, box) {
+@@ -657,6 +670,9 @@ function place(graph, placed, across, down, box) {
+ 		width: across,
+ 		height: down
+ 	})) graph.filter.setAttribute(key, String(value));
++	const optics = Math.max(0, ...placed.map((lens) => lens.optics ?? 1));
++	graph.opticalBlend.setAttribute("k2", String(optics));
++	graph.opticalBlend.setAttribute("k3", String(1 - optics));
+ 	placed.forEach((lens, k) => {
+ 		const part = graph.parts[k];
+ 		const spectrum = [
+@@ -666,7 +682,8 @@ function place(graph, placed, across, down, box) {
+ 		];
+ 		part.rays.forEach(([pullAcross, pullDown], i) => {
+ 			pullAcross.setAttribute("scale", String((box ? lens.reach / across : lens.reach) * spectrum[i]));
+-			pullDown.setAttribute("scale", String((box ? lens.reach / down : lens.reach) * spectrum[i]));
++			const verticalReach = lens.verticalReach ?? lens.reach;
++			pullDown.setAttribute("scale", String((box ? verticalReach / down : verticalReach) * spectrum[i]));
+ 		});
+ 		const blur = Math.max(lens.blur, .01);
+ 		part.soften?.setAttribute("stdDeviation", box ? `${blur / across} ${blur / down}` : String(blur));
+@@ -706,6 +723,8 @@ function fit(glass, options) {
+ 	const tuned = options.strengthProperty ? parseFloat(style.getPropertyValue(options.strengthProperty)) : NaN;
+ 	const own = page > 0 ? options.darkStrength ?? options.strength : options.strength;
+ 	const strength = Number.isFinite(tuned) ? tuned : own;
++	const tunedVertical = options.verticalStrengthProperty ? parseFloat(style.getPropertyValue(options.verticalStrengthProperty)) : NaN;
++	const verticalStrength = Number.isFinite(tunedVertical) ? Math.max(0, tunedVertical) : strength;
+ 	const split = options.dispersionProperty ? parseFloat(style.getPropertyValue(options.dispersionProperty)) : NaN;
+ 	const dispersion = Number.isFinite(split) ? Math.max(0, split) : options.dispersion;
+ 	const density = Math.min(devicePixelRatio || 1, 2);
+@@ -732,6 +751,7 @@ function fit(glass, options) {
+ 		ink,
+ 		blur,
+ 		strength,
++		verticalStrength,
+ 		dispersion,
+ 		width,
+ 		height
+@@ -739,6 +759,15 @@ function fit(glass, options) {
+ }
+ const surfaces = /* @__PURE__ */ new Map();
+ let made = 0;
++// Clip with live vector paths: changing feImage URLs can blank Safari while it decodes.
++function placedContour(contour, x, y, width, height) {
++	let axis = 0;
++	return contour.path.replace(/-?\d*\.?\d+/g, (value) => {
++		const horizontal = axis++ % 2 === 0;
++		return String(Number((Number(value) * (horizontal ? width / contour.width : height / contour.height)
++			+ (horizontal ? x : y)).toFixed(3)));
++	});
++}
+ function render(surface) {
+ 	const { content } = surface;
+ 	const across = content.offsetWidth;
+@@ -753,6 +782,7 @@ function render(surface) {
+ 			const width = at.width / unit;
+ 			const height = at.height / unit;
+ 			const reach = member.fit.strength * Math.min(width, height) * member.amount;
++			const verticalReach = member.fit.verticalStrength * Math.min(width, height) * member.amount;
+ 			const { dispersion } = member.fit;
+ 			const blur = member.fit.blur * member.amount;
+ 			member.placed = {
+@@ -761,8 +791,11 @@ function render(surface) {
+ 				width,
+ 				height,
+ 				reach,
++				verticalReach,
+ 				dispersion,
+-				blur
++				blur,
++				optics: member.fit.ink ? clamp$3((member.amount - .02) / .3, 0, 1) : 1,
++				contour: member.glass.__glisseContour
+ 			};
+ 			shown.push(member);
+ 		}
+@@ -770,6 +803,7 @@ function render(surface) {
+ 	if (!shown.length) {
+ 		surface.placed = "";
+ 		content.style.removeProperty("filter");
++		content.style.removeProperty("clip-path");
+ 		if (surface.standIn) content.style.removeProperty("visibility");
+ 		surface.standIn = false;
+ 		return;
+@@ -789,27 +823,45 @@ function render(surface) {
+ 	const next = [
+ 		across,
+ 		down,
+-		...placed.flatMap(({ x, y, width, height, reach, dispersion, blur }) => [
++		...placed.flatMap(({ x, y, width, height, reach, verticalReach, dispersion, blur, optics }) => [
+ 			x,
+ 			y,
+ 			width,
+ 			height,
+ 			reach,
++			verticalReach,
+ 			dispersion,
+-			blur
++			blur,
++			optics
+ 		])
+-	].map((value) => value.toFixed(2)).join(" ");
++	].map((value) => value.toFixed(2)).join(" ") + placed.map((lens) => lens.contour?.path ?? "").join("|");
+ 	if (next === surface.placed) return;
+ 	surface.placed = next;
+ 	place(surface.graph, placed, across, down, box);
+ 	surface.graph.filter.id = `${surface.name}-${++surface.version}`;
+ 	content.style.filter = `url("#${surface.graph.filter.id}")`;
++	const contour = shown.length === 1 && shown[0].placed.contour;
++	if (contour && standIn) {
++		const { x, y, width, height } = placed[0];
++		content.style.clipPath = `path("${placedContour(contour, x, y, width, height)}")`;
++	} else content.style.removeProperty("clip-path");
+ 	for (const member of shown) {
+ 		if (!member.replaces) continue;
+ 		content.style.visibility = "visible";
+ 		const { x, y, width, height } = member.placed;
+ 		const behind = member.replaces.getBoundingClientRect();
+ 		const unit = from.width / across || 1;
++		if (member.placed.contour) {
++			mask(member.replaces);
++			// Clip faces only: clipping the links themselves would cut holes in their hit areas.
++			for (const face of member.replaces.querySelectorAll(".lg-tab-face")) {
++				const at = face.getBoundingClientRect();
++				const path = placedContour(member.placed.contour, x + (from.left - at.left) / unit,
++					y + (from.top - at.top) / unit, width, height);
++				face.style.clipPath = `path(evenodd, "M 0 0 H ${face.offsetWidth} V ${face.offsetHeight} H 0 Z ${path}")`;
++			}
++			continue;
++		}
+ 		mask(member.replaces, {
+ 			image: `url("${member.fit.maps.shape}"), linear-gradient(#000, #000)`,
+ 			position: `${x + (from.left - behind.left) / unit}px ${y + (from.top - behind.top) / unit}px, 0 0`,
+@@ -825,6 +877,8 @@ const MASKING = [
+ 	"composite"
+ ];
+ function mask(element, layers) {
++	element.style.removeProperty("clip-path");
++	for (const face of element.querySelectorAll(".lg-tab-face")) face.style.removeProperty("clip-path");
+ 	for (const part of MASKING) {
+ 		element.style.removeProperty(`-webkit-mask-${part}`);
+ 		element.style.removeProperty(`mask-${part}`);
+@@ -1128,10 +1182,12 @@ function onThemeChange(repaint) {
+ 	repaints.add(repaint);
+ 	if (!unwatch) {
+ 		const run = () => repaints.forEach((each) => each());
+-		const observer = new MutationObserver(run);
++		const observer = new MutationObserver((mutations) => {
++      if (mutations.some((mutation) => mutation.attributeName === "data-theme" || mutation.target === document.documentElement)) run();
++    });
+ 		observer.observe(document.documentElement, {
+ 			attributes: true,
+-			attributeFilter: ["data-theme"],
++			attributeFilter: ["data-theme", "class"],
+ 			subtree: true
+ 		});
+ 		const scheme = matchMedia("(prefers-color-scheme: dark)");
+@@ -1462,12 +1518,12 @@ function fitSelection(element, filtered) {
+ 	element.style.setProperty("--lg-rim-bright", brightRim);
+ }
+ // src/button.tsx
+-const Button = /* @__PURE__ */ forwardRef(function Button({ icon, variant = "glass", destructive, tint, children, className, style, type = "button", ...props }, forwardedRef) {
++const Button = /* @__PURE__ */ forwardRef(function Button({ as: Root = "button", icon, variant = "glass", destructive, tint, children, className, style, type = "button", ...props }, forwardedRef) {
+ 	const ref = useRef(null);
+ 	useImperativeHandle(forwardedRef, () => ref.current);
+ 	usePress(ref);
+ 	useRefraction(ref);
+-	return /* @__PURE__ */ jsxs("button", {
++	return /* @__PURE__ */ jsxs(Root, {
+ 		ref,
+ 		type,
+ 		className: cx("lg-glass lg-button", className),
+@@ -1580,7 +1636,7 @@ const ellipsis = /* @__PURE__ */ jsxs("svg", {
+ 		})
+ 	]
+ });
+-function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", className, style }) {
++function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", className, style, link = "a" }) {
+ 	const [phase, setPhase] = useState("closed");
+ 	const triggerRef = useRef(null);
+ 	const cardRef = useRef(null);
+@@ -1663,7 +1719,11 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 		morphRef.current = morph;
+ 		shape.paint();
+ 		morph.set(1);
+-		const rows = () => [...card.querySelectorAll(".lg-menu-item:not(:disabled)")];
++		const syncScrollable = () => card.toggleAttribute("data-scrollable", content.scrollHeight > content.clientHeight + 1);
++		syncScrollable();
++		const resize = new ResizeObserver(syncScrollable);
++		resize.observe(content);
++		const rows = () => [...card.querySelectorAll(".lg-menu-item:not(:disabled):not([aria-disabled=true])")];
+ 		rows()[0]?.focus({ preventScroll: true });
+ 		const offset = {
+ 			scale: 1,
+@@ -1715,10 +1775,11 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 		};
+ 		const rowAt = (clientX, clientY) => {
+ 			const row = document.elementFromPoint(clientX, clientY)?.closest(".lg-menu-item");
+-			return row && !row.disabled && card.contains(row) ? row : null;
++			return row && !row.disabled && row.getAttribute("aria-disabled") !== "true" && card.contains(row) ? row : null;
+ 		};
+ 		const down = (event) => {
+ 			if (!event.isPrimary || event.button !== 0) return;
++			if (card.hasAttribute("data-scrollable") && event.pointerType !== "mouse") return;
+ 			gesture = {
+ 				id: event.pointerId,
+ 				x: event.clientX,
+@@ -1760,6 +1821,7 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 			if (!row || event.detail !== 0 && performance.now() < suppressClickUntil) return;
+ 			const item = latest.current[Number(row.dataset.index)];
+ 			if (!item || item === "separator") return;
++			if (item.disabled) { event.preventDefault(); return; }
+ 			close();
+ 			item.onSelect?.();
+ 		};
+@@ -1801,6 +1863,7 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 				x,
+ 				y
+ 			].forEach((spring) => spring.stop());
++			resize.disconnect();
+ 			morphRef.current = null;
+ 			trigger.style.opacity = "";
+ 			card.removeEventListener("pointerdown", down);
+@@ -1855,13 +1918,17 @@ function Menu({ items, "aria-label": label, icon = ellipsis, align = "end", clas
+ 					}), items.map((item, index) => item === "separator" ? /* @__PURE__ */ jsx("div", {
+ 						role: "separator",
+ 						className: "lg-menu-separator"
+-					}, index) : /* @__PURE__ */ jsxs("button", {
+-						type: "button",
+-						role: "menuitem",
++					}, index) : /* @__PURE__ */ jsxs(item.href ? link : "button", {
++						type: item.href ? void 0 : "button",
++						href: item.href,
++						tabIndex: item.href && item.disabled ? -1 : void 0,
++						role: item.selected === void 0 ? "menuitem" : "menuitemradio",
++						"aria-checked": item.selected,
++						"aria-disabled": item.href && item.disabled ? true : void 0,
+ 						className: "lg-menu-item",
+ 						"data-index": index,
+ 						"data-destructive": item.destructive ? "" : void 0,
+-						disabled: item.disabled,
++						disabled: item.href ? void 0 : item.disabled,
+ 						children: [item.icon, item.label]
+ 					}, index))]
+ 				})
+@@ -1902,11 +1969,13 @@ const keys = [
+ 	"Home",
+ 	"End"
+ ];
++// iOS 26 WWDC25/102 tab demo (11:47): brisk travel with a short settle.
++// Web approximation: response 0.3s, damping ratio 1; not UIKit timing constants.
+ const REST = [
+-	1024,
+-	58.9,
+-	676,
+-	47.8
++	438.65,
++	41.888,
++	438.65,
++	41.888
+ ];
+ const UNDER = .5;
+ const DRAG = [
+@@ -1918,6 +1987,7 @@ const DRAG = [
+ const LENS$2 = {
+ 	strength: .2,
+ 	strengthProperty: "--lg-tab-bend",
++	verticalStrengthProperty: "--lg-tab-bend-y",
+ 	dispersion: 2,
+ 	dispersionProperty: "--lg-tab-dispersion",
+ 	depth: 4,
+@@ -1934,6 +2004,26 @@ const SEGMENT_LENS = {
+ 	dome: 0,
+ 	splay: 1
+ };
++// Eight connected cubic segments let each side deform without scaling the labels.
++function contourPath(width, height, padding, edges, limit) {
++	const [left, right, top, bottom] = edges.map((value) => clamp(value, -limit, limit));
++	const l = padding, r = width - padding, t = padding, b = height - padding;
++	const radius = Math.min((b - t) / 2, (r - l) / 2);
++	const a = l + radius, z = r - radius, middle = width / 2, center = height / 2;
++	const span = (z - a) / 4, k = radius * .55228475;
++	const point = (x, y) => `${Number(x.toFixed(3))} ${Number(y.toFixed(3))}`;
++	return [
++		`M ${point(a, t)}`,
++		`C ${point(a + span, t)} ${point(middle - span, t + top)} ${point(middle, t + top)}`,
++		`C ${point(middle + span, t + top)} ${point(z - span, t)} ${point(z, t)}`,
++		`C ${point(z + k, t)} ${point(r + right, center - k)} ${point(r + right, center)}`,
++		`C ${point(r + right, center + k)} ${point(z + k, b)} ${point(z, b)}`,
++		`C ${point(z - span, b)} ${point(middle + span, b + bottom)} ${point(middle, b + bottom)}`,
++		`C ${point(middle - span, b + bottom)} ${point(a + span, b)} ${point(a, b)}`,
++		`C ${point(a - k, b)} ${point(l - left, center + k)} ${point(l - left, center)}`,
++		`C ${point(l - left, center - k)} ${point(a - k, t)} ${point(a, t)} Z`
++	].join(" ");
++}
+ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options, bendsBackdrop, select) {
+ 	const tabs = [...bar.querySelectorAll(".lg-tab")];
+ 	let slot = 0;
+@@ -1943,18 +2033,59 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	let padding = 0;
+ 	let growX = 16;
+ 	let growY = 12;
++	let wobble = 1;
+ 	let active = -1;
+ 	let shown = false;
+ 	let settleFrame = 0;
+ 	let gesture = null;
++	let interactive = false;
+ 	const state = {
+ 		x: 0,
+-		lift: 0
++		lift: 0,
++		edges: [0, 0, 0, 0]
++	};
++	const contour = getComputedStyle(bar).getPropertyValue("--lg-contour").trim() === "1";
++	const rimId = `glisse-contour-rim-${made++}`;
++	const surface = svg("svg", { class: "lg-tab-contour", "aria-hidden": "true" });
++	const gradient = svg("linearGradient", { id: rimId, x1: 0, y1: 0, x2: 1, y2: 1 });
++	gradient.append(
++		svg("stop", { offset: 0, "stop-color": "var(--nav-glass-highlight)", "stop-opacity": .9 }),
++		svg("stop", { offset: .5, "stop-color": "var(--navigation-edge)", "stop-opacity": .3 }),
++		svg("stop", { offset: 1, "stop-color": "var(--nav-glass-highlight)", "stop-opacity": .7 })
++	);
++	const surfaceDefs = svg("defs", {});
++	surfaceDefs.append(gradient);
++	const restSurface = svg("path", { fill: "var(--lg-selection)" });
++	const glassSurface = svg("path", { fill: "var(--lg-lens)" });
++	const rimSurface = svg("path", { fill: "none", stroke: `url(#${rimId})`, "stroke-width": 1.1, "vector-effect": "non-scaling-stroke" });
++	surface.append(surfaceDefs, restSurface, glassSurface, rimSurface);
++	if (contour) {
++		lens.dataset.contour = "";
++		lens.append(surface);
++	}
++	let lastContour = "";
++	let disposed = false;
++	let paintPending = false;
++	const schedulePaint = () => {
++		if (disposed || paintPending) return;
++		paintPending = true;
++		queueMicrotask(() => { paintPending = false; if (!disposed) paint(); });
+ 	};
+ 	const refraction = createLens(lens, lensed, options, labels);
+ 	const backdrop = bendsBackdrop && refractsBackdrop() ? createBackdropLens(lens, options) : null;
+ 	let lensing = false;
+-	const mark = () => bar.toggleAttribute("data-away", active < 0 || Math.abs(state.x - active * slot) > .5);
++	// Include deformation in the settled state without swapping label renderers.
++	const isSettled = () => !gesture && active >= 0 && Math.abs(state.x - active * slot) < .5
++		&& Math.abs(state.lift) < .01 && Math.abs(x.velocity) < 1 && Math.abs(lift.velocity) < .05
++		&& state.edges.every((value) => Math.abs(value) < .01)
++		&& edges.every((spring) => Math.abs(spring.velocity) < .05);
++	const mark = () => {
++		const settled = isSettled();
++		if (settled) interactive = false;
++		bar.toggleAttribute("data-away", !settled);
++		bar.toggleAttribute("data-settled", settled);
++		return settled;
++	};
+ 	const measure = () => {
+ 		const style = getComputedStyle(bar);
+ 		padding = parseFloat(style.paddingLeft) || 0;
+@@ -1964,43 +2095,71 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		height = lens.offsetHeight;
+ 		growX = parseFloat(style.getPropertyValue("--lg-lens-grow-x")) || 0;
+ 		growY = parseFloat(style.getPropertyValue("--lg-lens-grow-y")) || 0;
++		wobble = parseFloat(style.getPropertyValue("--lg-tab-wobble")) || 1;
++
+ 	};
+ 	const paint = () => {
+ 		const { x, lift } = state;
+-		const sx = 1 + growX / width * lift;
+-		const sy = 1 + growY / height * lift;
++		const limit = 3 * wobble;
++		const magnitude = Math.min(limit, Math.max(...state.edges.map(Math.abs)));
++		const elevation = Math.max(lift, Math.min(magnitude / limit, 1));
++		const sx = 1 + growX / width * elevation;
++		const sy = 1 + growY / height * elevation;
+ 		const transform = `translateX(${x}px) scale(${sx}, ${sy})`;
+ 		lens.style.transform = tint.style.transform = transform;
++		if (contour && width && height) {
++			const path = contourPath(width, height, magnitude, state.edges, limit);
++			if (path !== lastContour) {
++				lastContour = path;
++				surface.setAttribute("viewBox", `0 0 ${width} ${height}`);
++				for (const layer of [restSurface, glassSurface, rimSurface]) layer.setAttribute("d", path);
++				lens.__glisseContour = { path, width, height };
++			}
++			restSurface.setAttribute("opacity", String(1 - clamp(elevation, 0, 1)));
++			glassSurface.setAttribute("opacity", String(clamp(elevation, 0, 1)));
++			rimSurface.setAttribute("opacity", String(clamp(elevation, 0, 1)));
++		}
+ 		if (thumb) thumb.style.transform = transform;
+-		lens.style.setProperty("--lg-lift", String(clamp(lift, 0, 1)));
++		lens.style.setProperty("--lg-lift", String(clamp(elevation, 0, 1)));
+ 		lens.style.setProperty("--lg-lift-y", String(sy));
+ 		row.style.transform = `scale(${1 / sx}, ${1 / sy}) translate(${-x + (sx - 1) * (inset + width / 2)}px, ${(sy - 1) * (inset + height / 2)}px)`;
+-		if (!gesture && lift < .01) delete bar.dataset.refracting;
+-		mark();
+-		if (lift > .01 !== lensing) {
+-			lensing = lift > .01;
++		const settled = mark();
++		if (settled) delete bar.dataset.refracting;
++		// Keep one renderer at rest, so landing never swaps filtered and DOM text.
++		const nextLensing = shown || active >= 0;
++		if (nextLensing !== lensing) {
++			lensing = nextLensing;
+ 			bar.toggleAttribute("data-lensing", lensing);
+ 			refraction.setActive(lensing);
+ 		}
+-		const amount = clamp(lift, 0, 1);
+-		const under = clamp((lift - UNDER) / .5, 0, 1);
+-		lens.style.setProperty("--lg-rest", String(clamp(1 - lift / UNDER, 0, 1)));
++		const amount = clamp(elevation, 0, 1);
++		const under = clamp((elevation - UNDER) / .5, 0, 1);
++		lens.style.setProperty("--lg-rest", String(clamp(1 - elevation / UNDER, 0, 1)));
+ 		lens.style.setProperty("--lg-under", String(under));
+-		bar.toggleAttribute("data-under", lift > UNDER);
++		bar.toggleAttribute("data-under", elevation > UNDER);
+ 		refraction.update(amount);
+ 		backdrop?.update(under);
+ 	};
++	// Each edge keeps its own velocity; pressure bends top and bottom in different phases.
++	const edges = [[246.74, 25.13], [438.65, 33.51], [438.65, 33.51], [246.74, 25.13]].map(([stiffness, damping], index) =>
++		createSpring(0, stiffness, damping, (value) => { state.edges[index] = value; schedulePaint(); })
++	);
+ 	const x = createSpring(0, REST[0], REST[1], (value) => {
+ 		state.x = value;
+-		paint();
+-	});
+-	const lift = createSpring(0, REST[2], REST[3], (value) => {
+-		state.lift = value;
+-		paint();
++		const speed = interactive ? clamp(x.velocity / Math.max(width, 1) / 8, -1, 1) : 0;
++		const pressure = interactive ? clamp(x.acceleration / Math.max(width, 1) / 160, -1, 1) : 0;
++		edges[0].tune(speed < 0 ? 438.65 : 246.74, speed < 0 ? 33.51 : 25.13);
++		edges[1].tune(speed < 0 ? 246.74 : 438.65, speed < 0 ? 25.13 : 33.51);
++		const targets = [Math.abs(speed) * 1.8 - speed * 1.2, Math.abs(speed) * 1.8 + speed * 1.2,
++			-Math.abs(speed) * 1.5 - pressure * 1.5, Math.abs(speed) * 1.5 - pressure * 1.5];
++		edges.forEach((spring, index) => spring.set(targets[index] * wobble, !shown));
++		schedulePaint();
+ 	});
++	const lift = createSpring(0, REST[2], REST[3], (value) => { state.lift = value; schedulePaint(); });
+ 	const move = (target, lifted, instant = false) => {
+ 		const [slideStiffness, slideDamping, liftStiffness, liftDamping] = gesture ? DRAG : REST;
+-		x.tune(slideStiffness, slideDamping);
++		// Keep direct tracking fast once the pointer starts dragging.
++		x.tune(gesture?.moved ? slideStiffness : REST[0], gesture?.moved ? slideDamping : REST[1]);
+ 		lift.tune(liftStiffness, liftDamping);
+ 		x.set(target, instant);
+ 		lift.set(lifted ? 1 : 0, instant);
+@@ -2036,12 +2195,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		settleFrame = 0;
+ 		measure();
+ 		bar.toggleAttribute("data-light", parseFloat(getComputedStyle(lens).getPropertyValue("--lg-lens-shine")) < 0);
++		refraction.refit();
+ 		backdrop?.refit();
+ 		const box = bar.getBoundingClientRect();
++		const offset = event.clientX - box.left - padding - state.x;
++		const caught = shown && !isSettled() && offset >= 0 && offset < slot;
++		if (caught) x.set(state.x, true);
++		interactive = true;
+ 		gesture = {
+ 			id: event.pointerId,
+ 			x: event.clientX,
+-			anchor: tabs.indexOf(tab) * slot,
++			anchor: caught ? state.x : tabs.indexOf(tab) * slot,
+ 			moved: false,
+ 			box,
+ 			at: performance.now()
+@@ -2070,7 +2234,8 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 		const index = Math.round(position(event) / slot);
+ 		const { moved, box } = release();
+ 		const near = event.clientY >= box.top - 24 && event.clientY <= box.bottom + 24;
+-		if (event.type === "pointerup" && (moved || near)) {
++		// Releasing away from the bar cancels, including a horizontal drag.
++		if (event.type === "pointerup" && near) {
+ 			suppressClick = true;
+ 			settleFrame = requestAnimationFrame(() => {
+ 				settleFrame = 0;
+@@ -2120,6 +2285,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 	};
+ 	const observer = new ResizeObserver(() => {
+ 		measure();
++		refraction.refit();
+ 		if (!gesture) settle(true);
+ 	});
+ 	measure();
+@@ -2146,11 +2312,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+ 			cancelAnimationFrame(settleFrame);
+ 			x.stop();
+ 			lift.stop();
++			disposed = true;
++			edges.forEach((spring) => spring.stop());
++			surface.remove();
++			delete lens.__glisseContour;
++			delete lens.dataset.contour;
+ 			refraction.destroy();
+ 			backdrop?.destroy();
+ 			observer.disconnect();
+ 			for (const key of [
+ 				"ready",
++				"settled",
+ 				"hidden",
+ 				"lifted",
+ 				"refracting",
+@@ -2671,4 +2843,4 @@ function TabBar(props) {
+ }
+ // src/index.ts
+ insertStyles(styles_default);
+-export { Button, Glass, Input, Menu, SearchField, SegmentedControl, Slider, Switch, TabBar };
++export { Button, Glass, Input, Menu, SearchField, SegmentedControl, Slider, Switch, TabBar, usePress };

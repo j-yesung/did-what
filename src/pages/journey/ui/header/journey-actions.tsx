@@ -1,6 +1,6 @@
 import { ArrowsInSimpleIcon, ListBulletsIcon, MapTrifoldIcon, PlayIcon } from "@phosphor-icons/react";
 
-import { MorphMenu } from "@/shared/ui/morph-menu";
+import { LiquidGlassMenu } from "@/shared/ui/liquid-glass/menu/liquid-glass-menu";
 
 type JourneyActionsProps = {
   replaying: boolean;
@@ -20,9 +20,8 @@ export function JourneyActions({
   onReset,
 }: JourneyActionsProps) {
   return (
-    <MorphMenu
+    <LiquidGlassMenu
       label="기록 지도 메뉴"
-      layout="column"
       align="start"
       actions={[
         { label: "전체 경로 보기", icon: ArrowsInSimpleIcon, onSelect: onFitRoutes, disabled: !routed },

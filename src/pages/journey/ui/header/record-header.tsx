@@ -2,7 +2,7 @@ import type { Ref } from "react";
 
 import { BookOpenIcon } from "@phosphor-icons/react";
 
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 import { formatShortPeriod } from "@/widgets/region-activity-map/model/region-record-list";
 
 import styles from "../journey-map.module.css";
