@@ -34,6 +34,7 @@ export function RecordSearchResults() {
     <section
       key={search.query}
       aria-label="전체 기록 검색"
+      onScroll={search.closeSearch}
       style={
         filterBottom === null
           ? undefined
