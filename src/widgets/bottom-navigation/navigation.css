@@ -24,8 +24,8 @@
   --lg-lens-shine: var(--nav-lens-shine);
   --lg-rim-shine: var(--nav-rim-shine);
   --lg-blur: 3px;
-  --lg-glass-bend: 0.18;
-  --lg-glass-dispersion: 0.08;
+  --lg-glass-bend: 0.3;
+  --lg-glass-dispersion: 0.2;
   --lg-tab-bend: 0.2;
   /* 상하 반복상을 막되 Glisse의 가로 굴절·광택·블러는 유지한다. */
   --lg-tab-bend-y: 0.05;

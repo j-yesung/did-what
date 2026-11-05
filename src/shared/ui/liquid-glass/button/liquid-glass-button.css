@@ -7,7 +7,7 @@
   --lg-ring: var(--ring);
   --lg-lens-shine: var(--nav-lens-shine);
   --lg-rim-shine: var(--nav-rim-shine);
-  --lg-blur: 8px;
+  --lg-blur: 3px;
   pointer-events: auto;
   /* 버튼에서 시작한 당김을 브라우저 스크롤이 가로채지 않게 한다. */
   touch-action: none;

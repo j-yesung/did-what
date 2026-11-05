@@ -102,7 +102,7 @@
   --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.1);
   --nav-glass-highlight: rgb(255 255 255 / 0.75);
   --nav-lens-shine: -1.5;
-  --nav-rim-shine: 0.3;
+  --nav-rim-shine: 0.45;
   --navigation-glass: rgb(248 248 250 / 0.82);
   --tab-bar-glass: rgb(255 255 255 / 0.6);
   --navigation-solid: rgb(248 248 250);
@@ -289,7 +289,7 @@
   --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.36);
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
   --nav-lens-shine: 1;
-  --nav-rim-shine: 0.13;
+  --nav-rim-shine: 0.2;
   --navigation-glass: rgb(32 32 34 / 0.88);
   --tab-bar-glass: rgb(40 40 40 / 0.62);
   --navigation-solid: rgb(32 32 34);
@@ -355,7 +355,7 @@
     --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.36);
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
     --nav-lens-shine: 1;
-    --nav-rim-shine: 0.13;
+    --nav-rim-shine: 0.2;
     --navigation-glass: rgb(32 32 34 / 0.88);
     --tab-bar-glass: rgb(40 40 40 / 0.62);
     --navigation-solid: rgb(32 32 34);
