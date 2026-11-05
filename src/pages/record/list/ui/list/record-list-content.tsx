@@ -28,10 +28,10 @@ export function RecordListContent() {
 
   return (
     <>
-      <div data-record-filters inert={recordSearch.open}>
+      <div data-record-filters inert={Boolean(recordSearch.query)}>
         <RecordFilterForm filters={filters} onFiltersChange={changeFilters} />
       </div>
-      <div className={recordSearch.open ? "invisible" : undefined} inert={recordSearch.open}>
+      <div className={recordSearch.query ? "invisible" : undefined} inert={Boolean(recordSearch.query)}>
         <RecordList filters={filters} onFiltersReset={() => changeFilters(parseRecordFilters({}))} />
       </div>
     </>

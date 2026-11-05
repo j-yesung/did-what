@@ -16,11 +16,14 @@ export const applyRecordSearch = (history: SearchHistory, search: string, query:
 
 export const clearRecordSearch = (history: SearchHistory, search: string) => {
   if (history.state?.[RECORD_SEARCH_HISTORY_KEY]) history.back();
-  else {
-    const params = new URLSearchParams(search);
-    params.delete("search");
-    history.replaceState(null, "", getRecordQueryHref(params.toString(), ""));
-  }
+  else resetRecordSearch(history, search);
+};
+
+export const resetRecordSearch = (history: SearchHistory, search: string, pathname = "/records") => {
+  const params = new URLSearchParams(search);
+  params.delete("search");
+  const href = getRecordQueryHref(params.toString(), "");
+  history.replaceState(null, "", `${pathname}${href.slice("/records".length)}`);
 };
 
 export const beginRecordSearch = (history: SearchHistory, search: string) => {

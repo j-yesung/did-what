@@ -1,4 +1,4 @@
-import { applyRecordSearch, beginRecordSearch, clearRecordSearch } from "./record-search.ts";
+import { applyRecordSearch, beginRecordSearch, clearRecordSearch, resetRecordSearch } from "./record-search.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -82,4 +82,14 @@ test("주소로 들어온 검색에서도 검색어만 지운 뒤 입력 상태�
   assert.equal(history.length, 1);
   clearRecordSearch(history, "search=1&q=바다");
   assert.equal(history.href, "/records");
+});
+
+test("새로고침 초기화는 뒤로 가지 않고 검색만 지워 보기와 필터를 보존한다", () => {
+  const history = createHistory("/records?view=calendar&category=travel&search=1&q=부산", {
+    didWhatRecordSearch: true,
+  });
+  resetRecordSearch(history, "view=calendar&category=travel&search=1&q=부산");
+  assert.equal(history.href, "/records?view=calendar&category=travel");
+  assert.equal(history.length, 1);
+  assert.equal(history.state, null);
 });

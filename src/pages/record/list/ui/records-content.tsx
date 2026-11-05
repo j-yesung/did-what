@@ -22,8 +22,8 @@ export function RecordsContent({ view }: { view: RecordView }) {
           <h1 className="sr-only">우리의 기록</h1>
         </header>
         <div
-          inert={view === "calendar" && search.open}
-          className={cn("flex min-h-0 flex-1 flex-col gap-4", view === "calendar" && search.open && "invisible")}
+          inert={view === "calendar" && Boolean(search.query)}
+          className={cn("flex min-h-0 flex-1 flex-col gap-4", view === "calendar" && search.query && "invisible")}
         >
           {view === "calendar" ? <RecordCalendar /> : <RecordListContent />}
         </div>

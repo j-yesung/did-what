@@ -12,7 +12,7 @@ export function RecordSearchResults() {
   const [filterBottom, setFilterBottom] = useState<number | null>(null);
 
   useLayoutEffect(() => {
-    if (!search.open) return;
+    if (!search.query) return;
     const filters = document.querySelector<HTMLElement>("[data-record-filters]");
     if (!filters) {
       setFilterBottom(null);
@@ -27,14 +27,14 @@ export function RecordSearchResults() {
       observer.disconnect();
       window.removeEventListener("scroll", update);
     };
-  }, [search.open]);
+  }, [search.query]);
 
-  if (!search.open) return null;
+  if (!search.query) return null;
   return (
     <section
       key={search.query}
       aria-label="전체 기록 검색"
-      onScroll={search.closeSearch}
+      onScroll={search.collapseSearch}
       style={
         filterBottom === null
           ? undefined
