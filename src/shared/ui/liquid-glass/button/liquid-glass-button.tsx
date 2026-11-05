@@ -42,7 +42,6 @@ export function LiquidGlassButton({
     ),
   };
 
-  // 그룹은 부모가 유리 표면과 눌림을 담당한다. 링크·시트 트리거의 Base UI 합성은 유지한다.
   if (surface === "group") return <ButtonPrimitive {...buttonProps} />;
   return <GlisseButton as={ButtonPrimitive} {...buttonProps} />;
 }

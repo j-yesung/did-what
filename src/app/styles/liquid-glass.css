@@ -7,6 +7,13 @@
   --lg-blur: 3px;
 }
 
+.toolbar.lg-glass[data-rim] {
+  background-image: none;
+  box-shadow:
+    inset 0 0 0 0.5px var(--lg-edge),
+    0 1px 3px var(--lg-drop);
+}
+
 @layer utilities {
   .toolbar [data-slot="icon-button"] {
     touch-action: none;
@@ -23,7 +30,8 @@
 }
 
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
-  .toolbar.lg-glass {
+  .toolbar.lg-glass,
+  .toolbar.lg-glass[data-rim] {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background-color: var(--surface);

@@ -49,7 +49,6 @@
   display: none;
 }
 
-/* 긴 지역 목록에서는 카드 당김 대신 목록의 세로 스크롤을 허용한다. */
 .liquid-glass-menu .lg-menu-card[data-scrollable],
 .liquid-glass-menu .lg-menu-card[data-scrollable] .lg-menu-content {
   touch-action: pan-y;
