@@ -1,6 +1,7 @@
 "use client";
 
 import { MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
+import { Glass } from "glisse";
 import { motion, type Transition, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 
@@ -17,6 +18,7 @@ const TOOLBAR_ENTRY_PATHS = new Set(["/", "/records", "/places", "/settings"]);
 const OPEN_SPRING: Transition = { type: "spring", bounce: 0, visualDuration: 0.3 };
 const CLOSE_SPRING: Transition = { type: "spring", bounce: 0, visualDuration: 0.2, delay: 0.06 };
 const INSTANT: Transition = { duration: 0 };
+const MotionGlass = motion.create(Glass);
 
 export function Toolbar({ memberId }: { memberId: string }) {
   const pathname = usePathname() ?? "";
@@ -32,9 +34,9 @@ export function Toolbar({ memberId }: { memberId: string }) {
   return (
     <FixedToolbar className="@container items-start" ref={search.rowRef}>
       <PressScale aria-label="빠른 작업" className="pointer-events-auto ml-auto" disabled={open} role="group">
-        <motion.div
+        <MotionGlass
           animate={{ width: search.width }}
-          className="toolbar liquid-glass-control relative ml-auto flex h-(--toolbar-height) items-center justify-between gap-1 overflow-hidden rounded-full"
+          className="toolbar relative ml-auto flex h-(--toolbar-height) items-center justify-between gap-1 overflow-hidden rounded-full"
           data-record-search={open ? "open" : undefined}
           initial={false}
           onAnimationComplete={search.handleWidthSettled}
@@ -114,7 +116,7 @@ export function Toolbar({ memberId }: { memberId: string }) {
               />
             </motion.div>
           ) : null}
-        </motion.div>
+        </MotionGlass>
       </PressScale>
     </FixedToolbar>
   );

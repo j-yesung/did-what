@@ -77,7 +77,6 @@
   --fill-dark-weak: rgb(17 19 20 / 0.06);
   --fill-dimmed: rgb(0 0 0 / 0.2);
   --fill-nav-glass: rgb(255 255 255 / 0.25);
-  --fill-nav-active: rgb(0 0 0 / 0.25);
   --fill-light: var(--neutral-0);
   --fill-dark: var(--neutral-900);
   --fill-logo: var(--neutral-900);
@@ -100,8 +99,6 @@
 
   --border-default: var(--neutral-100);
   --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.08);
-  --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.18), 0 0 20px rgb(0 0 0 / 0.1);
-  --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.05);
   --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.1);
   --nav-glass-highlight: rgb(255 255 255 / 0.75);
   --nav-lens-shine: -1.5;
@@ -279,7 +276,6 @@
   --fill-dark-weak: rgb(244 246 244 / 0.1);
   --fill-dimmed: rgb(0 0 0 / 0.56);
   --fill-nav-glass: rgb(255 255 255 / 0.09);
-  --fill-nav-active: rgb(255 255 255 / 0.14);
   --fill-toast: var(--neutral-700);
 
   /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
@@ -290,8 +286,6 @@
   --text-accent: var(--orange-400);
   --border-default: rgb(244 246 244 / 0.08);
   --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.28);
-  --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
-  --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
   --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.36);
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
   --nav-lens-shine: 1;
@@ -348,7 +342,6 @@
     --fill-dark-weak: rgb(244 246 244 / 0.1);
     --fill-dimmed: rgb(0 0 0 / 0.56);
     --fill-nav-glass: rgb(255 255 255 / 0.09);
-    --fill-nav-active: rgb(255 255 255 / 0.14);
     --fill-toast: var(--neutral-700);
 
     /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
@@ -359,8 +352,6 @@
     --text-accent: var(--orange-400);
     --border-default: rgb(244 246 244 / 0.08);
     --shadow-toast: 0 4px 16px rgb(0 0 0 / 0.28);
-    --shadow-nav-glass: 0 6px 6px rgb(0 0 0 / 0.32), 0 0 20px rgb(0 0 0 / 0.2);
-    --shadow-glass-control: 0 4px 16px rgb(0 0 0 / 0.12);
     --shadow-bottom-sheet: 0 -2px 24px rgb(0 0 0 / 0.36);
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
     --nav-lens-shine: 1;
