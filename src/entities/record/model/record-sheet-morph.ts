@@ -98,6 +98,19 @@ const run = (parts: Parts, card: HTMLElement, opening: boolean) => {
   const timing = { duration: DURATION, easing: EASING, fill: "forwards" as const };
 
   parts.sheet.animate({ clipPath: [from.clip, to.clip] }, timing);
+  if (!opening) {
+    parts.sheet.animate(
+      [
+        { opacity: 1, offset: 0 },
+        { opacity: 1, offset: 0.7 },
+        { opacity: 0, offset: 1 },
+      ],
+      {
+        duration: DURATION,
+        fill: "forwards",
+      },
+    );
+  }
   const dragged = parts.sheet.style.transform;
   if (!opening && dragged) parts.sheet.animate({ transform: [dragged, "none"] }, timing);
   parts.header.animate(opening ? [shut.header, wide] : [wide, shut.header], timing);

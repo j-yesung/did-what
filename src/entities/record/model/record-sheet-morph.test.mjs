@@ -93,7 +93,7 @@ test("닫기 끝에서 헤더 높이를 유지하고 카드의 아래쪽 경계�
     scene.scroll.scrollTop = scrollTop;
     scene.exports.closeRecordSheetIntoCard("record", () => {});
 
-    const headerAnimation = scene.animations.find((animation) => Array.isArray(animation.keyframes));
+    const headerAnimation = scene.animations.find((animation) => animation.keyframes[0]?.height);
     const [from, to] = headerAnimation.keyframes;
     assert.equal(from.height, to.height, "닫는 동안 헤더 높이가 바뀌면 스크롤이 보정될 수 있다");
     assert.equal(to.height, `${scene.header.offsetHeight}px`);
@@ -103,6 +103,15 @@ test("닫기 끝에서 헤더 높이를 유지하고 카드의 아래쪽 경계�
     const card = scene.card.getBoundingClientRect();
     assert.equal(offset - scrollTop + scene.header.offsetHeight, card.bottom);
     assert.equal(scene.animations[0].keyframes.clipPath.at(-1), "inset(200px 20px 490px 20px round 24px)");
+    assert.deepEqual(
+      Array.from(scene.animations[1].keyframes, ({ opacity, offset }) => [opacity, offset]),
+      [
+        [1, 0],
+        [1, 0.7],
+        [0, 1],
+      ],
+      "실제 카드로 교체되기 전에 상세 화면이 서서히 사라진다",
+    );
   }
 });
 

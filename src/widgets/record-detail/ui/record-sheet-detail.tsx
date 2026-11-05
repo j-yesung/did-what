@@ -92,6 +92,7 @@ export function RecordSheetDetail({
         {...sheetDrag.handlers}
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+          screen && "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
           action
             ? "pb-[calc(--spacing(26)+env(safe-area-inset-bottom))]"
             : "pb-[calc(--spacing(5)+env(safe-area-inset-bottom))]",
