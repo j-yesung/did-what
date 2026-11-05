@@ -1,4 +1,3 @@
-/* 탭바는 Glisse 기본 재질로, 뒤쪽 콘텐츠의 색과 형태가 은은하게 통과한다. */
 .bottom-navigation-glisse,
 .bottom-navigation-static {
   pointer-events: auto;
@@ -27,7 +26,6 @@
   --lg-glass-bend: 0.3;
   --lg-glass-dispersion: 0.2;
   --lg-tab-bend: 0.2;
-  /* 상하 반복상을 막되 Glisse의 가로 굴절·광택·블러는 유지한다. */
   --lg-tab-bend-y: 0.05;
   --lg-tab-dispersion: 0.5;
   --lg-tab-inset: 4px;
@@ -44,13 +42,11 @@
   display: block;
 }
 
-/* 확장된 렌즈를 SVG 필터 영역에서도 자르지 않도록 여유를 둔다. */
 .bottom-navigation-glisse .lg-tab-labels {
   --lg-room-x: 24px;
   --lg-room-y: 20px;
 }
 
-/* 표면과 반사선은 굴절 마스크와 같은 SVG 윤곽으로 그린다. */
 .bottom-navigation-glisse.lg-tab-bar[data-icons] .lg-tab-lens.lg-glass {
   z-index: 2;
   -webkit-backdrop-filter: none;
@@ -74,7 +70,6 @@
   content: none;
 }
 
-/* 정지 중에도 같은 선택 레이어를 유지하므로 키보드 초점은 렌즈 위에 표시한다. */
 .bottom-navigation-glisse.lg-tab-bar[data-settled]:has(.lg-tab[data-selected]:focus-visible) .lg-tab-lens {
   outline: 2px solid var(--ring);
   outline-offset: -2px;
@@ -99,7 +94,6 @@
   color: var(--navigation-label);
 }
 
-/* 글자만 잘라 원래 링크의 터치 영역을 온전히 유지한다. */
 .bottom-navigation-glisse .lg-tab-face {
   display: flex;
   flex-direction: inherit;

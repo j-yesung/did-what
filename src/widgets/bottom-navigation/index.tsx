@@ -53,7 +53,6 @@ export function BottomNavigation() {
         "bottom-(--nav-bottom-offset)",
       )}
     >
-      {/* 접근성 설정에서는 렌즈 변형과 스프링이 없는 메뉴를 사용한다. */}
       {simplifiedNavigation ? (
         <nav aria-label="주요 메뉴" className="bottom-navigation-static">
           {items.map(({ href, icon, label }) => (

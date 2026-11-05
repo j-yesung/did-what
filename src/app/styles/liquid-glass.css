@@ -7,7 +7,6 @@
   --lg-blur: 3px;
 }
 
-/* 너비가 변할 때 비트맵 테두리가 늘어나지 않도록 곡선을 CSS로 그린다. */
 .toolbar.lg-glass[data-rim] {
   background-image: none;
   box-shadow:
