@@ -107,6 +107,7 @@
   --nav-lens-shine: -1.5;
   --nav-rim-shine: 0.3;
   --navigation-glass: rgb(248 248 250 / 0.82);
+  --tab-bar-glass: rgb(255 255 255 / 0.6);
   --navigation-solid: rgb(248 248 250);
   --navigation-label: rgb(60 60 67 / 0.88);
   --navigation-selected: var(--text-accent);
@@ -296,6 +297,7 @@
   --nav-lens-shine: 1;
   --nav-rim-shine: 0.13;
   --navigation-glass: rgb(32 32 34 / 0.88);
+  --tab-bar-glass: rgb(40 40 40 / 0.62);
   --navigation-solid: rgb(32 32 34);
   --navigation-label: rgb(235 235 245 / 0.86);
   --navigation-selected: var(--text-accent);
@@ -364,6 +366,7 @@
     --nav-lens-shine: 1;
     --nav-rim-shine: 0.13;
     --navigation-glass: rgb(32 32 34 / 0.88);
+    --tab-bar-glass: rgb(40 40 40 / 0.62);
     --navigation-solid: rgb(32 32 34);
     --navigation-label: rgb(235 235 245 / 0.86);
     --navigation-selected: var(--text-accent);

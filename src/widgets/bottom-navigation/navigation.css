@@ -1,4 +1,4 @@
-/* 배경을 충분히 확산시켜 밝은 지도와 글 목록 위에서도 메뉴를 읽을 수 있게 한다. */
+/* 탭바는 Glisse 기본 재질로, 뒤쪽 콘텐츠의 색과 형태가 은은하게 통과한다. */
 .bottom-navigation-glisse,
 .bottom-navigation-static {
   pointer-events: auto;
@@ -13,7 +13,7 @@
 .bottom-navigation-glisse.lg-tab-bar {
   --lg-foreground: var(--foreground);
   --lg-muted: var(--navigation-label);
-  --lg-glass: var(--navigation-glass);
+  --lg-glass: var(--tab-bar-glass);
   --lg-selection: var(--navigation-selection);
   --lg-tab-selected: var(--navigation-selected);
   --lg-ring: var(--ring);
@@ -23,17 +23,22 @@
   --lg-lens-drop: var(--navigation-lens-shadow);
   --lg-lens-shine: var(--nav-lens-shine);
   --lg-rim-shine: var(--nav-rim-shine);
-  --lg-blur: 16px;
+  --lg-blur: 3px;
   --lg-glass-bend: 0.18;
   --lg-glass-dispersion: 0.08;
+  --lg-tab-bend: 0.2;
+  /* 상하 반복상을 막되 Glisse의 가로 굴절·광택·블러는 유지한다. */
+  --lg-tab-bend-y: 0.05;
   --lg-tab-dispersion: 0.5;
   --lg-tab-inset: 4px;
   --lg-tab-height: calc(var(--nav-height) - 8px);
   --lg-tab-width: calc(100cqw / 4);
   --lg-lens-grow-x: 18px;
   --lg-lens-grow-y: 20px;
+  --lg-tab-wobble: 2;
   --lg-contour: 1;
   overflow: visible;
+  touch-action: none;
   container-type: inline-size;
   display: block;
 }
@@ -68,7 +73,7 @@
   content: none;
 }
 
-/* 정지 중에도 굴절 레이어를 유지하므로 키보드 초점은 렌즈 위에 표시한다. */
+/* 정지 중에도 같은 선택 레이어를 유지하므로 키보드 초점은 렌즈 위에 표시한다. */
 .bottom-navigation-glisse.lg-tab-bar[data-settled]:has(.lg-tab[data-selected]:focus-visible) .lg-tab-lens {
   outline: 2px solid var(--ring);
   outline-offset: -2px;
@@ -113,9 +118,9 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 4px;
-  background: var(--navigation-glass);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  backdrop-filter: blur(16px) saturate(1.5);
+  background: var(--tab-bar-glass);
+  -webkit-backdrop-filter: blur(3px) saturate(1.5);
+  backdrop-filter: blur(3px) saturate(1.5);
 }
 
 .bottom-navigation-static a {
@@ -158,8 +163,9 @@
     --lg-glass-bend: 0;
     --lg-glass-dispersion: 0;
     --lg-tab-bend: 0;
+    --lg-tab-bend-y: 0;
     --lg-tab-dispersion: 0;
-    --navigation-glass: var(--navigation-solid);
+    --tab-bar-glass: var(--navigation-solid);
     --navigation-label: var(--foreground);
   }
 
