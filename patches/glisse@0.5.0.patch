@@ -1,5 +1,5 @@
 diff --git a/dist/index.cjs b/dist/index.cjs
-index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9490253f7 100644
+index 28f5d34cfd831154aa8a64b3ddf135be3072475d..5d9d0c1019fab9f9a9241d317cbd287efc93251b 100644
 --- a/dist/index.cjs
 +++ b/dist/index.cjs
 @@ -65,7 +65,7 @@ function tick(time) {
@@ -20,7 +20,35 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  		paint: () => paint(s.value),
  		set(target, instant = false) {
  			s.target = target;
-@@ -502,7 +504,10 @@ function graph(lenses, box, standIn) {
+@@ -116,7 +118,7 @@ const TOUCH = {
+ 	press: [515, 27.3],
+ 	release: [250, 11.8]
+ };
+-function usePress(ref) {
++function usePress(ref, ignoreSelector) {
+ 	(0, react.useEffect)(() => {
+ 		const el = ref.current;
+ 		if (!el) return;
+@@ -189,7 +191,8 @@ function usePress(ref) {
+ 			], feel.release);
+ 		};
+ 		const down = (event) => {
+-			if (!event.isPrimary || event.button !== 0 || pointer || el.matches(":disabled")) return;
++			if (!event.isPrimary || event.button !== 0 || pointer || el.matches(":disabled, [aria-disabled=true], [data-disabled]")) return;
++			if (ignoreSelector && event.target instanceof Element && event.target.closest(ignoreSelector)) return;
+ 			pointer = {
+ 				id: event.pointerId,
+ 				x: event.clientX,
+@@ -214,7 +217,7 @@ function usePress(ref) {
+ 			el.style.removeProperty("scale");
+ 			el.style.removeProperty("translate");
+ 		};
+-	}, [ref]);
++	}, [ref, ignoreSelector]);
+ }
+ // src/internal/svg.ts
+ const SVG = "http://www.w3.org/2000/svg";
+@@ -502,7 +505,10 @@ function graph(lenses, box, standIn) {
  				result: `neutral-${k}`
  			})
  		];
@@ -32,7 +60,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  		filter.append(...boxed);
  		for (const pull of ["across", "down"]) {
  			const half = svg("feComponentTransfer", {
-@@ -641,14 +646,21 @@ function graph(lenses, box, standIn) {
+@@ -641,14 +647,21 @@ function graph(lenses, box, standIn) {
  		k3: 1,
  		result: "seen"
  	}));
@@ -56,7 +84,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  	};
  }
  function place(graph, placed, across, down, box) {
-@@ -658,6 +670,9 @@ function place(graph, placed, across, down, box) {
+@@ -658,6 +671,9 @@ function place(graph, placed, across, down, box) {
  		width: across,
  		height: down
  	})) graph.filter.setAttribute(key, String(value));
@@ -66,7 +94,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  	placed.forEach((lens, k) => {
  		const part = graph.parts[k];
  		const spectrum = [
-@@ -740,6 +755,15 @@ function fit(glass, options) {
+@@ -740,6 +756,15 @@ function fit(glass, options) {
  }
  const surfaces = /* @__PURE__ */ new Map();
  let made = 0;
@@ -82,7 +110,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  function render(surface) {
  	const { content } = surface;
  	const across = content.offsetWidth;
-@@ -763,7 +787,9 @@ function render(surface) {
+@@ -763,7 +788,9 @@ function render(surface) {
  				height,
  				reach,
  				dispersion,
@@ -93,7 +121,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  			};
  			shown.push(member);
  		}
-@@ -771,6 +797,7 @@ function render(surface) {
+@@ -771,6 +798,7 @@ function render(surface) {
  	if (!shown.length) {
  		surface.placed = "";
  		content.style.removeProperty("filter");
@@ -101,7 +129,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  		if (surface.standIn) content.style.removeProperty("visibility");
  		surface.standIn = false;
  		return;
-@@ -790,27 +817,44 @@ function render(surface) {
+@@ -790,27 +818,44 @@ function render(surface) {
  	const next = [
  		across,
  		down,
@@ -149,7 +177,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  		mask(member.replaces, {
  			image: `url("${member.fit.maps.shape}"), linear-gradient(#000, #000)`,
  			position: `${x + (from.left - behind.left) / unit}px ${y + (from.top - behind.top) / unit}px, 0 0`,
-@@ -826,6 +870,8 @@ const MASKING = [
+@@ -826,6 +871,8 @@ const MASKING = [
  	"composite"
  ];
  function mask(element, layers) {
@@ -158,7 +186,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  	for (const part of MASKING) {
  		element.style.removeProperty(`-webkit-mask-${part}`);
  		element.style.removeProperty(`mask-${part}`);
-@@ -1129,10 +1175,12 @@ function onThemeChange(repaint) {
+@@ -1129,10 +1176,12 @@ function onThemeChange(repaint) {
  	repaints.add(repaint);
  	if (!unwatch) {
  		const run = () => repaints.forEach((each) => each());
@@ -173,7 +201,22 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  			subtree: true
  		});
  		const scheme = matchMedia("(prefers-color-scheme: dark)");
-@@ -1903,11 +1951,13 @@ const keys = [
+@@ -1463,12 +1512,12 @@ function fitSelection(element, filtered) {
+ 	element.style.setProperty("--lg-rim-bright", brightRim);
+ }
+ // src/button.tsx
+-const Button = /* @__PURE__ */ (0, react.forwardRef)(function Button({ icon, variant = "glass", destructive, tint, children, className, style, type = "button", ...props }, forwardedRef) {
++const Button = /* @__PURE__ */ (0, react.forwardRef)(function Button({ as: Root = "button", icon, variant = "glass", destructive, tint, children, className, style, type = "button", ...props }, forwardedRef) {
+ 	const ref = (0, react.useRef)(null);
+ 	(0, react.useImperativeHandle)(forwardedRef, () => ref.current);
+ 	usePress(ref);
+ 	useRefraction(ref);
+-	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
++	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(Root, {
+ 		ref,
+ 		type,
+ 		className: cx("lg-glass lg-button", className),
+@@ -1903,11 +1952,13 @@ const keys = [
  	"Home",
  	"End"
  ];
@@ -191,7 +234,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  ];
  const UNDER = .5;
  const DRAG = [
-@@ -1935,6 +1985,26 @@ const SEGMENT_LENS = {
+@@ -1935,6 +1986,26 @@ const SEGMENT_LENS = {
  	dome: 0,
  	splay: 1
  };
@@ -218,7 +261,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options, bendsBackdrop, select) {
  	const tabs = [...bar.querySelectorAll(".lg-tab")];
  	let slot = 0;
-@@ -1948,14 +2018,54 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -1948,14 +2019,54 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  	let shown = false;
  	let settleFrame = 0;
  	let gesture = null;
@@ -275,7 +318,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  	const measure = () => {
  		const style = getComputedStyle(bar);
  		padding = parseFloat(style.paddingLeft) || 0;
-@@ -1965,43 +2075,69 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -1965,43 +2076,69 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  		height = lens.offsetHeight;
  		growX = parseFloat(style.getPropertyValue("--lg-lens-grow-x")) || 0;
  		growY = parseFloat(style.getPropertyValue("--lg-lens-grow-y")) || 0;
@@ -362,7 +405,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  		lift.tune(liftStiffness, liftDamping);
  		x.set(target, instant);
  		lift.set(lifted ? 1 : 0, instant);
-@@ -2037,8 +2173,10 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2037,8 +2174,10 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  		settleFrame = 0;
  		measure();
  		bar.toggleAttribute("data-light", parseFloat(getComputedStyle(lens).getPropertyValue("--lg-lens-shine")) < 0);
@@ -373,7 +416,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  		gesture = {
  			id: event.pointerId,
  			x: event.clientX,
-@@ -2121,6 +2259,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2121,6 +2260,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  	};
  	const observer = new ResizeObserver(() => {
  		measure();
@@ -381,7 +424,7 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  		if (!gesture) settle(true);
  	});
  	measure();
-@@ -2147,11 +2286,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2147,11 +2287,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  			cancelAnimationFrame(settleFrame);
  			x.stop();
  			lift.stop();
@@ -399,8 +442,54 @@ index 28f5d34cfd831154aa8a64b3ddf135be3072475d..c2e46455b3f87b69d461a89dd3ce87a9
  				"hidden",
  				"lifted",
  				"refracting",
+@@ -2681,3 +2827,5 @@ exports.SegmentedControl = SegmentedControl;
+ exports.Slider = Slider;
+ exports.Switch = Switch;
+ exports.TabBar = TabBar;
++
++exports.usePress = usePress;
+diff --git a/dist/index.d.cts b/dist/index.d.cts
+index 19092e551b0fc8b84ac68249ebd11190404a1710..0027ee9b3ac65a312fa82cfb13461314eeab76dd 100644
+--- a/dist/index.d.cts
++++ b/dist/index.d.cts
+@@ -1,6 +1,8 @@
+ 
+-import { ButtonHTMLAttributes, CSSProperties, ElementType, ForwardRefExoticComponent, HTMLAttributes, InputHTMLAttributes, JSX, ReactNode, RefAttributes } from "react";
++import { ButtonHTMLAttributes, CSSProperties, ElementType, ForwardRefExoticComponent, HTMLAttributes, InputHTMLAttributes, JSX, ReactNode, RefAttributes, RefObject } from "react";
+ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
++  /** The root component; forwards refs and native button props (for example Base UI Button). */
++  as?: ElementType;
+   /** Shown before the label. On its own, the button is a circle; give it an `aria-label`. */
+   icon?: ReactNode;
+   /** `glass` is clear; `filled` fills it with the accent colour, for the primary action. */
+@@ -99,3 +101,5 @@ interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue
+  */
+ export declare function TabBar(props: TabBarProps): JSX.Element;
+ export type { ButtonProps, GlassProps, InputProps, MenuEntry, MenuItem, MenuProps, SearchFieldProps, SegmentedControlItem, SegmentedControlProps, SliderProps, SwitchProps, TabBarItem, TabBarProps };
++/** The same interruptible press springs used by Button, for grouped controls. */
++export declare function usePress(ref: RefObject<HTMLElement | null>, ignoreSelector?: string): void;
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 19092e551b0fc8b84ac68249ebd11190404a1710..0027ee9b3ac65a312fa82cfb13461314eeab76dd 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,6 +1,8 @@
+ 
+-import { ButtonHTMLAttributes, CSSProperties, ElementType, ForwardRefExoticComponent, HTMLAttributes, InputHTMLAttributes, JSX, ReactNode, RefAttributes } from "react";
++import { ButtonHTMLAttributes, CSSProperties, ElementType, ForwardRefExoticComponent, HTMLAttributes, InputHTMLAttributes, JSX, ReactNode, RefAttributes, RefObject } from "react";
+ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
++  /** The root component; forwards refs and native button props (for example Base UI Button). */
++  as?: ElementType;
+   /** Shown before the label. On its own, the button is a circle; give it an `aria-label`. */
+   icon?: ReactNode;
+   /** `glass` is clear; `filled` fills it with the accent colour, for the primary action. */
+@@ -99,3 +101,5 @@ interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue
+  */
+ export declare function TabBar(props: TabBarProps): JSX.Element;
+ export type { ButtonProps, GlassProps, InputProps, MenuEntry, MenuItem, MenuProps, SearchFieldProps, SegmentedControlItem, SegmentedControlProps, SliderProps, SwitchProps, TabBarItem, TabBarProps };
++/** The same interruptible press springs used by Button, for grouped controls. */
++export declare function usePress(ref: RefObject<HTMLElement | null>, ignoreSelector?: string): void;
 diff --git a/dist/index.js b/dist/index.js
-index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c034cbf98 100644
+index 02d488ace3671da61835b1d629c1714cc92fb52c..2c723a198ac7bd5e400d2e46dbea0f2382a8069c 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -64,7 +64,7 @@ function tick(time) {
@@ -421,7 +510,35 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  		paint: () => paint(s.value),
  		set(target, instant = false) {
  			s.target = target;
-@@ -501,7 +503,10 @@ function graph(lenses, box, standIn) {
+@@ -115,7 +117,7 @@ const TOUCH = {
+ 	press: [515, 27.3],
+ 	release: [250, 11.8]
+ };
+-function usePress(ref) {
++function usePress(ref, ignoreSelector) {
+ 	useEffect(() => {
+ 		const el = ref.current;
+ 		if (!el) return;
+@@ -188,7 +190,8 @@ function usePress(ref) {
+ 			], feel.release);
+ 		};
+ 		const down = (event) => {
+-			if (!event.isPrimary || event.button !== 0 || pointer || el.matches(":disabled")) return;
++			if (!event.isPrimary || event.button !== 0 || pointer || el.matches(":disabled, [aria-disabled=true], [data-disabled]")) return;
++			if (ignoreSelector && event.target instanceof Element && event.target.closest(ignoreSelector)) return;
+ 			pointer = {
+ 				id: event.pointerId,
+ 				x: event.clientX,
+@@ -213,7 +216,7 @@ function usePress(ref) {
+ 			el.style.removeProperty("scale");
+ 			el.style.removeProperty("translate");
+ 		};
+-	}, [ref]);
++	}, [ref, ignoreSelector]);
+ }
+ // src/internal/svg.ts
+ const SVG = "http://www.w3.org/2000/svg";
+@@ -501,7 +504,10 @@ function graph(lenses, box, standIn) {
  				result: `neutral-${k}`
  			})
  		];
@@ -433,7 +550,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  		filter.append(...boxed);
  		for (const pull of ["across", "down"]) {
  			const half = svg("feComponentTransfer", {
-@@ -640,14 +645,21 @@ function graph(lenses, box, standIn) {
+@@ -640,14 +646,21 @@ function graph(lenses, box, standIn) {
  		k3: 1,
  		result: "seen"
  	}));
@@ -457,7 +574,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  	};
  }
  function place(graph, placed, across, down, box) {
-@@ -657,6 +669,9 @@ function place(graph, placed, across, down, box) {
+@@ -657,6 +670,9 @@ function place(graph, placed, across, down, box) {
  		width: across,
  		height: down
  	})) graph.filter.setAttribute(key, String(value));
@@ -467,7 +584,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  	placed.forEach((lens, k) => {
  		const part = graph.parts[k];
  		const spectrum = [
-@@ -739,6 +754,15 @@ function fit(glass, options) {
+@@ -739,6 +755,15 @@ function fit(glass, options) {
  }
  const surfaces = /* @__PURE__ */ new Map();
  let made = 0;
@@ -483,7 +600,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  function render(surface) {
  	const { content } = surface;
  	const across = content.offsetWidth;
-@@ -762,7 +786,9 @@ function render(surface) {
+@@ -762,7 +787,9 @@ function render(surface) {
  				height,
  				reach,
  				dispersion,
@@ -494,7 +611,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  			};
  			shown.push(member);
  		}
-@@ -770,6 +796,7 @@ function render(surface) {
+@@ -770,6 +797,7 @@ function render(surface) {
  	if (!shown.length) {
  		surface.placed = "";
  		content.style.removeProperty("filter");
@@ -502,7 +619,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  		if (surface.standIn) content.style.removeProperty("visibility");
  		surface.standIn = false;
  		return;
-@@ -789,27 +816,44 @@ function render(surface) {
+@@ -789,27 +817,44 @@ function render(surface) {
  	const next = [
  		across,
  		down,
@@ -550,7 +667,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  		mask(member.replaces, {
  			image: `url("${member.fit.maps.shape}"), linear-gradient(#000, #000)`,
  			position: `${x + (from.left - behind.left) / unit}px ${y + (from.top - behind.top) / unit}px, 0 0`,
-@@ -825,6 +869,8 @@ const MASKING = [
+@@ -825,6 +870,8 @@ const MASKING = [
  	"composite"
  ];
  function mask(element, layers) {
@@ -559,7 +676,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  	for (const part of MASKING) {
  		element.style.removeProperty(`-webkit-mask-${part}`);
  		element.style.removeProperty(`mask-${part}`);
-@@ -1128,10 +1174,12 @@ function onThemeChange(repaint) {
+@@ -1128,10 +1175,12 @@ function onThemeChange(repaint) {
  	repaints.add(repaint);
  	if (!unwatch) {
  		const run = () => repaints.forEach((each) => each());
@@ -574,7 +691,22 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  			subtree: true
  		});
  		const scheme = matchMedia("(prefers-color-scheme: dark)");
-@@ -1902,11 +1950,13 @@ const keys = [
+@@ -1462,12 +1511,12 @@ function fitSelection(element, filtered) {
+ 	element.style.setProperty("--lg-rim-bright", brightRim);
+ }
+ // src/button.tsx
+-const Button = /* @__PURE__ */ forwardRef(function Button({ icon, variant = "glass", destructive, tint, children, className, style, type = "button", ...props }, forwardedRef) {
++const Button = /* @__PURE__ */ forwardRef(function Button({ as: Root = "button", icon, variant = "glass", destructive, tint, children, className, style, type = "button", ...props }, forwardedRef) {
+ 	const ref = useRef(null);
+ 	useImperativeHandle(forwardedRef, () => ref.current);
+ 	usePress(ref);
+ 	useRefraction(ref);
+-	return /* @__PURE__ */ jsxs("button", {
++	return /* @__PURE__ */ jsxs(Root, {
+ 		ref,
+ 		type,
+ 		className: cx("lg-glass lg-button", className),
+@@ -1902,11 +1951,13 @@ const keys = [
  	"Home",
  	"End"
  ];
@@ -592,7 +724,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  ];
  const UNDER = .5;
  const DRAG = [
-@@ -1934,6 +1984,26 @@ const SEGMENT_LENS = {
+@@ -1934,6 +1985,26 @@ const SEGMENT_LENS = {
  	dome: 0,
  	splay: 1
  };
@@ -619,7 +751,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options, bendsBackdrop, select) {
  	const tabs = [...bar.querySelectorAll(".lg-tab")];
  	let slot = 0;
-@@ -1947,14 +2017,54 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -1947,14 +2018,54 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  	let shown = false;
  	let settleFrame = 0;
  	let gesture = null;
@@ -676,7 +808,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  	const measure = () => {
  		const style = getComputedStyle(bar);
  		padding = parseFloat(style.paddingLeft) || 0;
-@@ -1964,43 +2074,69 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -1964,43 +2075,69 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  		height = lens.offsetHeight;
  		growX = parseFloat(style.getPropertyValue("--lg-lens-grow-x")) || 0;
  		growY = parseFloat(style.getPropertyValue("--lg-lens-grow-y")) || 0;
@@ -763,7 +895,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  		lift.tune(liftStiffness, liftDamping);
  		x.set(target, instant);
  		lift.set(lifted ? 1 : 0, instant);
-@@ -2036,8 +2172,10 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2036,8 +2173,10 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  		settleFrame = 0;
  		measure();
  		bar.toggleAttribute("data-light", parseFloat(getComputedStyle(lens).getPropertyValue("--lg-lens-shine")) < 0);
@@ -774,7 +906,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  		gesture = {
  			id: event.pointerId,
  			x: event.clientX,
-@@ -2120,6 +2258,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2120,6 +2259,7 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  	};
  	const observer = new ResizeObserver(() => {
  		measure();
@@ -782,7 +914,7 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  		if (!gesture) settle(true);
  	});
  	measure();
-@@ -2146,11 +2285,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
+@@ -2146,11 +2286,17 @@ function attach({ bar, glass, thumb, labels, lensed, lens, tint, row }, options,
  			cancelAnimationFrame(settleFrame);
  			x.stop();
  			lift.stop();
@@ -800,3 +932,9 @@ index 02d488ace3671da61835b1d629c1714cc92fb52c..29fadd553c1586da72aff7835cc5ac0c
  				"hidden",
  				"lifted",
  				"refracting",
+@@ -2671,4 +2817,4 @@ function TabBar(props) {
+ }
+ // src/index.ts
+ insertStyles(styles_default);
+-export { Button, Glass, Input, Menu, SearchField, SegmentedControl, Slider, Switch, TabBar };
++export { Button, Glass, Input, Menu, SearchField, SegmentedControl, Slider, Switch, TabBar, usePress };

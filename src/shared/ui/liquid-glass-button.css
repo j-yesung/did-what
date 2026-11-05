@@ -1,0 +1,43 @@
+[data-slot="liquid-glass-button"].lg-button {
+  --lg-foreground: var(--foreground);
+  --lg-glass: var(--fill-nav-glass);
+  --lg-glass-active: color-mix(in srgb, var(--fill-nav-glass) 85%, var(--foreground) 15%);
+  --lg-edge: var(--navigation-edge);
+  --lg-drop: var(--navigation-lens-shadow);
+  --lg-ring: var(--ring);
+  --lg-lens-shine: var(--nav-lens-shine);
+  --lg-rim-shine: var(--nav-rim-shine);
+  --lg-blur: 8px;
+  pointer-events: auto;
+  /* 버튼에서 시작한 당김을 브라우저 스크롤이 가로채지 않게 한다. */
+  touch-action: none;
+  /* Glisse의 비계층 스타일보다 기존 크기·색상 유틸리티를 우선한다. */
+  height: revert-layer;
+  padding: revert-layer;
+  border: revert-layer;
+  border-radius: revert-layer;
+  color: revert-layer;
+  font: revert-layer;
+}
+
+[data-slot="liquid-glass-button"].lg-button:disabled {
+  opacity: 0.45;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="liquid-glass-button"].lg-button {
+    scale: none !important;
+    translate: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  [data-slot="liquid-glass-button"].lg-button.lg-glass {
+    --lg-glass: var(--surface);
+    --lg-glass-active: var(--muted);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-image: none;
+    box-shadow: inset 0 0 0 1px var(--foreground);
+  }
+}

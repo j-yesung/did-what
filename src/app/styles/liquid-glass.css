@@ -20,6 +20,10 @@
     box-shadow: var(--shadow-glass-control);
   }
 
+  .toolbar [data-slot="icon-button"] {
+    touch-action: none;
+  }
+
   .toolbar [data-slot="icon-button"]:active {
     scale: 1;
     background: transparent;
