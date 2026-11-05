@@ -56,7 +56,15 @@
 }
 
 .liquid-glass-menu .lg-menu-item {
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
   text-decoration: none;
+}
+
+.liquid-glass-menu .lg-menu-item > svg {
+  width: 20px;
+  height: 20px;
 }
 
 .liquid-glass-menu .lg-menu-item[aria-checked="true"] {
