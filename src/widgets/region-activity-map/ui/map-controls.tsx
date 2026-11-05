@@ -5,7 +5,7 @@ import { GpsFixIcon } from "@phosphor-icons/react";
 
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 import { Spinner } from "@/shared/ui/spinner";
 import type { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 

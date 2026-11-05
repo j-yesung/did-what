@@ -6,7 +6,7 @@ import { PlusIcon } from "@phosphor-icons/react";
 
 import { validateKakaoQuery } from "@/shared/api/kakao-local/validation";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 
 import { PlaceSearchForm } from "./place-search-form";
 import { PlaceSearchResults } from "./place-search-results";

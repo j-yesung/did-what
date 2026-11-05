@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useDemoOverride } from "@/shared/lib/demo-override";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
-import { LiquidGlassButton } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { getRecordViewHref, type RecordView, saveRecordView } from "../model/record-view-preference";

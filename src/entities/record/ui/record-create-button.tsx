@@ -5,7 +5,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { NotePencilRoundedIcon } from "@/shared/assets/icons/note-pencil-rounded";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
-import { LiquidGlassButton, type LiquidGlassButtonProps } from "@/shared/ui/liquid-glass-button";
+import { LiquidGlassButton, type LiquidGlassButtonProps } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 import { PressLink } from "@/shared/ui/press-link";
 
 type RecordCreateButtonProps = {
