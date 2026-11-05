@@ -1,4 +1,4 @@
-import { applyRecordSearch, clearRecordSearch } from "./record-search.ts";
+import { applyRecordSearch, beginRecordSearch, clearRecordSearch } from "./record-search.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -50,4 +50,36 @@ test("주소로 바로 들어온 검색은 이전 페이지로 나가지 않고 
   clearRecordSearch(history, "view=calendar&q=%EC%B9%B4%ED%8E%98");
   assert.equal(history.href, "/records?view=calendar");
   assert.equal(history.state, null);
+});
+
+test("빈 검색도 진입 시 한 항목만 추가하고 지우기와 종료를 구분한다", () => {
+  const original = "/records?category=travel&from=2026-01-01&view=calendar";
+  const history = createHistory(original, { navigation: "retained" });
+  beginRecordSearch(history, original.split("?")[1]);
+  beginRecordSearch(history, history.href.split("?")[1]);
+  assert.equal(history.length, 2);
+  applyRecordSearch(history, history.href.split("?")[1], "카페");
+  applyRecordSearch(history, history.href.split("?")[1], "");
+  assert.equal(new URL(history.href, "http://app").searchParams.get("search"), "1");
+  assert.equal(history.length, 2);
+  clearRecordSearch(history, history.href.split("?")[1]);
+  assert.equal(history.href, original);
+});
+
+test("주소로 들어온 검색의 재검색은 항목을 추가하지 않고 취소하면 검색을 종료한다", () => {
+  const history = createHistory("/records?q=카페");
+  applyRecordSearch(history, "q=카페", "바다");
+  assert.equal(history.length, 1);
+  clearRecordSearch(history, "q=바다");
+  assert.equal(history.href, "/records");
+});
+
+test("주소로 들어온 검색에서도 검색어만 지운 뒤 입력 상태를 유지한다", () => {
+  const history = createHistory("/records?q=카페");
+  applyRecordSearch(history, "q=카페", "");
+  assert.equal(history.href, "/records?search=1");
+  applyRecordSearch(history, "search=1", "바다");
+  assert.equal(history.length, 1);
+  clearRecordSearch(history, "search=1&q=바다");
+  assert.equal(history.href, "/records");
 });

@@ -40,7 +40,7 @@ export const recordListQueryOptions = (filters: RecordFilters) => {
   return infiniteQueryOptions({
     ...MAIN_QUERY_OPTIONS,
     queryKey: [...RECORDS_QUERY_KEY, "list", filters],
-    queryFn: ({ pageParam }) => fetchRecordPage(filters, pageParam),
+    queryFn: ({ pageParam, signal }) => fetchRecordPage(filters, pageParam, signal),
     initialPageParam: null as RecordCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     placeholderData: keepPreviousData,

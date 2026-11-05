@@ -14,7 +14,7 @@ import {
 import { RECORD_DETAIL_COLUMNS, RECORD_LOCATION_COLUMNS } from "./record-columns";
 
 const RECORD_PAGE_COLUMNS =
-  "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name, record_regions(region_code, region_label), record_places(place:places(id, name)), record_comments(count)";
+  "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name, record_regions(region_code, region_label), record_places(place:places(id, name)), record_comments(count), matching_regions:record_regions()";
 export const fetchRecord = async (recordId: string) => {
   const { data, error } = await createClient()
     .from("records")
@@ -64,7 +64,7 @@ export const fetchRecordMonthBounds = async () => {
   return { firstMonth: first.data?.recorded_at.slice(0, 7) ?? null, lastMonth: lastDate?.slice(0, 7) ?? null };
 };
 
-export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCursor | null) => {
+export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCursor | null, signal?: AbortSignal) => {
   const ascending = filters.sort === "oldest";
   const period = getRecordPeriodFilter(filters);
   let query = createClient()
@@ -81,10 +81,13 @@ export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCurs
   if (period.to) query = query.lte("recorded_at", period.to);
   if (filters.query) {
     const pattern = `*${filters.query}*`;
-    query = query.or(
-      `activity.ilike.${pattern},memo.ilike.${pattern},region_label.ilike.${pattern},region_name.ilike.${pattern},place_names.ilike.${pattern}`,
-    );
+    query = query
+      .or(
+        `activity.ilike.${pattern},memo.ilike.${pattern},region_label.ilike.${pattern},region_name.ilike.${pattern},place_names.ilike.${pattern},matching_regions.not.is.null`,
+      )
+      .or(`region_label.ilike.${pattern},region_name.ilike.${pattern}`, { referencedTable: "matching_regions" });
   }
+  if (signal) query = query.abortSignal(signal);
   if (cursor) query = query.or(getRecordCursorFilter(cursor, filters.sort));
 
   const { data, error } = await query;

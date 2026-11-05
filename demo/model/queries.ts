@@ -162,9 +162,14 @@ const matchesQuery = (state: DemoState, record: DemoRecord, query: string) => {
   const primary = primaryRegionOf(record);
   const needle = query.toLocaleLowerCase("ko-KR");
   const placeNames = placesOf(state, record).map((place) => place.name);
-  return [record.activity, record.memo, primary?.region_label, primary?.region_name, ...placeNames].some((value) =>
-    value?.toLocaleLowerCase("ko-KR").includes(needle),
-  );
+  return [
+    record.activity,
+    record.memo,
+    primary?.region_label,
+    primary?.region_name,
+    ...placeNames,
+    ...record.regions.flatMap((region) => [region.region_label, region.region_name]),
+  ].some((value) => value?.toLocaleLowerCase("ko-KR").includes(needle));
 };
 
 const isAfterCursor = (record: DemoRecord, cursor: RecordCursor, ascending: boolean) => {

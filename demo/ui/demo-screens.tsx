@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { AppLoading } from "@/app/ui/app-loading";
 import { AppNotFound } from "@/app/ui/app-not-found";
+import { RecordSearchProvider } from "@/entities/record/ui/record-search-provider";
 import { LogoutButton } from "@/features/auth";
 import { HomeAddressSetting } from "@/features/home-address/ui/home-address-setting";
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
@@ -48,13 +49,13 @@ type Member = { id: string; name: string };
 /** app/(app)/layout.tsx와 같은 뼈대. */
 export function DemoAppFrame({ children, member }: { children: ReactNode; member: Member }) {
   return (
-    <>
+    <RecordSearchProvider>
       <Toolbar memberId={member.id} />
       <PageBackSlot />
       {children}
       <BottomNavigation />
       <RecordRouteSheet member={member} />
-    </>
+    </RecordSearchProvider>
   );
 }
 
