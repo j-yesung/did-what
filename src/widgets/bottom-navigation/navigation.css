@@ -35,6 +35,7 @@
   --lg-tab-width: calc(100cqw / 4);
   --lg-lens-grow-x: 18px;
   --lg-lens-grow-y: 20px;
+  --lg-lens-squash: 16px;
   --lg-tab-wobble: 2;
   --lg-contour: 1;
   overflow: visible;
