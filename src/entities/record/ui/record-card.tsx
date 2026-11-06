@@ -9,7 +9,6 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
 import { prefetchRecordDetail } from "../api/prefetch-record-detail";
-import { normalizeRecordCategory, RECORD_CATEGORY_BADGE } from "../model/category";
 import { RECORD_CARD_BUTTON_CLASS, RecordCardContent } from "./record-card-content";
 import { RecordDetailLink } from "./record-detail-link";
 
@@ -30,7 +29,7 @@ export function RecordCard({ onDetailPrefetch, onOpen, record }: RecordCardProps
           RECORD_CARD_BUTTON_CLASS,
           "rounded-3xl px-4.5 py-4.5",
           PRESS_FEEDBACK,
-          RECORD_CATEGORY_BADGE[normalizeRecordCategory(record.category)],
+          "bg-surface text-foreground",
         )}
         fullWidth
         nativeButton={Boolean(onOpen)}

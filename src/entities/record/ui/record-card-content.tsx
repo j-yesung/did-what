@@ -45,7 +45,7 @@ export function RecordCardContent({ record }: RecordCardContentProps) {
         <h3 className="min-w-0 truncate font-bold text-[18px] text-foreground leading-6 tracking-[-0.03em]">
           {record.activity}
         </h3>
-        <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 -rotate-12" />
+        <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 -rotate-12 text-muted-foreground" />
       </span>
       {regionLabel ? (
         <span className="mt-1 block truncate text-[12px] text-muted-foreground leading-4">{regionLabel}</span>

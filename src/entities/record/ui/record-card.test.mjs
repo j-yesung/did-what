@@ -19,7 +19,6 @@ const setup = () => {
     "../api/prefetch-record-detail": {
       prefetchRecordDetail: (client, id) => prefetches.push({ client, id }),
     },
-    "../model/category": { normalizeRecordCategory: () => "daily", RECORD_CATEGORY_BADGE: { daily: "daily" } },
     "./record-card-content": { RECORD_CARD_BUTTON_CLASS: "record-card", RecordCardContent: () => null },
     "./record-detail-link": { RecordDetailLink },
   };
