@@ -6,8 +6,8 @@ import { DotsThreeVerticalIcon, NotePencilIcon, PencilSimpleIcon, TrashIcon } fr
 import { useQuery } from "@tanstack/react-query";
 
 import { formatRecordRegionLabels, RecordDetailHeader, recordDetailQueryOptions } from "@/entities/record";
-import { DeleteRecordConfirm } from "@/features/record/delete-record";
-import { RecordComments } from "@/features/record-comment";
+import { DeleteRecordConfirm } from "@/features/record/delete-record/ui/delete-record-confirm";
+import { RecordComments } from "@/features/record-comment/ui/record-comments";
 import { cn } from "@/shared/lib/utils";
 import { BackButton } from "@/shared/ui/back-button";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";

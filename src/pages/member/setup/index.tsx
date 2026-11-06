@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getAccountMembers } from "@/entities/member/server";
-import { MemberSetupForm } from "@/features/member/setup-members";
+import { MemberSetupForm } from "@/features/member/setup-members/ui/member-setup-form";
 import { requireUser } from "@/shared/api/supabase/require-user";
 import { Card, CardContent } from "@/shared/ui/card";
 import { PageShell } from "@/shared/ui/layouts";

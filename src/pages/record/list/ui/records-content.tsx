@@ -1,8 +1,8 @@
 "use client";
 
 import { useRecordSearch } from "@/entities/record/ui/record-search-provider";
-import { RecordViewToggle } from "@/features/record/switch-record-view";
 import type { RecordView } from "@/features/record/switch-record-view/model/record-view-preference";
+import { RecordViewToggle } from "@/features/record/switch-record-view/ui/record-view-toggle";
 import { cn } from "@/shared/lib/utils";
 import { FixedToolbar, PageShell } from "@/shared/ui/layouts";
 
