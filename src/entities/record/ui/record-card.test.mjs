@@ -9,7 +9,6 @@ import { runInNewContext } from "node:vm";
 const setup = () => {
   const exports = {};
   const prefetches = [];
-  const morphs = [];
   const RecordDetailLink = () => null;
   const modules = {
     "react/jsx-runtime": { jsx, jsxs },
@@ -21,7 +20,6 @@ const setup = () => {
       prefetchRecordDetail: (client, id) => prefetches.push({ client, id }),
     },
     "../model/category": { normalizeRecordCategory: () => "daily", RECORD_CATEGORY_BADGE: { daily: "daily" } },
-    "../model/record-sheet-morph": { openRecordSheetFromCard: (card, open) => morphs.push({ card, open }) },
     "./record-card-content": { RECORD_CARD_BUTTON_CLASS: "record-card", RecordCardContent: () => null },
     "./record-detail-link": { RecordDetailLink },
   };
@@ -38,35 +36,28 @@ const setup = () => {
       },
     },
   );
-  return { RecordCard: exports.RecordCard, RecordDetailLink, prefetches, morphs };
+  return { RecordCard: exports.RecordCard, RecordDetailLink, prefetches };
 };
 
 const record = { id: "record-1", activity: "산책", category: ["daily"] };
 
-test("목록에서는 카드 출처와 복귀 위치를 가진 상세 링크를 유지한다", () => {
+test("목록에서는 상세 링크로 시트를 연다", () => {
   const { RecordCard, RecordDetailLink } = setup();
   const button = RecordCard({ record }).props.children;
   assert.equal(button.props.nativeButton, false);
   assert.equal(button.props.render.type, RecordDetailLink);
-  assert.equal(button.props.render.props.href, "/records/record-1?from=card");
-  assert.equal(button.props.render.props["data-record-card"], record.id);
-  assert.equal(button.props.render.props.morph, true);
+  assert.equal(button.props.render.props.href, "/records/record-1");
 });
 
-test("미니지도에서는 누른 카드에서 확장을 시작하고 지도 쪽 상세 열기를 호출한다", () => {
-  const { RecordCard, morphs, prefetches } = setup();
+test("미니지도에서는 카드를 눌러 지도 쪽 상세 열기를 바로 호출한다", () => {
+  const { RecordCard, prefetches } = setup();
   const opened = [];
   const button = RecordCard({ record, onOpen: (id) => opened.push(id) }).props.children;
   assert.equal(button.props.nativeButton, true);
   assert.equal(button.props.render.type, "button");
-  assert.equal(button.props.render.props["data-record-card"], record.id);
   button.props.onFocus();
   assert.deepEqual(prefetches, [{ client: "query-client", id: record.id }]);
 
-  const card = {};
-  button.props.render.props.onClick({ currentTarget: card });
-  assert.equal(morphs[0].card, card);
-  assert.deepEqual(opened, []);
-  morphs[0].open();
+  button.props.render.props.onClick();
   assert.deepEqual(opened, [record.id]);
 });

@@ -1,13 +1,15 @@
 import type { ComponentProps } from "react";
 
 import { PlaceIconTile } from "@/entities/place";
-import { type RecordSummary, RecordWeatherBadge } from "@/entities/record";
 import { PlaceSaveButton } from "@/features/place/save-place";
-import { formatRecordPeriod } from "@/shared/lib/date/format-date";
+import { cn } from "@/shared/lib/utils";
+import { CountBadge } from "@/shared/ui/count-badge";
+
+const SECTION_TITLE = "relative w-fit font-extrabold text-[17px] tracking-[-0.03em]";
+const QUOTE = "h-4.5 select-none font-extrabold text-[40px] text-input leading-[0.6]";
 
 type RecordDetailSectionsProps = {
   memo: string | null;
-  record: Pick<RecordSummary, "recorded_at" | "recorded_until" | "weather">;
   places: {
     place: ComponentProps<typeof PlaceIconTile>["place"] & {
       id: string;
@@ -18,32 +20,24 @@ type RecordDetailSectionsProps = {
   }[];
 };
 
-export function RecordDetailSections({ memo, places, record }: RecordDetailSectionsProps) {
+export function RecordDetailSections({ memo, places }: RecordDetailSectionsProps) {
   return (
     <>
-      <section aria-labelledby="sheet-record-date-title" className="px-1 pt-1">
-        <h3 className="mb-3 font-semibold text-base" id="sheet-record-date-title">
-          우리 언제 갔지?
-        </h3>
-        <p className="flex flex-wrap items-center gap-2 text-sm">
-          {formatRecordPeriod(record.recorded_at, record.recorded_until)}
-          <RecordWeatherBadge weather={record.weather} />
-        </p>
-      </section>
       {places.length > 0 ? (
-        <section aria-labelledby="sheet-record-places-title" className="px-1 pt-1">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="font-semibold text-base" id="sheet-record-places-title">
-              우리 어디 갔지?
-            </h3>
-            <p className="text-muted-foreground text-xs">함께한 장소 {places.length}곳</p>
-          </div>
-          <ul className="flex flex-col">
+        <section aria-labelledby="sheet-record-places-title">
+          <h3 className={SECTION_TITLE} id="sheet-record-places-title">
+            방문 장소
+            <CountBadge count={places.length} unit="곳" />
+          </h3>
+          <ol className="mt-5 flex flex-col">
             {places.map(({ place }) => (
-              <li className="flex min-h-11 items-center gap-3 border-b py-3" key={place.id}>
+              <li
+                className="relative flex items-center gap-3.5 pb-6 not-last:after:absolute not-last:after:top-12 not-last:after:bottom-1 not-last:after:left-[21.5px] not-last:after:w-px not-last:after:bg-input last:pb-0"
+                key={place.id}
+              >
                 <PlaceIconTile place={place} />
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium">{place.name}</p>
+                  <p className="font-bold text-[17px] tracking-[-0.02em]">{place.name}</p>
                   {place.address ? (
                     <p className="mt-0.5 truncate text-muted-foreground text-xs">{place.address}</p>
                   ) : null}
@@ -51,20 +45,28 @@ export function RecordDetailSections({ memo, places, record }: RecordDetailSecti
                 <PlaceSaveButton placeId={place.id} placeName={place.name} saved={Boolean(place.saved_at)} />
               </li>
             ))}
-          </ul>
+          </ol>
         </section>
       ) : null}
       {memo ? (
-        <section aria-labelledby="sheet-record-memo-title" className="px-1 pt-1">
-          <h3 className="mb-3 font-semibold text-base" id="sheet-record-memo-title">
-            우리 뭐했지?
+        <section aria-labelledby="sheet-record-memo-title">
+          <h3 className={SECTION_TITLE} id="sheet-record-memo-title">
+            우리 뭐했지
           </h3>
-          <div className="flex flex-col gap-2 border-primary border-l-2 pl-4 text-sm leading-relaxed">
-            {memo.split("\n").map((line, index) => (
-              <p className="min-h-lh whitespace-pre-wrap" key={`sheet-record-${index}`}>
-                {line}
-              </p>
-            ))}
+          <div className="mt-5">
+            <p aria-hidden="true" className={QUOTE}>
+              “
+            </p>
+            <div className="mt-2.5 flex flex-col gap-1.5 text-[15px] leading-[1.7] tracking-[-0.01em]">
+              {memo.split("\n").map((line, index) => (
+                <p className="min-h-lh whitespace-pre-wrap" key={`sheet-record-${index}`}>
+                  {line}
+                </p>
+              ))}
+            </div>
+            <p aria-hidden="true" className={cn(QUOTE, "mt-1 text-right")}>
+              <span className="inline-block rotate-180">“</span>
+            </p>
           </div>
         </section>
       ) : null}

@@ -7,7 +7,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
 import { recordLocationsQueryOptions } from "@/entities/record";
-import { closeRecordSheetIntoCard } from "@/entities/record/model/record-sheet-morph";
 import { HomeAddressSheet } from "@/features/home-address/ui/home-address-sheet";
 import { useCurrentMapLocation } from "@/pages/journey/model/use-current-map-location";
 import { MapControls } from "@/pages/journey/ui/map/map-controls";
@@ -216,11 +215,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
     setDetailOpen(true);
   };
 
-  const closeDetail = () => {
-    if (!session && detailRecordId) closeRecordSheetIntoCard(detailRecordId, () => setDetailOpen(false));
-    else setDetailOpen(false);
-  };
-
   const startRecord = (recordId: string) => {
     const record = journeyRecord(recordId);
     if (!record || !region) return;
@@ -407,11 +401,11 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         action={
           routableDetail && (
             <Button
-              className="rounded-full"
+              className="rounded-full bg-foreground text-background"
               fullWidth
               onClick={() => {
                 routeAfterClose.current = routableDetail.id;
-                closeDetail();
+                setDetailOpen(false);
               }}
               onPointerDown={(event) => {
                 if (event.button === 0) prefetchRoute(routableDetail.id);
@@ -423,8 +417,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
             </Button>
           )
         }
-        backLabel="지도로"
-        screen={!session}
         member={member}
         onDeleted={() => {
           setDetailOpen(false);
@@ -450,10 +442,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           if (remaining.length) showRegionRecords(previous);
           else reset();
         }}
-        onOpenChange={(nextOpen) => {
-          if (nextOpen) setDetailOpen(true);
-          else closeDetail();
-        }}
+        onOpenChange={setDetailOpen}
         open={detailOpen}
         recordId={detailRecordId}
       />

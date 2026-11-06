@@ -17,7 +17,7 @@ test("알림 출처는 날짜 필터와 구분하고 댓글 위치를 유지한�
   );
   assert.equal(
     toRecordSheetHref("/records/abc?from=card", "/records?view=list"),
-    "/records?view=list&recordDetail=abc&recordFrom=card",
+    "/records?view=list&recordDetail=abc",
   );
   assert.equal(
     toRecordSheetHref("/records/abc", "/records?recordDetail=old&recordFrom=notification"),

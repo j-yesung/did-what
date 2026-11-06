@@ -4,47 +4,80 @@ import { XIcon } from "@phosphor-icons/react";
 
 import { MemberAvatar } from "@/entities/member";
 import { formatCommentTime, type RecordComment } from "@/entities/record-comment";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
 import { IconButton } from "@/shared/ui/icon-button";
 
 type CommentRowProps = {
   comment: RecordComment;
+  continued: boolean;
   currentMemberId: string;
   onDelete: (comment: RecordComment) => void;
 };
 
-export function CommentRow({ comment, currentMemberId, onDelete }: CommentRowProps) {
+export function CommentRow({ comment, continued, currentMemberId, onDelete }: CommentRowProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const mine = comment.author_member_id === currentMemberId;
+  const showName = !mine && !continued;
 
   return (
     <>
-      <li className="scroll-mt-24 border-b px-6.5 py-4" id={`comment-${comment.id}`}>
-        <article aria-busy={comment.pending || undefined} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
-          <MemberAvatar memberId={comment.author_member_id} name={comment.author.name} />
-          <div className="min-w-0">
-            <header className="flex min-h-7 min-w-0 items-center justify-between gap-2">
-              <p className="min-w-0 truncate font-semibold text-sm">
-                {comment.author.name}
-                {mine ? <span className="ml-1 font-medium text-accent-text text-xs">나</span> : null}
-                <span className="ml-2 font-normal text-muted-foreground text-xs">
-                  <time dateTime={comment.created_at}>{formatCommentTime(comment.created_at)}</time>
-                </span>
+      <li
+        className={cn(
+          "flex scroll-mt-24 first:mt-0",
+          continued ? "mt-1" : "mt-3",
+          mine ? "justify-end" : "justify-start",
+        )}
+        id={`comment-${comment.id}`}
+      >
+        <article
+          aria-busy={comment.pending || undefined}
+          className={cn("flex max-w-[82%] items-end gap-2", mine && "flex-row-reverse")}
+        >
+          {mine ? null : (
+            <MemberAvatar
+              className={cn("size-7 text-xs", continued && "invisible")}
+              memberId={comment.author_member_id}
+              name={comment.author.name}
+            />
+          )}
+          <div className="flex min-w-0 flex-col">
+            {showName ? (
+              <p className="mb-1 ml-1 truncate font-semibold text-muted-foreground text-xs">{comment.author.name}</p>
+            ) : (
+              <span className="sr-only">{mine ? "내 댓글" : comment.author.name}</span>
+            )}
+            <div className="relative">
+              <p
+                className={cn(
+                  "wrap-break-word whitespace-pre-wrap rounded-[20px] px-3.5 py-2.5 text-[15px] leading-[1.45] transition-opacity",
+                  mine ? "rounded-br-md bg-foreground text-background" : "rounded-bl-md bg-surface",
+                  comment.pending && "opacity-60",
+                )}
+              >
+                {comment.body}
               </p>
               {mine ? (
                 <IconButton
-                  aria-label={`${comment.author.name} 댓글 삭제`}
+                  aria-label="내 댓글 삭제"
+                  className="absolute -top-2 -left-2 size-6 rounded-full bg-surface text-foreground/70 shadow-sm before:-inset-2.5 active:bg-input"
                   disabled={comment.pending}
                   icon={XIcon}
+                  iconSize={12}
+                  iconWeight="bold"
                   onClick={() => setDeleteOpen(true)}
                   size="sm"
                 />
               ) : null}
-            </header>
-
-            <p className="wrap-break-word whitespace-pre-wrap text-[15px] leading-relaxed">{comment.body}</p>
+            </div>
           </div>
+          <time
+            className="shrink-0 whitespace-nowrap pb-0.5 text-[11px] text-muted-foreground"
+            dateTime={comment.created_at}
+          >
+            {formatCommentTime(comment.created_at)}
+          </time>
         </article>
       </li>
 

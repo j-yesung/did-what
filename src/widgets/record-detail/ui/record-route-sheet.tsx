@@ -7,7 +7,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
 import { closeRecordSheet } from "@/entities/record/model/record-sheet";
-import { closeRecordSheetIntoCard } from "@/entities/record/model/record-sheet-morph";
 import { readRecordNotifications } from "@/features/notification/read-record-notifications";
 import { useDemoOverride } from "@/shared/lib/demo-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
@@ -33,7 +32,6 @@ function OpenRecordSheet({ member, recordId }: { member: Member; recordId: strin
   const queryClient = useQueryClient();
   const markRead = useDemoOverride(readRecordNotifications);
   const fromNotification = params?.get("recordFrom") === "notification";
-  const fromCard = params?.get("recordFrom") === "card";
 
   // 처음부터 열린 상태로 마운트하면 Drawer가 진입 전환을 생략한다.
   useEffect(() => setOpen(true), []);
@@ -64,15 +62,10 @@ function OpenRecordSheet({ member, recordId }: { member: Member; recordId: strin
 
   return (
     <RecordDetailBottomSheet
-      backLabel="기록으로"
-      screen={fromCard}
       member={member}
       onDeleted={() => setOpen(false)}
       onMissing={handleMissing}
-      onOpenChange={(nextOpen) => {
-        if (nextOpen) setOpen(true);
-        else closeRecordSheetIntoCard(recordId, () => setOpen(false));
-      }}
+      onOpenChange={setOpen}
       onCloseComplete={close}
       open={open}
       recordId={recordId}

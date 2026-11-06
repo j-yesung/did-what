@@ -189,7 +189,7 @@ function BottomSheetHeader({
           {GLASS_BLUR_LAYERS.map((layer) => (
             <span className={cn("absolute inset-0 rounded-t-3xl", layer)} key={layer} />
           ))}
-          <span className="absolute inset-0 rounded-t-3xl bg-linear-to-b from-surface/50 to-transparent" />
+          <span className="absolute inset-0 rounded-t-3xl bg-linear-to-b from-[color-mix(in_srgb,var(--bottom-sheet-bleed-background,var(--color-surface))_50%,transparent)] to-transparent" />
         </span>
       ) : null}
       {children}
