@@ -20,8 +20,7 @@ import { RecordDetailSections } from "./record-detail-sections";
 
 type RecordSheetDetailProps = {
   action?: ReactNode;
-  backLabel?: string;
-  showBackButton?: boolean;
+  backLabel: string;
   draft: string;
   member: { id: string; name: string };
   onBack: () => void;
@@ -34,8 +33,7 @@ type RecordSheetDetailProps = {
 
 export function RecordSheetDetail({
   action,
-  backLabel = "이전 화면으로",
-  showBackButton = true,
+  backLabel,
   draft,
   member,
   onBack,
@@ -66,10 +64,10 @@ export function RecordSheetDetail({
         className={cn(
           "pointer-events-none absolute inset-x-5 z-20 flex items-center justify-end gap-3 [&>*]:pointer-events-auto",
           screen ? "top-(--page-top)" : "top-7",
-          showBackButton && "justify-between",
+          screen && "justify-between",
         )}
       >
-        {showBackButton && <BackButton aria-label={backLabel} onClick={onBack} />}
+        {screen && <BackButton aria-label={backLabel} onClick={onBack} />}
         {record ? (
           <LiquidGlassMenu
             label="기록 작업"

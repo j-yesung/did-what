@@ -2,7 +2,6 @@
 
 import { type ReactNode, useState } from "react";
 
-import type { RecordSummary } from "@/entities/record";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 
@@ -12,7 +11,6 @@ type RecordDetailBottomSheetProps = {
   /** 시트 아래에 고정할 버튼. 댓글을 쓰는 동안에는 숨긴다. */
   action?: ReactNode;
   backLabel: string;
-  showBackButton?: boolean;
   member: { id: string; name: string };
   /** 삭제한 뒤 할 일. 넘기지 않으면 시트를 닫는다. */
   onDeleted?: () => void;
@@ -20,21 +18,20 @@ type RecordDetailBottomSheetProps = {
   onOpenChange: (open: boolean) => void;
   onCloseComplete?: () => void;
   open: boolean;
-  record: Pick<RecordSummary, "id"> | null;
+  recordId: string | null;
   screen?: boolean;
 };
 
 export function RecordDetailBottomSheet({
   action,
   backLabel,
-  showBackButton,
   member,
   onDeleted,
   onMissing,
   onOpenChange,
   onCloseComplete,
   open,
-  record,
+  recordId,
   screen,
 }: RecordDetailBottomSheetProps) {
   const [draft, setDraft] = useState("");
@@ -62,19 +59,18 @@ export function RecordDetailBottomSheet({
           )}
           style={{ height: screen ? "calc(100dvh - var(--drawer-keyboard-inset, 0px))" : FULL_SHEET_HEIGHT }}
         >
-          {record ? (
+          {recordId ? (
             <RecordSheetDetail
               action={action}
               backLabel={backLabel}
-              showBackButton={showBackButton}
               draft={draft}
-              key={record.id}
+              key={recordId}
               member={member}
               onBack={() => onOpenChange(false)}
               onDeleted={onDeleted}
               onMissing={onMissing}
               onDraftChange={setDraft}
-              recordId={record.id}
+              recordId={recordId}
               screen={screen}
             />
           ) : null}

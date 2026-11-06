@@ -425,7 +425,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         }
         backLabel="지도로"
         screen={!session}
-        showBackButton={!session}
         member={member}
         onDeleted={() => {
           setDetailOpen(false);
@@ -456,7 +455,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           else closeDetail();
         }}
         open={detailOpen}
-        record={detailRecordId ? { id: detailRecordId } : null}
+        recordId={detailRecordId}
       />
     </main>
   );
