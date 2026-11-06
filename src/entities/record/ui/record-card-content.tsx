@@ -9,8 +9,6 @@ import {
   UsersIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
-import { cn } from "@/shared/lib/utils";
-
 import { normalizeRecordCategories, normalizeRecordCategory } from "../model/category";
 import { formatRecordRegionLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
@@ -29,41 +27,25 @@ const CATEGORY_ICONS = {
 };
 
 type RecordCardContentProps = {
-  heading?: "h2" | "h3";
   record: Pick<
     RecordSummary,
-    "activity" | "category" | "record_comments" | "record_regions" | "region_code" | "region_label"
+    "activity" | "category" | "record_comments" | "record_regions" | "region_code" | "region_label" | "region_name"
   >;
-  regionLabel?: string;
-  size?: "card" | "header";
-  titleId?: string;
 };
 
-export function RecordCardContent({
-  heading: Heading = "h3",
-  record,
-  regionLabel = formatRecordRegionLabels(record, Number.POSITIVE_INFINITY),
-  size = "card",
-  titleId,
-}: RecordCardContentProps) {
+export function RecordCardContent({ record }: RecordCardContentProps) {
+  const regionLabel = formatRecordRegionLabels(record, Number.POSITIVE_INFINITY);
   const categories = normalizeRecordCategories(record.category);
   const Icon = CATEGORY_ICONS[normalizeRecordCategory(record.category)];
   const commentCount = record.record_comments?.[0]?.count ?? 0;
-  const header = size === "header";
 
   return (
     <span className="block min-w-0">
       <span className="flex min-w-0 items-start justify-between gap-2">
-        <Heading
-          className={cn(
-            "min-w-0 font-bold text-[18px] text-foreground leading-6 tracking-[-0.03em]",
-            header ? "break-words" : "truncate",
-          )}
-          id={titleId}
-        >
+        <h3 className="min-w-0 truncate font-bold text-[18px] text-foreground leading-6 tracking-[-0.03em]">
           {record.activity}
-        </Heading>
-        <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 -rotate-12" />
+        </h3>
+        <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 -rotate-12 text-muted-foreground" />
       </span>
       {regionLabel ? (
         <span className="mt-1 block truncate text-[12px] text-muted-foreground leading-4">{regionLabel}</span>

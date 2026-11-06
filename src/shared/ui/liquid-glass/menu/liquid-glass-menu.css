@@ -20,6 +20,12 @@
   z-index: 40;
 }
 
+.liquid-glass-menu:has(.lg-menu-card)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+}
+
 .liquid-glass-menu.lg-menu > .lg-button {
   width: var(--toolbar-height);
   height: var(--toolbar-height);
@@ -31,6 +37,10 @@
 .liquid-glass-menu.lg-menu > .lg-button > svg {
   width: 24px;
   height: 24px;
+}
+
+.liquid-glass-menu .lg-menu-glyph {
+  display: none;
 }
 
 .liquid-glass-menu .lg-menu-card {

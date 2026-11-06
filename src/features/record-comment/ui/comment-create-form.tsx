@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef } from "react";
+
 import { ArrowUpIcon } from "@phosphor-icons/react";
 
 import { MemberAvatar } from "@/entities/member";
@@ -26,35 +28,55 @@ export function CommentCreateForm({
   onSubmit,
 }: CommentCreateFormProps) {
   const length = [...draft].length;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea || textarea.value !== draft) return;
+    const probe = textarea.cloneNode() as HTMLTextAreaElement;
+    probe.removeAttribute("id");
+    probe.value = draft;
+    Object.assign(probe.style, {
+      height: "auto",
+      position: "absolute",
+      transition: "none",
+      width: `${textarea.offsetWidth}px`,
+    });
+    textarea.after(probe);
+    const height = `${probe.scrollHeight}px`;
+    probe.remove();
+    if (textarea.style.height !== height) textarea.style.height = height;
+  }, [draft]);
 
   return (
     <form
-      className="mt-3"
+      className="mt-7"
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit();
       }}
     >
-      <div className="flex min-h-14 items-start gap-3 rounded-3xl bg-surface p-1.5">
+      <div className="flex min-h-14 items-start gap-3 rounded-[28px] bg-muted p-1.5">
         <div className="flex min-w-0 flex-1 items-start gap-3 pt-1">
           <MemberAvatar memberId={memberId} name={memberName} />
           <label className="sr-only" htmlFor="record-comment-body">
             {memberName}으로 댓글 남기기
           </label>
           <Textarea
-            className="min-h-9 resize-none border-0 bg-transparent! px-0 py-2 shadow-none focus-visible:ring-0"
+            className="field-sizing-fixed min-h-9 resize-none overflow-hidden border-0 bg-transparent! px-0 py-2 shadow-none transition-[height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-0 motion-reduce:transition-none"
             aria-describedby={length >= COUNTER_FROM ? "record-comment-count" : undefined}
             id="record-comment-body"
             maxLength={MAX_COMMENT_LENGTH}
             onChange={(event) => onDraftChange(event.target.value)}
-            placeholder="댓글 남기기…"
+            placeholder="한마디 남기기"
+            ref={textareaRef}
             rows={1}
             value={draft}
           />
         </div>
         <Button
           aria-label="댓글 게시"
-          className="size-11 min-w-0 self-end rounded-full bg-dark p-0 text-dark-foreground dark:bg-light dark:text-dark"
+          className="size-11 min-w-0 self-end rounded-full bg-foreground p-0 text-background"
           color="dark"
           disabled={disabled}
           onPointerDown={(event) => event.preventDefault()}

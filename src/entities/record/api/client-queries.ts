@@ -14,7 +14,7 @@ import {
 import { RECORD_DETAIL_COLUMNS, RECORD_LOCATION_COLUMNS } from "./record-columns";
 
 const RECORD_PAGE_COLUMNS =
-  "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name, record_regions(region_code, region_label), record_places(place:places(id, name)), record_comments(count), matching_regions:record_regions()";
+  "id, activity, category, memo, weather, recorded_at, recorded_until, created_at, region_code, region_label, region_name, record_regions(region_code, region_label, region_name), record_places(place:places(id, name)), record_comments(count), matching_regions:record_regions()";
 export const fetchRecord = async (recordId: string) => {
   const { data, error } = await createClient()
     .from("records")

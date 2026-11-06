@@ -1,4 +1,9 @@
-import { formatRecordRegionLabels, sortPrimaryRecordRegions, sortPrimaryRegionFirst } from "./record-region.ts";
+import {
+  formatRecordRegionLabels,
+  sortPrimaryRecordRegions,
+  sortPrimaryRegionFirst,
+  toRegionCityLabel,
+} from "./record-region.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -92,4 +97,30 @@ test("대표 표시명이 사라졌으면 같은 코드의 항목을 앞에 두�
     ["디지털미디어시티", "난지 한강공원", "목포시"],
   );
   assert.deepEqual(sortPrimaryRecordRegions(entries, undefined, undefined), entries);
+});
+
+test("전체 지역명에서 도시 이름만 남긴다", () => {
+  assert.equal(toRegionCityLabel("서울 성동구"), "서울");
+  assert.equal(toRegionCityLabel("서울특별시 마포구"), "서울");
+  assert.equal(toRegionCityLabel("부산광역시 기장군"), "부산");
+  assert.equal(toRegionCityLabel("세종특별자치시 조치원읍"), "세종");
+  assert.equal(toRegionCityLabel("전북특별자치도 전주시 완산구"), "전주");
+  assert.equal(toRegionCityLabel("경기 가평군"), "가평");
+  assert.equal(toRegionCityLabel("경기 광주시"), "광주");
+  assert.equal(toRegionCityLabel("전남광주통합특별시 여수시"), "여수");
+  assert.equal(toRegionCityLabel("전남광주통합특별시 북구"), "전남광주");
+});
+
+test("전체 지역명이 있으면 같은 도시는 하나로 합치고, 없으면 표시명을 쓴다", () => {
+  const record = {
+    region_code: "1120000000",
+    record_regions: [
+      { region_code: "1120000000", region_label: "성수동", region_name: "서울 성동구" },
+      { region_code: "1121500000", region_label: "자양동", region_name: "서울 광진구" },
+      { region_code: "4511100000", region_label: "중앙동", region_name: "전북특별자치도 전주시 완산구" },
+      { region_code: "4613000000", region_label: "여수시" },
+    ],
+  };
+
+  assert.equal(formatRecordRegionLabels(record, Number.POSITIVE_INFINITY), "서울 · 전주 · 여수시");
 });

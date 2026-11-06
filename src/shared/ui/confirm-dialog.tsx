@@ -40,7 +40,10 @@ export function ConfirmDialog({
   return (
     <AlertDialogPrimitive.Root onOpenChange={(nextOpen) => !nextOpen && onClose()} open={open}>
       <AlertDialogPrimitive.Portal>
-        <AlertDialogPrimitive.Backdrop className="data-open:fade-in-0 data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-dimmed duration-100 data-closed:animate-out data-open:animate-in data-closed:duration-100 data-open:duration-300 data-closed:ease-out data-open:ease-[cubic-bezier(0.22,1,0.36,1)]" />
+        <AlertDialogPrimitive.Backdrop
+          forceRender
+          className="data-open:fade-in-0 data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-dimmed duration-100 data-closed:animate-out data-open:animate-in data-closed:duration-100 data-open:duration-300 data-closed:ease-out data-open:ease-[cubic-bezier(0.22,1,0.36,1)]"
+        />
         <AlertDialogPrimitive.Popup
           className={cn(
             "data-open:fade-in-0 data-open:slide-in-from-bottom-[100px] data-closed:fade-out-0 motion-reduce:data-open:slide-in-from-bottom-0 fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-1rem)] max-w-xs -translate-x-1/2 -translate-y-1/2 gap-2 rounded-2xl bg-popover p-5 text-popover-foreground outline-none data-closed:animate-out data-open:animate-in data-closed:duration-100 data-open:duration-300 data-closed:ease-out data-open:ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:data-open:duration-100",

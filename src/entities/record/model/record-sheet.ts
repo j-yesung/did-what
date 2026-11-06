@@ -16,7 +16,7 @@ export const toRecordSheetHref = (href: string, backgroundHref: string) => {
   background.searchParams.set("recordDetail", match[1]);
   background.searchParams.delete("recordFrom");
   const from = target.searchParams.get("from");
-  if (from === "notification" || from === "card") background.searchParams.set("recordFrom", from);
+  if (from === "notification") background.searchParams.set("recordFrom", from);
   return `${background.pathname}?${background.searchParams}${target.hash}`;
 };
 

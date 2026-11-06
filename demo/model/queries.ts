@@ -47,7 +47,11 @@ const toPageRow = (state: DemoState, record: DemoRecord) => ({
   memo: record.memo,
   record_comments: [{ count: state.comments.filter((comment) => comment.record_id === record.id).length }],
   record_places: placesOf(state, record).map(({ id, name }) => ({ place: { id, name } })),
-  record_regions: record.regions.map(({ region_code, region_label }) => ({ region_code, region_label })),
+  record_regions: record.regions.map(({ region_code, region_label, region_name }) => ({
+    region_code,
+    region_label,
+    region_name,
+  })),
   recorded_at: record.recorded_at,
   recorded_until: record.recorded_until,
   region_code: primaryRegionOf(record)?.region_code,

@@ -9,8 +9,6 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
 import { prefetchRecordDetail } from "../api/prefetch-record-detail";
-import { normalizeRecordCategory, RECORD_CATEGORY_BADGE } from "../model/category";
-import { openRecordSheetFromCard } from "../model/record-sheet-morph";
 import { RECORD_CARD_BUTTON_CLASS, RecordCardContent } from "./record-card-content";
 import { RecordDetailLink } from "./record-detail-link";
 
@@ -22,7 +20,7 @@ type RecordCardProps = {
 
 export function RecordCard({ onDetailPrefetch, onOpen, record }: RecordCardProps) {
   const queryClient = useQueryClient();
-  const href = `/records/${record.id}?from=card`;
+  const href = `/records/${record.id}`;
 
   return (
     <article className="mt-2 min-w-0">
@@ -31,7 +29,7 @@ export function RecordCard({ onDetailPrefetch, onOpen, record }: RecordCardProps
           RECORD_CARD_BUTTON_CLASS,
           "rounded-3xl px-4.5 py-4.5",
           PRESS_FEEDBACK,
-          RECORD_CATEGORY_BADGE[normalizeRecordCategory(record.category)],
+          "bg-surface text-foreground",
         )}
         fullWidth
         nativeButton={Boolean(onOpen)}
@@ -43,13 +41,9 @@ export function RecordCard({ onDetailPrefetch, onOpen, record }: RecordCardProps
         }}
         render={
           onOpen ? (
-            <button
-              type="button"
-              data-record-card={record.id}
-              onClick={(event) => openRecordSheetFromCard(event.currentTarget, () => onOpen(record.id))}
-            />
+            <button type="button" onClick={() => onOpen(record.id)} />
           ) : (
-            <RecordDetailLink data-record-card={record.id} href={href} morph prefetch={false} />
+            <RecordDetailLink href={href} prefetch={false} />
           )
         }
         variant="ghost"

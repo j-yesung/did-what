@@ -37,7 +37,6 @@ export {
 } from "./model/record-form";
 export { type RecordRegionLocationRow, toRegionLocations } from "./model/record-locations";
 export {
-  formatRecordRegionLabels,
   getRecordRegionKey,
   mergeVisitedRegions,
   sortPrimaryRecordRegions,
@@ -53,7 +52,6 @@ export {
   type RecordWeather,
 } from "./model/weather";
 export { EmptyRecords } from "./ui/empty-records";
-export { RecordWeatherBadge } from "./ui/record-badges";
 export { RecordCard } from "./ui/record-card";
 export { RecordCreateButton } from "./ui/record-create-button";
 export { RecordDateGroups } from "./ui/record-date-groups";

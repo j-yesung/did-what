@@ -23,20 +23,32 @@ export const sortPrimaryRecordRegions = <T extends { region_code: string; region
   return regions.toSorted((a, b) => priority(b) - priority(a));
 };
 
+const METROPOLIS = /^(서울|부산|대구|인천|광주|대전|울산|세종)/;
+
+export const toRegionCityLabel = (regionName: string) => {
+  const [province = "", district = ""] = regionName.trim().split(/\s+/);
+  if (METROPOLIS.test(province) || !/[시군]$/.test(district)) {
+    return province.replace(/(통합특별시|특별자치시|특별시|광역시)$/, "");
+  }
+  return district.replace(/[시군]$/, "");
+};
+
+const toRegionLabel = ({ region_label, region_name }: { region_label?: string; region_name?: string }) =>
+  region_name ? toRegionCityLabel(region_name) : (region_label ?? "");
+
 /**
  * 방문 지역 문구. 대표 지역을 앞에 두고 limit곳까지 적은 뒤 나머지는 "외 N곳"으로 줄인다.
  */
 export const formatRecordRegionLabels = (
-  record: Pick<RecordSummary, "record_regions" | "region_code" | "region_label">,
+  record: Pick<RecordSummary, "record_regions" | "region_code" | "region_label" | "region_name">,
   limit = VISIBLE_REGION_LIMIT,
 ): string => {
   const labels = [
     ...new Set(
-      record.record_regions?.length
-        ? sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label).map(
-            (region) => region.region_label,
-          )
-        : [record.region_label ?? ""].filter(Boolean),
+      (record.record_regions?.length
+        ? sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label).map(toRegionLabel)
+        : [toRegionLabel(record)]
+      ).filter(Boolean),
     ),
   ];
 

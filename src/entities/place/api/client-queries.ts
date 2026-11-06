@@ -20,7 +20,7 @@ export const fetchPlaceRecords = async (placeId: string) => {
   const { data, error } = await createClient()
     .from("record_places")
     .select(
-      "record:records!inner(id, activity, category, memo, weather, recorded_at, recorded_until, region_code, region_label, record_regions(region_code, region_label))",
+      "record:records!inner(id, activity, category, memo, weather, recorded_at, recorded_until, region_code, region_label, record_regions(region_code, region_label, region_name))",
     )
     .eq("place_id", placeId);
 
