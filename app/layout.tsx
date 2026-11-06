@@ -50,7 +50,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const theme = await getTheme();
 
   return (
-    <html className={theme === "system" ? undefined : theme} lang="ko">
+    <html className={theme === "system" ? undefined : theme} data-input="pointer" lang="ko">
       <head>
         <ThemeMeta initialTheme={theme} />
         {IOS_SPLASH_SCREENS.map(({ height, scale, width }) => (

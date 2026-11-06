@@ -11,6 +11,10 @@
 
 @custom-variant focus-visible (&:focus-visible:where(:root:not([data-input="pointer"]) *));
 
+:root[data-input="pointer"] :focus-visible {
+  outline: none;
+}
+
 @custom-variant dark {
   &:where(.dark, .dark *) {
     @slot;
@@ -405,10 +409,6 @@
   * {
     box-sizing: border-box;
     @apply border-border outline-ring/50;
-  }
-
-  [data-input="pointer"] :focus-visible {
-    outline: none;
   }
 
   /* 네이티브 앱처럼 쓰므로 링크를 길게 눌러도 iOS 미리보기·공유 시트가 뜨지 않게 한다. */
