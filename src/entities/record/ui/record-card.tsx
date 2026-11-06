@@ -29,7 +29,7 @@ export function RecordCard({ onDetailPrefetch, onOpen, record }: RecordCardProps
           RECORD_CARD_BUTTON_CLASS,
           "rounded-3xl px-4.5 py-4.5",
           PRESS_FEEDBACK,
-          "bg-surface text-foreground",
+          "bg-muted text-foreground",
         )}
         fullWidth
         nativeButton={Boolean(onOpen)}
