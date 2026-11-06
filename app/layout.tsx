@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 
 import { ThemeMeta } from "@/features/switch-theme";
 import { getTheme } from "@/features/switch-theme/server";
+import { InputModality } from "@/shared/ui/input-modality";
 import { PreventForwardSwipe } from "@/shared/ui/prevent-forward-swipe";
 
 import "@/app/styles/globals.css";
@@ -63,6 +64,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
+        <InputModality />
         <PreventForwardSwipe />
       </body>
     </html>
