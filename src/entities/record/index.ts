@@ -37,7 +37,6 @@ export {
 } from "./model/record-form";
 export { type RecordRegionLocationRow, toRegionLocations } from "./model/record-locations";
 export {
-  formatRecordRegionLabels,
   getRecordRegionKey,
   mergeVisitedRegions,
   sortPrimaryRecordRegions,

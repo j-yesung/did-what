@@ -35,15 +35,11 @@ export function CommentCreateForm({
     if (!textarea || textarea.value !== draft) return;
     const probe = textarea.cloneNode() as HTMLTextAreaElement;
     probe.removeAttribute("id");
-    probe.setAttribute("aria-hidden", "true");
-    probe.tabIndex = -1;
     probe.value = draft;
     Object.assign(probe.style, {
       height: "auto",
-      pointerEvents: "none",
       position: "absolute",
       transition: "none",
-      visibility: "hidden",
       width: `${textarea.offsetWidth}px`,
     });
     textarea.after(probe);
@@ -60,7 +56,7 @@ export function CommentCreateForm({
         onSubmit();
       }}
     >
-      <div className="flex min-h-14 items-start gap-3 rounded-[28px] bg-surface p-1.5">
+      <div className="flex min-h-14 items-start gap-3 rounded-[28px] bg-muted p-1.5">
         <div className="flex min-w-0 flex-1 items-start gap-3 pt-1">
           <MemberAvatar memberId={memberId} name={memberName} />
           <label className="sr-only" htmlFor="record-comment-body">

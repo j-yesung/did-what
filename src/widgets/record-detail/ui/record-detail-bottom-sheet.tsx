@@ -45,7 +45,7 @@ export function RecordDetailBottomSheet({
       <BottomSheet.VirtualKeyboardProvider>
         <BottomSheet.Content
           overlayHandle
-          className="bottom-(--drawer-keyboard-inset,0px) bg-record-sheet [--bottom-sheet-bleed-background:var(--color-record-sheet)] [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]"
+          className="bottom-(--drawer-keyboard-inset,0px) [--bottom-sheet-content-max-height:calc(100dvh-env(safe-area-inset-top)-16px-var(--drawer-keyboard-inset,0px))]"
           style={{ height: FULL_SHEET_HEIGHT }}
         >
           {recordId ? (

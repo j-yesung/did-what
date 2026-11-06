@@ -52,7 +52,7 @@ export function CommentRow({ comment, continued, currentMemberId, onDelete }: Co
               <p
                 className={cn(
                   "wrap-break-word whitespace-pre-wrap rounded-[20px] px-3.5 py-2.5 text-[15px] leading-[1.45] transition-opacity",
-                  mine ? "rounded-br-md bg-foreground text-background" : "rounded-bl-md bg-surface",
+                  mine ? "rounded-br-md bg-foreground text-background" : "rounded-bl-md bg-muted",
                   comment.pending && "opacity-60",
                 )}
               >
@@ -61,7 +61,7 @@ export function CommentRow({ comment, continued, currentMemberId, onDelete }: Co
               {mine ? (
                 <IconButton
                   aria-label="내 댓글 삭제"
-                  className="absolute -top-2 -left-2 size-6 rounded-full bg-surface text-foreground/70 shadow-sm before:-inset-2.5 active:bg-input"
+                  className="absolute -top-2 -left-2 size-6 rounded-full bg-muted text-foreground/70 shadow-sm before:-inset-2.5 active:bg-input"
                   disabled={comment.pending}
                   icon={XIcon}
                   iconSize={12}

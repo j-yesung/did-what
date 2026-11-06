@@ -40,7 +40,13 @@
   --neutral-750: #313333;
   --neutral-800: #232526;
   --neutral-900: #111314;
-  --neutral-1000: #000000;
+
+  --slate-50: #e7eaee;
+  --slate-400: #9aa3ad;
+  --slate-600: #4a4f59;
+  --slate-750: #2b2e35;
+  --slate-800: #1e2025;
+  --slate-900: #101114;
 
   --orange-100: #ffecaa;
   --orange-200: #ffd678;
@@ -120,8 +126,6 @@
   --navigation-lens: rgb(255 255 255 / 0.03);
   --navigation-lens-shadow: rgb(0 0 0 / 0.16);
   --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.1);
-
-  --record-sheet: var(--neutral-0);
 
   --journey-background: var(--neutral-0);
   --journey-line: var(--neutral-400);
@@ -217,7 +221,6 @@
   --color-place-park: var(--place-park);
   --color-place-attraction: var(--place-attraction);
   --color-surface: var(--surface);
-  --color-record-sheet: var(--record-sheet);
   --color-segmented: var(--fill-segmented);
   --color-segmented-active: var(--fill-segmented-active);
   --color-segmented-foreground: var(--text-segmented);
@@ -273,24 +276,24 @@
   color-scheme: dark;
 
   /* 배경과 카드 */
-  --fill-base: var(--neutral-900);
-  --fill-surface: var(--neutral-800);
-  --fill-elevated: var(--neutral-750);
-  --fill-muted: var(--neutral-750);
+  --fill-base: var(--slate-900);
+  --fill-surface: var(--slate-800);
+  --fill-elevated: var(--slate-750);
+  --fill-muted: var(--slate-750);
   --fill-segmented: rgb(244 246 244 / 0.08);
-  --fill-segmented-active: var(--neutral-700);
-  --text-segmented: var(--neutral-400);
-  --text-segmented-active: var(--neutral-50);
+  --fill-segmented-active: var(--slate-600);
+  --text-segmented: var(--slate-400);
+  --text-segmented-active: var(--slate-50);
   --fill-brand: var(--orange-400);
   --fill-danger: var(--red-500);
   --fill-dark-weak: rgb(244 246 244 / 0.1);
   --fill-dimmed: rgb(0 0 0 / 0.56);
   --fill-nav-glass: rgb(255 255 255 / 0.09);
-  --fill-toast: var(--neutral-700);
+  --fill-toast: var(--slate-600);
 
   /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
-  --text-primary: var(--neutral-50);
-  --text-secondary: var(--neutral-400);
+  --text-primary: var(--slate-50);
+  --text-secondary: var(--slate-400);
   --text-dark-weak: var(--neutral-300);
   --text-danger: var(--red-300);
   --text-accent: var(--orange-400);
@@ -300,9 +303,9 @@
   --nav-glass-highlight: rgb(255 255 255 / 0.24);
   --nav-lens-shine: 1;
   --nav-rim-shine: 0.2;
-  --navigation-glass: rgb(32 32 34 / 0.88);
-  --tab-bar-glass: rgb(40 40 40 / 0.62);
-  --navigation-solid: rgb(32 32 34);
+  --navigation-glass: rgb(30 32 37 / 0.88);
+  --tab-bar-glass: rgb(43 46 53 / 0.62);
+  --navigation-solid: rgb(30 32 37);
   --navigation-label: rgb(235 235 245 / 0.86);
   --navigation-selected: var(--text-accent);
   --navigation-selection: rgb(255 255 255 / 0.12);
@@ -311,7 +314,7 @@
   --navigation-lens-shadow: rgb(0 0 0 / 0.32);
   --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.24), 0 8px 24px rgb(0 0 0 / 0.28);
 
-  --input: var(--neutral-700);
+  --input: var(--slate-600);
 
   /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
   --category-daily: var(--green-400);
@@ -324,11 +327,9 @@
   --place-park: var(--green-400);
   --place-attraction: var(--sky-300);
 
-  --record-sheet: var(--neutral-1000);
-
-  --journey-background: var(--neutral-900);
+  --journey-background: var(--slate-900);
   --journey-line: var(--neutral-400);
-  --journey-white: var(--neutral-50);
+  --journey-white: var(--slate-50);
   --journey-glow: var(--orange-100);
   --journey-gold: var(--orange-200);
   --journey-ember: var(--orange-ember);
@@ -341,24 +342,24 @@
     color-scheme: dark;
 
     /* 배경과 카드 */
-    --fill-base: var(--neutral-900);
-    --fill-surface: var(--neutral-800);
-    --fill-elevated: var(--neutral-750);
-    --fill-muted: var(--neutral-750);
+    --fill-base: var(--slate-900);
+    --fill-surface: var(--slate-800);
+    --fill-elevated: var(--slate-750);
+    --fill-muted: var(--slate-750);
     --fill-segmented: rgb(244 246 244 / 0.08);
-    --fill-segmented-active: var(--neutral-700);
-    --text-segmented: var(--neutral-400);
-    --text-segmented-active: var(--neutral-50);
+    --fill-segmented-active: var(--slate-600);
+    --text-segmented: var(--slate-400);
+    --text-segmented-active: var(--slate-50);
     --fill-brand: var(--orange-400);
     --fill-danger: var(--red-500);
     --fill-dark-weak: rgb(244 246 244 / 0.1);
     --fill-dimmed: rgb(0 0 0 / 0.56);
     --fill-nav-glass: rgb(255 255 255 / 0.09);
-    --fill-toast: var(--neutral-700);
+    --fill-toast: var(--slate-600);
 
     /* 어두운 배경 위에서 읽히려면 뒤집어야 하는 값들 */
-    --text-primary: var(--neutral-50);
-    --text-secondary: var(--neutral-400);
+    --text-primary: var(--slate-50);
+    --text-secondary: var(--slate-400);
     --text-dark-weak: var(--neutral-300);
     --text-danger: var(--red-300);
     --text-accent: var(--orange-400);
@@ -368,9 +369,9 @@
     --nav-glass-highlight: rgb(255 255 255 / 0.24);
     --nav-lens-shine: 1;
     --nav-rim-shine: 0.2;
-    --navigation-glass: rgb(32 32 34 / 0.88);
-    --tab-bar-glass: rgb(40 40 40 / 0.62);
-    --navigation-solid: rgb(32 32 34);
+    --navigation-glass: rgb(30 32 37 / 0.88);
+    --tab-bar-glass: rgb(43 46 53 / 0.62);
+    --navigation-solid: rgb(30 32 37);
     --navigation-label: rgb(235 235 245 / 0.86);
     --navigation-selected: var(--text-accent);
     --navigation-selection: rgb(255 255 255 / 0.12);
@@ -379,7 +380,7 @@
     --navigation-lens-shadow: rgb(0 0 0 / 0.32);
     --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.24), 0 8px 24px rgb(0 0 0 / 0.28);
 
-    --input: var(--neutral-700);
+    --input: var(--slate-600);
 
     /* 카테고리는 한 단계 밝은 쪽을 가리킨다. */
     --category-daily: var(--green-400);
@@ -392,11 +393,9 @@
     --place-park: var(--green-400);
     --place-attraction: var(--sky-300);
 
-    --record-sheet: var(--neutral-1000);
-
-    --journey-background: var(--neutral-900);
+    --journey-background: var(--slate-900);
     --journey-line: var(--neutral-400);
-    --journey-white: var(--neutral-50);
+    --journey-white: var(--slate-50);
     --journey-glow: var(--orange-100);
     --journey-gold: var(--orange-200);
     --journey-ember: var(--orange-ember);

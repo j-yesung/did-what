@@ -105,7 +105,7 @@ export function RecordSheetDetail({
         </div>
       </div>
       {action ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-[linear-gradient(transparent,var(--color-record-sheet)_32px)] px-5 pt-8 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] group-has-[textarea:focus]/sheet-detail:hidden [&>*]:pointer-events-auto">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-[linear-gradient(transparent,var(--color-surface)_32px)] px-5 pt-8 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] group-has-[textarea:focus]/sheet-detail:hidden [&>*]:pointer-events-auto">
           {action}
         </div>
       ) : null}
