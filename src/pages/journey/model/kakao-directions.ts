@@ -1,16 +1,15 @@
+import { isRecord } from "@/shared/lib/validation/is-record";
+
 import type { JourneyRoute, JourneyPoint as Point } from "./types";
 
-type ObjectValue = Record<string, unknown>;
-
-const isObject = (value: unknown): value is ObjectValue => typeof value === "object" && value !== null;
 const isNonnegativeNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value) && value >= 0;
 
 export const parseKakaoDirections = (data: unknown): JourneyRoute | null => {
-  if (!isObject(data) || !Array.isArray(data.routes)) return null;
+  if (!isRecord(data) || !Array.isArray(data.routes)) return null;
 
   const route = data.routes[0];
-  if (!isObject(route) || route.result_code !== 0 || !isObject(route.summary) || !Array.isArray(route.sections)) {
+  if (!isRecord(route) || route.result_code !== 0 || !isRecord(route.summary) || !Array.isArray(route.sections)) {
     return null;
   }
 
@@ -19,9 +18,9 @@ export const parseKakaoDirections = (data: unknown): JourneyRoute | null => {
 
   const points: [number, number][] = [];
   for (const section of route.sections) {
-    if (!isObject(section) || !Array.isArray(section.roads)) return null;
+    if (!isRecord(section) || !Array.isArray(section.roads)) return null;
     for (const road of section.roads) {
-      if (!isObject(road) || !Array.isArray(road.vertexes) || road.vertexes.length % 2 !== 0) return null;
+      if (!isRecord(road) || !Array.isArray(road.vertexes) || road.vertexes.length % 2 !== 0) return null;
       for (let index = 0; index < road.vertexes.length; index += 2) {
         const longitude: unknown = road.vertexes[index];
         const latitude: unknown = road.vertexes[index + 1];
@@ -41,8 +40,8 @@ export const parseKakaoDirections = (data: unknown): JourneyRoute | null => {
 };
 
 export const hasNoKakaoRoute = (data: unknown) => {
-  const route = isObject(data) && Array.isArray(data.routes) ? data.routes[0] : null;
-  return isObject(route) && typeof route.result_code === "number" && route.result_code !== 0;
+  const route = isRecord(data) && Array.isArray(data.routes) ? data.routes[0] : null;
+  return isRecord(route) && typeof route.result_code === "number" && route.result_code !== 0;
 };
 
 export const nearbyRoute = (origin: Point, destination: Point): JourneyRoute | null => {
