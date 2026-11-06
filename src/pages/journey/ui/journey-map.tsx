@@ -18,7 +18,7 @@ import { RecordDetailBottomSheet } from "@/widgets/record-detail";
 import { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 import { MapControls } from "@/widgets/region-activity-map/ui/map-controls";
 
-import { journeyRouteQuery } from "../api/route-query";
+import { JOURNEY_ROUTE_QUERY_KEY, journeyRouteQuery } from "../api/route-query";
 import { arrivalLights, dotStep, toSpot } from "../model/dot-map";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
 import { expandView, national, pinAt, project } from "../model/map-view";
@@ -398,7 +398,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         memberName={member.name}
         onOpenChange={setAddressOpen}
         onSaved={() => {
-          queryClient.removeQueries({ queryKey: ["journey-route", member.id] });
+          queryClient.removeQueries({ queryKey: [JOURNEY_ROUTE_QUERY_KEY, member.id] });
           setHomeSaved(true);
         }}
         open={addressOpen}

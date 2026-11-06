@@ -3,6 +3,8 @@ import { queryOptions } from "@tanstack/react-query";
 import type { JourneyRecord } from "../model/record";
 import type { JourneyPlace, JourneyRegion, JourneyRoute } from "../model/types";
 
+export const JOURNEY_ROUTE_QUERY_KEY = "journey-route";
+
 const ROUTE_ERROR = "경로를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.";
 
 const legParams = (
@@ -41,7 +43,7 @@ export const journeyRouteQuery = (
   const start = from ?? (target ? record.destination : null);
   return queryOptions({
     queryKey: [
-      "journey-route",
+      JOURNEY_ROUTE_QUERY_KEY,
       memberId,
       params.toString(),
       start ? `${start.longitude},${start.latitude}` : homeVersion,
