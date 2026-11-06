@@ -1,8 +1,4 @@
-import {
-  formatShortPeriod,
-  getRegionRecords,
-  getSubregionCounts,
-} from "@/widgets/region-activity-map/model/region-record-list";
+import { formatShortPeriod, getRegionRecords, getSubregionCounts } from "@/pages/journey/model/region-record-list";
 
 import assert from "node:assert/strict";
 import test from "node:test";

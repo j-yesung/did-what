@@ -3,11 +3,11 @@ import { createPortal } from "react-dom";
 
 import { GpsFixIcon } from "@phosphor-icons/react";
 
+import type { useCurrentMapLocation } from "@/pages/journey/model/use-current-map-location";
 import { ICON_WEIGHT_MEDIUM } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 import { Spinner } from "@/shared/ui/spinner";
-import type { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
 
 type MapControlsProps = {
   currentLocation: ReturnType<typeof useCurrentMapLocation>;

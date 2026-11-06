@@ -1,5 +1,5 @@
 import { getRegionCode, type RegionCode } from "@/entities/region/model/region";
-import { getSubregionName, type MapRecord } from "@/widgets/region-activity-map/model/record-map-points";
+import { getSubregionName, type MapRecord } from "@/pages/journey/model/record-map-points";
 
 export const getRegionRecords = <T extends MapRecord>(records: readonly T[], regionCode: RegionCode | undefined) => {
   if (!regionCode) return [];

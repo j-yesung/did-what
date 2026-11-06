@@ -1,4 +1,4 @@
-import { getSubregionName } from "@/widgets/region-activity-map/model/record-map-points";
+import { getSubregionName } from "@/pages/journey/model/record-map-points";
 
 import assert from "node:assert/strict";
 import test from "node:test";

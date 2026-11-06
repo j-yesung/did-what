@@ -2,11 +2,11 @@ import { useEffect, useMemo } from "react";
 
 import { RecordCard, RecordDateGroups, toRegionLocations } from "@/entities/record";
 import { createRegionActivityMaps, RegionMiniMap } from "@/entities/region";
+import type { MapRecord } from "@/pages/journey/model/record-map-points";
+import { getRegionRecords, getSubregionCounts } from "@/pages/journey/model/region-record-list";
 import { Button } from "@/shared/ui/button";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { PressLink } from "@/shared/ui/press-link";
-import type { MapRecord } from "@/widgets/region-activity-map/model/record-map-points";
-import { getRegionRecords, getSubregionCounts } from "@/widgets/region-activity-map/model/region-record-list";
 
 import type { JourneyRegion } from "../../model/types";
 import styles from "../journey-map.module.css";
