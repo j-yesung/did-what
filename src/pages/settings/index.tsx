@@ -3,15 +3,15 @@ import { LogoutButton } from "@/features/auth";
 import { HomeAddressSetting } from "@/features/home-address/ui/home-address-setting";
 import { CurrentMemberSetting } from "@/features/member/select-member";
 import { PushToggle } from "@/features/push-notification";
-// import { ThemeSelect } from "@/features/switch-theme";
-// import { getTheme } from "@/features/switch-theme/server";
+import { ThemeSelect } from "@/features/switch-theme";
+import { getTheme } from "@/features/switch-theme/server";
 import { PageSection, PageShell } from "@/shared/ui/layouts";
 
 export async function SettingsPage() {
-  // const theme = await getTheme();
-  const [{ member, members }, { data: home, error: homeError }] = await Promise.all([
+  const [{ member, members }, { data: home, error: homeError }, theme] = await Promise.all([
     requireMember(),
     getMemberHomeAddress(),
+    getTheme(),
   ]);
 
   return (
@@ -33,11 +33,9 @@ export async function SettingsPage() {
             <HomeAddressSetting address={home?.address ?? null} memberName={member.name} />
           )}
         </PageSection>
-        {/* 다크 모드 고정으로 화면 모드 선택을 잠시 숨긴다.
         <PageSection className="pt-4 pb-4">
           <ThemeSelect value={theme} />
         </PageSection>
-        */}
         <PageSection className="pt-4 pb-4">
           <PushToggle />
         </PageSection>
