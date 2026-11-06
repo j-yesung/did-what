@@ -26,7 +26,7 @@ export function CommentRow({ comment, continued, currentMemberId, onDelete }: Co
       <li
         className={cn(
           "flex scroll-mt-24 first:mt-0",
-          continued ? "mt-1" : "mt-3",
+          continued ? "mt-2" : "mt-8",
           mine ? "justify-end" : "justify-start",
         )}
         id={`comment-${comment.id}`}
