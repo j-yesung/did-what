@@ -9,16 +9,16 @@ import { useSearchParams } from "next/navigation";
 import { recordLocationsQueryOptions } from "@/entities/record";
 import { closeRecordSheetIntoCard } from "@/entities/record/model/record-sheet-morph";
 import { HomeAddressSheet } from "@/features/home-address/ui/home-address-sheet";
+import { useCurrentMapLocation } from "@/pages/journey/model/use-current-map-location";
+import { MapControls } from "@/pages/journey/ui/map/map-controls";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 import { BackButton } from "@/shared/ui/back-button";
 import { Button } from "@/shared/ui/button";
 import { FixedToolbar } from "@/shared/ui/layouts";
 import { LiquidGlassMenu } from "@/shared/ui/liquid-glass/menu/liquid-glass-menu";
 import { RecordDetailBottomSheet } from "@/widgets/record-detail";
-import { useCurrentMapLocation } from "@/widgets/region-activity-map/model/use-current-map-location";
-import { MapControls } from "@/widgets/region-activity-map/ui/map-controls";
 
-import { journeyRouteQuery } from "../api/route-query";
+import { JOURNEY_ROUTE_QUERY_KEY, journeyRouteQuery } from "../api/route-query";
 import { arrivalLights, dotStep, toSpot } from "../model/dot-map";
 import { readJourneyUrlState, toJourneySearch } from "../model/journey-url-state";
 import { expandView, national, pinAt, project } from "../model/map-view";
@@ -398,7 +398,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         memberName={member.name}
         onOpenChange={setAddressOpen}
         onSaved={() => {
-          queryClient.removeQueries({ queryKey: ["journey-route", member.id] });
+          queryClient.removeQueries({ queryKey: [JOURNEY_ROUTE_QUERY_KEY, member.id] });
           setHomeSaved(true);
         }}
         open={addressOpen}
@@ -425,7 +425,6 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
         }
         backLabel="지도로"
         screen={!session}
-        showBackButton={!session}
         member={member}
         onDeleted={() => {
           setDetailOpen(false);
@@ -456,7 +455,7 @@ export function JourneyMap({ regions, visits, hasHome, homeVersion, homeUnavaila
           else closeDetail();
         }}
         open={detailOpen}
-        record={detailRecordId ? { id: detailRecordId } : null}
+        recordId={detailRecordId}
       />
     </main>
   );

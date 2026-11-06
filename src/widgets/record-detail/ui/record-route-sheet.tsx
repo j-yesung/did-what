@@ -66,7 +66,6 @@ function OpenRecordSheet({ member, recordId }: { member: Member; recordId: strin
     <RecordDetailBottomSheet
       backLabel="기록으로"
       screen={fromCard}
-      showBackButton={fromCard}
       member={member}
       onDeleted={() => setOpen(false)}
       onMissing={handleMissing}
@@ -76,7 +75,7 @@ function OpenRecordSheet({ member, recordId }: { member: Member; recordId: strin
       }}
       onCloseComplete={close}
       open={open}
-      record={{ id: recordId }}
+      recordId={recordId}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { getRegion, getRegionCode, REGIONS } from "@/entities/region/model/region";
-import type { MapRecord } from "@/widgets/region-activity-map/model/record-map-points";
+import type { MapRecord } from "@/pages/journey/model/record-map-points";
 
 import type { JourneyPlace, JourneyRegion, JourneyVisit, JourneyPoint as Point } from "./types";
 

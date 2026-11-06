@@ -1,7 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
-
 import {
   ChatCircleIcon,
   HeartIcon,
@@ -20,10 +18,6 @@ import { RecordCategoryBadge } from "./record-badges";
 
 export const RECORD_CARD_BUTTON_CLASS =
   "h-auto min-h-16 min-w-0 justify-start whitespace-normal rounded-md px-0 py-3 text-left font-normal after:hidden [&>span]:block [&>span]:w-full";
-
-export function RecordCardFrame({ children }: { children: ReactNode }) {
-  return <article className="min-w-0 border-border border-b">{children}</article>;
-}
 
 const CATEGORY_ICONS = {
   anniversary: SparkleIcon,
