@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import { GearIcon, MapPinAreaIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
+import { GearIcon, HouseIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
 import { TabBar } from "glisse";
 import { usePathname } from "next/navigation";
 
@@ -12,7 +12,7 @@ import { PressLink } from "@/shared/ui/press-link";
 import "./navigation.css";
 
 const TABS = [
-  { href: "/", icon: MapPinAreaIcon, label: "지도" },
+  { href: "/", icon: HouseIcon, label: "홈" },
   { href: "/records", icon: NotepadIcon, label: "기록" },
   { href: "/places", icon: MapPinIcon, label: "장소" },
   { href: "/settings", icon: GearIcon, label: "설정" },

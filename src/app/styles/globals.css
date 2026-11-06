@@ -645,6 +645,54 @@ body:has([data-record-search="open"]) .hide-during-record-search {
   scale: 0.92;
 }
 
+/** 바탕과 반대 톤의 카드. 라이트에서는 검은 카드, 다크에서는 흰 카드가 되도록 안쪽 색 변수만 바꾼다. */
+.surface-inverse {
+  color-scheme: dark;
+  --surface: var(--mono-800);
+  --foreground: var(--mono-50);
+  --muted: var(--mono-750);
+  --muted-foreground: var(--mono-400);
+  --border: rgb(244 246 244 / 0.08);
+  --category-daily: var(--green-400);
+  --category-date: var(--pink-300);
+  --category-travel: var(--blue-400);
+  --category-anniversary: var(--violet-300);
+  --category-gathering: var(--teal-400);
+  --category-uncategorized: var(--neutral-400);
+}
+
+:root.dark .surface-inverse {
+  color-scheme: light;
+  --surface: var(--neutral-0);
+  --foreground: var(--neutral-900);
+  --muted: var(--neutral-50);
+  --muted-foreground: var(--neutral-500);
+  --border: var(--neutral-100);
+  --category-daily: var(--green-600);
+  --category-date: var(--pink-600);
+  --category-travel: var(--blue-600);
+  --category-anniversary: var(--violet-600);
+  --category-gathering: var(--teal-600);
+  --category-uncategorized: var(--neutral-500);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .surface-inverse {
+    color-scheme: light;
+    --surface: var(--neutral-0);
+    --foreground: var(--neutral-900);
+    --muted: var(--neutral-50);
+    --muted-foreground: var(--neutral-500);
+    --border: var(--neutral-100);
+    --category-daily: var(--green-600);
+    --category-date: var(--pink-600);
+    --category-travel: var(--blue-600);
+    --category-anniversary: var(--violet-600);
+    --category-gathering: var(--teal-600);
+    --category-uncategorized: var(--neutral-500);
+  }
+}
+
 @media (orientation: landscape) and (max-height: 500px) {
   :root {
     --nav-height: max(52px, 3.25rem);
