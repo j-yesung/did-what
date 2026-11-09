@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { type RecordFormState, readRecordInput, validateRecordInput } from "@/entities/record";
 import { validateRecordSelections } from "@/features/record/select-record-location/server";
 import { requireUser } from "@/shared/api/supabase/require-user";
@@ -34,9 +32,5 @@ export const updateRecord = async (recordId: string, formData: FormData): Promis
     return { message: "기록을 수정하지 못했습니다.\n잠시 후 다시 시도해 주세요.", status: "error" };
   }
 
-  revalidatePath("/");
-  revalidatePath("/records");
-  revalidatePath("/places");
-  revalidatePath(`/records/${recordId}`);
   return { status: "success" };
 };
