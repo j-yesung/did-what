@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 
 import { requireMember } from "@/entities/member/server";
@@ -47,8 +46,5 @@ export const createRecord = async (formData: FormData): Promise<RecordFormState>
     }
   });
 
-  revalidatePath("/");
-  revalidatePath("/records");
-  revalidatePath("/places");
   return { status: "success" };
 };

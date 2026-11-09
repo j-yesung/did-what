@@ -63,10 +63,15 @@ export const fetchRecordMonthBounds = async () => {
   return { firstMonth: first.data?.recorded_at.slice(0, 7) ?? null, lastMonth: lastDate?.slice(0, 7) ?? null };
 };
 
-export const fetchRecordPage = async (filters: RecordFilters, cursor: RecordCursor | null, signal?: AbortSignal) => {
+export const fetchRecordPage = async (
+  filters: RecordFilters,
+  cursor: RecordCursor | null,
+  signal?: AbortSignal,
+  client: SupabaseClient<Database> = createClient(),
+) => {
   const ascending = filters.sort === "oldest";
   const period = getRecordPeriodFilter(filters);
-  let query = createClient()
+  let query = client
     .from("records")
     .select(RECORD_PAGE_COLUMNS)
     .order("recorded_at", { ascending })

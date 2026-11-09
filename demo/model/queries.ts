@@ -88,7 +88,7 @@ export const toDetailRow = (state: DemoState, record: DemoRecord) => ({
   weather: record.weather,
 });
 
-/** pages/home의 getHomeRecords와 같은 모양. 최근 기록이 먼저 온다. */
+/** pages/home의 fetchHomeData가 돌려주는 기록과 같은 모양. 최근 기록이 먼저 온다. */
 export const getDemoHomeRecords = (state: DemoState): HomeRecord[] =>
   sortRecent(state.records).map((record) => ({
     activity: record.activity,

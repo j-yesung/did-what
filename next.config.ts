@@ -5,10 +5,10 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   experimental: {
     /**
-     * 하단 탭이 미리 받은 전체 RSC 화면 구조를 300초 동안 재사용한다. 메인 데이터는 TanStack Query가
-     * 별도로 관리하므로 이 캐시는 인증된 레이아웃과 화면 구조의 반복 요청만 줄인다.
+     * 하단 탭이 미리 받은 화면 구조를 하루 동안 재사용한다. 탭 화면의 데이터는 TanStack Query가
+     * 따로 최신화하므로, 이 캐시는 화면 구조만 붙잡아 탭 이동을 서버 응답 없이 바로 끝낸다.
      */
-    staleTimes: { dynamic: 300 },
+    staleTimes: { static: 86_400 },
   },
 };
 

@@ -1,3 +1,4 @@
+export { fetchRecordPage } from "./api/client-queries";
 export {
   RECORD_DETAILS_QUERY_KEY,
   RECORDS_QUERY_KEY,
