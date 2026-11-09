@@ -18,7 +18,7 @@ export function AppNotFound() {
         </EmptyHeader>
         <EmptyContent>
           <PressLink className={buttonVariants({ size: "medium" })} href="/">
-            지도로 가기
+            홈으로 가기
           </PressLink>
         </EmptyContent>
       </Empty>

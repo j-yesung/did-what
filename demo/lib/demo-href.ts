@@ -51,7 +51,7 @@ export const toAppHref = (search: string) => {
   return `${pathname}${query ? `?${query}` : ""}`;
 };
 
-/** 체험 페이지 주소나 메시지로 받은 앱 경로. 앱 내부 경로만 받고 아니면 지도로 보낸다. */
+/** 체험 페이지 주소나 메시지로 받은 앱 경로. 앱 내부 경로만 받고 아니면 홈으로 보낸다. */
 export const toSafeAppPath = (value: unknown) => (isAppPathname(value) ? value : "/");
 
 /** 기록 링크를 현재 탐색 화면 위의 시트 주소로 바꾼다. 직접 진입은 기록 목록을 배경으로 쓴다. */

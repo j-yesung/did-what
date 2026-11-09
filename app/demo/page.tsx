@@ -3,7 +3,7 @@ import { DemoShell } from "@demo/ui/demo-shell";
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  description: "가입 없이 샘플 데이터로 뭐했지의 지도, 기록, 댓글, 알림을 직접 써 보는 체험 페이지",
+  description: "가입 없이 샘플 데이터로 뭐했지의 홈, 기록, 댓글, 알림을 직접 써 보는 체험 페이지",
   title: "체험하기 · 뭐했지",
 };
 

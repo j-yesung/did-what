@@ -17,14 +17,14 @@ export function AppError({ retry }: { error: Error & { digest?: string }; retry:
             <WarningCircleIcon aria-hidden="true" />
           </EmptyMedia>
           <EmptyTitle>화면을 불러오지 못했어요</EmptyTitle>
-          <EmptyDescription>잠시 후 다시 시도하거나 지도로 돌아가 주세요.</EmptyDescription>
+          <EmptyDescription>잠시 후 다시 시도하거나 홈으로 돌아가 주세요.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent className="flex-row justify-center">
           <Button onClick={retry} size="medium" type="button" variant="outline">
             다시 시도
           </Button>
           <PressLink className={buttonVariants({ size: "medium" })} href="/">
-            지도로 가기
+            홈으로 가기
           </PressLink>
         </EmptyContent>
       </Empty>
