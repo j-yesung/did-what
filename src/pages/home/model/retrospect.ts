@@ -47,9 +47,8 @@ const callName = (name: string) => {
 export const getGreeting = (name: string) => `어디 다녀왔어, ${callName(name)}?`;
 
 export type RelationshipStats = {
-  daysSinceLast: number;
   daysTogether: number;
-  firstDate: string;
+  recorded: { daysSinceLast: number; firstDate: string } | null;
 };
 
 export const getRelationshipStats = (
@@ -58,9 +57,9 @@ export const getRelationshipStats = (
   metOn: string | null = null,
 ): RelationshipStats | null => {
   const past = records.filter((record) => record.recorded_at <= today);
-  if (!past.length) return null;
-  const todayTime = toUtc(today);
   const met = metOn && metOn <= today ? metOn : null;
+  if (!past.length && !met) return null;
+  const todayTime = toUtc(today);
   const days = new Set<string>();
   let first = todayTime;
   let last = 0;
@@ -72,9 +71,8 @@ export const getRelationshipStats = (
     for (let time = start; time <= end; time += DAY) days.add(toIsoDate(time));
   }
   return {
-    daysSinceLast: Math.round((todayTime - last) / DAY),
     daysTogether: met ? Math.round((todayTime - toUtc(met)) / DAY) + 1 : days.size,
-    firstDate: toIsoDate(first),
+    recorded: past.length ? { daysSinceLast: Math.round((todayTime - last) / DAY), firstDate: toIsoDate(first) } : null,
   };
 };
 

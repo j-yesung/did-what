@@ -72,10 +72,15 @@ export function TogetherCard({ stats }: { stats: RelationshipStats }) {
         <span className="font-extrabold text-[56px] leading-none tracking-[-0.03em]">{stats.daysTogether}</span>
         <span className="font-bold text-xl tracking-[-0.03em]">일 됐어</span>
       </p>
-      <dl className="mt-5 grid grid-cols-2 gap-3">
-        <TogetherFact label="첫 기록" value={formatDate(stats.firstDate)} />
-        <TogetherFact label="마지막 기록" value={stats.daysSinceLast ? `${stats.daysSinceLast}일 전` : "오늘"} />
-      </dl>
+      {stats.recorded && (
+        <dl className="mt-5 grid grid-cols-2 gap-3">
+          <TogetherFact label="첫 기록" value={formatDate(stats.recorded.firstDate)} />
+          <TogetherFact
+            label="마지막 기록"
+            value={stats.recorded.daysSinceLast ? `${stats.recorded.daysSinceLast}일 전` : "오늘"}
+          />
+        </dl>
+      )}
     </section>
   );
 }

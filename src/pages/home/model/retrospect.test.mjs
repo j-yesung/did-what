@@ -47,23 +47,22 @@ test("함께한 시간은 첫 기록, 함께한 날, 마지막 기록부터 지�
     ],
     "2026-11-06",
   );
-  assert.deepEqual(stats, {
-    daysSinceLast: 3,
-    daysTogether: 4,
-    firstDate: "2026-10-30",
-  });
+  assert.deepEqual(stats, { daysTogether: 4, recorded: { daysSinceLast: 3, firstDate: "2026-10-30" } });
   assert.equal(
-    getRelationshipStats([record("x", "2026-11-05", { recorded_until: "2026-11-09" })], "2026-11-06").daysSinceLast,
+    getRelationshipStats([record("x", "2026-11-05", { recorded_until: "2026-11-09" })], "2026-11-06").recorded
+      .daysSinceLast,
     0,
   );
   assert.equal(getRelationshipStats([record("a", "2026-12-25")], "2026-11-06"), null);
 });
 
-test("만난 날이 있으면 함께한 날은 만난 날을 1일로 센다", () => {
+test("만난 날이 있으면 기록이 없어도 함께한 날을 만난 날부터 1일로 센다", () => {
   const records = [record("a", "2026-11-01")];
   const stats = getRelationshipStats(records, "2026-11-06", "2025-12-25");
   assert.equal(stats.daysTogether, 317);
-  assert.equal(getRelationshipStats(records, "2025-12-25", "2025-12-25"), null);
+  assert.deepEqual(getRelationshipStats([], "2026-11-06", "2025-12-25"), { daysTogether: 317, recorded: null });
+  assert.equal(getRelationshipStats([], "2026-11-06"), null);
+  assert.equal(getRelationshipStats(records, "2025-12-25", "2025-12-25").recorded, null);
   assert.equal(getRelationshipStats(records, "2026-11-06", "2026-11-06").daysTogether, 1);
   assert.equal(getRelationshipStats(records, "2026-11-06", "2026-12-01").daysTogether, 1);
 });
