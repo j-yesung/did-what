@@ -547,11 +547,9 @@
   }
 }
 
-/* 홈 화면 앱은 상단 안전 영역의 초기화와 무관하게 스플래시와 같은 전체 화면 중앙을 쓴다. */
-@media (display-mode: standalone) {
-  .app-loading {
-    min-height: 100lvh;
-  }
+/* 시작 화면 이미지처럼 화면 전체를 덮고, 바탕도 같은 색으로 맞춰 라이트 테마의 흰 바탕이 비치지 않게 한다. */
+html:has(.app-loading) {
+  background: var(--fill-logo);
 }
 
 @keyframes loading-dot {

@@ -2,7 +2,7 @@ export function AppLoading() {
   return (
     <main
       aria-busy="true"
-      className="app-loading flex min-h-svh w-full items-center justify-center bg-logo text-logo-foreground"
+      className="app-loading fixed inset-0 flex items-center justify-center bg-logo text-logo-foreground"
     >
       <div role="status">
         <svg aria-hidden="true" className="size-28" fill="none" stroke="currentColor" viewBox="0 0 100 100">
