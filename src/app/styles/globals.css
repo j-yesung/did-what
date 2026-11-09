@@ -552,6 +552,13 @@ html:has(.app-loading) {
   background: var(--fill-logo);
 }
 
+@media (display-mode: standalone) {
+  .app-loading {
+    bottom: auto;
+    height: 100lvh;
+  }
+}
+
 @keyframes loading-dot {
   0%,
   60%,
