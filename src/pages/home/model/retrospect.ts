@@ -31,7 +31,6 @@ const ANNIVERSARY_HORIZON_DAYS = 30;
 const TOP_PLACE_COUNT = 3;
 
 const toUtc = (date: string) => Date.parse(`${date}T00:00:00Z`);
-const toIsoDate = (time: number) => new Date(time).toISOString().slice(0, 10);
 
 const HANGUL_START = 0xac00;
 const HANGUL_END = 0xd7a3;
@@ -46,32 +45,15 @@ const callName = (name: string) => {
 export const getGreeting = (name: string) => `어디 다녀왔어, ${callName(name)}?`;
 
 export type RelationshipStats = {
+  metOn: string;
   daysTogether: number;
-  recorded: { daysSinceLast: number; firstDate: string } | null;
 };
 
-export const getRelationshipStats = (
-  records: readonly HomeRecord[],
-  today: string,
-  metOn: string | null = null,
-): RelationshipStats | null => {
-  const past = records.filter((record) => record.recorded_at <= today);
-  const met = metOn && metOn <= today ? metOn : null;
-  if (!past.length && !met) return null;
-  const todayTime = toUtc(today);
-  const days = new Set<string>();
-  let first = todayTime;
-  let last = 0;
-  for (const record of past) {
-    const start = toUtc(record.recorded_at);
-    const end = Math.min(toUtc(record.recorded_until ?? record.recorded_at), todayTime);
-    first = Math.min(first, start);
-    last = Math.max(last, end);
-    for (let time = start; time <= end; time += DAY) days.add(toIsoDate(time));
-  }
+export const getRelationshipStats = (today: string, metOn: string | null = null): RelationshipStats | null => {
+  if (!metOn || metOn > today) return null;
   return {
-    daysTogether: met ? Math.round((todayTime - toUtc(met)) / DAY) + 1 : days.size,
-    recorded: past.length ? { daysSinceLast: Math.round((todayTime - last) / DAY), firstDate: toIsoDate(first) } : null,
+    metOn,
+    daysTogether: Math.round((toUtc(today) - toUtc(metOn)) / DAY) + 1,
   };
 };
 

@@ -28,7 +28,7 @@ export const usePushToggle = () => {
   const isOn = Boolean(pushEndpointQuery.data);
 
   const [checked, setOptimisticChecked] = useOptimistic(isOn, (_, nextChecked: boolean) => nextChecked);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setHydrated(true);
@@ -41,7 +41,7 @@ export const usePushToggle = () => {
       setUnsupported(true);
       queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
       showToast({ title: "이 브라우저에서는\n알림을 지원하지 않아요", variant: "warning" });
-      return;
+      return false;
     }
 
     if (result.status === "denied") {
@@ -50,7 +50,7 @@ export const usePushToggle = () => {
         title: "알림이 차단돼 있어요",
         variant: "warning",
       });
-      return;
+      return false;
     }
 
     if (result.status === "dismissed") {
@@ -59,7 +59,7 @@ export const usePushToggle = () => {
         title: "알림 권한을 받지 못했어요",
         variant: "warning",
       });
-      return;
+      return false;
     }
 
     const saved = await runServerAction(() => saveSubscription(result.keys));
@@ -71,16 +71,17 @@ export const usePushToggle = () => {
         title: "알림을 켜지 못했어요",
         variant: "warning",
       });
-      return;
+      return false;
     }
 
     queryClient.setQueryData(pushEndpointQueryOptions.queryKey, result.keys.endpoint);
+    return true;
   };
 
   const turnOff = async () => {
     const endpoint = await disablePush();
     queryClient.setQueryData(pushEndpointQueryOptions.queryKey, null);
-    if (!endpoint) return;
+    if (!endpoint) return true;
 
     const removed = await runServerAction(() => removeSubscription(endpoint));
     if (removed?.status === "error") {
@@ -89,7 +90,9 @@ export const usePushToggle = () => {
         title: "알림을 끄지 못했어요",
         variant: "warning",
       });
+      return false;
     }
+    return true;
   };
 
   const processToggleQueue = async () => {
@@ -98,7 +101,10 @@ export const usePushToggle = () => {
       pendingChecked.current = null;
 
       try {
-        await (nextChecked ? turnOn() : turnOff());
+        const succeeded = await (nextChecked ? turnOn() : turnOff());
+        if (succeeded && pendingChecked.current === null) {
+          showToast({ title: nextChecked ? "이 기기로 알림을 받아요" : "알림을 껐어요", variant: "success" });
+        }
       } catch {
         showToast({
           title: nextChecked ? "알림을 켜지 못했어요" : "알림을 끄지 못했어요",
@@ -120,10 +126,7 @@ export const usePushToggle = () => {
   };
 
   const handleCheckedChange = (nextChecked: boolean) => {
-    showToast({
-      title: nextChecked ? `이 기기로 알림을 받아요` : "알림을 껐어요",
-      variant: "success",
-    });
+    if (pendingToggle.current) return;
 
     startTransition(async () => {
       setOptimisticChecked(nextChecked);
@@ -131,5 +134,10 @@ export const usePushToggle = () => {
     });
   };
 
-  return { checked, isUnsupported, handleCheckedChange };
+  return {
+    checked,
+    isPending: isPending || !hydrated || (canLoadEndpoint && pushEndpointQuery.isPending),
+    isUnsupported,
+    handleCheckedChange,
+  };
 };

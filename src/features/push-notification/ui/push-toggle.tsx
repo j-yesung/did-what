@@ -6,7 +6,7 @@ import { Switch } from "@/shared/ui/switch";
 import { usePushToggle } from "../model/use-push-toggle";
 
 export function PushToggle() {
-  const { checked, isUnsupported, handleCheckedChange } = usePushToggle();
+  const { checked, isPending, isUnsupported, handleCheckedChange } = usePushToggle();
 
   return (
     <FieldSet className="gap-0">
@@ -15,11 +15,11 @@ export function PushToggle() {
       {isUnsupported ? (
         <FieldDescription>알림을 받으려면 홈 화면에 추가한 앱에서 열어 주세요.</FieldDescription>
       ) : (
-        <Field orientation="horizontal">
+        <Field aria-busy={isPending} orientation="horizontal">
           <FieldLabel className="min-h-11 items-center" htmlFor="push-switch">
             기록 알림
           </FieldLabel>
-          <Switch checked={checked} id="push-switch" onCheckedChange={handleCheckedChange} />
+          <Switch checked={checked} disabled={isPending} id="push-switch" onCheckedChange={handleCheckedChange} />
         </Field>
       )}
     </FieldSet>

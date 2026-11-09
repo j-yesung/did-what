@@ -37,34 +37,20 @@ test("인사말은 이름 뒤에 받침에 맞는 호격 조사를 붙인다", (
   assert.equal(getGreeting("Alex"), "어디 다녀왔어, Alex?");
 });
 
-test("함께한 시간은 첫 기록, 함께한 날, 마지막 기록부터 지난 날을 센다", () => {
-  const stats = getRelationshipStats(
-    [
-      record("a", "2026-11-01", { recorded_until: "2026-11-03" }),
-      record("b", "2026-11-03"),
-      record("c", "2026-10-30"),
-      record("future", "2026-12-25"),
-    ],
-    "2026-11-06",
-  );
-  assert.deepEqual(stats, { daysTogether: 4, recorded: { daysSinceLast: 3, firstDate: "2026-10-30" } });
-  assert.equal(
-    getRelationshipStats([record("x", "2026-11-05", { recorded_until: "2026-11-09" })], "2026-11-06").recorded
-      .daysSinceLast,
-    0,
-  );
-  assert.equal(getRelationshipStats([record("a", "2026-12-25")], "2026-11-06"), null);
+test("함께한 시간은 기록 수와 무관하게 만난 날부터 1일로 센다", () => {
+  assert.deepEqual(getRelationshipStats("2026-11-06", "2025-12-25"), {
+    metOn: "2025-12-25",
+    daysTogether: 317,
+  });
+  assert.equal(getRelationshipStats("2026-11-06", "2026-10-01").daysTogether, 37);
+  assert.equal(getRelationshipStats("2026-11-06", "2026-11-06").daysTogether, 1);
+  assert.equal(getRelationshipStats("2026-11-09", "2025-11-10").daysTogether, 365);
 });
 
-test("만난 날이 있으면 기록이 없어도 함께한 날을 만난 날부터 1일로 센다", () => {
-  const records = [record("a", "2026-11-01")];
-  const stats = getRelationshipStats(records, "2026-11-06", "2025-12-25");
-  assert.equal(stats.daysTogether, 317);
-  assert.deepEqual(getRelationshipStats([], "2026-11-06", "2025-12-25"), { daysTogether: 317, recorded: null });
-  assert.equal(getRelationshipStats([], "2026-11-06"), null);
-  assert.equal(getRelationshipStats(records, "2025-12-25", "2025-12-25").recorded, null);
-  assert.equal(getRelationshipStats(records, "2026-11-06", "2026-11-06").daysTogether, 1);
-  assert.equal(getRelationshipStats(records, "2026-11-06", "2026-12-01").daysTogether, 1);
+test("만난 날이 없거나 미래면 미등록 상태를 보여준다", () => {
+  assert.equal(getRelationshipStats("2026-11-06"), null);
+  assert.equal(getRelationshipStats("2026-11-06", null), null);
+  assert.equal(getRelationshipStats("2026-11-06", "2026-12-01"), null);
 });
 
 test("이맘때는 오늘 앞뒤 3일 안의 지난 해 기록을 가까운 해부터 모은다", () => {

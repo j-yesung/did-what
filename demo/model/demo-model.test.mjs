@@ -368,7 +368,7 @@ test("홈 대시보드는 샘플로 만난 날, 1년 전 이맘때, 다녀온 �
   assert.ok(records.every(({ record_regions }) => record_regions.every(({ region_latitude }) => region_latitude)));
 
   assert.ok(state.metOn < TODAY);
-  assert.equal(getRelationshipStats(records, TODAY, state.metOn).daysTogether, 411);
+  assert.equal(getRelationshipStats(TODAY, state.metOn).daysTogether, 411);
   assert.ok(pickAroundThisTime(records, TODAY));
   assert.ok(summarizeRegions(records).filter(({ records }) => records.length).length >= 4);
 });

@@ -39,7 +39,7 @@ export function MetOnSetting({ metOn }: { metOn: string | null }) {
     });
 
   return (
-    <FieldSet>
+    <FieldSet className="scroll-mt-24" id="met-on">
       <FieldLegend>우리가 만난 날</FieldLegend>
       {editing ? (
         <>

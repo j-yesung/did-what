@@ -38,7 +38,7 @@ export function HomeDashboard({ member, metOn, records, today }: HomeDashboardPr
   const [regionListOpen, setRegionListOpen] = useState(false);
   const closeRegionList = useCallback(() => setRegionListOpen(false), []);
 
-  const stats = getRelationshipStats(records, today, metOn);
+  const stats = getRelationshipStats(today, metOn);
   const thisTime = pickAroundThisTime(records, today);
   const anniversary = pickUpcomingAnniversary(records, today);
   const regions = summarizeRegions(records);
@@ -47,7 +47,7 @@ export function HomeDashboard({ member, metOn, records, today }: HomeDashboardPr
   return (
     <PageShell className="gap-5" withBottomNavigation>
       <HomeGreeting greeting={getGreeting(member.name)} />
-      {stats && <TogetherCard stats={stats} />}
+      <TogetherCard stats={stats} />
       {thisTime && (
         <ThisTimeCard
           onOpen={() => setSheet({ records: thisTime.records, title: "이맘때의 기록" })}

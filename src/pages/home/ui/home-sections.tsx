@@ -2,11 +2,14 @@
 
 import { Fragment, type ReactNode, useMemo } from "react";
 
+import { CaretRightIcon } from "@phosphor-icons/react";
+
 import { RecordDetailLink } from "@/entities/record";
 import type { RegionCode } from "@/entities/region/model/region";
 import { DotLandMap } from "@/entities/region/ui/dot-land";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
 import {
@@ -48,38 +51,34 @@ export function HomeGreeting({ greeting }: { greeting: string }) {
 
 const formatDate = (date: string) => date.replaceAll("-", ".");
 
-function TogetherFact({ label, value }: { label: string; value: string }) {
+export function TogetherCard({ stats }: { stats: RelationshipStats | null }) {
   return (
-    <div className="min-w-0">
-      <dt className="text-[12px] text-muted-foreground">{label}</dt>
-      <dd className="mt-1 truncate font-bold text-[15px] tabular-nums tracking-[-0.02em]">{value}</dd>
-    </div>
-  );
-}
-
-export function TogetherCard({ stats }: { stats: RelationshipStats }) {
-  return (
-    <section
-      aria-label="함께한 시간"
-      className="surface-inverse relative overflow-hidden rounded-3xl bg-surface px-5.5 pt-5.5 pb-5 text-foreground"
-    >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-10 -right-10 size-44 rounded-full bg-[radial-gradient(circle_at_30%_30%,color-mix(in_srgb,var(--foreground)_14%,transparent),transparent_60%)]"
-      />
-      <p className="font-bold text-xl tracking-[-0.03em]">우리는 지금</p>
-      <p className="mt-2 flex items-baseline gap-1.5">
-        <span className="font-extrabold text-[56px] leading-none tracking-[-0.03em]">{stats.daysTogether}</span>
-        <span className="font-bold text-xl tracking-[-0.03em]">일 됐어</span>
-      </p>
-      {stats.recorded && (
-        <dl className="mt-5 grid grid-cols-2 gap-3">
-          <TogetherFact label="첫 기록" value={formatDate(stats.recorded.firstDate)} />
-          <TogetherFact
-            label="마지막 기록"
-            value={stats.recorded.daysSinceLast ? `${stats.recorded.daysSinceLast}일 전` : "오늘"}
-          />
-        </dl>
+    <section aria-label="함께한 시간" className="flex min-h-29.5 flex-col items-start justify-center px-1">
+      {stats ? (
+        <>
+          <p className="font-bold text-[17px] tracking-[-0.03em]">우리가 만난 지</p>
+          <p className="mt-0.5 whitespace-nowrap font-extrabold leading-[1.2] tracking-[-0.04em]">
+            <span className="text-[42px] text-primary tabular-nums">{stats.daysTogether}</span>
+            <span className="ml-1 text-[27px]">일째</span>
+          </p>
+          <p className="mt-2 text-[13px] text-muted-foreground">{formatDate(stats.metOn)}부터</p>
+        </>
+      ) : (
+        <>
+          <h2 className="max-w-57.5 text-balance font-bold text-[22px] leading-[1.4] tracking-[-0.03em]">
+            우리가 만난 날은 언제인가요?
+          </h2>
+          <Button
+            className="mt-2 px-0 text-accent-text"
+            nativeButton={false}
+            render={<PressLink href="/settings#met-on" />}
+            size="medium"
+            variant="ghost"
+          >
+            우리가 만난 날 등록하기
+            <CaretRightIcon aria-hidden="true" data-icon="inline-end" weight="bold" />
+          </Button>
+        </>
       )}
     </section>
   );

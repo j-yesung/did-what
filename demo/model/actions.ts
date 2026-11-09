@@ -301,7 +301,7 @@ export const createPlaces = (state: DemoState, providerPlaceIds: string[], conte
 /** 기록에 쓰인 장소는 저장만 해제하고, 아니면 지운다(remove_saved_place와 같은 규칙). */
 export const deletePlace = (state: DemoState, placeId: string): DemoActionResult => {
   if (!state.places.some(({ id }) => id === placeId))
-    return fail("장소를 삭제하지 못했습니다.\n잠시 후 다시 시도해 주세요.");
+    return fail("장소 저장을 해제하지 못했습니다.\n잠시 후 다시 시도해 주세요.");
 
   const used = state.records.some((record) => record.placeIds.includes(placeId));
   return {
