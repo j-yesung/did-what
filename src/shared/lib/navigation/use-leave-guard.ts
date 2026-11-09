@@ -139,7 +139,7 @@ export const useLeaveGuard = ({ busy = false, extraEntries = 0, fallbackHref, is
         () => {
           if (!couldGoBack.current) router.replace(destination);
           // 왔던 화면이 목적지가 아니면 목적지를 그 위에 얹는다.
-          // 홈 지도는 돌아오면 보던 경로를 이어 그리므로 그대로 둔다.
+          // 홈에서 시작했으면 홈으로 돌아온 채 둔다.
           else if (![getAppPathname(destination), "/"].includes(getAppPathname())) router.push(destination);
         },
         { once: true },

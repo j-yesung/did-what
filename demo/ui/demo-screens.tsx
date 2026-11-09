@@ -7,13 +7,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AppLoading } from "@/app/ui/app-loading";
 import { AppNotFound } from "@/app/ui/app-not-found";
 import { RecordSearchProvider } from "@/entities/record/ui/record-search-provider";
+import { getRegion } from "@/entities/region/model/region";
 import { LogoutButton } from "@/features/auth";
-import { HomeAddressSetting } from "@/features/home-address/ui/home-address-setting";
 import { CurrentMemberSetting, MemberSelect } from "@/features/member/select-member";
+import { MetOnSetting } from "@/features/met-on/ui/met-on-setting";
 import { PushToggle } from "@/features/push-notification";
 import { toExistingRecordLocationPlace } from "@/features/record/select-record-location";
-// import { ThemeSelect } from "@/features/switch-theme";
-import { JourneyMap } from "@/pages/journey/ui/journey-map";
+import { ThemeSelect } from "@/features/switch-theme";
+import { HomeDashboard } from "@/pages/home/ui/home-dashboard";
 import { NotificationList } from "@/pages/notification/ui/notification-list";
 import { PlaceDetailContent } from "@/pages/place/detail/ui/place-detail-content";
 import { PlaceSearchBottomSheet } from "@/pages/place/list/ui/place-search-bottom-sheet";
@@ -35,7 +36,7 @@ import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
 import { Toolbar } from "@/widgets/toolbar";
 
 import { toDemoHref, toDemoRecordSheetHref } from "../lib/demo-href";
-import { getDemoJourneyMap, toDetailRow } from "../model/queries";
+import { getDemoHomeRecords, toDetailRow } from "../model/queries";
 import { demoStore, useDemoState } from "../model/store";
 import { useDemo } from "./demo-context";
 
@@ -59,21 +60,12 @@ export function DemoAppFrame({ children, member }: { children: ReactNode; member
   );
 }
 
+/** pages/home의 HomePage. 기록과 만난 날은 체험 데이터에서 받는다. */
 export function DemoHomeScreen({ member }: { member: Member }) {
   const state = useDemoState();
-  const { regions, visits } = useMemo(() => getDemoJourneyMap(state), [state]);
-  const home = state.homes[member.id];
+  const records = useMemo(() => getDemoHomeRecords(state), [state]);
 
-  return (
-    <JourneyMap
-      hasHome={Boolean(home)}
-      homeUnavailable={false}
-      homeVersion={home?.updated_at ?? null}
-      member={member}
-      regions={regions}
-      visits={visits}
-    />
-  );
+  return <HomeDashboard member={member} metOn={state.metOn} records={records} today={state.today} />;
 }
 
 /** pages/record/list의 RecordsPage. 보기 선택은 쿠키 대신 체험 데이터에 둔다. */
@@ -93,13 +85,16 @@ export function DemoRecordNewScreen() {
     const state = demoStore.get();
     const date = searchParams?.get("date");
     const placeId = searchParams?.get("placeId");
+    const searchRegion = getRegion(searchParams?.get("region") ?? "");
     const defaultRecordedAt = date && isIsoDate(date) ? date : state.today;
     const calendarHref = defaultRecordedAt === date ? `/records?view=calendar&month=${date.slice(0, 7)}` : "/records";
     const place =
       placeId && isUuid(placeId)
         ? state.places.find(({ id, region_name }) => id === placeId && region_name)
         : undefined;
-    const returnHref = toDemoHref(place ? `/places/${place.id}` : calendarHref);
+    const returnHref = toDemoHref(
+      place ? `/places/${place.id}` : searchRegion ? `/?region=${searchRegion.code}` : calendarHref,
+    );
 
     return {
       defaultPlace: place ? toExistingRecordLocationPlace(place) : undefined,
@@ -204,8 +199,7 @@ export function DemoNotificationsScreen({ member }: { member: Member }) {
 }
 
 export function DemoSettingsScreen({ member }: { member: Member }) {
-  const { homes, members } = useDemoState();
-  // const { theme } = useDemoState();
+  const { members, metOn, theme } = useDemoState();
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
@@ -218,13 +212,11 @@ export function DemoSettingsScreen({ member }: { member: Member }) {
           <CurrentMemberSetting member={member} members={members} />
         </PageSection>
         <PageSection className="pt-4 pb-4">
-          <HomeAddressSetting address={homes[member.id]?.address ?? null} memberName={member.name} />
+          <MetOnSetting metOn={metOn} />
         </PageSection>
-        {/* 다크 모드 고정으로 화면 모드 선택을 잠시 숨긴다.
         <PageSection className="pt-4 pb-4">
           <ThemeSelect value={theme} />
         </PageSection>
-        */}
         <PageSection className="pt-4 pb-4">
           <PushToggle />
         </PageSection>

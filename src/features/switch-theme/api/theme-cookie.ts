@@ -1,3 +1,8 @@
-import type { Theme } from "../model/theme";
+import { cookies } from "next/headers";
 
-export const getTheme = async (): Promise<Theme> => "dark";
+import { parseTheme, THEME_COOKIE } from "../model/theme";
+
+export const getTheme = async () => {
+  const store = await cookies();
+  return parseTheme(store.get(THEME_COOKIE)?.value);
+};

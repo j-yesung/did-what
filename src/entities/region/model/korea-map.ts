@@ -52,7 +52,6 @@ export type RegionActivityMap = Region & {
 };
 
 const BOUNDARIES = koreaAdm1.features as unknown as BoundaryFeature[];
-const GRID_COLUMNS = 64;
 const REGION_GRID_MAX_COLUMNS = 32;
 const REGION_GRID_MIN_COLUMNS = 11;
 const CELL_SIZE = 4.4;
@@ -255,7 +254,6 @@ const mapRecordsToCells = (cells: KoreaMapCell[], records: RecordLocation[]) => 
   });
 };
 
-const KOREA_MAP_BOUNDS = getBounds(BOUNDARIES.map(({ geometry }) => geometry));
 /** 처음 쓸 때 한 번만 만든다. 모듈을 불러오기만 하는 화면(서버 렌더 포함)이 그리드 계산 비용을 내지 않게 한다. */
 const once = <T>(create: () => T) => {
   let value: T | undefined;
@@ -263,60 +261,6 @@ const once = <T>(create: () => T) => {
 };
 
 const getRegionMapGrids = once(() => new Map(REGIONS.map(({ code }) => [code, generateRegionCells(code)])));
-
-const projectPosition = ([longitude, latitude]: Position) => {
-  const { minLongitude, maxLongitude, maxLatitude } = KOREA_MAP_BOUNDS;
-  const step = ((maxLongitude - minLongitude) * LONGITUDE_SCALE) / GRID_COLUMNS;
-  // 셀의 지리 좌표는 중심이며, SVG 사각형 사이의 여백 절반을 보정한다.
-  return {
-    x: (((longitude - minLongitude) * LONGITUDE_SCALE) / step) * CELL_PITCH - CELL_GAP / 2,
-    y: ((maxLatitude - latitude) / step) * CELL_PITCH - CELL_GAP / 2,
-  };
-};
-
-/**
- * 본토에서 먼 섬은 첫 화면 틀 안의 빈 바다로 당겨 그린다. 흔히 쓰는 울릉도 박스처럼 실제 자리가 아니다.
- */
-const ISLAND_INSETS: {
-  east: number;
-  latitudeShift: number;
-  longitudeShift: number;
-  north: number;
-  south: number;
-  west: number;
-}[] = [
-  { east: 131, latitudeShift: 0, longitudeShift: -1.35, north: 37.6, south: 37.4, west: 130.7 },
-  {
-    east: 124.85,
-    latitudeShift: 0.2,
-    longitudeShift: 1.55,
-    north: 38.05,
-    south: 37.75,
-    west: 124.5,
-  },
-];
-
-const findIslandInset = ([longitude, latitude]: Position) =>
-  ISLAND_INSETS.find(
-    ({ east, north, south, west }) => longitude >= west && longitude <= east && latitude >= south && latitude <= north,
-  );
-
-// 지도에 그릴 자리. 옮긴 섬 안의 좌표는 섬과 함께 옮긴다.
-const projectDisplayPosition = (position: Position) => {
-  const inset = findIslandInset(position);
-  return projectPosition(inset ? [position[0] + inset.longitudeShift, position[1] + inset.latitudeShift] : position);
-};
-
-export const getKoreaMapPosition = ({ latitude, longitude }: Pick<RecordLocation, "latitude" | "longitude">) => {
-  if (
-    !Number.isFinite(latitude) ||
-    !Number.isFinite(longitude) ||
-    !BOUNDARIES.some(({ geometry }) => containsPoint(geometry, [longitude, latitude]))
-  )
-    return null;
-
-  return projectDisplayPosition([longitude, latitude]);
-};
 
 export const createRegionActivityMaps = (records: RegionRecordLocation[]): RegionActivityMap[] => {
   const recordsByRegion = new Map<RegionCode, RegionRecordLocation[]>(REGIONS.map(({ code }) => [code, []]));

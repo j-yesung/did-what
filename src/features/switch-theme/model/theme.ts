@@ -2,7 +2,7 @@ export type Theme = "light" | "dark" | "system";
 
 export const THEME_COOKIE = "theme";
 
-const THEME_COLORS = { dark: "#111314", light: "#ffffff" };
+const THEME_COLORS = { dark: "#050506", light: "#ffffff" };
 
 export const getThemeColors = (theme: Theme) => [
   {
@@ -21,7 +21,7 @@ export const THEME_OPTIONS: { label: string; value: Theme }[] = [
   { label: "다크", value: "dark" },
 ];
 
-// 쿠키 값은 언제든 손댈 수 있으므로 아는 값만 통과시킨다.
+// 쿠키 값은 언제든 손댈 수 있으므로 아는 값만 통과시키고, 처음 온 사용자는 라이트로 본다.
 export const parseTheme = (value: string | undefined): Theme => {
-  return value === "light" || value === "dark" ? value : "system";
+  return value === "dark" || value === "system" ? value : "light";
 };

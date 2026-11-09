@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "뭐했지",
     short_name: "뭐했지",
-    description: "둘만의 순간과 방문한 지역을 지도 위에 기록하는 커플 라이프로그",
+    description: "함께한 사람과 언제, 어디서, 무엇을 했는지 기록하고 돌아보는 라이프로그",
     lang: "ko",
     start_url: "/",
     scope: "/",

@@ -1,0 +1,29 @@
+.miniMap rect {
+  fill: color-mix(in srgb, var(--map-line) 40%, transparent);
+  rx: 50%;
+}
+.miniMap [data-level="1"] {
+  --mini-map-light: 12.5%;
+  --mini-map-glow: 0.2;
+}
+.miniMap [data-level="2"] {
+  --mini-map-light: 37.5%;
+  --mini-map-glow: 0.35;
+}
+.miniMap [data-level="3"] {
+  --mini-map-light: 62.5%;
+  --mini-map-glow: 0.5;
+}
+.miniMap [data-level="4"] {
+  --mini-map-light: 87.5%;
+  --mini-map-glow: 0.65;
+}
+.miniMap [data-level]:not([data-level="0"]) {
+  fill: color-mix(in srgb, var(--map-glow) var(--mini-map-light), var(--map-ember));
+  filter: drop-shadow(
+      0 0 1px color-mix(in srgb, var(--map-glow) calc(var(--mini-map-glow) * var(--map-halo) * 120%), transparent)
+    )
+    drop-shadow(
+      0 0 4px color-mix(in srgb, var(--map-amber) calc(var(--mini-map-glow) * var(--map-halo) * 100%), transparent)
+    );
+}

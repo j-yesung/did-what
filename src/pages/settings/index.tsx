@@ -1,18 +1,15 @@
-import { getMemberHomeAddress, requireMember } from "@/entities/member/server";
+import { requireMember } from "@/entities/member/server";
 import { LogoutButton } from "@/features/auth";
-import { HomeAddressSetting } from "@/features/home-address/ui/home-address-setting";
 import { CurrentMemberSetting } from "@/features/member/select-member";
+import { getMetOn } from "@/features/met-on/api/met-on";
+import { MetOnSetting } from "@/features/met-on/ui/met-on-setting";
 import { PushToggle } from "@/features/push-notification";
-// import { ThemeSelect } from "@/features/switch-theme";
-// import { getTheme } from "@/features/switch-theme/server";
+import { ThemeSelect } from "@/features/switch-theme";
+import { getTheme } from "@/features/switch-theme/server";
 import { PageSection, PageShell } from "@/shared/ui/layouts";
 
 export async function SettingsPage() {
-  // const theme = await getTheme();
-  const [{ member, members }, { data: home, error: homeError }] = await Promise.all([
-    requireMember(),
-    getMemberHomeAddress(),
-  ]);
+  const [{ member, members }, theme, metOn] = await Promise.all([requireMember(), getTheme(), getMetOn()]);
 
   return (
     <PageShell className="gap-4" withBottomNavigation>
@@ -25,45 +22,16 @@ export async function SettingsPage() {
           <CurrentMemberSetting member={member} members={members} />
         </PageSection>
         <PageSection className="pt-4 pb-4">
-          {homeError ? (
-            <p className="text-muted-foreground text-sm">
-              집 주소 설정을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
-            </p>
-          ) : (
-            <HomeAddressSetting address={home?.address ?? null} memberName={member.name} />
-          )}
+          <MetOnSetting metOn={metOn} />
         </PageSection>
-        {/* 다크 모드 고정으로 화면 모드 선택을 잠시 숨긴다.
         <PageSection className="pt-4 pb-4">
           <ThemeSelect value={theme} />
         </PageSection>
-        */}
         <PageSection className="pt-4 pb-4">
           <PushToggle />
         </PageSection>
         <PageSection className="mt-auto pt-4">
           <LogoutButton />
-          <p className="mt-4 text-muted-foreground text-xs leading-relaxed">
-            지도:{" "}
-            <a
-              className="underline"
-              href="https://www.geoboundaries.org/api/current/gbOpen/KOR/ADM2/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              geoBoundaries
-            </a>{" "}
-            ·{" "}
-            <a
-              className="underline"
-              href="https://www.citypopulation.de/en/southkorea/admin/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              citypopulation.de
-            </a>{" "}
-            (2020 · CC BY 3.0) · 경로: Kakao Mobility
-          </p>
         </PageSection>
       </div>
     </PageShell>

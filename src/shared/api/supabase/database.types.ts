@@ -35,33 +35,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      member_home_addresses: {
-        Row: {
-          owner_id: string;
-          member_id: string;
-          address: string;
-          latitude: number | null;
-          longitude: number | null;
-          updated_at: string;
-        };
-        Insert: {
-          owner_id: string;
-          member_id: string;
-          address: string;
-          latitude?: number | null;
-          longitude?: number | null;
-          updated_at?: string;
-        };
-        Update: {
-          owner_id?: string;
-          member_id?: string;
-          address?: string;
-          latitude?: number | null;
-          longitude?: number | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       notifications: {
         Row: {
           comment_id: string | null;
@@ -192,18 +165,21 @@ export type Database = {
           created_at: string;
           display_name: string | null;
           id: string;
+          met_on: string | null;
           updated_at: string;
         };
         Insert: {
           created_at?: string;
           display_name?: string | null;
           id: string;
+          met_on?: string | null;
           updated_at?: string;
         };
         Update: {
           created_at?: string;
           display_name?: string | null;
           id?: string;
+          met_on?: string | null;
           updated_at?: string;
         };
         Relationships: [];

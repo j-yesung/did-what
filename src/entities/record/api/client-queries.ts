@@ -26,7 +26,6 @@ export const fetchRecord = async (recordId: string) => {
   return data;
 };
 
-// 지도 레이아웃이 서버에서 미리 받을 수 있게 클라이언트를 받는다.
 export const fetchRecordLocations = async (client: SupabaseClient<Database>) => {
   const { data, error } = await client
     .from("records")

@@ -1,30 +1,14 @@
 "use client";
 
-import {
-  ChatCircleIcon,
-  HeartIcon,
-  MapTrifoldIcon,
-  NotebookIcon,
-  SparkleIcon,
-  UsersIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ChatCircleIcon } from "@phosphor-icons/react/dist/ssr";
 
-import { normalizeRecordCategories, normalizeRecordCategory } from "../model/category";
+import { normalizeRecordCategories } from "../model/category";
 import { formatRecordRegionLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
 import { RecordCategoryBadge } from "./record-badges";
 
 export const RECORD_CARD_BUTTON_CLASS =
   "h-auto min-h-16 min-w-0 justify-start whitespace-normal rounded-md px-0 py-3 text-left font-normal after:hidden [&>span]:block [&>span]:w-full";
-
-const CATEGORY_ICONS = {
-  anniversary: SparkleIcon,
-  daily: NotebookIcon,
-  date: HeartIcon,
-  gathering: UsersIcon,
-  travel: MapTrifoldIcon,
-  uncategorized: NotebookIcon,
-};
 
 type RecordCardContentProps = {
   record: Pick<
@@ -36,17 +20,13 @@ type RecordCardContentProps = {
 export function RecordCardContent({ record }: RecordCardContentProps) {
   const regionLabel = formatRecordRegionLabels(record, Number.POSITIVE_INFINITY);
   const categories = normalizeRecordCategories(record.category);
-  const Icon = CATEGORY_ICONS[normalizeRecordCategory(record.category)];
   const commentCount = record.record_comments?.[0]?.count ?? 0;
 
   return (
     <span className="block min-w-0">
-      <span className="flex min-w-0 items-start justify-between gap-2">
-        <h3 className="min-w-0 truncate font-bold text-[18px] text-foreground leading-6 tracking-[-0.03em]">
-          {record.activity}
-        </h3>
-        <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 -rotate-12 text-muted-foreground" />
-      </span>
+      <h3 className="min-w-0 truncate font-bold text-[18px] text-foreground leading-6 tracking-[-0.03em]">
+        {record.activity}
+      </h3>
       {regionLabel ? (
         <span className="mt-1 block truncate text-[12px] text-muted-foreground leading-4">{regionLabel}</span>
       ) : null}

@@ -56,20 +56,13 @@ export type DemoNotification = {
   sender_name: string;
 };
 
-export type DemoHome = {
-  address: string;
-  latitude: number;
-  longitude: number;
-  updated_at: string;
-};
-
 export type DemoState = {
   /** 처음 상태와 달라졌는지. 초기화 전에 확인을 받을지 정한다. */
   changed: boolean;
   comments: RecordComment[];
   currentMemberId: string | null;
-  homes: Record<string, DemoHome>;
   members: AccountMember[];
+  metOn: string | null;
   nextNotificationId: number;
   notifications: DemoNotification[];
   places: DemoPlace[];

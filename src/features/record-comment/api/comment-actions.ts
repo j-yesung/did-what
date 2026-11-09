@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 
 import { requireMember } from "@/entities/member/server";
@@ -78,6 +79,7 @@ export const createComment = async (input: CreateCommentInput): Promise<CommentA
     });
   }
 
+  revalidatePath("/");
   return { comment, status: "success" };
 };
 
@@ -103,5 +105,6 @@ export const deleteComment = async (input: DeleteCommentInput): Promise<CommentA
     return { message: "댓글이 이미 변경됐거나 삭제할 수 없어요.", status: "error" };
   }
 
+  revalidatePath("/");
   return { commentId: data.id, status: "success" };
 };

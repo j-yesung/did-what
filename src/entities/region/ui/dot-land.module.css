@@ -1,0 +1,6 @@
+.mutedDots {
+  fill: color-mix(in srgb, var(--map-line) 40%, transparent);
+}
+.halo {
+  opacity: var(--map-halo);
+}

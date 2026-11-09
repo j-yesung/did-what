@@ -127,15 +127,12 @@
   --navigation-lens-shadow: rgb(0 0 0 / 0.16);
   --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.1);
 
-  --journey-background: var(--neutral-0);
-  --journey-line: var(--neutral-400);
-  --journey-white: var(--neutral-900);
-  --journey-glow: var(--orange-600);
-  --journey-gold: var(--orange-500);
-  --journey-amber: var(--orange-400);
-  --journey-ember: var(--orange-100);
-  --journey-halo: 0.4;
-  --journey-neon: 0;
+  --map-line: var(--neutral-400);
+  --map-glow: var(--orange-600);
+  --map-gold: var(--orange-500);
+  --map-amber: var(--orange-400);
+  --map-ember: var(--orange-100);
+  --map-halo: 0.4;
 }
 
 :root {
@@ -183,10 +180,10 @@
    */
   --screen-height: calc(100svh + env(safe-area-inset-top));
 
-  /* 상단 툴바 버튼의 지름. 지도 화면의 상단 여백이 같은 값을 본다. */
+  /* 상단 툴바 버튼의 지름. */
   --toolbar-height: 44px;
 
-  /* 화면 위 여백과 블록 사이 간격. 툴바가 같은 높이에 뜨고, 지도 화면은 이 값들을 더해 노치까지 끌어올린다. */
+  /* 화면 위 여백과 블록 사이 간격. 툴바가 같은 높이에 뜬다. */
   --page-top: calc(24px + env(safe-area-inset-top));
   --page-gap: 20px;
 
@@ -327,14 +324,11 @@
   --place-park: var(--green-400);
   --place-attraction: var(--sky-300);
 
-  --journey-background: var(--mono-900);
-  --journey-line: var(--neutral-400);
-  --journey-white: var(--mono-50);
-  --journey-glow: var(--orange-100);
-  --journey-gold: var(--orange-200);
-  --journey-ember: var(--orange-ember);
-  --journey-halo: 1;
-  --journey-neon: 1;
+  --map-line: var(--neutral-400);
+  --map-glow: var(--orange-100);
+  --map-gold: var(--orange-200);
+  --map-ember: var(--orange-ember);
+  --map-halo: 1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -393,14 +387,11 @@
     --place-park: var(--green-400);
     --place-attraction: var(--sky-300);
 
-    --journey-background: var(--mono-900);
-    --journey-line: var(--neutral-400);
-    --journey-white: var(--mono-50);
-    --journey-glow: var(--orange-100);
-    --journey-gold: var(--orange-200);
-    --journey-ember: var(--orange-ember);
-    --journey-halo: 1;
-    --journey-neon: 1;
+    --map-line: var(--neutral-400);
+    --map-glow: var(--orange-100);
+    --map-gold: var(--orange-200);
+    --map-ember: var(--orange-ember);
+    --map-halo: 1;
   }
 }
 
@@ -643,6 +634,54 @@ body:has([data-record-search="open"]) .hide-during-record-search {
   visibility: hidden;
   opacity: 0;
   scale: 0.92;
+}
+
+/** 바탕과 반대 톤의 카드. 라이트에서는 검은 카드, 다크에서는 흰 카드가 되도록 안쪽 색 변수만 바꾼다. */
+.surface-inverse {
+  color-scheme: dark;
+  --surface: var(--mono-800);
+  --foreground: var(--mono-50);
+  --muted: var(--mono-750);
+  --muted-foreground: var(--mono-400);
+  --border: rgb(244 246 244 / 0.08);
+  --category-daily: var(--green-400);
+  --category-date: var(--pink-300);
+  --category-travel: var(--blue-400);
+  --category-anniversary: var(--violet-300);
+  --category-gathering: var(--teal-400);
+  --category-uncategorized: var(--neutral-400);
+}
+
+:root.dark .surface-inverse {
+  color-scheme: light;
+  --surface: var(--neutral-0);
+  --foreground: var(--neutral-900);
+  --muted: var(--neutral-50);
+  --muted-foreground: var(--neutral-500);
+  --border: var(--neutral-100);
+  --category-daily: var(--green-600);
+  --category-date: var(--pink-600);
+  --category-travel: var(--blue-600);
+  --category-anniversary: var(--violet-600);
+  --category-gathering: var(--teal-600);
+  --category-uncategorized: var(--neutral-500);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .surface-inverse {
+    color-scheme: light;
+    --surface: var(--neutral-0);
+    --foreground: var(--neutral-900);
+    --muted: var(--neutral-50);
+    --muted-foreground: var(--neutral-500);
+    --border: var(--neutral-100);
+    --category-daily: var(--green-600);
+    --category-date: var(--pink-600);
+    --category-travel: var(--blue-600);
+    --category-anniversary: var(--violet-600);
+    --category-gathering: var(--teal-600);
+    --category-uncategorized: var(--neutral-500);
+  }
 }
 
 @media (orientation: landscape) and (max-height: 500px) {

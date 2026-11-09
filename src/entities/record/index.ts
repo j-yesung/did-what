@@ -1,4 +1,3 @@
-export { fetchRecordLocations } from "./api/client-queries";
 export {
   RECORD_DETAILS_QUERY_KEY,
   RECORDS_QUERY_KEY,
@@ -45,7 +44,6 @@ export {
 export type { RecordFormState, RecordSummary } from "./model/types";
 export {
   DEFAULT_RECORD_WEATHER,
-  getRecordWeatherLabel,
   isRecordWeather,
   normalizeRecordWeather,
   RECORD_WEATHER_OPTIONS,

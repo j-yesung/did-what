@@ -24,21 +24,21 @@ const setupDocument = (t) => {
   return { classes, document };
 };
 
-test("기존 라이트·시스템 설정으로 적용해도 다크 모드를 유지한다", (t) => {
+test("선택한 모드의 클래스만 남기고 시스템은 둘 다 지운다", (t) => {
   const { classes } = setupDocument(t);
   for (const theme of ["dark", "light", "system"]) {
     applyTheme(theme);
-    assert.equal(getAppliedTheme(), "dark");
+    assert.equal(getAppliedTheme(), theme);
     assert.ok(classes.has("unrelated"));
-    assert.equal(classes.has("light"), false);
-    assert.equal(classes.has("dark"), true);
+    assert.equal(classes.has("light"), theme === "light");
+    assert.equal(classes.has("dark"), theme === "dark");
   }
 });
 
 test("명시 모드는 시스템 설정과 무관하게 같은 색을, 시스템 모드는 각각 다른 색을 쓴다", () => {
   assert.deepEqual(
     getThemeColors("dark").map(({ color }) => color),
-    ["#111314", "#111314"],
+    ["#050506", "#050506"],
   );
   assert.deepEqual(
     getThemeColors("light").map(({ color }) => color),
@@ -46,9 +46,11 @@ test("명시 모드는 시스템 설정과 무관하게 같은 색을, 시스템
   );
   assert.deepEqual(
     getThemeColors("system").map(({ color }) => color),
-    ["#ffffff", "#111314"],
+    ["#ffffff", "#050506"],
   );
-  assert.equal(parseTheme("unknown"), "system");
+  assert.equal(parseTheme(undefined), "light");
+  assert.equal(parseTheme("unknown"), "light");
+  assert.equal(parseTheme("system"), "system");
 });
 
 test("테마 쿠키를 전체 경로에 1년간 저장한다", (t) => {

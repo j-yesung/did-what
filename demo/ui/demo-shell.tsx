@@ -9,14 +9,14 @@ import {
   ChatCircleIcon,
   CheckIcon,
   GearIcon,
+  HouseIcon,
   type IconProps,
-  MapPinAreaIcon,
   MapPinIcon,
   NotePencilIcon,
   NotepadIcon,
 } from "@phosphor-icons/react";
 
-// import { THEME_OPTIONS, type Theme } from "@/features/switch-theme/model/theme";
+import { THEME_OPTIONS, type Theme } from "@/features/switch-theme/model/theme";
 import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -33,7 +33,7 @@ import {
 import { DEMO_RECORD_IDS } from "../model/seed";
 import { clearDemoStorage } from "../model/store";
 
-type EntryId = "comments" | "create" | "map" | "notifications" | "places" | "records" | "settings";
+type EntryId = "comments" | "create" | "home" | "notifications" | "places" | "records" | "settings";
 
 type Entry = {
   guide: string;
@@ -46,10 +46,10 @@ type Entry = {
 const ENTRIES: Entry[] = [
   {
     guide:
-      "빛나는 지역을 눌러 그곳의 기록을 고르고, ‘경로 보기’로 집에서 출발한 발자취를 따라가 보세요. 체험의 경로는 실제 도로 대신 직선으로 이어요.",
-    icon: MapPinAreaIcon,
-    id: "map",
-    label: "활동 지도",
+      "만난 날부터 함께한 날, 1년 전 이맘때 기록, 다녀온 지역과 자주 간 곳을 한눈에 봐요. 지역을 누르면 그곳의 기록이, 이맘때를 누르면 그날의 기록이 열려요.",
+    icon: HouseIcon,
+    id: "home",
+    label: "홈",
     path: "/",
   },
   {
@@ -94,7 +94,7 @@ const ENTRIES: Entry[] = [
   },
   {
     guide:
-      "집 주소, 화면 모드, 사용자 전환을 써 보세요. 서준으로 바꾸면 집 주소가 없어 지도에서 등록부터 해요. 바꾼 설정은 이 체험 안에만 적용돼요.",
+      "만난 날, 화면 모드, 사용자 전환을 써 보세요. 만난 날을 바꾸면 홈의 함께한 날이 따라 바뀌어요. 바꾼 설정은 이 체험 안에만 적용돼요.",
     icon: GearIcon,
     id: "settings",
     label: "설정",
@@ -105,11 +105,11 @@ const ENTRIES: Entry[] = [
 /** 앱 안에서 이동해도 왼쪽 선택이 지금 화면을 가리키도록, 경로마다 어울리는 체험 항목을 고른다. */
 const getEntryIds = (path: string): EntryId[] => {
   const pathname = path.split(/[?#]/)[0];
-  if (pathname === "/") return ["map"];
+  if (pathname === "/") return ["home"];
   if (pathname === "/records/new") return ["create"];
   if (pathname === "/records") return ["records"];
   if (/^\/records\/[^/]+\/edit$/.test(pathname)) return ["records", "comments"];
-  if (/^\/records\/[^/]+$/.test(pathname)) return ["comments", "records", "notifications", "places", "map"];
+  if (/^\/records\/[^/]+$/.test(pathname)) return ["comments", "records", "notifications", "places", "home"];
   if (pathname === "/places" || pathname.startsWith("/places/")) return ["places"];
   if (pathname === "/notifications") return ["notifications"];
   if (pathname === "/settings" || pathname === "/members/select") return ["settings"];
@@ -119,7 +119,7 @@ const getEntryIds = (path: string): EntryId[] => {
 /** 작성·수정 중인 화면은 초기화하면 입력이 사라지므로 확인을 받는다. */
 const isFormPath = (path: string) => /^\/records\/(new|[^/?#]+\/edit)(?:[?#]|$)/.test(path);
 
-// const THEME_LABELS: Record<Theme, string> = { dark: "어두운 화면", light: "밝은 화면", system: "시스템" };
+const THEME_LABELS: Record<Theme, string> = { dark: "어두운 화면", light: "밝은 화면", system: "시스템" };
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return <h3 className="font-semibold text-muted-foreground text-xs">{children}</h3>;
@@ -176,7 +176,7 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
   const [src] = useState(() => toDemoHref(initialPath));
   const [snapshot, setSnapshot] = useState<DemoSnapshot | null>(null);
   const [feedback, setFeedback] = useState<Extract<DemoAppMessage, { type: "feedback" }> | null>(null);
-  const [selectedId, setSelectedId] = useState<EntryId>(() => getEntryIds(initialPath)[0] ?? "map");
+  const [selectedId, setSelectedId] = useState<EntryId>(() => getEntryIds(initialPath)[0] ?? "home");
   const [panelOpen, setPanelOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
 
@@ -219,7 +219,7 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
     clearDemoStorage();
     iframeRef.current?.contentWindow?.location.replace(DEMO_APP_PATH);
     window.history.replaceState(window.history.state, "", "/demo");
-    setSelectedId("map");
+    setSelectedId("home");
     setSnapshot(null);
     setFeedback({ message: "체험 내용을 지우고 처음 상태로 돌아왔어요.", tone: "success", type: "feedback" });
   };
@@ -363,7 +363,6 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
               </div>
             </section>
 
-            {/* 다크 모드 고정으로 화면 모드 선택을 잠시 숨긴다.
             <section className="flex flex-col gap-2 rounded-xl border bg-background p-3">
               <SectionTitle>앱 화면 모드</SectionTitle>
               <div className="flex flex-wrap gap-1.5">
@@ -379,7 +378,6 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
                 ))}
               </div>
             </section>
-            */}
 
             <section className="flex flex-col gap-1.5 rounded-xl border bg-background p-3">
               <Button color="danger" fullWidth onClick={requestReset} size="medium" type="button" variant="weak">
