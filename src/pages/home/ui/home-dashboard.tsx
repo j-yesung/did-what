@@ -2,9 +2,12 @@
 
 import { useCallback, useState } from "react";
 
+import dynamic from "next/dynamic";
+
 import { EmptyRecords } from "@/entities/record";
 import { PageShell } from "@/shared/ui/layouts";
 
+import { openRegionSheet } from "../model/region-sheet-url";
 import {
   getGreeting,
   getRelationshipStats,
@@ -16,7 +19,11 @@ import {
 } from "../model/retrospect";
 import { AnniversaryCard, HomeGreeting, RegionOverview, ThisTimeCard, TogetherCard, TopPlaces } from "./home-sections";
 import { RecordListSheet, type RecordListSheetState } from "./record-list-sheet";
-import { openRegionSheet, RegionListSheet, RegionSheet } from "./region-sheet";
+
+const RegionSheet = dynamic(() => import("./region-sheet").then((module) => module.RegionSheet), { ssr: false });
+const RegionListSheet = dynamic(() => import("./region-sheet").then((module) => module.RegionListSheet), {
+  ssr: false,
+});
 
 type HomeDashboardProps = {
   member: { name: string };

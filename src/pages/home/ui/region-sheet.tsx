@@ -6,23 +6,15 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import { RecordCard, RecordDateGroups, toRegionLocations } from "@/entities/record";
 import { createRegionActivityMaps, RegionMiniMap } from "@/entities/region";
-import { getRegion, type RegionCode } from "@/entities/region/model/region";
+import { getRegion } from "@/entities/region/model/region";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { PressLink } from "@/shared/ui/press-link";
 
+import { openRegionSheet, REGION_PARAM, REGION_SHEET_HISTORY_KEY } from "../model/region-sheet-url";
 import { countSubregions, getSubregions, type HomeRecord, type RegionSummary } from "../model/retrospect";
 import styles from "./region-sheet.module.css";
-
-const REGION_PARAM = "region";
-const HISTORY_KEY = "didWhatRegionSheet";
-
-export const openRegionSheet = (code: RegionCode) => {
-  const url = new URL(window.location.href);
-  url.searchParams.set(REGION_PARAM, code);
-  window.history.pushState({ [HISTORY_KEY]: code }, "", `${url.pathname}${url.search}`);
-};
 
 const renderRecord = (record: HomeRecord) => <RecordCard record={record} />;
 
@@ -41,7 +33,7 @@ export function RegionSheet({ records, regions }: RegionSheetProps) {
   const shown = region ?? previous.current;
 
   const close = () => {
-    if (window.history.state?.[HISTORY_KEY]) {
+    if (window.history.state?.[REGION_SHEET_HISTORY_KEY]) {
       window.history.back();
       return;
     }
@@ -151,7 +143,7 @@ export function RegionListSheet({ onClose, open, records, regions }: RegionListS
     if (!open) return;
     window.history.pushState({ [LIST_HISTORY_KEY]: true }, "");
     const handlePop = () => {
-      if (!window.history.state?.[LIST_HISTORY_KEY] && !window.history.state?.[HISTORY_KEY]) onClose();
+      if (!window.history.state?.[LIST_HISTORY_KEY] && !window.history.state?.[REGION_SHEET_HISTORY_KEY]) onClose();
     };
     window.addEventListener("popstate", handlePop);
     return () => window.removeEventListener("popstate", handlePop);
