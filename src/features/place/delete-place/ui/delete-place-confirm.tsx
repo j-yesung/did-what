@@ -36,13 +36,13 @@ export function DeletePlaceConfirm({ name, onClose, onDeleted, open, placeId, re
     return result;
   };
   const remove = useActionMutation(removeAndRefresh, {
-    error: "장소를 삭제하지 못했어요",
+    error: "장소 저장을 해제하지 못했어요",
     invalidate: [RECORD_DETAILS_QUERY_KEY],
     onSuccess: () => {
       onClose();
       onDeleted?.();
     },
-    success: "장소를 삭제했어요",
+    success: "저장 목록에서 뺐어요",
   });
 
   return (
@@ -54,17 +54,15 @@ export function DeletePlaceConfirm({ name, onClose, onDeleted, open, placeId, re
       }
       confirmButton={
         <Button color="danger" loading={remove.isPending} onClick={() => remove.mutate()} variant="fill">
-          장소 삭제
+          저장 해제
         </Button>
       }
       description={
-        recordCount > 0
-          ? `저장된 장소 목록에서만 삭제되고 기록 ${recordCount}개의 방문 장소는 남아요.`
-          : "저장된 장소 목록에서 삭제돼요."
+        recordCount > 0 ? `저장을 해제해도 기록 ${recordCount}개의 방문 장소는 남아요.` : "저장 목록에서 빠져요."
       }
       onClose={onClose}
       open={open}
-      title={`${name}을(를) 삭제할까요?`}
+      title={`${name} 저장을 해제할까요?`}
     />
   );
 }

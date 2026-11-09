@@ -70,12 +70,12 @@ export function PlaceDetailContent({ placeId }: PlaceDetailContentProps) {
                   </div>
                   {place.saved_at ? (
                     <LiquidGlassButton
-                      aria-label="저장 목록에서 장소 제거"
+                      aria-label="장소 저장 해제"
                       className="text-destructive"
                       disabled={!recordsQuery.isSuccess}
                       onClick={() => setDeleteOpen(true)}
                       shape="circle"
-                      title="저장 목록에서 장소 제거"
+                      title="장소 저장 해제"
                     >
                       <TrashIcon aria-hidden="true" />
                     </LiquidGlassButton>
