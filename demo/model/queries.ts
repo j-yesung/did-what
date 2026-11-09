@@ -112,7 +112,6 @@ export const getDemoHomeRecords = (state: DemoState): HomeRecord[] =>
     region_code: primaryRegionOf(record)?.region_code,
     region_label: primaryRegionOf(record)?.region_label,
     region_name: primaryRegionOf(record)?.region_name,
-    weather: record.weather,
   }));
 
 const toPlaceDetailRow = ({ ...place }: DemoPlace) => place;

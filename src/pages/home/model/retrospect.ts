@@ -23,7 +23,6 @@ export type HomeRecord = Pick<
   | "region_code"
   | "region_label"
   | "region_name"
-  | "weather"
 > & { record_places: { place: HomePlace | null }[]; record_regions: HomeRegion[] };
 
 const DAY = 86_400_000;

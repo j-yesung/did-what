@@ -14,7 +14,7 @@ export const getHomeRecords = async () => {
     const { data, error } = await supabase
       .from("records")
       .select(
-        "id, activity, category, weather, recorded_at, recorded_until, region_code, region_label, region_name, record_regions(region_code, region_name, region_label, region_latitude, region_longitude), record_places(place:places(id, name, latitude, longitude)), record_comments(count)",
+        "id, activity, category, recorded_at, recorded_until, region_code, region_label, region_name, record_regions(region_code, region_name, region_label, region_latitude, region_longitude), record_places(place:places(id, name, latitude, longitude)), record_comments(count)",
       )
       .eq("owner_id", user.id)
       .order("recorded_at", { ascending: false })

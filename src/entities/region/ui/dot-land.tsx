@@ -9,7 +9,7 @@ const land = boundaries.land.map(toShape);
 const LIT_COLORS = Array.from(
   { length: LIT_LEVELS },
   (_, level) =>
-    `color-mix(in srgb, var(--journey-glow) ${Math.round(((level + 0.5) / LIT_LEVELS) * 100)}%, var(--journey-ember))`,
+    `color-mix(in srgb, var(--map-glow) ${Math.round(((level + 0.5) / LIT_LEVELS) * 100)}%, var(--map-ember))`,
 );
 
 type DotLandMapProps = {
@@ -34,9 +34,9 @@ export function DotLandMap({ className, label, visits, width }: DotLandMapProps)
     >
       <defs>
         <radialGradient id={glow}>
-          <stop offset="0" style={{ stopColor: "color-mix(in srgb, var(--journey-gold) 90%, transparent)" }} />
-          <stop offset="0.4" style={{ stopColor: "color-mix(in srgb, var(--journey-amber) 35%, transparent)" }} />
-          <stop offset="1" style={{ stopColor: "color-mix(in srgb, var(--journey-amber) 0%, transparent)" }} />
+          <stop offset="0" style={{ stopColor: "color-mix(in srgb, var(--map-gold) 90%, transparent)" }} />
+          <stop offset="0.4" style={{ stopColor: "color-mix(in srgb, var(--map-amber) 35%, transparent)" }} />
+          <stop offset="1" style={{ stopColor: "color-mix(in srgb, var(--map-amber) 0%, transparent)" }} />
         </radialGradient>
       </defs>
       <g className={styles.halo}>

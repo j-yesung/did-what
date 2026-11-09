@@ -127,12 +127,12 @@
   --navigation-lens-shadow: rgb(0 0 0 / 0.16);
   --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.1);
 
-  --journey-line: var(--neutral-400);
-  --journey-glow: var(--orange-600);
-  --journey-gold: var(--orange-500);
-  --journey-amber: var(--orange-400);
-  --journey-ember: var(--orange-100);
-  --journey-halo: 0.4;
+  --map-line: var(--neutral-400);
+  --map-glow: var(--orange-600);
+  --map-gold: var(--orange-500);
+  --map-amber: var(--orange-400);
+  --map-ember: var(--orange-100);
+  --map-halo: 0.4;
 }
 
 :root {
@@ -324,11 +324,11 @@
   --place-park: var(--green-400);
   --place-attraction: var(--sky-300);
 
-  --journey-line: var(--neutral-400);
-  --journey-glow: var(--orange-100);
-  --journey-gold: var(--orange-200);
-  --journey-ember: var(--orange-ember);
-  --journey-halo: 1;
+  --map-line: var(--neutral-400);
+  --map-glow: var(--orange-100);
+  --map-gold: var(--orange-200);
+  --map-ember: var(--orange-ember);
+  --map-halo: 1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -387,11 +387,11 @@
     --place-park: var(--green-400);
     --place-attraction: var(--sky-300);
 
-    --journey-line: var(--neutral-400);
-    --journey-glow: var(--orange-100);
-    --journey-gold: var(--orange-200);
-    --journey-ember: var(--orange-ember);
-    --journey-halo: 1;
+    --map-line: var(--neutral-400);
+    --map-glow: var(--orange-100);
+    --map-gold: var(--orange-200);
+    --map-ember: var(--orange-ember);
+    --map-halo: 1;
   }
 }
 

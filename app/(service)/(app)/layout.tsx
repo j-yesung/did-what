@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const requestHeaders = await headers();
-  // 홈 갱신 중에는 첫 로딩 화면을 유지해 물음표 애니메이션이 다시 시작되지 않게 한다.
+  // 홈 전용 로딩 처리. 시작 화면에서 홈을 불러오는 동안 로딩 로고를 새로 그리지 않고 이어 보여 준다.
   const isHome = requestHeaders.get(RETURN_TO_HEADER)?.split("?")[0] === "/";
 
   return (
