@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { formatRecordDate } from "@/shared/lib/date/format-date";
 import { getToday } from "@/shared/lib/date/get-today";
+import { useDemoOverride } from "@/shared/lib/demo-override";
 import { Button } from "@/shared/ui/button";
 import { DateInput } from "@/shared/ui/date-input";
 import { FieldDescription, FieldLegend, FieldSet } from "@/shared/ui/field";
@@ -18,6 +19,7 @@ export function MetOnSetting({ metOn }: { metOn: string | null }) {
   const [error, setError] = useState("");
   const [saving, startSaving] = useTransition();
   const router = useRouter();
+  const save = useDemoOverride(saveMetOn);
 
   const startEditing = () => {
     setValue(metOn ?? "");
@@ -25,9 +27,9 @@ export function MetOnSetting({ metOn }: { metOn: string | null }) {
     setEditing(true);
   };
 
-  const save = () =>
+  const submit = () =>
     startSaving(async () => {
-      const result = await saveMetOn(value);
+      const result = await save(value);
       if (result.error) {
         setError(result.error);
         return;
@@ -70,7 +72,7 @@ export function MetOnSetting({ metOn }: { metOn: string | null }) {
             >
               취소
             </Button>
-            <Button disabled={!value || value === metOn} loading={saving} onClick={save} size="medium" type="button">
+            <Button disabled={!value || value === metOn} loading={saving} onClick={submit} size="medium" type="button">
               저장
             </Button>
           </div>

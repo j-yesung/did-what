@@ -1,27 +1,9 @@
 import { getRegion, getRegionCode, REGIONS } from "./region.ts";
 import assert from "node:assert/strict";
 
-const { createRegionActivityMaps, getActivityLevel, getKoreaMapPosition } = await import("./korea-map.ts");
+const { createRegionActivityMaps, getActivityLevel } = await import("./korea-map.ts");
 
 assert.deepEqual([0, 1, 2, 4, 7].map(getActivityLevel), [0, 1, 2, 3, 4]);
-
-// 현재 위치 좌표와 섬의 표시 위치는 이전 전국 그리드 생성 없이 검증한다.
-for (const { latitude, longitude, x, y } of [
-  { latitude: 37.5445, longitude: 127.0557, x: 135.74405473802338, y: 73.94314783131767 },
-  { latitude: 33.4996, longitude: 126.5312, x: 106.47140390530349, y: 352.98330289096873 },
-  { latitude: 37.5, longitude: 130.87, x: 273.2780746561767, y: 77.01301034958865 },
-  { latitude: 37.96, longitude: 124.68, x: 89.66125627743882, y: 31.482465134782142 },
-]) {
-  const position = getKoreaMapPosition({ latitude, longitude });
-  assert.ok(position);
-  assert.ok(Math.abs(position.x - x) < 1e-8);
-  assert.ok(Math.abs(position.y - y) < 1e-8);
-}
-assert.equal(getKoreaMapPosition({ latitude: 35.68, longitude: 139.69 }), null);
-assert.equal(getKoreaMapPosition({ latitude: 34.2, longitude: 129.3 }), null, "대마도는 지도 범위에서 제외합니다.");
-assert.equal(getKoreaMapPosition({ latitude: 36, longitude: 125.5 }), null, "서해는 지도 범위에서 제외합니다.");
-assert.equal(getKoreaMapPosition({ latitude: Number.NaN, longitude: 127 }), null);
-assert.equal(getKoreaMapPosition({ latitude: 37, longitude: Number.POSITIVE_INFINITY }), null);
 
 const emptyRegions = createRegionActivityMaps([]);
 assert.equal(REGIONS.length, 16);

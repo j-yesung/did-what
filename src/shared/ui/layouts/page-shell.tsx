@@ -24,8 +24,6 @@ export function PageShell({ children, className, withBottomNavigation = false }:
 
     // 첫 paint 전에 적용해야 iOS의 이전 화면 스냅샷 다음에 투명한 프레임이 끼지 않는다.
     main.style.animation = navigation.traversal ? "none" : "";
-    // 지도 template처럼 안쪽에서 실행하는 등장 효과에도 같은 이동 기준을 전달한다.
-    main.style.setProperty("--tab-enter-name", navigation.traversal ? "none" : "tab-content-enter");
     // 상세 화면은 항상 위에서 시작하고 목록의 스크롤 복원은 브라우저에 맡긴다.
     if (!withBottomNavigation) window.scrollTo(0, 0);
   }, [pathname, withBottomNavigation]);

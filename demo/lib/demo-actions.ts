@@ -3,8 +3,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { readRecordInput, validateRecordInput } from "@/entities/record";
 import { normalizeCommentBody } from "@/entities/record-comment";
 import { logout } from "@/features/auth/api/auth-actions";
-import { deleteHomeAddress, saveHomeAddress } from "@/features/home-address/api/actions";
 import { selectMember } from "@/features/member/select-member/api/select-member";
+import { saveMetOn } from "@/features/met-on/api/actions";
 import { readAllNotifications } from "@/features/notification/read-all-notifications";
 import { readRecordNotifications } from "@/features/notification/read-record-notifications";
 import { deletePlace } from "@/features/place/delete-place/api/delete-place";
@@ -22,6 +22,7 @@ import type { DemoOverrides } from "@/shared/lib/demo-override";
 import { toSafeReturnTo } from "@/shared/lib/navigation/return-to";
 import { unsubscribePush } from "@/shared/lib/push/get-push-endpoint";
 import { showToast } from "@/shared/lib/toast";
+import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 
 import * as actions from "../model/actions";
 import { getDemoKakaoPlace, getDemoRegion } from "../model/samples";
@@ -197,22 +198,14 @@ export const createDemoOverrides = ({ navigate, queryClient }: Dependencies): De
       },
     ],
     [
-      saveHomeAddress,
-      (address: string) =>
+      saveMetOn,
+      (metOn: string) =>
         save(() => {
-          const result = actions.saveHomeAddress(demoStore.get(), memberId(), address, new Date().toISOString());
-          if (!result.ok) return { error: result.message };
-          demoStore.set(result.state);
+          if (!isIsoDate(metOn) || metOn > demoStore.get().today)
+            return { error: "오늘이나 그 전 날짜를 골라 주세요." };
+          update({ metOn });
           return { success: true };
         }),
-    ],
-    [
-      deleteHomeAddress,
-      async () => {
-        await delay(350);
-        demoStore.set(actions.deleteHomeAddress(demoStore.get(), memberId()));
-        return { success: true };
-      },
     ],
     [saveTheme, (theme: Theme) => update({ theme })],
     [saveRecordView, (view: RecordView) => update({ recordView: view })],

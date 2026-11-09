@@ -127,15 +127,12 @@
   --navigation-lens-shadow: rgb(0 0 0 / 0.16);
   --navigation-shadow: 0 2px 8px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.1);
 
-  --journey-background: var(--neutral-0);
   --journey-line: var(--neutral-400);
-  --journey-white: var(--neutral-900);
   --journey-glow: var(--orange-600);
   --journey-gold: var(--orange-500);
   --journey-amber: var(--orange-400);
   --journey-ember: var(--orange-100);
   --journey-halo: 0.4;
-  --journey-neon: 0;
 }
 
 :root {
@@ -183,10 +180,10 @@
    */
   --screen-height: calc(100svh + env(safe-area-inset-top));
 
-  /* 상단 툴바 버튼의 지름. 지도 화면의 상단 여백이 같은 값을 본다. */
+  /* 상단 툴바 버튼의 지름. */
   --toolbar-height: 44px;
 
-  /* 화면 위 여백과 블록 사이 간격. 툴바가 같은 높이에 뜨고, 지도 화면은 이 값들을 더해 노치까지 끌어올린다. */
+  /* 화면 위 여백과 블록 사이 간격. 툴바가 같은 높이에 뜬다. */
   --page-top: calc(24px + env(safe-area-inset-top));
   --page-gap: 20px;
 
@@ -327,14 +324,11 @@
   --place-park: var(--green-400);
   --place-attraction: var(--sky-300);
 
-  --journey-background: var(--mono-900);
   --journey-line: var(--neutral-400);
-  --journey-white: var(--mono-50);
   --journey-glow: var(--orange-100);
   --journey-gold: var(--orange-200);
   --journey-ember: var(--orange-ember);
   --journey-halo: 1;
-  --journey-neon: 1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -393,14 +387,11 @@
     --place-park: var(--green-400);
     --place-attraction: var(--sky-300);
 
-    --journey-background: var(--mono-900);
     --journey-line: var(--neutral-400);
-    --journey-white: var(--mono-50);
     --journey-glow: var(--orange-100);
     --journey-gold: var(--orange-200);
     --journey-ember: var(--orange-ember);
     --journey-halo: 1;
-    --journey-neon: 1;
   }
 }
 
