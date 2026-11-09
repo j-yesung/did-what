@@ -121,7 +121,7 @@
   --navigation-solid: rgb(248 248 250);
   --navigation-label: rgb(60 60 67 / 0.88);
   --navigation-selected: var(--text-accent);
-  --navigation-selection: rgb(0 0 0 / 0.07);
+  --navigation-selection: rgb(0 0 0 / 0.12);
   --navigation-edge: rgb(0 0 0 / 0.12);
   --navigation-lens: rgb(255 255 255 / 0.03);
   --navigation-lens-shadow: rgb(0 0 0 / 0.16);
@@ -547,11 +547,9 @@
   }
 }
 
-/* 홈 화면 앱은 상단 안전 영역의 초기화와 무관하게 스플래시와 같은 전체 화면 중앙을 쓴다. */
-@media (display-mode: standalone) {
-  .app-loading {
-    min-height: 100lvh;
-  }
+/* 시작 화면 이미지처럼 화면 전체를 덮고, 바탕도 같은 색으로 맞춰 라이트 테마의 흰 바탕이 비치지 않게 한다. */
+html:has(.app-loading) {
+  background: var(--fill-logo);
 }
 
 @keyframes loading-dot {
@@ -596,25 +594,7 @@
   }
 }
 
-@keyframes map-location-pulse {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  to {
-    opacity: 0;
-    transform: scale(2.4);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
-  .map-location-pulse {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: map-location-pulse 1800ms cubic-bezier(0.23, 1, 0.32, 1) infinite;
-  }
-
   [data-funnel-step][data-direction="forward"] {
     animation: funnel-step-forward 280ms cubic-bezier(0.77, 0, 0.175, 1) both;
   }
