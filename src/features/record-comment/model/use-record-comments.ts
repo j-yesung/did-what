@@ -103,6 +103,7 @@ export const useRecordComments = ({
     void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "list"] });
     void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "calendar"] });
     void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "locations"] });
+    void queryClient.invalidateQueries({ queryKey: [...RECORDS_QUERY_KEY, "home"] });
   };
 
   const runOptimistic = (action: OptimisticCommentAction, request: () => Promise<void>) => {
