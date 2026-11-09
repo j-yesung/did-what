@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { type ComponentProps, useSyncExternalStore } from "react";
 
 import { GearIcon, HouseIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
 import { TabBar } from "glisse";
@@ -17,6 +17,8 @@ const TABS = [
   { href: "/places", icon: MapPinIcon, label: "장소" },
   { href: "/settings", icon: GearIcon, label: "설정" },
 ];
+
+const TabLink = (props: ComponentProps<typeof PressLink>) => <PressLink prefetch {...props} />;
 
 const SIMPLIFIED_NAVIGATION_QUERY =
   "(prefers-reduced-motion: reduce), (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active)";
@@ -56,10 +58,10 @@ export function BottomNavigation() {
       {simplifiedNavigation ? (
         <nav aria-label="주요 메뉴" className="bottom-navigation-static">
           {items.map(({ href, icon, label }) => (
-            <PressLink aria-current={href === pathname ? "page" : undefined} href={href} key={href}>
+            <TabLink aria-current={href === pathname ? "page" : undefined} href={href} key={href}>
               {icon}
               <span>{label}</span>
-            </PressLink>
+            </TabLink>
           ))}
         </nav>
       ) : (
@@ -67,7 +69,7 @@ export function BottomNavigation() {
           aria-label="주요 메뉴"
           className="bottom-navigation-glisse"
           items={items}
-          link={PressLink}
+          link={TabLink}
           value={pathname}
         />
       )}

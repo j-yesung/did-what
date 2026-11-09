@@ -19,3 +19,6 @@ export const saveRecordView = (view: RecordView) => {
   // 서버 액션 왕복 없이 누르는 즉시 저장한다. 이 쿠키는 보기 선택만 담는다.
   document.cookie = `${RECORD_VIEW_COOKIE}=${view}; path=/; max-age=${ONE_YEAR}; samesite=lax`;
 };
+
+export const readSavedRecordView = () =>
+  parseRecordView(new RegExp(`(?:^|; )${RECORD_VIEW_COOKIE}=([^;]*)`).exec(document.cookie)?.[1]);
