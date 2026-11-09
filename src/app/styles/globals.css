@@ -121,7 +121,7 @@
   --navigation-solid: rgb(248 248 250);
   --navigation-label: rgb(60 60 67 / 0.88);
   --navigation-selected: var(--text-accent);
-  --navigation-selection: rgb(0 0 0 / 0.07);
+  --navigation-selection: rgb(0 0 0 / 0.12);
   --navigation-edge: rgb(0 0 0 / 0.12);
   --navigation-lens: rgb(255 255 255 / 0.03);
   --navigation-lens-shadow: rgb(0 0 0 / 0.16);
