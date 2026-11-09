@@ -2,7 +2,7 @@ export type Theme = "light" | "dark" | "system";
 
 export const THEME_COOKIE = "theme";
 
-const THEME_COLORS = { dark: "#111314", light: "#ffffff" };
+const THEME_COLORS = { dark: "#050506", light: "#ffffff" };
 
 export const getThemeColors = (theme: Theme) => [
   {

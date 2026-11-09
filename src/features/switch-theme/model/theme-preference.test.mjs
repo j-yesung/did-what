@@ -38,7 +38,7 @@ test("선택한 모드의 클래스만 남기고 시스템은 둘 다 지운다"
 test("명시 모드는 시스템 설정과 무관하게 같은 색을, 시스템 모드는 각각 다른 색을 쓴다", () => {
   assert.deepEqual(
     getThemeColors("dark").map(({ color }) => color),
-    ["#111314", "#111314"],
+    ["#050506", "#050506"],
   );
   assert.deepEqual(
     getThemeColors("light").map(({ color }) => color),
@@ -46,7 +46,7 @@ test("명시 모드는 시스템 설정과 무관하게 같은 색을, 시스템
   );
   assert.deepEqual(
     getThemeColors("system").map(({ color }) => color),
-    ["#ffffff", "#111314"],
+    ["#ffffff", "#050506"],
   );
   assert.equal(parseTheme(undefined), "light");
   assert.equal(parseTheme("unknown"), "light");
