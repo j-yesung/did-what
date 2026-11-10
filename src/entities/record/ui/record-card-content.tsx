@@ -22,7 +22,7 @@ import { formatRecordProvinceLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
 
 export const RECORD_CARD_BUTTON_CLASS =
-  "h-auto min-h-16 min-w-0 justify-start whitespace-normal rounded-md px-0 py-3 text-left font-normal after:hidden [&>span]:block [&>span]:w-full";
+  "h-auto min-h-16 min-w-0 justify-start whitespace-normal rounded-md px-0 py-3 text-left font-normal after:-inset-x-2 after:inset-y-0 [&>span]:block [&>span]:w-full";
 
 const CATEGORY_ICON: Record<RecordCategory, { Icon: typeof HeartIcon; color: string }> = {
   anniversary: { Icon: CakeIcon, color: "text-category-anniversary" },
