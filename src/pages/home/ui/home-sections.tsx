@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
 
@@ -200,51 +200,38 @@ export function RegionOverview({ onOpen, onOpenAll, records, regions }: RegionOv
   );
 }
 
-const INLINE_LINK = cn(
-  "rounded-sm font-semibold text-foreground underline decoration-border underline-offset-4 active:opacity-60",
-  FOCUS_RING,
-);
-
-export function TopPlaces({ places: [top, ...rest], today }: { places: TopPlace[]; today: string }) {
-  const [year, month, day] = top.last.recorded_at.split("-").map(Number);
-  const lastDate = `${top.last.recorded_at.startsWith(today.slice(0, 4)) ? "" : `${year}년 `}${month}월 ${day}일`;
-
+export function TopPlaces({ places }: { places: TopPlace[] }) {
   return (
     <Section title="자주 간 곳">
-      <div className="flex flex-col px-1">
-        <PressLink
-          className={cn(
-            "self-start rounded-sm font-extrabold text-[26px] leading-tight tracking-[-0.04em]",
-            FOCUS_RING,
-          )}
-          href={`/places/${top.id}`}
-        >
-          {top.name}
-        </PressLink>
-        <p className="mt-2 text-[14px] text-muted-foreground leading-relaxed">
-          총 <strong className="font-bold text-foreground">{top.count}번</strong> 다녀왔어요
-          <br />
-          마지막은 {lastDate},{" "}
-          <RecordDetailLink className={INLINE_LINK} href={`/records/${top.last.id}`}>
-            {top.last.activity}
-          </RecordDetailLink>
-        </p>
-        {rest.length > 0 && (
-          <p className="mt-4 text-[14px] text-muted-foreground leading-[1.9]">
-            그다음은{" "}
-            {rest.map((place, index) => (
-              <Fragment key={place.id}>
-                {index > 0 && ", "}
-                <PressLink className={INLINE_LINK} href={`/places/${place.id}`}>
-                  {place.name}
-                </PressLink>{" "}
+      <ol>
+        {places.map((place, index) => (
+          <li key={place.id}>
+            <PressLink
+              className={cn(
+                "flex min-h-11 items-center gap-3 rounded-2xl px-1 py-2.5 after:-inset-x-2 after:inset-y-0",
+                PRESS_FEEDBACK,
+                FOCUS_RING,
+              )}
+              href={`/places/${place.id}`}
+            >
+              <span
+                className={cn(
+                  "grid size-10 shrink-0 place-items-center rounded-full font-extrabold text-[16px] tabular-nums",
+                  index === 0 ? "bg-primary/10 text-accent-text" : "bg-muted text-muted-foreground",
+                )}
+              >
+                {index + 1}
+              </span>
+              <span className="min-w-0 flex-1 truncate font-bold text-[16px] leading-[22px] tracking-[-0.03em]">
+                {place.name}
+              </span>
+              <span className="shrink-0 font-semibold text-[13px] text-muted-foreground tabular-nums">
                 {place.count}번
-              </Fragment>
-            ))}
-            이에요
-          </p>
-        )}
-      </div>
+              </span>
+            </PressLink>
+          </li>
+        ))}
+      </ol>
     </Section>
   );
 }
