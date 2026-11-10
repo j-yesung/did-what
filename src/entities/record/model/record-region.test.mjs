@@ -1,4 +1,5 @@
 import {
+  formatRecordProvinceLabels,
   formatRecordRegionLabels,
   sortPrimaryRecordRegions,
   sortPrimaryRegionFirst,
@@ -123,4 +124,20 @@ test("전체 지역명이 있으면 같은 도시는 하나로 합치고, 없으
   };
 
   assert.equal(formatRecordRegionLabels(record, Number.POSITIVE_INFINITY), "서울 · 전주 · 여수시");
+});
+
+test("카드에는 시도 이름만 빗금으로 이어 적는다", () => {
+  const record = {
+    region_code: "1120000000",
+    record_regions: [
+      { region_code: "1120000000", region_label: "성수동", region_name: "서울 성동구" },
+      { region_code: "1121500000", region_label: "자양동", region_name: "서울특별시 광진구" },
+      { region_code: "2711000000", region_label: "동성로", region_name: "대구광역시 중구" },
+      { region_code: "4182000000", region_label: "가평", region_name: "경기도 가평군" },
+    ],
+  };
+
+  assert.equal(formatRecordProvinceLabels(record), "서울/대구/경기");
+  assert.equal(formatRecordProvinceLabels({ region_label: "마포구" }), "마포구");
+  assert.equal(formatRecordProvinceLabels({}), "");
 });

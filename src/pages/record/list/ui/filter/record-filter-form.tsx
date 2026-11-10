@@ -7,8 +7,9 @@ import { format, parseISO } from "date-fns";
 
 import { isRecordCategory, RECORD_CATEGORY_OPTIONS, type RecordFilters } from "@/entities/record";
 import { formatDateRange } from "@/shared/lib/date/format-date";
-import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { FOCUS_RING } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
+import { Chip } from "@/shared/ui/chip";
 
 import { RecordFilterBottomSheet } from "./record-filter-bottom-sheet";
 
@@ -27,13 +28,6 @@ export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormP
   const handleFilterApply = (nextFilters: Pick<RecordFilters, "from" | "sort" | "to">) => {
     updateFilters(nextFilters);
   };
-
-  const filterChipClassName = cn(
-    "inline-flex h-8 touch-manipulation items-center gap-1 rounded-full bg-secondary px-3 font-semibold text-secondary-foreground text-sm",
-    "after:inset-0",
-    FOCUS_RING,
-    PRESS_FEEDBACK,
-  );
 
   return (
     <div className="flex flex-col gap-3">
@@ -68,26 +62,24 @@ export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormP
       {filters.from || filters.to || filters.sort !== "recent" ? (
         <div aria-label="적용 중인 필터" className="flex flex-wrap gap-2">
           {filters.from || filters.to ? (
-            <button
+            <Chip
               aria-label={`${getPeriodChipLabel(filters)} 기간 필터 제거`}
-              className={filterChipClassName}
               onClick={() => handleFilterApply({ from: "", sort: filters.sort, to: "" })}
-              type="button"
+              tone="brand"
             >
               {getPeriodChipLabel(filters)}
               <XIcon aria-hidden="true" size={14} weight="bold" />
-            </button>
+            </Chip>
           ) : null}
           {filters.sort === "oldest" ? (
-            <button
+            <Chip
               aria-label="오래된순 정렬 필터 제거"
-              className={filterChipClassName}
               onClick={() => handleFilterApply({ from: filters.from, sort: "recent", to: filters.to })}
-              type="button"
+              tone="brand"
             >
               오래된순
               <XIcon aria-hidden="true" size={14} weight="bold" />
-            </button>
+            </Chip>
           ) : null}
         </div>
       ) : null}

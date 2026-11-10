@@ -9,6 +9,7 @@ import type { PlaceSearchResult } from "@/entities/place";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
+import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { LoadMoreButton } from "@/shared/ui/load-more-button";
 import { SearchField } from "@/shared/ui/search-field";
 
@@ -113,7 +114,11 @@ export function PlacePickerPlaces({
       ) : null}
 
       {search.data && !savedMatches.length && !uniqueSearchResults.length ? (
-        <p className="py-8 text-center text-muted-foreground text-sm">검색 결과가 없어요.</p>
+        <Empty className="py-8">
+          <EmptyHeader>
+            <EmptyTitle className="text-muted-foreground">검색 결과가 없어요</EmptyTitle>
+          </EmptyHeader>
+        </Empty>
       ) : null}
 
       {savedMatches.length || uniqueSearchResults.length ? (

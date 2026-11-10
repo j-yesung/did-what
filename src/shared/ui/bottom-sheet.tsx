@@ -169,13 +169,15 @@ function BottomSheetHeader({
   className,
   glass = false,
   ...props
-}: React.ComponentProps<"div"> & { glass?: boolean }) {
+}: React.ComponentProps<"div"> & { glass?: boolean | "below" }) {
+  const below = glass === "below";
   return (
     <div
       data-slot="bottom-sheet-header"
       className={cn(
         "flex shrink-0 flex-col gap-0.5 px-5 pt-4 pb-0 group-data-[swipe-axis=y]/bottom-sheet-popup:text-center md:text-left",
         glass && "sticky top-0 z-10",
+        below && "bg-surface",
         className,
       )}
       {...props}
@@ -183,13 +185,18 @@ function BottomSheetHeader({
       {glass ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 -bottom-16 -z-10"
+          className={cn("pointer-events-none absolute inset-x-0 -z-10", below ? "top-full h-8" : "top-0 -bottom-16")}
           data-slot="bottom-sheet-glass"
         >
           {GLASS_BLUR_LAYERS.map((layer) => (
-            <span className={cn("absolute inset-0 rounded-t-3xl", layer)} key={layer} />
+            <span className={cn("absolute inset-0", !below && "rounded-t-3xl", layer)} key={layer} />
           ))}
-          <span className="absolute inset-0 rounded-t-3xl bg-linear-to-b from-surface/50 to-transparent" />
+          <span
+            className={cn(
+              "absolute inset-0 bg-linear-to-b to-transparent",
+              below ? "from-surface" : "rounded-t-3xl from-surface/50",
+            )}
+          />
         </span>
       ) : null}
       {children}

@@ -68,7 +68,7 @@ export function HomeDashboard({ member, metOn, records, today }: HomeDashboardPr
           title="아직 돌아볼 기록이 없어요"
         />
       )}
-      {places.length > 0 && <TopPlaces places={places} today={today} />}
+      {places.length > 0 && <TopPlaces places={places} />}
       <RecordListSheet onClose={closeSheet} sheet={sheet} />
       <RegionListSheet onClose={closeRegionList} open={regionListOpen} records={records} regions={regions} />
       <RegionSheet records={records} regions={regions} />
