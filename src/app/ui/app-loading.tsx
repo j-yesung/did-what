@@ -5,18 +5,12 @@ export function AppLoading() {
       className="app-loading fixed inset-0 flex items-center justify-center bg-logo text-logo-foreground"
     >
       <div role="status">
-        <svg aria-hidden="true" className="size-28" fill="none" stroke="currentColor" viewBox="0 0 100 100">
-          <rect height={60} rx={14} strokeWidth={7} width={66} x={17} y={24} />
-          <path d="M36 15v16M64 15v16" strokeLinecap="round" strokeWidth={7} />
-          <path d="M17 42h66" strokeWidth={6} />
-          <circle
-            className="origin-center fill-logo-accent [transform-box:fill-box] motion-safe:animate-[loading-breathe_1.4s_ease-in-out_0.4s_infinite]"
-            cx={62}
-            cy={64}
-            r={9.5}
-            stroke="none"
-          />
-        </svg>
+        <p
+          aria-hidden="true"
+          className="font-extrabold text-[32px] leading-none tracking-[-0.04em] [font-family:'Apple_SD_Gothic_Neo',system-ui,sans-serif]"
+        >
+          뭐했지
+        </p>
         <span className="sr-only">뭐했지 앱을 불러오는 중</span>
       </div>
     </main>
