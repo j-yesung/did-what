@@ -53,6 +53,13 @@ export default async function Layout({ children }: { children: ReactNode }) {
     <html className={theme === "system" ? undefined : theme} data-input="pointer" lang="ko">
       <head>
         <ThemeMeta initialTheme={theme} />
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: 사용자 입력 없는 고정 스크립트
+          dangerouslySetInnerHTML={{
+            __html:
+              "document.head.insertAdjacentHTML('beforeend','<style>:root{--device-height:'+screen.height+'px}</style>')",
+          }}
+        />
         {IOS_SPLASH_SCREENS.map(({ height, scale, width }) => (
           <link
             href={`/splash/${width * scale}x${height * scale}.png`}

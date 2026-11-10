@@ -64,7 +64,7 @@ export function RecordDetailHeader({ record, titleId }: RecordDetailHeaderProps)
         </p>
       </div>
       <h2
-        className="mt-3.5 text-balance break-keep font-extrabold text-[32px] leading-[1.22] tracking-[-0.045em]"
+        className="mt-3.5 text-balance break-keep font-extrabold text-[20px] leading-[1.22] tracking-[-0.045em]"
         id={titleId}
       >
         {record.activity}

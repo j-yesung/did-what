@@ -555,7 +555,7 @@ html:has(.app-loading) {
 @media (display-mode: standalone) {
   .app-loading {
     bottom: auto;
-    height: 100lvh;
+    height: var(--device-height, 100lvh);
   }
 }
 
