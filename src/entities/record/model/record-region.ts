@@ -56,6 +56,23 @@ export const formatRecordRegionLabels = (
   return `${labels.slice(0, limit).join(" · ")} 외 ${labels.length - limit}곳`;
 };
 
+const toProvinceLabel = ({ region_label, region_name }: { region_label?: string; region_name?: string }) =>
+  region_name
+    ? (region_name.trim().split(/\s+/)[0] ?? "").replace(/(통합특별시|특별자치시|특별자치도|특별시|광역시|도)$/, "")
+    : (region_label ?? "");
+
+export const formatRecordProvinceLabels = (
+  record: Pick<RecordSummary, "record_regions" | "region_code" | "region_label" | "region_name">,
+): string =>
+  [
+    ...new Set(
+      (record.record_regions?.length
+        ? sortPrimaryRecordRegions(record.record_regions, record.region_code, record.region_label).map(toProvinceLabel)
+        : [toProvinceLabel(record)]
+      ).filter(Boolean),
+    ),
+  ].join("/");
+
 export const getRecordRegionKey = (region: { code: string; label: string }) =>
   JSON.stringify([region.code, region.label.trim()]);
 

@@ -23,14 +23,9 @@ export function RecordCard({ onDetailPrefetch, onOpen, record }: RecordCardProps
   const href = `/records/${record.id}`;
 
   return (
-    <article className="mt-2 min-w-0">
+    <article className="mt-1 min-w-0">
       <Button
-        className={cn(
-          RECORD_CARD_BUTTON_CLASS,
-          "rounded-3xl px-4.5 py-4.5",
-          PRESS_FEEDBACK,
-          "bg-muted text-foreground",
-        )}
+        className={cn(RECORD_CARD_BUTTON_CLASS, "rounded-2xl py-2.5", PRESS_FEEDBACK, "text-foreground")}
         fullWidth
         nativeButton={Boolean(onOpen)}
         onFocus={() => prefetchRecordDetail(queryClient, record.id)}

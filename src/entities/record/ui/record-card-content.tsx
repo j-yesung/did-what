@@ -1,14 +1,37 @@
 "use client";
 
-import { ChatCircleIcon } from "@phosphor-icons/react/dist/ssr";
+import {
+  AirplaneTiltIcon,
+  CakeIcon,
+  ChatCircleIcon,
+  CoffeeIcon,
+  HeartIcon,
+  NotePencilIcon,
+  UsersThreeIcon,
+} from "@phosphor-icons/react/dist/ssr";
 
-import { normalizeRecordCategories } from "../model/category";
-import { formatRecordRegionLabels } from "../model/record-region";
+import { cn } from "@/shared/lib/utils";
+
+import {
+  getRecordCategoryLabel,
+  normalizeRecordCategories,
+  RECORD_CATEGORY_FILL,
+  type RecordCategory,
+} from "../model/category";
+import { formatRecordProvinceLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
-import { RecordCategoryBadge } from "./record-badges";
 
 export const RECORD_CARD_BUTTON_CLASS =
   "h-auto min-h-16 min-w-0 justify-start whitespace-normal rounded-md px-0 py-3 text-left font-normal after:hidden [&>span]:block [&>span]:w-full";
+
+const CATEGORY_ICON: Record<RecordCategory, { Icon: typeof HeartIcon; color: string }> = {
+  anniversary: { Icon: CakeIcon, color: "text-category-anniversary" },
+  daily: { Icon: CoffeeIcon, color: "text-category-daily" },
+  date: { Icon: HeartIcon, color: "text-category-date" },
+  gathering: { Icon: UsersThreeIcon, color: "text-category-gathering" },
+  travel: { Icon: AirplaneTiltIcon, color: "text-category-travel" },
+  uncategorized: { Icon: NotePencilIcon, color: "text-category-uncategorized" },
+};
 
 type RecordCardContentProps = {
   record: Pick<
@@ -18,40 +41,42 @@ type RecordCardContentProps = {
 };
 
 export function RecordCardContent({ record }: RecordCardContentProps) {
-  const regionLabel = formatRecordRegionLabels(record, Number.POSITIVE_INFINITY);
   const categories = normalizeRecordCategories(record.category);
   const commentCount = record.record_comments?.[0]?.count ?? 0;
+  const iconCategory = categories[0] ?? "uncategorized";
+  const { Icon, color } = CATEGORY_ICON[iconCategory];
+  const detail = [formatRecordProvinceLabels(record), ...categories.map(getRecordCategoryLabel)]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <span className="block min-w-0">
-      <h3 className="min-w-0 truncate font-bold text-[18px] text-foreground leading-6 tracking-[-0.03em]">
-        {record.activity}
-      </h3>
-      {regionLabel ? (
-        <span className="mt-1 block truncate text-[12px] text-muted-foreground leading-4">{regionLabel}</span>
-      ) : null}
-      {(categories.length > 0 || commentCount > 0) && (
-        <span className="mt-1.5 flex min-w-0 items-center justify-between gap-2">
-          <span className="flex min-w-0 items-center gap-1">
-            <RecordCategoryBadge category={categories.slice(0, 2)} className="text-[10px]" />
-            {categories.length > 2 && (
-              <span
-                className="text-[10px] text-muted-foreground"
-                aria-label={`태그 ${categories.length - 2}개 더 있음`}
-              >
-                +{categories.length - 2}
+    <span className="flex min-w-0 items-center gap-3">
+      <span
+        className={cn(
+          "grid size-10 shrink-0 place-items-center rounded-full",
+          RECORD_CATEGORY_FILL[iconCategory],
+          color,
+        )}
+      >
+        <Icon className="size-5" weight="fill" aria-hidden="true" />
+      </span>
+      <span className="block min-w-0 flex-1">
+        <h3 className="min-w-0 truncate font-bold text-[16px] text-foreground leading-[22px] tracking-[-0.03em]">
+          {record.activity}
+        </h3>
+        {(detail || commentCount > 0) && (
+          <span className="mt-0.5 flex min-w-0 items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-[12px] text-muted-foreground leading-4">{detail}</span>
+            {commentCount > 0 && (
+              <span className="inline-flex shrink-0 items-center gap-0.5 text-[12px] text-muted-foreground tabular-nums">
+                <ChatCircleIcon className="size-4" aria-hidden="true" />
+                <span className="sr-only">댓글</span>
+                {commentCount}
               </span>
             )}
           </span>
-          {commentCount > 0 && (
-            <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground tabular-nums">
-              <ChatCircleIcon className="size-4" aria-hidden="true" />
-              <span className="sr-only">댓글</span>
-              {commentCount}
-            </span>
-          )}
-        </span>
-      )}
+        )}
+      </span>
     </span>
   );
 }
