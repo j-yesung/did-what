@@ -24,19 +24,10 @@ import {
 
 const PRESS_SURFACE = cn(PRESS_FEEDBACK, "after:hidden");
 
-function SectionTitle({ caption, title }: { caption?: string; title: string }) {
-  return (
-    <h2 className="flex items-baseline justify-between px-1 font-bold text-[17px] tracking-[-0.03em]">
-      {title}
-      {caption && <span className="font-medium text-[12px] text-muted-foreground">{caption}</span>}
-    </h2>
-  );
-}
-
-function Section({ children, caption, title }: { children: ReactNode; caption?: string; title: string }) {
+function Section({ children, title }: { children: ReactNode; title: string }) {
   return (
     <section className="flex flex-col gap-2.5">
-      <SectionTitle caption={caption} title={title} />
+      <h2 className="px-1 font-bold text-[17px] tracking-[-0.03em]">{title}</h2>
       {children}
     </section>
   );
@@ -157,7 +148,7 @@ export function RegionOverview({ onOpen, onOpenAll, records, regions }: RegionOv
     .sort((a, b) => b.records.length - a.records.length);
 
   return (
-    <Section caption={`${regions.length}곳 중 ${visited.length}곳`} title="우리가 다녀온 곳">
+    <Section title="우리가 다녀온 곳">
       <div className="grid grid-cols-[minmax(0,10fr)_minmax(0,11fr)] items-center gap-5 px-1">
         <DotLandMap
           className="block h-auto w-full"
@@ -165,38 +156,25 @@ export function RegionOverview({ onOpen, onOpenAll, records, regions }: RegionOv
           visits={visits}
           width={MAP_WIDTH}
         />
-        <div className="flex flex-col">
-          <ul>
-            {visited.slice(0, OVERVIEW_LIMIT).map(({ code, label, records }) => (
-              <li className="border-t first:border-t-0" key={code}>
-                <button
-                  className={cn(
-                    "flex w-full items-baseline justify-between py-2.5 text-left",
-                    PRESS_SURFACE,
-                    FOCUS_RING,
-                  )}
-                  onClick={() => onOpen(code)}
-                  type="button"
-                >
-                  <span className="font-bold text-[15px] tracking-[-0.02em]">{label}</span>
-                  <span className="font-semibold text-[13px] text-muted-foreground tabular-nums">{records.length}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button
-            className={cn(
-              "mt-1.5 self-start py-1.5 font-semibold text-[13px] text-muted-foreground",
-              PRESS_SURFACE,
-              FOCUS_RING,
-            )}
-            onClick={onOpenAll}
-            type="button"
-          >
-            전체 {regions.length}곳 보기
-          </button>
-        </div>
+        <ul>
+          {visited.slice(0, OVERVIEW_LIMIT).map(({ code, label, records }) => (
+            <li className="border-t first:border-t-0" key={code}>
+              <button
+                className={cn("flex w-full items-baseline justify-between py-2.5 text-left", PRESS_SURFACE, FOCUS_RING)}
+                onClick={() => onOpen(code)}
+                type="button"
+              >
+                <span className="font-bold text-[15px] tracking-[-0.02em]">{label}</span>
+                <span className="font-semibold text-[13px] text-muted-foreground tabular-nums">{records.length}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
+      <Button className="mt-2" fullWidth onClick={onOpenAll} size="large" variant="weak">
+        전체 {regions.length}곳 보기
+        <CaretRightIcon aria-hidden="true" data-icon="inline-end" weight="bold" />
+      </Button>
     </Section>
   );
 }
