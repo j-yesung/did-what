@@ -12,12 +12,7 @@ import {
 
 import { cn } from "@/shared/lib/utils";
 
-import {
-  getRecordCategoryLabel,
-  normalizeRecordCategories,
-  RECORD_CATEGORY_FILL,
-  type RecordCategory,
-} from "../model/category";
+import { normalizeRecordCategories, RECORD_CATEGORY_FILL, type RecordCategory } from "../model/category";
 import { formatRecordProvinceLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
 
@@ -45,9 +40,7 @@ export function RecordCardContent({ record }: RecordCardContentProps) {
   const commentCount = record.record_comments?.[0]?.count ?? 0;
   const iconCategory = categories[0] ?? "uncategorized";
   const { Icon, color } = CATEGORY_ICON[iconCategory];
-  const detail = [formatRecordProvinceLabels(record), ...categories.map(getRecordCategoryLabel)]
-    .filter(Boolean)
-    .join(" · ");
+  const detail = formatRecordProvinceLabels(record);
 
   return (
     <span className="flex min-w-0 items-center gap-3">
