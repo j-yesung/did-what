@@ -9,6 +9,7 @@ import { getRecordRegionKey } from "@/entities/record";
 import type { RegionSearchResult } from "@/entities/region/api/queries";
 import { getErrorMessage } from "@/shared/api/http/get-error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Empty, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";
 import { SearchField } from "@/shared/ui/search-field";
 
 import {
@@ -93,7 +94,11 @@ export function PlacePickerRegions({
         <p className="text-muted-foreground text-xs">입력한 검색어와 연관된 지역이에요.</p>
       ) : null}
       {regionSearch.data?.regions.length === 0 ? (
-        <p className="py-8 text-center text-muted-foreground text-sm">선택할 수 있는 지역이 없어요.</p>
+        <Empty className="py-8">
+          <EmptyHeader>
+            <EmptyTitle className="text-muted-foreground">선택할 수 있는 지역이 없어요</EmptyTitle>
+          </EmptyHeader>
+        </Empty>
       ) : null}
       {regionSearch.data?.regions.length ? (
         <ul

@@ -9,6 +9,7 @@ import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { ListRow } from "@/shared/ui/list-row";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { selectMember } from "../api/select-member";
@@ -61,26 +62,29 @@ export function MemberSelect({ currentMemberId, destination, members, onSelected
           const selected = member.id === currentMemberId;
           return (
             <li key={member.id}>
-              <button
+              <ListRow
                 aria-label={selected ? `${member.name}, 현재 사용 중` : `${member.name}으로 전환`}
                 aria-pressed={selected}
                 aria-busy={pendingMemberId === member.id || undefined}
-                className="flex min-h-20 w-full cursor-pointer items-center gap-4 rounded-2xl px-3 py-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-default"
+                className="min-h-20 rounded-2xl px-3 font-normal text-foreground after:rounded-2xl disabled:opacity-100"
                 disabled={selected || select.isPending}
                 onClick={() => select.mutate(member.id)}
-                type="button"
+                right={
+                  pendingMemberId === member.id ? (
+                    <Spinner className="size-5 text-muted-foreground" />
+                  ) : selected ? (
+                    <CheckIcon aria-hidden="true" className="text-primary" size={20} weight="bold" />
+                  ) : null
+                }
               >
-                <MemberAvatar className="size-13 rounded-2xl text-xl" memberId={member.id} name={member.name} />
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="truncate font-semibold text-base">{member.name}</span>
-                  {selected ? <span className="text-muted-foreground text-xs">현재 사용 중</span> : null}
+                <span className="flex items-center gap-4">
+                  <MemberAvatar className="size-13 rounded-2xl text-xl" memberId={member.id} name={member.name} />
+                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="truncate font-semibold text-base">{member.name}</span>
+                    {selected ? <span className="text-muted-foreground text-xs">현재 사용 중</span> : null}
+                  </span>
                 </span>
-                {pendingMemberId === member.id ? (
-                  <Spinner className="size-5 shrink-0 text-muted-foreground" />
-                ) : selected ? (
-                  <CheckIcon aria-hidden="true" className="shrink-0 text-primary" size={20} weight="bold" />
-                ) : null}
-              </button>
+              </ListRow>
             </li>
           );
         })}

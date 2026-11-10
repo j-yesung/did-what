@@ -10,6 +10,7 @@ import { DotLandMap } from "@/entities/region/ui/dot-land";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { ListHeader } from "@/shared/ui/list-header";
 import { PressLink } from "@/shared/ui/press-link";
 
 import {
@@ -43,9 +44,9 @@ function Section({ children, caption, title }: { children: ReactNode; caption?: 
 
 export function HomeGreeting({ greeting }: { greeting: string }) {
   return (
-    <header className="flex min-h-13 items-center px-1 pr-28">
-      <h1 className="font-bold text-2xl tracking-[-0.04em]">{greeting}</h1>
-    </header>
+    <div className="pr-28">
+      <ListHeader title={greeting} />
+    </div>
   );
 }
 
