@@ -49,6 +49,7 @@ const GOOEY_FRAME = {
   "--gn-frame-edge": "var(--navigation-edge)",
   "--gn-frame-shadow": "var(--navigation-shadow)",
   "--gn-frame-highlight": "light-dark(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.07))",
+  "--gn-font": "12px",
   "--gn-ink": "light-dark(#27272a, #f4f4f5)",
   "--gn-muted": "light-dark(rgba(39, 39, 42, 0.62), rgba(244, 244, 245, 0.62))",
 } as CSSProperties;
@@ -85,7 +86,7 @@ export function BottomNavigation() {
       ) : (
         <GooeyNav
           activeIndex={TABS.findIndex((tab) => tab.href === activePath)}
-          className="pointer-events-auto backdrop-blur-[3px]! backdrop-saturate-150! [&_li>*]:min-w-18 [&_li>*]:flex-col [&_li>*]:gap-0.5 [&_li>*]:py-1.5 [&_svg]:size-5!"
+          className="pointer-events-auto backdrop-blur-[3px]! backdrop-saturate-150! [&_li>*]:min-w-19 [&_li>*]:flex-col [&_li>*]:gap-0.5 [&_li>*]:py-1 [&_svg]:size-4.5!"
           items={TABS.map(({ icon: TabIcon, label }) => ({
             icon: <TabIcon aria-hidden="true" weight="fill" />,
             label,
