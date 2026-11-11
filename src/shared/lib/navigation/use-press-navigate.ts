@@ -1,6 +1,6 @@
 "use client";
 
-import { type MouseEvent, startTransition, useEffect, useRef } from "react";
+import { type MouseEvent, useEffect, useRef } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -10,7 +10,7 @@ import { waitForPressRelease } from "@/shared/lib/navigation/wait-for-press-rele
 export const isPlainLeftClick = (event: MouseEvent) =>
   !event.defaultPrevented && event.button === 0 && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
 
-export const usePressNavigate = (onNavigate?: (href: string) => void) => {
+export const usePressNavigate = () => {
   const router = useRouter();
   const pending = useRef<AbortController | null>(null);
 
@@ -43,10 +43,7 @@ export const usePressNavigate = (onNavigate?: (href: string) => void) => {
 
     void waitForPressRelease(element).then(() => {
       if (!controller.signal.aborted && element.isConnected && window.location.href === sourceHref) {
-        startTransition(() => {
-          onNavigate?.(href);
-          router.push(href);
-        });
+        router.push(href);
       }
       controller.abort();
     });
