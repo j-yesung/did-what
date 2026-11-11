@@ -2,6 +2,7 @@
 
 import {
   type CSSProperties,
+  type ElementType,
   type MouseEvent,
   type ReactNode,
   useEffect,
@@ -27,6 +28,7 @@ interface GooeyNavProps {
   initialActiveIndex?: number;
   activeIndex?: number;
   onChange?: (index: number, item: GooeyNavItem) => void;
+  link?: ElementType;
   theme?: Palette;
   color?: string;
   activeTextColor?: string;
@@ -319,6 +321,7 @@ const GooeyNav = ({
   initialActiveIndex = 0,
   activeIndex,
   onChange,
+  link: Anchor = "a",
   theme = "dark",
   color,
   activeTextColor,
@@ -894,9 +897,9 @@ const GooeyNav = ({
           data-active={index === current ? "" : undefined}
         >
           {item.href ? (
-            <a href={item.href} {...shared}>
+            <Anchor href={item.href} {...shared}>
               {content}
-            </a>
+            </Anchor>
           ) : (
             <button type="button" {...shared}>
               {content}

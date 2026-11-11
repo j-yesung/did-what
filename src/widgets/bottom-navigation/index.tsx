@@ -1,9 +1,9 @@
 "use client";
 
-import { type ComponentProps, type CSSProperties, startTransition, useOptimistic, useSyncExternalStore } from "react";
+import { type ComponentProps, type CSSProperties, useState, useSyncExternalStore } from "react";
 
 import { GearIcon, HouseIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/shared/lib/utils";
 import { GooeyNav } from "@/shared/ui/gooey-nav";
@@ -56,8 +56,8 @@ const GOOEY_FRAME = {
 
 export function BottomNavigation() {
   const pathname = usePathname() ?? "";
-  const router = useRouter();
-  const [activePath, setActivePath] = useOptimistic(pathname);
+  const [pending, setPending] = useState<{ from: string; to: string } | null>(null);
+  const activePath = pending?.from === pathname ? pending.to : pathname;
   const dark = useSyncExternalStore(subscribeDark, getDark, getServerDark);
   const simplifiedNavigation = useSyncExternalStore(
     subscribeSimplifiedNavigation,
@@ -87,16 +87,13 @@ export function BottomNavigation() {
         <GooeyNav
           activeIndex={TABS.findIndex((tab) => tab.href === activePath)}
           className="pointer-events-auto backdrop-blur-[3px]! backdrop-saturate-150! [&_li>*]:min-w-19 [&_li>*]:flex-col [&_li>*]:gap-0.5 [&_li>*]:py-1 [&_svg]:size-4.5!"
-          items={TABS.map(({ icon: TabIcon, label }) => ({
+          items={TABS.map(({ href, icon: TabIcon, label }) => ({
+            href,
             icon: <TabIcon aria-hidden="true" weight="fill" />,
             label,
           }))}
-          onChange={(index) =>
-            startTransition(() => {
-              setActivePath(TABS[index].href);
-              router.push(TABS[index].href);
-            })
-          }
+          link={TabLink}
+          onChange={(index) => setPending({ from: pathname, to: TABS[index].href })}
           animationTime={500}
           spread={38}
           style={GOOEY_FRAME}
