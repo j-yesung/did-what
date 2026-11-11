@@ -576,6 +576,7 @@ html:has(.app-loading) {
 @keyframes tab-content-enter {
   from {
     opacity: 0;
+    transform: translateY(40px);
   }
 }
 
