@@ -339,6 +339,7 @@ const GooeyNav = ({
   style,
 }: GooeyNavProps) => {
   const [innerIndex, setInnerIndex] = useState(initialActiveIndex);
+  const [glEpoch, setGlEpoch] = useState(0);
   const current = Math.min(Math.max(0, activeIndex ?? innerIndex), Math.max(0, items.length - 1));
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -383,7 +384,13 @@ const GooeyNav = ({
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const gl = canvas.getContext("webgl2", { alpha: true, premultipliedAlpha: true, antialias: false });
-    const pipeline = gl ? build(gl) : null;
+    const pipeline = gl && !gl.isContextLost() ? build(gl) : null;
+    const rebuild = (event: Event) => {
+      event.preventDefault();
+      setGlEpoch((epoch) => epoch + 1);
+    };
+    canvas.addEventListener("webglcontextlost", rebuild);
+    canvas.addEventListener("webglcontextrestored", rebuild);
     fallback.style.display = pipeline ? "none" : "block";
     canvas.style.display = pipeline ? "block" : "none";
 
@@ -627,7 +634,6 @@ const GooeyNav = ({
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      // biome-ignore lint/correctness/useHookAtTopLevel: WebGL API, not a React hook
       gl.useProgram(program);
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.enableVertexAttribArray(position);
@@ -846,6 +852,8 @@ const GooeyNav = ({
       disposed = true;
       cancelAnimationFrame(raf);
       resizeObserver.disconnect();
+      canvas.removeEventListener("webglcontextlost", rebuild);
+      canvas.removeEventListener("webglcontextrestored", rebuild);
       list.removeEventListener("pointerover", onOver);
       list.removeEventListener("pointerleave", onLeave);
       if (gl && pipeline) {
@@ -854,7 +862,7 @@ const GooeyNav = ({
       }
       engineRef.current = null;
     };
-  }, [items.length]);
+  }, [items.length, glEpoch]);
 
   useEffect(() => {
     engineRef.current?.go(current);

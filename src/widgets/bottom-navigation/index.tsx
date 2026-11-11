@@ -1,6 +1,13 @@
 "use client";
 
-import { type ComponentProps, type CSSProperties, useState, useSyncExternalStore } from "react";
+import {
+  type ComponentProps,
+  type CSSProperties,
+  createContext,
+  useContext,
+  useOptimistic,
+  useSyncExternalStore,
+} from "react";
 
 import { GearIcon, HouseIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
@@ -18,7 +25,11 @@ const TABS = [
   { href: "/settings", icon: GearIcon, label: "설정" },
 ];
 
-const TabLink = (props: ComponentProps<typeof PressLink>) => <PressLink prefetch {...props} />;
+const TabNavigateContext = createContext<(href: string) => void>(() => {});
+
+const TabLink = (props: ComponentProps<typeof PressLink>) => (
+  <PressLink onPressNavigate={useContext(TabNavigateContext)} prefetch {...props} />
+);
 
 const SIMPLIFIED_NAVIGATION_QUERY =
   "(prefers-reduced-motion: reduce), (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active)";
@@ -49,15 +60,14 @@ const GOOEY_FRAME = {
   "--gn-frame-edge": "var(--navigation-edge)",
   "--gn-frame-shadow": "var(--navigation-shadow)",
   "--gn-frame-highlight": "light-dark(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.07))",
-  "--gn-font": "12px",
+  "--gn-font": "0.75rem",
   "--gn-ink": "light-dark(#27272a, #f4f4f5)",
   "--gn-muted": "light-dark(rgba(39, 39, 42, 0.62), rgba(244, 244, 245, 0.62))",
 } as CSSProperties;
 
 export function BottomNavigation() {
   const pathname = usePathname() ?? "";
-  const [pending, setPending] = useState<{ from: string; to: string } | null>(null);
-  const activePath = pending?.from === pathname ? pending.to : pathname;
+  const [activePath, setActivePath] = useOptimistic(pathname);
   const dark = useSyncExternalStore(subscribeDark, getDark, getServerDark);
   const simplifiedNavigation = useSyncExternalStore(
     subscribeSimplifiedNavigation,
@@ -84,21 +94,22 @@ export function BottomNavigation() {
           ))}
         </nav>
       ) : (
-        <GooeyNav
-          activeIndex={TABS.findIndex((tab) => tab.href === activePath)}
-          className="pointer-events-auto backdrop-blur-[3px]! backdrop-saturate-150! [&_li>*]:min-w-19 [&_li>*]:flex-col [&_li>*]:gap-0.5 [&_li>*]:py-1 [&_svg]:size-4.5!"
-          items={TABS.map(({ href, icon: TabIcon, label }) => ({
-            href,
-            icon: <TabIcon aria-hidden="true" weight="fill" />,
-            label,
-          }))}
-          link={TabLink}
-          onChange={(index) => setPending({ from: pathname, to: TABS[index].href })}
-          animationTime={500}
-          spread={38}
-          style={GOOEY_FRAME}
-          theme={dark ? "dark" : "light"}
-        />
+        <TabNavigateContext value={setActivePath}>
+          <GooeyNav
+            activeIndex={TABS.findIndex((tab) => tab.href === activePath)}
+            className="pointer-events-auto h-(--nav-height) w-[calc(100%-32px)] max-w-82! backdrop-blur-[3px]! backdrop-saturate-150! [&>div]:size-full [&_li>*]:min-w-0 [&_li>*]:flex-1 [&_li>*]:flex-col [&_li>*]:justify-center [&_li>*]:gap-0.5 [&_li>*]:p-0 [&_li]:min-w-0 [&_li]:flex-1 [&_svg]:size-4.5! [&_ul]:size-full [&_ul]:flex-nowrap"
+            items={TABS.map(({ href, icon: TabIcon, label }) => ({
+              href,
+              icon: <TabIcon aria-hidden="true" weight="fill" />,
+              label,
+            }))}
+            link={TabLink}
+            animationTime={500}
+            spread={38}
+            style={GOOEY_FRAME}
+            theme={dark ? "dark" : "light"}
+          />
+        </TabNavigateContext>
       )}
     </div>
   );
