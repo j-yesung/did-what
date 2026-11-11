@@ -4,6 +4,7 @@ import { Toggle } from "@base-ui/react/toggle";
 import { ToggleGroup } from "@base-ui/react/toggle-group";
 import { XIcon } from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
+import { MotionConfig, motion } from "motion/react";
 
 import { isRecordCategory, RECORD_CATEGORY_OPTIONS, type RecordFilters } from "@/entities/record";
 import { formatDateRange } from "@/shared/lib/date/format-date";
@@ -35,6 +36,7 @@ export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormP
         <ToggleGroup
           aria-label="기록 카테고리"
           className="flex min-w-0 flex-1 gap-4 overflow-x-auto px-1"
+          render={<motion.div layoutScroll />}
           onValueChange={(values) => {
             if (values.length === 0) return;
             const category = values[0];
@@ -45,7 +47,7 @@ export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormP
           {[{ label: "전체", value: "all" }, ...RECORD_CATEGORY_OPTIONS].map((option) => (
             <Toggle
               className={cn(
-                "h-11 shrink-0 border-transparent border-b-2 px-1 text-[13px] text-muted-foreground data-pressed:border-foreground data-pressed:font-semibold data-pressed:text-foreground",
+                "relative h-11 shrink-0 px-1 text-[13px] text-muted-foreground data-pressed:font-semibold data-pressed:text-foreground",
                 FOCUS_RING,
               )}
               key={option.value}
@@ -53,6 +55,15 @@ export function RecordFilterForm({ filters, onFiltersChange }: RecordFilterFormP
               value={option.value}
             >
               {option.label}
+              {option.value === (filters.category || "all") ? (
+                <MotionConfig reducedMotion="user">
+                  <motion.span
+                    className="absolute inset-x-0 bottom-0 h-0.5 bg-foreground"
+                    layoutId="record-category-underline"
+                    transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
+                  />
+                </MotionConfig>
+              ) : null}
             </Toggle>
           ))}
         </ToggleGroup>

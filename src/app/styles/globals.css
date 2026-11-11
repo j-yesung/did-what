@@ -573,6 +573,13 @@ html:has(.app-loading) {
   }
 }
 
+@keyframes list-append-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 @keyframes tab-content-enter {
   from {
     opacity: 0;

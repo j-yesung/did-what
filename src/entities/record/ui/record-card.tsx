@@ -13,17 +13,18 @@ import { RECORD_CARD_BUTTON_CLASS, RecordCardContent } from "./record-card-conte
 import { RecordDetailLink } from "./record-detail-link";
 
 type RecordCardProps = {
+  className?: string;
   onDetailPrefetch?: (recordId: string) => void;
   onOpen?: (recordId: string) => void;
   record: ComponentProps<typeof RecordCardContent>["record"] & { id: string };
 };
 
-export function RecordCard({ onDetailPrefetch, onOpen, record }: RecordCardProps) {
+export function RecordCard({ className, onDetailPrefetch, onOpen, record }: RecordCardProps) {
   const queryClient = useQueryClient();
   const href = `/records/${record.id}`;
 
   return (
-    <article className="mt-1 min-w-0">
+    <article className={cn("mt-1 min-w-0", className)}>
       <Button
         className={cn(RECORD_CARD_BUTTON_CLASS, "rounded-2xl py-2.5", PRESS_FEEDBACK, "text-foreground")}
         fullWidth
