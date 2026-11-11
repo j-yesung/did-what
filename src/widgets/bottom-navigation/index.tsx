@@ -1,12 +1,12 @@
 "use client";
 
-import { type ComponentProps, useSyncExternalStore } from "react";
+import { type ComponentProps, type CSSProperties, startTransition, useOptimistic, useSyncExternalStore } from "react";
 
 import { GearIcon, HouseIcon, MapPinIcon, NotepadIcon } from "@phosphor-icons/react";
-import { TabBar } from "glisse";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { cn } from "@/shared/lib/utils";
+import { GooeyNav } from "@/shared/ui/gooey-nav";
 import { PressLink } from "@/shared/ui/press-link";
 
 import "./navigation.css";
@@ -31,8 +31,33 @@ const subscribeSimplifiedNavigation = (onChange: () => void) => {
 const getSimplifiedNavigation = () => window.matchMedia(SIMPLIFIED_NAVIGATION_QUERY).matches;
 const getServerSimplifiedNavigation = () => false;
 
+const subscribeDark = (onChange: () => void) => {
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributeFilter: ["class"] });
+  media.addEventListener("change", onChange);
+  return () => {
+    observer.disconnect();
+    media.removeEventListener("change", onChange);
+  };
+};
+const getDark = () => getComputedStyle(document.documentElement).colorScheme === "dark";
+const getServerDark = () => false;
+
+const GOOEY_FRAME = {
+  "--gn-frame": "var(--tab-bar-glass)",
+  "--gn-frame-edge": "var(--navigation-edge)",
+  "--gn-frame-shadow": "var(--navigation-shadow)",
+  "--gn-frame-highlight": "light-dark(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.07))",
+  "--gn-ink": "light-dark(#27272a, #f4f4f5)",
+  "--gn-muted": "light-dark(rgba(39, 39, 42, 0.62), rgba(244, 244, 245, 0.62))",
+} as CSSProperties;
+
 export function BottomNavigation() {
   const pathname = usePathname() ?? "";
+  const router = useRouter();
+  const [activePath, setActivePath] = useOptimistic(pathname);
+  const dark = useSyncExternalStore(subscribeDark, getDark, getServerDark);
   const simplifiedNavigation = useSyncExternalStore(
     subscribeSimplifiedNavigation,
     getSimplifiedNavigation,
@@ -41,36 +66,40 @@ export function BottomNavigation() {
 
   if (!TABS.some((tab) => tab.href === pathname)) return null;
 
-  const items = TABS.map(({ href, icon: TabIcon, label }) => ({
-    href,
-    value: href,
-    label,
-    icon: <TabIcon aria-hidden="true" weight="fill" />,
-  }));
-
   return (
     <div
       className={cn(
-        "pointer-events-none fixed inset-x-0 z-40 pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]",
+        "pointer-events-none fixed inset-x-0 z-40 flex justify-center pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]",
         "bottom-(--nav-bottom-offset)",
       )}
     >
       {simplifiedNavigation ? (
         <nav aria-label="주요 메뉴" className="bottom-navigation-static">
-          {items.map(({ href, icon, label }) => (
+          {TABS.map(({ href, icon: TabIcon, label }) => (
             <TabLink aria-current={href === pathname ? "page" : undefined} href={href} key={href}>
-              {icon}
+              <TabIcon aria-hidden="true" weight="fill" />
               <span>{label}</span>
             </TabLink>
           ))}
         </nav>
       ) : (
-        <TabBar
-          aria-label="주요 메뉴"
-          className="bottom-navigation-glisse"
-          items={items}
-          link={TabLink}
-          value={pathname}
+        <GooeyNav
+          activeIndex={TABS.findIndex((tab) => tab.href === activePath)}
+          className="pointer-events-auto backdrop-blur-[3px]! backdrop-saturate-150! [&_li>*]:min-w-18 [&_li>*]:flex-col [&_li>*]:gap-0.5 [&_li>*]:py-1.5 [&_svg]:size-5!"
+          items={TABS.map(({ icon: TabIcon, label }) => ({
+            icon: <TabIcon aria-hidden="true" weight="fill" />,
+            label,
+          }))}
+          onChange={(index) =>
+            startTransition(() => {
+              setActivePath(TABS[index].href);
+              router.push(TABS[index].href);
+            })
+          }
+          animationTime={500}
+          spread={38}
+          style={GOOEY_FRAME}
+          theme={dark ? "dark" : "light"}
         />
       )}
     </div>
