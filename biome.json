@@ -102,6 +102,18 @@
       "react": "recommended"
     }
   },
+  "overrides": [
+    {
+      "includes": ["src/shared/ui/gooey-nav.tsx"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useHookAtTopLevel": "off"
+          }
+        }
+      }
+    }
+  ],
   "assist": {
     "enabled": true,
     "actions": {

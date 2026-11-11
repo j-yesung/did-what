@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useLayoutEffect, useRef } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { usePathname } from "next/navigation";
 
@@ -13,9 +13,16 @@ type PageShellProps = {
   withBottomNavigation?: boolean;
 };
 
+let clientNavigated = false;
+
 export function PageShell({ children, className, withBottomNavigation = false }: PageShellProps) {
   const pathname = usePathname();
   const mainRef = useRef<HTMLElement>(null);
+  const [entersByNavigation] = useState(() => clientNavigated);
+
+  useEffect(() => {
+    clientNavigated = true;
+  }, []);
 
   useLayoutEffect(() => {
     const main = mainRef.current;
@@ -34,9 +41,10 @@ export function PageShell({ children, className, withBottomNavigation = false }:
       className={cn(
         "mx-auto flex min-h-(--screen-height) w-full max-w-(--app-width) flex-col gap-(--page-gap) bg-background px-5 pt-(--page-top)",
         withBottomNavigation ? "pb-(--nav-clearance)" : "pb-[calc(24px+env(safe-area-inset-bottom))]",
-        withBottomNavigation
-          ? "motion-safe:animate-[tab-content-enter_160ms_cubic-bezier(0.2,0,0,1)_both]"
-          : "motion-safe:animate-[screen-content-enter_280ms_cubic-bezier(0.2,0,0,1)_both]",
+        entersByNavigation &&
+          (withBottomNavigation
+            ? "motion-safe:animate-[tab-content-enter_360ms_cubic-bezier(0.2,0,0,1)_both]"
+            : "motion-safe:animate-[screen-content-enter_280ms_cubic-bezier(0.2,0,0,1)_both]"),
         className,
       )}
     >

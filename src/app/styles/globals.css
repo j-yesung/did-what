@@ -167,7 +167,7 @@
   --app-width: 430px;
 
   /* 플로팅 내비게이션과 콘텐츠 사이의 안전 여백. iOS 홈 인디케이터 영역도 포함한다. */
-  --nav-height: max(64px, 4rem);
+  --nav-height: max(52px, 3.25rem);
   --nav-bottom-gap: 8px;
   --nav-bottom-offset: max(var(--nav-bottom-gap), env(safe-area-inset-bottom));
   --nav-content-gap: 16px;
@@ -573,9 +573,17 @@ html:has(.app-loading) {
   }
 }
 
+@keyframes list-append-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 @keyframes tab-content-enter {
   from {
     opacity: 0;
+    transform: translateY(40px);
   }
 }
 
@@ -668,11 +676,5 @@ body:has([data-record-search="open"]) .hide-during-record-search {
     --category-anniversary: var(--violet-600);
     --category-gathering: var(--teal-600);
     --category-uncategorized: var(--neutral-500);
-  }
-}
-
-@media (orientation: landscape) and (max-height: 500px) {
-  :root {
-    --nav-height: max(52px, 3.25rem);
   }
 }
