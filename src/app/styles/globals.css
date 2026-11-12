@@ -547,11 +547,6 @@
   }
 }
 
-/* 시작 화면 이미지처럼 화면 전체를 덮고, 바탕도 같은 색으로 맞춰 라이트 테마의 흰 바탕이 비치지 않게 한다. */
-html:has(.app-loading) {
-  background: var(--fill-logo);
-}
-
 @media (display-mode: standalone) {
   .app-loading {
     bottom: auto;
