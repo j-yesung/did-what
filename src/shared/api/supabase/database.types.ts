@@ -184,6 +184,20 @@ export type Database = {
         };
         Relationships: [];
       };
+      daily_push_deliveries: {
+        Row: { reminder_date: string; subscription_id: string };
+        Insert: { reminder_date: string; subscription_id: string };
+        Update: { reminder_date?: string; subscription_id?: string };
+        Relationships: [
+          {
+            foreignKeyName: "daily_push_deliveries_subscription_id_fkey";
+            columns: ["subscription_id"];
+            isOneToOne: false;
+            referencedRelation: "push_subscriptions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       push_subscriptions: {
         Row: {
           auth_key: string;

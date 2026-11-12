@@ -1,6 +1,7 @@
 import { normalizeRecordCategories } from "@/entities/record/model/category";
 import type { RecordSummary } from "@/entities/record/model/types";
 import { getRegionCode, REGIONS, type RegionCode } from "@/entities/region/model/region";
+import { callName } from "@/shared/lib/text/call-name";
 
 export type HomePlace = { id: string; latitude: number; longitude: number; name: string };
 
@@ -31,16 +32,6 @@ const ANNIVERSARY_HORIZON_DAYS = 30;
 const TOP_PLACE_COUNT = 3;
 
 const toUtc = (date: string) => Date.parse(`${date}T00:00:00Z`);
-
-const HANGUL_START = 0xac00;
-const HANGUL_END = 0xd7a3;
-
-const callName = (name: string) => {
-  const trimmed = name.trim();
-  const last = trimmed.charCodeAt(trimmed.length - 1);
-  if (last < HANGUL_START || last > HANGUL_END) return trimmed;
-  return `${trimmed}${(last - HANGUL_START) % 28 ? "아" : "야"}`;
-};
 
 export const getGreeting = (name: string) => `어디 다녀왔어, ${callName(name)}?`;
 

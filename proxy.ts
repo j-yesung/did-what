@@ -6,6 +6,10 @@ import { RETURN_TO_HEADER } from "@/shared/lib/navigation/return-to";
 
 export async function proxy(request: NextRequest) {
   request.headers.set(RETURN_TO_HEADER, `${request.nextUrl.pathname}${request.nextUrl.search}`);
+  // 예약 작업은 사용자 세션 대신 route handler에서 비밀키로 인증한다.
+  if (request.nextUrl.pathname === "/api/cron/daily-reminder") {
+    return NextResponse.next({ request });
+  }
   if (request.nextUrl.pathname === "/app-start") {
     return NextResponse.next({ request });
   }

@@ -1,42 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import webpush from "web-push";
 
 import { getRecordNotificationHref } from "@/entities/notification/model/notification-page";
 import type { Database } from "@/shared/api/supabase/database.types";
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
-
-/**
- * VAPID 키가 없거나 형태가 잘못되면 setVapidDetails가 예외를 던진다.
- * 알림 설정 실수로 기록 저장까지 막히면 안 되므로 여기서 끊고, 알림만 조용히 꺼진 상태로 둔다.
- */
-const configured = (() => {
-  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-    // biome-ignore lint/suspicious/noConsole: 운영 환경의 VAPID 설정 누락을 기록한다.
-    console.warn("[push] VAPID 키가 없어 알림을 보내지 않습니다.", {
-      hasPrivateKey: Boolean(VAPID_PRIVATE_KEY),
-      hasPublicKey: Boolean(VAPID_PUBLIC_KEY),
-    });
-    return false;
-  }
-
-  try {
-    webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT ?? "mailto:noreply@example.com",
-      VAPID_PUBLIC_KEY,
-      VAPID_PRIVATE_KEY,
-    );
-    return true;
-  } catch (error) {
-    // biome-ignore lint/suspicious/noConsole: 운영 환경의 잘못된 VAPID 설정을 기록한다.
-    console.warn("[push] VAPID 설정이 잘못돼 알림을 보내지 않습니다.", error);
-    return false;
-  }
-})();
-
-/** 구독이 만료되거나 기기에서 앱이 지워졌을 때 푸시 서비스가 돌려주는 상태 코드. */
-const GONE_STATUS_CODES = new Set([404, 410]);
+import { isExpiredPushError, isPushConfigured, sendPush } from "./send-push";
 
 type SendMemberPushInput = {
   ownerId: string;
@@ -53,7 +20,7 @@ type SendMemberPushInput = {
  * 작성 구성원의 모든 기기와 비활성 구성원의 기기는 발송 대상에서 제외한다.
  */
 const sendMemberPush = async ({ ownerId, senderMemberId, supabase, tag, title, url }: SendMemberPushInput) => {
-  if (!configured) return;
+  if (!isPushConfigured) return;
 
   const { data: subscriptions } = await supabase
     .from("push_subscriptions")
@@ -64,23 +31,16 @@ const sendMemberPush = async ({ ownerId, senderMemberId, supabase, tag, title, u
 
   if (!subscriptions?.length) return;
 
-  const payload = JSON.stringify({
-    tag,
-    title,
-    url,
-  });
+  const payload = { tag, title, url };
 
   const results = await Promise.all(
     subscriptions.map(async (target) => {
       try {
-        await webpush.sendNotification(
-          { endpoint: target.endpoint, keys: { auth: target.auth_key, p256dh: target.p256dh } },
-          payload,
-        );
+        await sendPush(target, payload);
         return null;
       } catch (error) {
         const statusCode = (error as { statusCode?: number }).statusCode;
-        if (statusCode && GONE_STATUS_CODES.has(statusCode)) return target.endpoint;
+        if (isExpiredPushError(error)) return target.endpoint;
 
         // 만료 말고 다른 이유로 실패하면 흔적이 없어 원인을 찾을 수 없다. 키 불일치(403)가 대표적이다.
         // biome-ignore lint/suspicious/noConsole: 만료 이외의 푸시 발송 실패를 운영 로그로 남긴다.
