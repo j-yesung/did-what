@@ -2,7 +2,7 @@ export function AppLoading() {
   return (
     <main
       aria-busy="true"
-      className="app-loading fixed inset-0 flex items-center justify-center bg-logo text-logo-foreground"
+      className="app-loading fixed inset-0 flex items-center justify-center bg-background text-foreground"
     >
       <div role="status">
         <p
