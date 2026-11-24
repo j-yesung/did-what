@@ -95,10 +95,10 @@ test("문래 검색의 표시명은 저장 입력 검증과 수정 화면 복원
   assert.equal(restored.regions[0].fullName, "서울특별시 영등포구");
 });
 
-test("수정 화면에서 복수 카테고리를 모두 복원하고 미분류는 선택하지 않는다", () => {
+test("수정 화면에서 카테고리를 복원하고 미분류는 선택하지 않는다", () => {
   const record = {
     activity: "기념일 여행",
-    category: ["anniversary", "travel"],
+    category: ["anniversary"],
     memo: null,
     weather: "sunny",
     recorded_at: "2026-10-24",
@@ -106,6 +106,6 @@ test("수정 화면에서 복수 카테고리를 모두 복원하고 미분류�
     record_places: [],
     record_regions: [],
   };
-  assert.deepEqual(toRecordEditValues(record).category, ["anniversary", "travel"]);
+  assert.deepEqual(toRecordEditValues(record).category, ["anniversary"]);
   assert.deepEqual(toRecordEditValues({ ...record, category: [] }).category, []);
 });

@@ -35,22 +35,11 @@ test("이름이 다른 동일 지역 항목도 10개 상한을 적용한다", ()
   );
 });
 
-test("복수 카테고리를 저장하고 중복은 제거하며 미선택은 빈 배열로 저장한다", () => {
+test("카테고리는 하나만 저장하고 미선택은 빈 배열로 저장한다", () => {
   const input = { ...values, regions: JSON.stringify([region("마포구")]) };
-  assert.deepEqual(validateRecordInput({ ...input, category: '["date","travel","date"]' }).data.category, [
-    "date",
-    "travel",
-  ]);
+  assert.deepEqual(validateRecordInput({ ...input, category: '["date"]' }).data.category, ["date"]);
   assert.deepEqual(validateRecordInput({ ...input, category: "[]" }).data.category, []);
-  for (const category of [
-    "daily",
-    '"date"',
-    "{}",
-    "null",
-    '["date","invalid"]',
-    "[null]",
-    JSON.stringify(Array(6).fill("date")),
-  ]) {
+  for (const category of ["daily", '"date"', "{}", "null", '["date","invalid"]', "[null]", '["date","travel"]']) {
     assert.ok(validateRecordInput({ ...input, category }).fieldErrors.category, category);
   }
 });

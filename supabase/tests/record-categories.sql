@@ -12,23 +12,23 @@ BEGIN
   SET LOCAL ROLE authenticated;
 
   record_id := public.create_owned_record_with_places(
-    current_date, NULL, regions, '복수 카테고리 테스트', '', '[]'::jsonb, 'sunny', member_id, ARRAY['date', 'travel']
+    current_date, NULL, regions, '카테고리 테스트', '', '[]'::jsonb, 'sunny', member_id, ARRAY['travel']
   );
   IF record_id IS NULL OR NOT EXISTS (
-    SELECT 1 FROM public.records WHERE id = record_id AND category = ARRAY['date', 'travel']
+    SELECT 1 FROM public.records WHERE id = record_id AND category = ARRAY['travel']
   ) THEN
-    RAISE EXCEPTION '복수 카테고리 생성 실패';
+    RAISE EXCEPTION '카테고리 생성 실패';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.records WHERE id = record_id AND category @> ARRAY['travel']) THEN
     RAISE EXCEPTION '카테고리 포함 필터 실패';
   END IF;
 
-  IF NOT public.update_owned_record_with_places(record_id, current_date, NULL, regions, '수정 테스트', '', '[]'::jsonb, 'sunny', ARRAY['anniversary', 'date'])
+  IF NOT public.update_owned_record_with_places(record_id, current_date, NULL, regions, '수정 테스트', '', '[]'::jsonb, 'sunny', ARRAY['anniversary'])
   THEN
-    RAISE EXCEPTION '복수 카테고리 수정 호출 실패';
+    RAISE EXCEPTION '카테고리 수정 호출 실패';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.records WHERE id = record_id AND category = ARRAY['anniversary', 'date']) THEN
-    RAISE EXCEPTION '복수 카테고리 수정 실패';
+  IF NOT EXISTS (SELECT 1 FROM public.records WHERE id = record_id AND category = ARRAY['anniversary']) THEN
+    RAISE EXCEPTION '카테고리 수정 실패';
   END IF;
   IF NOT public.update_owned_record_with_places(record_id, current_date, NULL, regions, '미분류 테스트', '', '[]'::jsonb, 'sunny', ARRAY[]::text[])
   THEN
@@ -41,6 +41,11 @@ BEGIN
   BEGIN
     UPDATE public.records SET category = ARRAY['invalid'] WHERE id = record_id;
     RAISE EXCEPTION '알 수 없는 카테고리를 허용함';
+  EXCEPTION WHEN check_violation THEN NULL;
+  END;
+  BEGIN
+    UPDATE public.records SET category = ARRAY['date', 'travel'] WHERE id = record_id;
+    RAISE EXCEPTION '복수 카테고리를 허용함';
   EXCEPTION WHEN check_violation THEN NULL;
   END;
   BEGIN

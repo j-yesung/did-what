@@ -329,10 +329,10 @@ test("조회 순서가 바뀐 기록의 메모만 수정해도 대표 표시명�
   assert.equal(after.memo, "메모만 수정");
 });
 
-test("복수 카테고리는 각 카테고리 필터에서 조회되고 수정 후 미분류로 바꿀 수 있다", () => {
+test("카테고리는 그 카테고리 필터에서 조회되고 수정 후 미분류로 바꿀 수 있다", () => {
   const input = {
     activity: "둘이서 떠난 여행",
-    category: ["date", "travel"],
+    category: ["travel"],
     recordedAt: TODAY,
     weather: "sunny",
     places: [],

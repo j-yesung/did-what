@@ -16,7 +16,7 @@ export const isRecordCategory = (value: unknown): value is RecordCategory => {
 };
 
 export const isRecordCategories = (value: unknown): value is RecordCategory[] => {
-  return Array.isArray(value) && value.length <= RECORD_CATEGORY_OPTIONS.length - 1 && value.every(isRecordCategory);
+  return Array.isArray(value) && value.length <= 1 && value.every(isRecordCategory);
 };
 
 export const normalizeRecordCategories = (value: unknown): RecordCategory[] => {

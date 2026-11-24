@@ -16,8 +16,8 @@ test("카테고리 복원은 선택 순서를 유지하고 중복·미분류·�
 
 test("카테고리 입력은 배열만 허용하며 선택하지 않거나 5개를 모두 고를 수 있다", () => {
   assert.equal(isRecordCategories([]), true);
-  assert.equal(isRecordCategories(["daily", "date", "travel", "anniversary", "gathering"]), true);
-  for (const value of [null, "date", {}, ["unknown"], [null], Array(6).fill("date")]) {
+  assert.equal(isRecordCategories(["daily"]), true);
+  for (const value of [null, "date", {}, ["unknown"], [null], ["daily", "date"]]) {
     assert.equal(isRecordCategories(value), false);
   }
 });

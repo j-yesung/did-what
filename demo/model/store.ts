@@ -23,7 +23,10 @@ const load = (): DemoState => {
     if (saved?.version === DEMO_STATE_VERSION) {
       return {
         ...saved,
-        records: saved.records.map((record) => ({ ...record, category: normalizeRecordCategories(record.category) })),
+        records: saved.records.map((record) => ({
+          ...record,
+          category: normalizeRecordCategories(record.category).slice(0, 1),
+        })),
       };
     }
   } catch {
