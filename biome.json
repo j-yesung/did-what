@@ -112,9 +112,7 @@
             "groups": [
               ["react", "react-*", "react-*/**"],
               ":BLANK_LINE:",
-              [":PACKAGE:", "!@aixera/**", "!@/**"],
-              ":BLANK_LINE:",
-              "@aixera/**",
+              [":PACKAGE:", "!@/**"],
               ":BLANK_LINE:",
               "@/**",
               ":BLANK_LINE:",
