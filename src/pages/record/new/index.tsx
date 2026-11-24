@@ -32,7 +32,7 @@ export async function RecordNewPage({ searchParams }: RecordNewPageProps) {
         action={createRecord}
         initialValues={createRecordFormDraft(defaultRecordedAt, defaultPlace ?? undefined)}
         mode="create"
-        returnTo={returnHref}
+        fallbackHref="/"
         savedTo={returnHref}
         searchRegionName={searchRegion?.name}
       />

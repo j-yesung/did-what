@@ -50,12 +50,12 @@ type RecordFormProps = {
   action: (formData: FormData) => Promise<RecordFormState>;
   initialValues: RecordFormDraft;
   mode: "create" | "edit";
-  returnTo: string;
+  fallbackHref: string;
   savedTo: string;
   searchRegionName?: string;
 };
 
-export function RecordForm({ action, initialValues, mode, returnTo, savedTo, searchRegionName }: RecordFormProps) {
+export function RecordForm({ action, fallbackHref, initialValues, mode, savedTo, searchRegionName }: RecordFormProps) {
   const copy = COPY[mode];
   const [draft, setDraft] = useState(initialValues);
   const [dirty, setDirty] = useState(false);
@@ -88,7 +88,7 @@ export function RecordForm({ action, initialValues, mode, returnTo, savedTo, sea
   const busy = save.isPending || save.data?.status === "success";
   const navigation = useLeaveGuard({
     busy,
-    fallbackHref: returnTo,
+    fallbackHref,
     isDirty: () => dirty || pickerDraft.selectedPlaces.size > 0 || pickerDraft.selectedRegions.size > 0,
   });
 

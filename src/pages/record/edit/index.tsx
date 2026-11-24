@@ -26,8 +26,6 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
   const { supabase, user } = await requireUser();
   const queryClient = createQueryClient();
 
-  // 저장한 장소는 '내 장소에서 추가'에만 쓴다. 폼이 그걸 기다리며 가려지지 않게 함께 받아 두고,
-  // 실패하면 화면에서 다시 받는다(prefetchQuery는 실패를 던지지 않는다).
   const [recordResult] = await Promise.all([
     getRecord(recordId, user.id),
     queryClient.prefetchQuery({ ...placesQueryOptions, queryFn: () => fetchPlaces(supabase) }),
@@ -56,7 +54,7 @@ export async function RecordEditPage({ params }: RecordEditPageProps) {
           action={updateRecord.bind(null, recordId)}
           initialValues={toRecordEditValues(record)}
           mode="edit"
-          returnTo={`/records/${recordId}`}
+          fallbackHref="/"
           savedTo={`/records/${recordId}`}
         />
       </HydrationBoundary>

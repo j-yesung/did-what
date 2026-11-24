@@ -32,7 +32,6 @@ type DemoRoute =
   | { group: "member"; name: "memberSelect" }
   | { group: "none"; name: "notFound" };
 
-/** app/ 폴더의 실제 경로 구조와 같게 맞춘다. 경로는 /demo/app을 뗀 앱 경로다. */
 export const matchDemoRoute = (pathname: string): DemoRoute => {
   const [first, second, third, ...rest] = pathname.split("/").filter(Boolean);
   if (rest.length) return { group: "none", name: "notFound" };
@@ -49,7 +48,6 @@ export const matchDemoRoute = (pathname: string): DemoRoute => {
   return { group: "none", name: "notFound" };
 };
 
-/** 실제 앱의 레이아웃이 하던 구성원 확인을 체험 데이터로 똑같이 한다. 체험은 늘 로그인한 계정으로 시작한다. */
 const getRedirect = (route: DemoRoute, state: DemoState, currentHref: string) => {
   if (route.group !== "app") return null;
   return getCurrentDemoMember(state) ? null : withReturnTo("/members/select", currentHref);
@@ -64,10 +62,6 @@ export function DemoApp() {
   const route = matchDemoRoute(pathname);
   const redirect = getRedirect(route, state, `${pathname}${search ? `?${search}` : ""}`);
   const member = getCurrentDemoMember(state);
-  /**
-   * 실제 앱은 이동할 때마다 화면을 새로 그린다. 이동이 남긴 값을 기준으로 다시 그리고,
-   * 달력 월처럼 주소만 바꾸는 기록(이 값이 없거나 이어받은 항목)에서는 그대로 둔다.
-   */
   const navigationKey = useRef("");
   const historyKey = window.history.state?.[DEMO_NAVIGATION_KEY];
   if (typeof historyKey === "string") navigationKey.current = historyKey;

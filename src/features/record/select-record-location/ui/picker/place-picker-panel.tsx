@@ -39,7 +39,6 @@ type PlacePickerPanelProps = {
   savedPlaces: PlaceOption[];
 };
 
-/** 좌표 없이 전국에서 찾는 칩. 지역 칩과 같은 목록에 들어가므로 코드 자리를 하나 비워 둔다. */
 const NATIONWIDE_CODE = "";
 
 export function PlacePickerPanel({

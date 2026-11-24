@@ -38,7 +38,6 @@ export const getRecordCategoryLabel = (category: RecordCategory) => {
   return RECORD_CATEGORY_OPTIONS.find((option) => option.value === category)?.label ?? "미분류";
 };
 
-/** Tailwind는 소스에 적힌 클래스만 찾으므로 조합하지 않고 그대로 적는다. */
 export const RECORD_CATEGORY_DOT: Record<RecordCategory, string> = {
   anniversary: "bg-category-anniversary",
   daily: "bg-category-daily",

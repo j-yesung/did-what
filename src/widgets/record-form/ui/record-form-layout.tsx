@@ -18,7 +18,6 @@ export function RecordFormLayout({ backDisabled, children, footer, onBack, title
   const keyboardInset = useKeyboardInset();
 
   return (
-    // 키보드가 올라오면 그만큼 아래를 비워 하단 버튼이 키보드 바로 위에 붙게 한다.
     <div
       className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] bg-background"
       style={keyboardInset > 0 ? { paddingBottom: keyboardInset } : undefined}
@@ -36,7 +35,6 @@ export function RecordFormLayout({ backDisabled, children, footer, onBack, title
       <footer
         className={cn(
           "bg-background px-5 pt-3",
-          // 키보드 위에서는 홈 인디케이터 여백이 필요 없다.
           keyboardInset > 0 ? "pb-3" : "pb-[max(--spacing(4),env(safe-area-inset-bottom))]",
         )}
       >

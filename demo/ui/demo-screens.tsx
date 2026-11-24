@@ -42,12 +42,6 @@ import { useDemo } from "./demo-context";
 
 type Member = { id: string; name: string };
 
-/*
- * 각 화면은 app/ 의 서버 page·layout이 하던 조합을 샘플 데이터로 다시 맞춘 것이다.
- * 화면 안의 컴포넌트는 실제 앱 것을 그대로 쓰고, 서버에서 받던 값만 체험 데이터에서 넘긴다.
- */
-
-/** app/(app)/layout.tsx와 같은 뼈대. */
 export function DemoAppFrame({ children, member }: { children: ReactNode; member: Member }) {
   return (
     <RecordSearchProvider>
@@ -60,7 +54,6 @@ export function DemoAppFrame({ children, member }: { children: ReactNode; member
   );
 }
 
-/** pages/home의 HomePage. 기록과 만난 날은 체험 데이터에서 받는다. */
 export function DemoHomeScreen({ member }: { member: Member }) {
   const state = useDemoState();
   const records = useMemo(() => getDemoHomeRecords(state), [state]);
@@ -68,7 +61,6 @@ export function DemoHomeScreen({ member }: { member: Member }) {
   return <HomeDashboard member={member} metOn={state.metOn} records={records} today={state.today} />;
 }
 
-/** pages/record/list의 RecordsPage. 보기 선택은 쿠키 대신 체험 데이터에 둔다. */
 export function DemoRecordsScreen() {
   const searchParams = useSearchParams();
   const { recordView } = useDemoState();
@@ -77,7 +69,6 @@ export function DemoRecordsScreen() {
   return <RecordsContent view={view} />;
 }
 
-/** pages/record/new. 기본 날짜는 샘플 데이터의 기준일(오늘)이다. */
 export function DemoRecordNewScreen() {
   const searchParams = useSearchParams();
   const { createRecord } = useDemo();
@@ -98,14 +89,13 @@ export function DemoRecordNewScreen() {
 
     return {
       initialValues: createRecordFormDraft(defaultRecordedAt, place ? toExistingRecordLocationPlace(place) : undefined),
-      returnTo: returnHref,
       savedTo: returnHref,
     };
   });
 
   return (
     <PageShell className="h-(--screen-height) min-h-0 gap-0 overflow-hidden px-0 pt-0 pb-0">
-      <RecordForm action={createRecord} mode="create" {...props} />
+      <RecordForm action={createRecord} fallbackHref={toDemoHref("/")} mode="create" {...props} />
     </PageShell>
   );
 }
@@ -126,7 +116,6 @@ function DemoRecordDetailRedirect({ recordId }: { recordId: string }) {
   return <AppLoading />;
 }
 
-/** pages/record/edit. 초기값을 만드는 규칙도 실제 화면과 같다. */
 export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
   const { updateRecord } = useDemo();
   const [record] = useState(() => {
@@ -145,14 +134,13 @@ export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
         action={(formData) => updateRecord(recordId, formData)}
         initialValues={toRecordEditValues(record)}
         mode="edit"
-        returnTo={backHref}
+        fallbackHref={toDemoHref("/")}
         savedTo={backHref}
       />
     </PageShell>
   );
 }
 
-/** pages/place/list. 카카오 검색 대신 샘플 장소에서 찾는다. */
 export function DemoPlacesScreen() {
   const searchParams = useSearchParams();
   return (
