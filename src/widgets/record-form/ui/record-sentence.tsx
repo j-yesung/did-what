@@ -176,8 +176,9 @@ export function RecordSentence({
           aria-invalid={invalid("activity")}
           aria-label="뭐 했는지"
           className={cn(
-            "field-sizing-content mt-1 block w-full resize-none rounded-none border-primary border-b-2 bg-transparent p-0 outline-none placeholder:text-muted-foreground/60",
-            invalid("activity") && "border-destructive placeholder:text-destructive/60",
+            "field-sizing-content mt-1 block w-full resize-none rounded-none border-b-2 bg-transparent p-0 outline-none transition-colors duration-200 placeholder:text-muted-foreground/60 focus:border-primary",
+            draft.activity ? "border-primary" : "border-muted-foreground/30",
+            invalid("activity") && "border-destructive placeholder:text-destructive/60 focus:border-destructive",
           )}
           data-invalid={invalid("activity") || undefined}
           enterKeyHint="done"

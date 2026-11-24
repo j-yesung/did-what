@@ -35,7 +35,7 @@ export function RecordFormLayout({ backDisabled, children, footer, onBack, title
 
       <footer
         className={cn(
-          "border-t bg-background px-5 pt-3",
+          "bg-background px-5 pt-3",
           // 키보드 위에서는 홈 인디케이터 여백이 필요 없다.
           keyboardInset > 0 ? "pb-3" : "pb-[max(--spacing(4),env(safe-area-inset-bottom))]",
         )}

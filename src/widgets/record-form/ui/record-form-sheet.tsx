@@ -22,11 +22,14 @@ export function RecordFormSheet({ children, finalFocus, onClose, open, title }: 
       open={open}
       showSwipeHandle
     >
-      <BottomSheet.Content finalFocus={finalFocus}>
-        <BottomSheet.Header>
-          <BottomSheet.Title className="text-left font-bold text-xl">{title}</BottomSheet.Title>
-        </BottomSheet.Header>
-        <div className="flex min-h-0 flex-col overflow-y-auto overscroll-contain px-5 py-6">{children}</div>
+      <BottomSheet.Content finalFocus={finalFocus} overlayHandle>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <BottomSheet.Header className="pt-7" glass />
+          <div className="px-5 pt-10 pb-6">
+            <BottomSheet.Title className="font-bold text-xl">{title}</BottomSheet.Title>
+            <div className="mt-6 flex flex-col">{children}</div>
+          </div>
+        </div>
         <BottomSheet.Footer>
           <Button fullWidth onClick={onClose} size="xlarge" type="button">
             확인
