@@ -6,7 +6,7 @@ import { PlaceIconTile, type PlaceOption } from "@/entities/place";
 import { getRecordRegionKey, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ConfirmDialogCancelButton } from "@/shared/ui/confirm-dialog";
-import { Field, FieldDescription, FieldError, FieldTitle } from "@/shared/ui/field";
+import { Field, FieldError, FieldTitle } from "@/shared/ui/field";
 
 import {
   getRecordLocationSelectionError,
@@ -97,16 +97,8 @@ export function RecordLocationFields({
 
   return (
     <>
-      <input
-        name="regions"
-        type="hidden"
-        value={JSON.stringify(regions.map(({ code, fullName, label }) => ({ code, label, name: fullName })))}
-      />
-      <input name="places" type="hidden" value={JSON.stringify(places.map((place) => place.reference))} />
-
       <Field aria-label="방문한 지역" data-invalid={Boolean(regionError)}>
         <FieldTitle>방문한 지역</FieldTitle>
-        <FieldDescription>문래, 성수처럼 다녀온 동네를 찾아보세요.</FieldDescription>
         {visitedRegions.length ? (
           <ul aria-label="방문한 지역 목록" className="flex flex-col gap-2">
             {visitedRegions.map((region) => (
@@ -141,7 +133,6 @@ export function RecordLocationFields({
         <FieldTitle>
           방문한 곳 <span className="font-normal text-muted-foreground text-xs">선택</span>
         </FieldTitle>
-        <FieldDescription>기억해 두고 싶은 카페나 식당이 있나요?</FieldDescription>
         {places.length ? (
           <ul aria-label="방문한 곳 목록" className="flex flex-col gap-2">
             {places.map((place) => (
@@ -179,9 +170,6 @@ export function RecordLocationFields({
           savedPlaces={savedPlaces}
           selectedKeys={selectedKeys}
         />
-        <FieldDescription>
-          장소 이름이 기억나지 않아도 괜찮아요. 지역만 남기고 다음으로 넘어갈 수 있어요.
-        </FieldDescription>
         <FieldError id="places-error">{placeError}</FieldError>
       </Field>
 

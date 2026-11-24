@@ -2,7 +2,7 @@
 
 import type { Dispatch, SetStateAction, SubmitEvent } from "react";
 
-import { WarningCircleIcon, XIcon } from "@phosphor-icons/react";
+import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { type PlaceOption, placeSearchInfiniteQueryOptions } from "@/entities/place";
@@ -12,7 +12,6 @@ import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { CheckIcon } from "@/shared/ui/animated-icons";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
-import { IconButton } from "@/shared/ui/icon-button";
 import { LiquidGlassButton } from "@/shared/ui/liquid-glass/button/liquid-glass-button";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -40,7 +39,6 @@ type PlacePickerPanelProps = {
   savedPlaces: PlaceOption[];
 };
 
-/** 좌표 없이 전국에서 찾는 칩. 지역 칩과 같은 목록에 들어가므로 코드 자리를 하나 비워 둔다. */
 const NATIONWIDE_CODE = "";
 
 export function PlacePickerPanel({
@@ -112,12 +110,9 @@ export function PlacePickerPanel({
   return (
     <>
       <BottomSheet.Header>
-        <div className="flex items-center justify-between gap-3">
-          <BottomSheet.Title className="text-left font-bold text-xl">
-            {mode === "regions" ? "방문한 지역" : "방문한 곳"}
-          </BottomSheet.Title>
-          <BottomSheet.Close render={<IconButton aria-label="닫기" icon={XIcon} type="button" />} />
-        </div>
+        <BottomSheet.Title className="text-left font-bold text-xl">
+          {mode === "regions" ? "방문한 지역" : "방문한 곳"}
+        </BottomSheet.Title>
         <BottomSheet.Description className="text-left">
           {mode === "regions" ? "어느 동네에서 시간을 보냈나요?" : "함께 다녀온 카페나 식당을 찾아보세요."}
         </BottomSheet.Description>

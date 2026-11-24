@@ -1,32 +1,16 @@
 "use client";
 
-import {
-  AirplaneTiltIcon,
-  CakeIcon,
-  ChatCircleIcon,
-  CoffeeIcon,
-  HeartIcon,
-  NotePencilIcon,
-  UsersThreeIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ChatCircleIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { cn } from "@/shared/lib/utils";
 
-import { normalizeRecordCategories, RECORD_CATEGORY_FILL, type RecordCategory } from "../model/category";
+import { normalizeRecordCategories, RECORD_CATEGORY_FILL } from "../model/category";
 import { formatRecordProvinceLabels } from "../model/record-region";
 import type { RecordSummary } from "../model/types";
+import { RECORD_CATEGORY_ICON } from "./category-icon";
 
 export const RECORD_CARD_BUTTON_CLASS =
   "h-auto min-h-16 min-w-0 justify-start whitespace-normal rounded-md px-0 py-3 text-left font-normal after:-inset-x-2 after:inset-y-0 [&>span]:block [&>span]:w-full";
-
-const CATEGORY_ICON: Record<RecordCategory, { Icon: typeof HeartIcon; color: string }> = {
-  anniversary: { Icon: CakeIcon, color: "text-category-anniversary" },
-  daily: { Icon: CoffeeIcon, color: "text-category-daily" },
-  date: { Icon: HeartIcon, color: "text-category-date" },
-  gathering: { Icon: UsersThreeIcon, color: "text-category-gathering" },
-  travel: { Icon: AirplaneTiltIcon, color: "text-category-travel" },
-  uncategorized: { Icon: NotePencilIcon, color: "text-category-uncategorized" },
-};
 
 type RecordCardContentProps = {
   record: Pick<
@@ -39,7 +23,7 @@ export function RecordCardContent({ record }: RecordCardContentProps) {
   const categories = normalizeRecordCategories(record.category);
   const commentCount = record.record_comments?.[0]?.count ?? 0;
   const iconCategory = categories[0] ?? "uncategorized";
-  const { Icon, color } = CATEGORY_ICON[iconCategory];
+  const { Icon, color } = RECORD_CATEGORY_ICON[iconCategory];
   const detail = formatRecordProvinceLabels(record);
 
   return (

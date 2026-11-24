@@ -30,9 +30,9 @@ import { ListHeader } from "@/shared/ui/list-header";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 import { RecordRouteSheet } from "@/widgets/record-detail";
-import { RecordCreateFunnel } from "@/widgets/record-form/funnel/create-record-funnel";
 import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
-import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
+import { createRecordFormDraft } from "@/widgets/record-form/model/record-form-draft";
+import { RecordForm } from "@/widgets/record-form/record-form";
 import { Toolbar } from "@/widgets/toolbar";
 
 import { toDemoHref, toDemoRecordSheetHref } from "../lib/demo-href";
@@ -42,12 +42,6 @@ import { useDemo } from "./demo-context";
 
 type Member = { id: string; name: string };
 
-/*
- * 각 화면은 app/ 의 서버 page·layout이 하던 조합을 샘플 데이터로 다시 맞춘 것이다.
- * 화면 안의 컴포넌트는 실제 앱 것을 그대로 쓰고, 서버에서 받던 값만 체험 데이터에서 넘긴다.
- */
-
-/** app/(app)/layout.tsx와 같은 뼈대. */
 export function DemoAppFrame({ children, member }: { children: ReactNode; member: Member }) {
   return (
     <RecordSearchProvider>
@@ -60,7 +54,6 @@ export function DemoAppFrame({ children, member }: { children: ReactNode; member
   );
 }
 
-/** pages/home의 HomePage. 기록과 만난 날은 체험 데이터에서 받는다. */
 export function DemoHomeScreen({ member }: { member: Member }) {
   const state = useDemoState();
   const records = useMemo(() => getDemoHomeRecords(state), [state]);
@@ -68,7 +61,6 @@ export function DemoHomeScreen({ member }: { member: Member }) {
   return <HomeDashboard member={member} metOn={state.metOn} records={records} today={state.today} />;
 }
 
-/** pages/record/list의 RecordsPage. 보기 선택은 쿠키 대신 체험 데이터에 둔다. */
 export function DemoRecordsScreen() {
   const searchParams = useSearchParams();
   const { recordView } = useDemoState();
@@ -77,7 +69,6 @@ export function DemoRecordsScreen() {
   return <RecordsContent view={view} />;
 }
 
-/** pages/record/new. 기본 날짜는 샘플 데이터의 기준일(오늘)이다. */
 export function DemoRecordNewScreen() {
   const searchParams = useSearchParams();
   const { createRecord } = useDemo();
@@ -97,16 +88,14 @@ export function DemoRecordNewScreen() {
     );
 
     return {
-      defaultPlace: place ? toExistingRecordLocationPlace(place) : undefined,
-      defaultRecordedAt,
-      returnTo: returnHref,
+      initialValues: createRecordFormDraft(defaultRecordedAt, place ? toExistingRecordLocationPlace(place) : undefined),
       savedTo: returnHref,
     };
   });
 
   return (
     <PageShell className="h-(--screen-height) min-h-0 gap-0 overflow-hidden px-0 pt-0 pb-0">
-      <RecordCreateFunnel action={createRecord} {...props} />
+      <RecordForm action={createRecord} fallbackHref={toDemoHref("/")} mode="create" {...props} />
     </PageShell>
   );
 }
@@ -127,7 +116,6 @@ function DemoRecordDetailRedirect({ recordId }: { recordId: string }) {
   return <AppLoading />;
 }
 
-/** pages/record/edit. 초기값을 만드는 규칙도 실제 화면과 같다. */
 export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
   const { updateRecord } = useDemo();
   const [record] = useState(() => {
@@ -141,35 +129,18 @@ export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
   const backHref = toDemoHref(`/records/${recordId}`);
 
   return (
-    <OverscrollBack fallbackHref={backHref}>
-      <PageShell className="block">
-        <h1 className="sr-only">기록 수정</h1>
-        <PageHeader back={backHref} />
-
-        <section className="px-1 pt-5.5 pb-5" aria-labelledby="record-edit-title">
-          <h2
-            className="font-[780] text-[clamp(24px,7vw,30px)] leading-tight tracking-[-0.045em]"
-            id="record-edit-title"
-          >
-            그날의 기록을 다듬어보세요.
-          </h2>
-          <p className="mt-2 text-[14px] text-muted-foreground leading-[1.6]">
-            바뀐 날짜, 지역과 방문 장소를 한 번에 수정할 수 있어요.
-          </p>
-        </section>
-
-        <RecordEditForm
-          action={(formData) => updateRecord(recordId, formData)}
-          initialValues={toRecordEditValues(record)}
-          returnTo={backHref}
-          savedTo={backHref}
-        />
-      </PageShell>
-    </OverscrollBack>
+    <PageShell className="h-(--screen-height) min-h-0 gap-0 overflow-hidden px-0 pt-0 pb-0">
+      <RecordForm
+        action={(formData) => updateRecord(recordId, formData)}
+        initialValues={toRecordEditValues(record)}
+        mode="edit"
+        fallbackHref={toDemoHref("/")}
+        savedTo={backHref}
+      />
+    </PageShell>
   );
 }
 
-/** pages/place/list. 카카오 검색 대신 샘플 장소에서 찾는다. */
 export function DemoPlacesScreen() {
   const searchParams = useSearchParams();
   return (

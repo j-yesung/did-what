@@ -16,7 +16,7 @@ export const isRecordCategory = (value: unknown): value is RecordCategory => {
 };
 
 export const isRecordCategories = (value: unknown): value is RecordCategory[] => {
-  return Array.isArray(value) && value.length <= RECORD_CATEGORY_OPTIONS.length - 1 && value.every(isRecordCategory);
+  return Array.isArray(value) && value.length <= 1 && value.every(isRecordCategory);
 };
 
 export const normalizeRecordCategories = (value: unknown): RecordCategory[] => {
@@ -38,7 +38,6 @@ export const getRecordCategoryLabel = (category: RecordCategory) => {
   return RECORD_CATEGORY_OPTIONS.find((option) => option.value === category)?.label ?? "미분류";
 };
 
-/** Tailwind는 소스에 적힌 클래스만 찾으므로 조합하지 않고 그대로 적는다. */
 export const RECORD_CATEGORY_DOT: Record<RecordCategory, string> = {
   anniversary: "bg-category-anniversary",
   daily: "bg-category-daily",
@@ -64,15 +63,4 @@ export const RECORD_CATEGORY_BADGE: Record<RecordCategory, string> = {
   gathering: "bg-category-gathering/8 text-category-gathering",
   travel: "bg-category-travel/8 text-category-travel",
   uncategorized: "bg-category-uncategorized/12 text-muted-foreground",
-};
-
-export const RECORD_CATEGORY_SELECTED: Record<RecordCategory, string> = {
-  anniversary:
-    "data-pressed:border-category-anniversary data-pressed:bg-category-anniversary/8 data-pressed:text-category-anniversary",
-  daily: "data-pressed:border-category-daily data-pressed:bg-category-daily/8 data-pressed:text-category-daily",
-  date: "data-pressed:border-category-date data-pressed:bg-category-date/8 data-pressed:text-category-date",
-  gathering:
-    "data-pressed:border-category-gathering data-pressed:bg-category-gathering/8 data-pressed:text-category-gathering",
-  travel: "data-pressed:border-category-travel data-pressed:bg-category-travel/8 data-pressed:text-category-travel",
-  uncategorized: "",
 };

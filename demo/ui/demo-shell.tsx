@@ -62,7 +62,7 @@ const ENTRIES: Entry[] = [
   },
   {
     guide:
-      "날짜 → 장소 → 내용 순서로 하루를 남겨요. 이전 단계로 가도 입력이 남고, 첫 단계에서 나가면 확인 창이 떠요. 장소는 ‘카페’, ‘해변’으로 찾아보세요(샘플 결과).",
+      "빈칸을 눌러 문장을 채우면 하루가 남아요. 장소를 고르면 카테고리, 한 일 칸이 이어서 열리고, 쓰다가 나가면 확인 창이 떠요. 장소는 ‘카페’, ‘해변’으로 찾아보세요(샘플 결과).",
     icon: NotePencilIcon,
     id: "create",
     label: "하루 기록하기",
@@ -102,7 +102,6 @@ const ENTRIES: Entry[] = [
   },
 ];
 
-/** 앱 안에서 이동해도 왼쪽 선택이 지금 화면을 가리키도록, 경로마다 어울리는 체험 항목을 고른다. */
 const getEntryIds = (path: string): EntryId[] => {
   const pathname = path.split(/[?#]/)[0];
   if (pathname === "/") return ["home"];
@@ -116,7 +115,6 @@ const getEntryIds = (path: string): EntryId[] => {
   return [];
 };
 
-/** 작성·수정 중인 화면은 초기화하면 입력이 사라지므로 확인을 받는다. */
 const isFormPath = (path: string) => /^\/records\/(new|[^/?#]+\/edit)(?:[?#]|$)/.test(path);
 
 const THEME_LABELS: Record<Theme, string> = { dark: "어두운 화면", light: "밝은 화면", system: "시스템" };
@@ -125,7 +123,6 @@ function SectionTitle({ children }: { children: ReactNode }) {
   return <h3 className="font-semibold text-muted-foreground text-xs">{children}</h3>;
 }
 
-/** 선택 상태를 색과 체크 표시 두 가지로 알린다. */
 function ChoiceButton({
   children,
   disabled,
@@ -194,7 +191,6 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
       setSnapshot(message.state);
       const candidates = getEntryIds(message.state.path);
       setSelectedId((current) => (candidates.includes(current) ? current : (candidates[0] ?? current)));
-      // 새로 고쳐도 같은 앱 화면으로 돌아오도록 부모 주소에 앱 경로를 남긴다.
       const nextUrl = message.state.path === "/" ? "/demo" : `/demo?path=${encodeURIComponent(message.state.path)}`;
       if (`${window.location.pathname}${window.location.search}` !== nextUrl) {
         window.history.replaceState(window.history.state, "", nextUrl);

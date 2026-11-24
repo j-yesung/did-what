@@ -48,7 +48,6 @@ test("처음 샘플은 구성원 2명과 서로 연결된 기록·장소·댓글
 
 test("기록 목록은 실제 조회처럼 걸러 정렬하고, 20개씩 끊어 이어 받는다", () => {
   let state = createSeedState(TODAY);
-  // 예시 기록을 더해 한 페이지(20개)를 넘긴다.
   for (let index = 0; index < 12; index += 1) {
     const result = addSampleRecord(state, DEMO_MEMBER_IDS.jimin, context());
     state = result.state;
@@ -67,7 +66,6 @@ test("기록 목록은 실제 조회처럼 걸러 정렬하고, 20개씩 끊어 
   const oldest = getRecordPage(state, { ...FILTERS, sort: "oldest" }, null).records;
   assert.ok(oldest[0].recorded_at <= oldest.at(-1).recorded_at);
 
-  // 여러 날 기록은 마지막 날이 기간에 걸치면 포함한다.
   const busan = state.records.find(({ id }) => id === DEMO_RECORD_IDS.busan);
   const period = { ...FILTERS, from: busan.recorded_until, to: busan.recorded_until };
   assert.ok(getRecordPage(state, period, null).records.some(({ id }) => id === DEMO_RECORD_IDS.busan));
@@ -88,11 +86,9 @@ test("기록을 지우면 댓글은 지워지고 알림은 남되 연결이 끊�
     false,
   );
   assert.ok(next.notifications.length === state.notifications.length);
-  // 한강 기록의 장소는 둘 다 저장한 장소라 남는다.
   assert.ok(next.places.some(({ id }) => id === demoId("c", 1)));
 
   const busan = deleteRecord(state, DEMO_RECORD_IDS.busan).state;
-  // 광안리 카페(c5)는 저장하지 않은 장소라 기록과 함께 사라진다.
   assert.equal(
     busan.places.some(({ id }) => id === demoId("c", 5)),
     false,
@@ -329,10 +325,10 @@ test("조회 순서가 바뀐 기록의 메모만 수정해도 대표 표시명�
   assert.equal(after.memo, "메모만 수정");
 });
 
-test("복수 카테고리는 각 카테고리 필터에서 조회되고 수정 후 미분류로 바꿀 수 있다", () => {
+test("카테고리는 그 카테고리 필터에서 조회되고 수정 후 미분류로 바꿀 수 있다", () => {
   const input = {
     activity: "둘이서 떠난 여행",
-    category: ["date", "travel"],
+    category: ["travel"],
     recordedAt: TODAY,
     weather: "sunny",
     places: [],
