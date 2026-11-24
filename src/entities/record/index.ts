@@ -16,7 +16,6 @@ export {
   RECORD_CATEGORY_DOT,
   RECORD_CATEGORY_FILL,
   RECORD_CATEGORY_OPTIONS,
-  RECORD_CATEGORY_SELECTED,
   type RecordCategory,
 } from "./model/category";
 export { MAX_ACTIVITY_LENGTH, MAX_MEMO_LENGTH, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./model/limits";

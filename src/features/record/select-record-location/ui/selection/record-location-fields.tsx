@@ -97,13 +97,6 @@ export function RecordLocationFields({
 
   return (
     <>
-      <input
-        name="regions"
-        type="hidden"
-        value={JSON.stringify(regions.map(({ code, fullName, label }) => ({ code, label, name: fullName })))}
-      />
-      <input name="places" type="hidden" value={JSON.stringify(places.map((place) => place.reference))} />
-
       <Field aria-label="방문한 지역" data-invalid={Boolean(regionError)}>
         <FieldTitle>방문한 지역</FieldTitle>
         <FieldDescription>문래, 성수처럼 다녀온 동네를 찾아보세요.</FieldDescription>
@@ -179,9 +172,7 @@ export function RecordLocationFields({
           savedPlaces={savedPlaces}
           selectedKeys={selectedKeys}
         />
-        <FieldDescription>
-          장소 이름이 기억나지 않아도 괜찮아요. 지역만 남기고 다음으로 넘어갈 수 있어요.
-        </FieldDescription>
+        <FieldDescription>장소 이름이 기억나지 않아도 괜찮아요. 지역만 남겨도 돼요.</FieldDescription>
         <FieldError id="places-error">{placeError}</FieldError>
       </Field>
 

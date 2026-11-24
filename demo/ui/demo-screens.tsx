@@ -30,9 +30,9 @@ import { ListHeader } from "@/shared/ui/list-header";
 import { OverscrollBack } from "@/shared/ui/overscroll-back";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 import { RecordRouteSheet } from "@/widgets/record-detail";
-import { RecordCreateFunnel } from "@/widgets/record-form/funnel/create-record-funnel";
 import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
-import { RecordEditForm } from "@/widgets/record-form/record-edit-form";
+import { createRecordFormDraft } from "@/widgets/record-form/model/record-form-draft";
+import { RecordForm } from "@/widgets/record-form/record-form";
 import { Toolbar } from "@/widgets/toolbar";
 
 import { toDemoHref, toDemoRecordSheetHref } from "../lib/demo-href";
@@ -97,8 +97,7 @@ export function DemoRecordNewScreen() {
     );
 
     return {
-      defaultPlace: place ? toExistingRecordLocationPlace(place) : undefined,
-      defaultRecordedAt,
+      initialValues: createRecordFormDraft(defaultRecordedAt, place ? toExistingRecordLocationPlace(place) : undefined),
       returnTo: returnHref,
       savedTo: returnHref,
     };
@@ -106,7 +105,7 @@ export function DemoRecordNewScreen() {
 
   return (
     <PageShell className="h-(--screen-height) min-h-0 gap-0 overflow-hidden px-0 pt-0 pb-0">
-      <RecordCreateFunnel action={createRecord} {...props} />
+      <RecordForm action={createRecord} mode="create" {...props} />
     </PageShell>
   );
 }
@@ -141,31 +140,15 @@ export function DemoRecordEditScreen({ recordId }: { recordId: string }) {
   const backHref = toDemoHref(`/records/${recordId}`);
 
   return (
-    <OverscrollBack fallbackHref={backHref}>
-      <PageShell className="block">
-        <h1 className="sr-only">기록 수정</h1>
-        <PageHeader back={backHref} />
-
-        <section className="px-1 pt-5.5 pb-5" aria-labelledby="record-edit-title">
-          <h2
-            className="font-[780] text-[clamp(24px,7vw,30px)] leading-tight tracking-[-0.045em]"
-            id="record-edit-title"
-          >
-            그날의 기록을 다듬어보세요.
-          </h2>
-          <p className="mt-2 text-[14px] text-muted-foreground leading-[1.6]">
-            바뀐 날짜, 지역과 방문 장소를 한 번에 수정할 수 있어요.
-          </p>
-        </section>
-
-        <RecordEditForm
-          action={(formData) => updateRecord(recordId, formData)}
-          initialValues={toRecordEditValues(record)}
-          returnTo={backHref}
-          savedTo={backHref}
-        />
-      </PageShell>
-    </OverscrollBack>
+    <PageShell className="h-(--screen-height) min-h-0 gap-0 overflow-hidden px-0 pt-0 pb-0">
+      <RecordForm
+        action={(formData) => updateRecord(recordId, formData)}
+        initialValues={toRecordEditValues(record)}
+        mode="edit"
+        returnTo={backHref}
+        savedTo={backHref}
+      />
+    </PageShell>
   );
 }
 

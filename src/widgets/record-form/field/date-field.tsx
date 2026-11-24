@@ -40,11 +40,8 @@ export function RecordDateField({
   };
 
   return (
-    <div aria-labelledby="record-date-label" role="group">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="font-semibold text-base" id="record-date-label">
-          언제
-        </p>
+    <div aria-label="날짜" role="group">
+      <div className="mb-2 flex justify-end">
         <label
           className="flex cursor-pointer items-center gap-2 text-muted-foreground text-sm"
           htmlFor="record-single-day"

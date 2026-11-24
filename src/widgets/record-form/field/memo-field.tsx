@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
-
 import { MAX_MEMO_LENGTH } from "@/entities/record";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/shared/ui/field";
-import { Textarea } from "@/shared/ui/textarea";
+import { Field, FieldError } from "@/shared/ui/field";
 
 type RecordMemoFieldProps = {
   initialMemo?: string;
@@ -12,33 +9,20 @@ type RecordMemoFieldProps = {
 };
 
 export function RecordMemoField({ initialMemo = "", memoError }: RecordMemoFieldProps) {
-  const [memoLength, setMemoLength] = useState(initialMemo.length);
-
   return (
     <Field data-invalid={Boolean(memoError)}>
-      <FieldLabel className="font-semibold text-base" htmlFor="memo">
-        메모 <span className="font-[650] text-[11px] text-muted-foreground">(선택)</span>
-      </FieldLabel>
-      <Textarea
-        className="min-h-24 resize-none"
+      <textarea
+        aria-describedby={memoError ? "memo-error" : undefined}
+        aria-invalid={Boolean(memoError)}
+        aria-label="메모"
+        className="field-sizing-content block w-full resize-none bg-transparent p-0 text-base leading-[1.7] outline-none placeholder:text-muted-foreground/60"
         defaultValue={initialMemo}
         id="memo"
         maxLength={MAX_MEMO_LENGTH}
         name="memo"
-        onChange={(event) => setMemoLength(event.currentTarget.value.length)}
-        placeholder="더 남기고 싶은 이야기가 있다면 적어 주세요."
-        rows={4}
-        aria-invalid={Boolean(memoError)}
-        aria-describedby={memoError ? "memo-count memo-error" : "memo-count"}
+        placeholder="더 하고 싶은 이야기 있어?"
+        rows={1}
       />
-      <div className="-mt-2 h-0">
-        <FieldDescription
-          className="invisible text-right tabular-nums group-focus-within/field:visible"
-          id="memo-count"
-        >
-          {memoLength}/{MAX_MEMO_LENGTH}
-        </FieldDescription>
-      </div>
       <FieldError id="memo-error">{memoError}</FieldError>
     </Field>
   );

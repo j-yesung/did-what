@@ -65,14 +65,3 @@ export const RECORD_CATEGORY_BADGE: Record<RecordCategory, string> = {
   travel: "bg-category-travel/8 text-category-travel",
   uncategorized: "bg-category-uncategorized/12 text-muted-foreground",
 };
-
-export const RECORD_CATEGORY_SELECTED: Record<RecordCategory, string> = {
-  anniversary:
-    "data-pressed:border-category-anniversary data-pressed:bg-category-anniversary/8 data-pressed:text-category-anniversary",
-  daily: "data-pressed:border-category-daily data-pressed:bg-category-daily/8 data-pressed:text-category-daily",
-  date: "data-pressed:border-category-date data-pressed:bg-category-date/8 data-pressed:text-category-date",
-  gathering:
-    "data-pressed:border-category-gathering data-pressed:bg-category-gathering/8 data-pressed:text-category-gathering",
-  travel: "data-pressed:border-category-travel data-pressed:bg-category-travel/8 data-pressed:text-category-travel",
-  uncategorized: "",
-};

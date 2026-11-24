@@ -66,7 +66,7 @@ export function DemoApp() {
   const member = getCurrentDemoMember(state);
   /**
    * 실제 앱은 이동할 때마다 화면을 새로 그린다. 이동이 남긴 값을 기준으로 다시 그리고,
-   * 작성 단계·달력 월처럼 주소만 바꾸는 기록(이 값이 없거나 이어받은 항목)에서는 그대로 둔다.
+   * 달력 월처럼 주소만 바꾸는 기록(이 값이 없거나 이어받은 항목)에서는 그대로 둔다.
    */
   const navigationKey = useRef("");
   const historyKey = window.history.state?.[DEMO_NAVIGATION_KEY];
