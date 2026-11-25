@@ -4,7 +4,6 @@ import {
   getRelationshipStats,
   getSubregions,
   pickAroundThisTime,
-  pickUpcomingAnniversary,
   rankPlaces,
   summarizeRegions,
   toVisitPoints,
@@ -74,32 +73,6 @@ test("이맘때는 연말과 연초를 넘어서도 짝을 맞춘다", () => {
     "2026-01-01",
   );
   assert.deepEqual(ids(picked.records), ["b", "a"]);
-});
-
-test("다가오는 기념일은 남은 일수에 상관없이 가장 가까운 기념일 기록", () => {
-  const records = [
-    record("a", "2025-11-18", { category: ["anniversary"] }),
-    record("b", "2025-11-10", { category: ["anniversary"] }),
-    record("c", "2025-11-08", { category: ["date"] }),
-    record("d", "2025-12-25", { category: ["anniversary"] }),
-  ];
-  const picked = pickUpcomingAnniversary(records, "2026-11-06");
-  assert.equal(picked.record.id, "b");
-  assert.equal(picked.dday, 4);
-  assert.deepEqual(pickUpcomingAnniversary(records, "2026-01-20"), { dday: 294, record: records[1] });
-  assert.equal(pickUpcomingAnniversary([records[2]], "2026-01-20"), null);
-  assert.equal(
-    pickUpcomingAnniversary([record("e", "2025-01-03", { category: ["anniversary"] })], "2026-12-28").dday,
-    6,
-  );
-});
-
-test("미래 날짜로 등록한 기념일은 기록 날짜를 첫 기념일로 표시한다", () => {
-  const upcoming = record("christmas", "2026-12-25", { category: ["anniversary"] });
-
-  assert.equal(pickUpcomingAnniversary([upcoming], "2024-12-25").dday, 730);
-  assert.deepEqual(pickUpcomingAnniversary([upcoming], "2026-11-25"), { dday: 30, record: upcoming });
-  assert.equal(pickUpcomingAnniversary([upcoming], "2026-12-25").dday, 0);
 });
 
 const region = (region_code, region_name) => ({

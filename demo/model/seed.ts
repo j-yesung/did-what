@@ -313,6 +313,7 @@ export const createSeedState = (today: string): DemoState => {
   ];
 
   return {
+    anniversaries: [{ date: shiftDate(today, 10), id: demoId("e", 1), name: "처음 함께 간 전시" }],
     changed: false,
     comments,
     currentMemberId: jimin,

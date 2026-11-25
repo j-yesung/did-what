@@ -12,11 +12,12 @@ import { PressLink } from "@/shared/ui/press-link";
 const DAY_TITLE = new Intl.DateTimeFormat("ko-KR", { day: "numeric", month: "long", weekday: "long" });
 
 type RecordDayListProps = {
+  anniversaryNames?: readonly string[];
   date: string;
   records: readonly RecordSummary[] | undefined;
 };
 
-export function RecordDayList({ date, records }: RecordDayListProps) {
+export function RecordDayList({ anniversaryNames, date, records }: RecordDayListProps) {
   const queryClient = useQueryClient();
 
   const prefetchComments = (recordId: string) =>
@@ -33,6 +34,13 @@ export function RecordDayList({ date, records }: RecordDayListProps) {
           기록 남기기
         </Button>
       </header>
+
+      {anniversaryNames && anniversaryNames.length > 0 && (
+        <p className="px-1 pb-2 font-semibold text-accent-text text-sm">
+          <span className="sr-only">기념일: </span>
+          {anniversaryNames.join(" · ")}
+        </p>
+      )}
 
       {records ? (
         records.length > 0 ? (

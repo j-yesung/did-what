@@ -2,6 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { AnniversaryManager } from "@/features/manage-anniversaries/ui/anniversary-manager";
+
 import { homeQueryOptions } from "../api/home-data";
 import { HomeDashboard } from "./home-dashboard";
 
@@ -14,5 +16,13 @@ export function HomeScreen({ member, metOn }: HomeScreenProps) {
   const { data } = useQuery({ ...homeQueryOptions, throwOnError: (_, query) => query.state.data === undefined });
   if (!data) return null;
 
-  return <HomeDashboard member={member} metOn={metOn} records={data.records} today={data.today} />;
+  return (
+    <HomeDashboard
+      anniversaryCard={<AnniversaryManager today={data.today} />}
+      member={member}
+      metOn={metOn}
+      records={data.records}
+      today={data.today}
+    />
+  );
 }

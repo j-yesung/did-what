@@ -1,7 +1,11 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
+import { useQuery } from "@tanstack/react-query";
+
+import { anniversariesQueryOptions } from "@/entities/anniversary/api/anniversaries";
+import { getAnniversaryNamesForDate } from "@/entities/anniversary/model/anniversary";
 import {
   type RecordView,
   readSavedRecordView,
@@ -17,6 +21,11 @@ type RecordsScreenProps = {
 };
 
 export function RecordsScreen({ paramsView, savedView }: RecordsScreenProps) {
+  const { data: anniversaries } = useQuery(anniversariesQueryOptions);
+  const namesForDate = useCallback(
+    (date: string) => getAnniversaryNamesForDate(anniversaries ?? [], date),
+    [anniversaries],
+  );
   const currentSavedView = useSyncExternalStore(subscribeNothing, readSavedRecordView, () => savedView);
-  return <RecordsContent view={paramsView ?? currentSavedView ?? "list"} />;
+  return <RecordsContent anniversaryNamesForDate={namesForDate} view={paramsView ?? currentSavedView ?? "list"} />;
 }

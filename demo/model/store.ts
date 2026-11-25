@@ -19,6 +19,7 @@ const load = (): DemoState => {
     if (saved?.version === DEMO_STATE_VERSION) {
       return {
         ...saved,
+        anniversaries: saved.anniversaries ?? [],
         records: saved.records.map((record) => ({
           ...record,
           category: normalizeRecordCategories(record.category).slice(0, 1),

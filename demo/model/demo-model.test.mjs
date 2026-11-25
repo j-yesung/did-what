@@ -13,6 +13,12 @@ import {
   receiveNotification,
   updateRecord,
 } from "./actions.ts";
+import {
+  deleteAnniversary,
+  getAnniversaryNamesForDate,
+  getFeaturedAnniversary,
+  saveAnniversary,
+} from "./anniversaries.ts";
 import { getDemoHomeRecords, getRecordPage, resolveDemoQuery } from "./queries.ts";
 import { createSeedState, DEMO_MEMBER_IDS, DEMO_RECORD_IDS, demoId } from "./seed.ts";
 import assert from "node:assert/strict";
@@ -25,6 +31,44 @@ const context = () => ({
   now: "2026-10-12T03:00:00.000Z",
 });
 const FILTERS = { category: "", from: "", query: "", sort: "recent", to: "" };
+
+test("기념일을 등록·수정·삭제해도 기록은 그대로 남는다", () => {
+  const state = createSeedState(TODAY);
+  const anniversary = { date: "2026-12-25", id: "christmas", name: " 크리스마스 " };
+  assert.equal(saveAnniversary(state, { ...anniversary, date: "2026-02-29" }).ok, false);
+
+  const added = saveAnniversary(state, anniversary);
+  assert.equal(added.ok, true);
+  assert.equal(added.state.changed, true);
+  assert.deepEqual(added.state.anniversaries.at(-1), { ...anniversary, name: "크리스마스" });
+
+  const edited = saveAnniversary(added.state, { ...anniversary, name: "함께 맞는 크리스마스" });
+  assert.equal(edited.ok, true);
+  assert.equal(edited.state.anniversaries.length, added.state.anniversaries.length);
+  assert.equal(edited.state.anniversaries.at(-1).name, "함께 맞는 크리스마스");
+
+  const removed = deleteAnniversary(edited.state, anniversary.id);
+  assert.deepEqual(removed.anniversaries, state.anniversaries);
+  assert.strictEqual(removed.records, state.records);
+});
+
+test("별도로 등록한 기념일만 첫 날짜부터 매년 달력과 홈에 표시한다", () => {
+  const anniversaries = [
+    { date: "2026-12-25", id: "christmas", name: "크리스마스" },
+    { date: "2024-02-29", id: "leap", name: "윤일" },
+  ];
+
+  assert.deepEqual(getAnniversaryNamesForDate(anniversaries, "2025-12-25"), []);
+  assert.deepEqual(getAnniversaryNamesForDate(anniversaries, "2027-12-25"), ["크리스마스"]);
+  assert.deepEqual(getAnniversaryNamesForDate(anniversaries, "2027-03-01"), []);
+  assert.deepEqual(getFeaturedAnniversary(anniversaries, "2026-11-25"), {
+    date: "2026-12-25",
+    dday: 30,
+    name: "크리스마스",
+  });
+  assert.equal(getFeaturedAnniversary(anniversaries.slice(1), "2026-12-25").date, "2028-02-29");
+  assert.equal(getFeaturedAnniversary([], TODAY), null);
+});
 
 test("처음 샘플은 구성원 2명과 서로 연결된 기록·장소·댓글·알림으로 시작한다", () => {
   const state = createSeedState(TODAY);
