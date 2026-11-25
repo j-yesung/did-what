@@ -5,12 +5,13 @@ import type { Icon, IconWeight } from "@phosphor-icons/react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
-type IconButtonVariant = "fill" | "clear" | "border";
+type IconButtonVariant = "fill" | "clear" | "border" | "danger";
 type IconButtonSize = "sm" | "default" | "lg";
 
 const ICON_BUTTON_VARIANT: Record<IconButtonVariant, string> = {
   border: "border-border bg-transparent text-muted-foreground active:bg-muted",
   clear: "bg-transparent text-muted-foreground active:bg-muted",
+  danger: "bg-transparent text-destructive active:bg-destructive/10",
   fill: "bg-foreground text-background active:bg-foreground",
 };
 
