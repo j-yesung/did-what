@@ -38,7 +38,7 @@ export function AnniversarySheet({
   today,
   trigger,
   renderListLabel,
-  formStyle = "line",
+  formStyle,
   onCreate,
   onDelete,
 }: AnniversarySheetProps) {
