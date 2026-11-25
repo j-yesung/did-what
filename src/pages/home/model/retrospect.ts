@@ -28,7 +28,6 @@ export type HomeRecord = Pick<
 
 const DAY = 86_400_000;
 const WINDOW_DAYS = 3;
-const ANNIVERSARY_HORIZON_DAYS = 30;
 const TOP_PLACE_COUNT = 3;
 
 const toUtc = (date: string) => Date.parse(`${date}T00:00:00Z`);
@@ -78,14 +77,15 @@ export const pickUpcomingAnniversary = (records: readonly HomeRecord[], today: s
   let nearest: UpcomingAnniversary | null = null;
 
   for (const record of records) {
-    if (!normalizeRecordCategories(record.category).includes("anniversary") || record.recorded_at > today) continue;
-    const [, month, day] = record.recorded_at.split("-").map(Number);
-    for (const year of [todayYear, todayYear + 1]) {
-      const dday = Math.round((Date.UTC(year, month - 1, day) - todayTime) / DAY);
-      if (dday < 0 || dday > ANNIVERSARY_HORIZON_DAYS) continue;
-      if (!nearest || dday < nearest.dday) nearest = { dday, record };
-      break;
-    }
+    if (!normalizeRecordCategories(record.category).includes("anniversary")) continue;
+
+    const [recordYear, month, day] = record.recorded_at.split("-").map(Number);
+    const year = Math.max(todayYear, recordYear);
+    const occurrence = Date.UTC(year, month - 1, day);
+    const nextOccurrence = occurrence < todayTime ? Date.UTC(year + 1, month - 1, day) : occurrence;
+    const dday = Math.round((nextOccurrence - todayTime) / DAY);
+
+    if (!nearest || dday < nearest.dday) nearest = { dday, record };
   }
   return nearest;
 };
