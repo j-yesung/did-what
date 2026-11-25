@@ -48,6 +48,10 @@
   --mono-800: #151517;
   --mono-900: #050506;
 
+  --warm-neutral-50: #fff7ef;
+  --warm-neutral-400: #c8bbb2;
+  --warm-neutral-800: #23201f;
+
   --orange-100: #ffecaa;
   --orange-200: #ffd678;
   --orange-300: #ffb84d;
@@ -600,6 +604,13 @@ body:has([data-record-search="open"]) .hide-during-record-search {
   visibility: hidden;
   opacity: 0;
   scale: 0.92;
+}
+
+.surface-anniversary {
+  --surface: var(--warm-neutral-800);
+  --foreground: var(--warm-neutral-50);
+  --muted-foreground: var(--warm-neutral-400);
+  --text-accent: var(--orange-300);
 }
 
 /** 바탕과 반대 톤의 카드. 라이트에서는 검은 카드, 다크에서는 흰 카드가 되도록 안쪽 색 변수만 바꾼다. */
