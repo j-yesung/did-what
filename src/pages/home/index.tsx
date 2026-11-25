@@ -1,5 +1,6 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+import { anniversariesQueryOptions, fetchAnniversaries } from "@/entities/anniversary/api/anniversaries";
 import { requireMember } from "@/entities/member/server";
 import { getMetOn } from "@/features/met-on/api/met-on";
 import { createQueryClient } from "@/shared/lib/react-query/query-client";
@@ -15,6 +16,10 @@ export async function HomePage() {
     queryClient.prefetchQuery({
       ...homeQueryOptions,
       queryFn: async () => fetchHomeData((await requireMember()).supabase),
+    }),
+    queryClient.prefetchQuery({
+      ...anniversariesQueryOptions,
+      queryFn: async () => fetchAnniversaries((await requireMember()).supabase),
     }),
   ]);
 

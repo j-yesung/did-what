@@ -7,7 +7,6 @@ import { getFeaturedAnniversary } from "@/entities/anniversary/model/anniversary
 import { AnniversaryCard } from "@/entities/anniversary/ui/anniversary-card";
 import { ListRowTexts } from "@/shared/ui/list-row";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { createAnniversary, deleteAnniversary } from "../api/actions";
 import { AnniversarySheet } from "./anniversary-sheet";
@@ -15,7 +14,7 @@ import { AnniversarySheet } from "./anniversary-sheet";
 export function AnniversaryManager({ today }: { today: string }) {
   const query = useQuery(anniversariesQueryOptions);
   const queryClient = useQueryClient();
-  if (query.isPending) return <Spinner aria-label="기념일을 불러오는 중" />;
+  if (query.isPending) return null;
   if (query.isError) {
     return (
       <LoadErrorAlert
