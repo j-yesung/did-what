@@ -7,7 +7,7 @@ import {
   type RecordCursor,
 } from "@/entities/record/model/record-page";
 import type { RecordCommentCursor } from "@/entities/record-comment/model/record-comment";
-import type { HomeRecord } from "@/pages/home/model/retrospect";
+import type { HomeRecord } from "@/pages/home/model/types";
 import type { KakaoPlace } from "@/shared/api/kakao-local/types";
 
 import { type DemoKakaoPlace, searchDemoKakaoPlaces, searchDemoRegions } from "./samples.ts";

@@ -1,30 +1,8 @@
 import { normalizeRecordCategories } from "@/entities/record/model/category";
-import type { RecordSummary } from "@/entities/record/model/types";
 import { getRegionCode, REGIONS, type RegionCode } from "@/entities/region/model/region";
 import { callName } from "@/shared/lib/text/call-name";
 
-export type HomePlace = { id: string; latitude: number; longitude: number; name: string };
-
-export type HomeRegion = {
-  region_code: string;
-  region_label: string;
-  region_latitude: number;
-  region_longitude: number;
-  region_name: string;
-};
-
-export type HomeRecord = Pick<
-  RecordSummary,
-  | "activity"
-  | "category"
-  | "id"
-  | "record_comments"
-  | "recorded_at"
-  | "recorded_until"
-  | "region_code"
-  | "region_label"
-  | "region_name"
-> & { record_places: { place: HomePlace | null }[]; record_regions: HomeRegion[] };
+import type { HomeRecord, RegionSummary, RelationshipStats, ThisTime, TopPlace, UpcomingAnniversary } from "./types";
 
 const DAY = 86_400_000;
 const WINDOW_DAYS = 3;
@@ -34,11 +12,6 @@ const toUtc = (date: string) => Date.parse(`${date}T00:00:00Z`);
 
 export const getGreeting = (name: string) => `어디 다녀왔어, ${callName(name)}?`;
 
-export type RelationshipStats = {
-  metOn: string;
-  daysTogether: number;
-};
-
 export const getRelationshipStats = (today: string, metOn: string | null = null): RelationshipStats | null => {
   if (!metOn || metOn > today) return null;
   return {
@@ -46,8 +19,6 @@ export const getRelationshipStats = (today: string, metOn: string | null = null)
     daysTogether: Math.round((toUtc(today) - toUtc(metOn)) / DAY) + 1,
   };
 };
-
-export type ThisTime = { yearsAgo: number; record: HomeRecord; records: HomeRecord[] };
 
 export const pickAroundThisTime = (records: readonly HomeRecord[], today: string): ThisTime | null => {
   const [todayYear, month, day] = today.split("-").map(Number);
@@ -69,8 +40,6 @@ export const pickAroundThisTime = (records: readonly HomeRecord[], today: string
   return { yearsAgo: matched[0].yearsAgo, record: matched[0].record, records: matched.map(({ record }) => record) };
 };
 
-export type UpcomingAnniversary = { dday: number; record: HomeRecord };
-
 export const pickUpcomingAnniversary = (records: readonly HomeRecord[], today: string): UpcomingAnniversary | null => {
   const todayTime = toUtc(today);
   const todayYear = Number(today.slice(0, 4));
@@ -88,13 +57,6 @@ export const pickUpcomingAnniversary = (records: readonly HomeRecord[], today: s
     if (!nearest || dday < nearest.dday) nearest = { dday, record };
   }
   return nearest;
-};
-
-export type RegionSummary = {
-  code: RegionCode;
-  label: string;
-  name: string;
-  records: HomeRecord[];
 };
 
 export const summarizeRegions = (records: readonly HomeRecord[]): RegionSummary[] =>
@@ -137,11 +99,6 @@ export const toVisitPoints = (records: readonly HomeRecord[]) =>
       .filter((region, index, all) => all.findIndex((item) => item.region_code === region.region_code) === index)
       .map(({ region_latitude, region_longitude }) => ({ latitude: region_latitude, longitude: region_longitude }));
   });
-
-export type TopPlace = HomePlace & {
-  count: number;
-  last: Pick<HomeRecord, "activity" | "id" | "recorded_at">;
-};
 
 export const rankPlaces = (records: readonly HomeRecord[]): TopPlace[] => {
   const places = new Map<string, TopPlace>();

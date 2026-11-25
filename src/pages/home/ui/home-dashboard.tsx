@@ -11,12 +11,12 @@ import { openRegionSheet } from "../model/region-sheet-url";
 import {
   getGreeting,
   getRelationshipStats,
-  type HomeRecord,
   pickAroundThisTime,
   pickUpcomingAnniversary,
   rankPlaces,
   summarizeRegions,
 } from "../model/retrospect";
+import type { HomeRecord } from "../model/types";
 import { AnniversaryCard, HomeGreeting, RegionOverview, ThisTimeCard, TogetherCard, TopPlaces } from "./home-sections";
 import { RecordListSheet, type RecordListSheetState } from "./record-list-sheet";
 

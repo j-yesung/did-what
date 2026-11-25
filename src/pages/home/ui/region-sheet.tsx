@@ -16,7 +16,8 @@ import { ListRow } from "@/shared/ui/list-row";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { openRegionSheet, REGION_PARAM, REGION_SHEET_HISTORY_KEY } from "../model/region-sheet-url";
-import { countSubregions, getSubregions, type HomeRecord, type RegionSummary } from "../model/retrospect";
+import { countSubregions, getSubregions } from "../model/retrospect";
+import type { HomeRecord, RegionSummary } from "../model/types";
 import styles from "./region-sheet.module.css";
 
 const renderRecord = (record: HomeRecord) => <RecordCard record={record} />;

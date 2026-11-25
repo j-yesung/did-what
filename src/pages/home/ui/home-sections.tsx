@@ -14,14 +14,15 @@ import { Button } from "@/shared/ui/button";
 import { ListHeader } from "@/shared/ui/list-header";
 import { PressLink } from "@/shared/ui/press-link";
 
-import {
-  type HomeRecord,
-  type RegionSummary,
-  type RelationshipStats,
-  type ThisTime,
-  type TopPlace,
-  toVisitPoints,
-} from "../model/retrospect";
+import { toVisitPoints } from "../model/retrospect";
+import type {
+  HomeRecord,
+  RegionSummary,
+  RelationshipStats,
+  ThisTime,
+  TopPlace,
+  UpcomingAnniversary,
+} from "../model/types";
 
 const PRESS_SURFACE = cn(PRESS_FEEDBACK, "after:hidden");
 
@@ -101,7 +102,7 @@ export function ThisTimeCard({ onOpen, thisTime }: { onOpen: () => void; thisTim
   );
 }
 
-export function AnniversaryCard({ dday, record }: { dday: number; record: HomeRecord }) {
+export function AnniversaryCard({ dday, record }: UpcomingAnniversary) {
   return (
     <RecordDetailLink
       className={cn(
