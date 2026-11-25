@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { RecordCard, RecordDateGroups } from "@/entities/record";
 import { BottomSheet, FULL_SHEET_HEIGHT } from "@/shared/ui/bottom-sheet";
 
-import type { HomeRecord } from "../model/retrospect";
+import type { HomeRecord } from "../model/types";
 
 export type RecordListSheetState = {
   records: HomeRecord[];

@@ -7,7 +7,7 @@ import type { Database } from "@/shared/api/supabase/database.types";
 import { getToday } from "@/shared/lib/date/get-today";
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
-import type { HomeRecord } from "../model/retrospect";
+import type { HomeRecord } from "../model/types";
 
 const PAGE_SIZE = 500;
 
