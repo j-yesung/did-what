@@ -35,6 +35,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      anniversaries: {
+        Row: {
+          id: string;
+          owner_id: string;
+          name: string;
+          date: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          name: string;
+          date: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          owner_id?: string;
+          name?: string;
+          date?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       notifications: {
         Row: {
           comment_id: string | null;
