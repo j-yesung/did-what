@@ -4,10 +4,8 @@ import { type ReactNode, useMemo } from "react";
 
 import { CaretRightIcon } from "@phosphor-icons/react";
 
-import { RecordDetailLink } from "@/entities/record";
 import type { RegionCode } from "@/entities/region/model/region";
 import { DotLandMap } from "@/entities/region/ui/dot-land";
-import { formatRecordDate } from "@/shared/lib/date/format-date";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -15,14 +13,7 @@ import { ListHeader } from "@/shared/ui/list-header";
 import { PressLink } from "@/shared/ui/press-link";
 
 import { toVisitPoints } from "../model/retrospect";
-import type {
-  HomeRecord,
-  RegionSummary,
-  RelationshipStats,
-  ThisTime,
-  TopPlace,
-  UpcomingAnniversary,
-} from "../model/types";
+import type { HomeRecord, RegionSummary, RelationshipStats, ThisTime, TopPlace } from "../model/types";
 
 const PRESS_SURFACE = cn(PRESS_FEEDBACK, "after:hidden");
 
@@ -99,29 +90,6 @@ export function ThisTimeCard({ onOpen, thisTime }: { onOpen: () => void; thisTim
         </span>
       </span>
     </button>
-  );
-}
-
-export function AnniversaryCard({ dday, record }: UpcomingAnniversary) {
-  return (
-    <RecordDetailLink
-      className={cn(
-        "surface-anniversary flex items-start gap-3 rounded-[22px] bg-surface px-5 py-5 text-foreground",
-        PRESS_SURFACE,
-        FOCUS_RING,
-      )}
-      href={`/records/${record.id}`}
-    >
-      <span className="grid min-w-0 flex-1 gap-0.75">
-        <span className="truncate font-bold text-[15px]">{record.activity}</span>
-        <time className="text-[12px] text-muted-foreground" dateTime={record.recorded_at}>
-          {formatRecordDate(record.recorded_at)}
-        </time>
-      </span>
-      <span className="shrink-0 whitespace-nowrap font-extrabold text-[22px] text-accent-text tabular-nums leading-[1.15] tracking-[-0.04em]">
-        {dday === 0 ? "D-DAY" : `D-${dday}`}
-      </span>
-    </RecordDetailLink>
   );
 }
 

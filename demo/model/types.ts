@@ -56,7 +56,20 @@ export type DemoNotification = {
   sender_name: string;
 };
 
+export type DemoAnniversary = {
+  date: string;
+  id: string;
+  name: string;
+};
+
+export type DemoFeaturedAnniversary = Pick<DemoAnniversary, "date" | "name"> & {
+  dday: number;
+};
+
+export type DemoAnniversaryCardStyle = "night" | "date" | "line";
+
 export type DemoState = {
+  anniversaries: DemoAnniversary[];
   /** 처음 상태와 달라졌는지. 초기화 전에 확인을 받을지 정한다. */
   changed: boolean;
   comments: RecordComment[];

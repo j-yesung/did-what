@@ -30,6 +30,7 @@ import {
   readDemoAppMessage,
   toCommandMessage,
 } from "../lib/messages";
+import { ANNIVERSARY_CARD_STYLE_PARAM, ANNIVERSARY_CARD_STYLES, getAnniversaryCardStyle } from "../model/anniversaries";
 import { DEMO_RECORD_IDS } from "../model/seed";
 import { clearDemoStorage } from "../model/store";
 
@@ -45,8 +46,7 @@ type Entry = {
 
 const ENTRIES: Entry[] = [
   {
-    guide:
-      "만난 날부터 함께한 날, 1년 전 이맘때 기록, 다녀온 지역과 자주 간 곳을 한눈에 봐요. 지역을 누르면 그곳의 기록이, 이맘때를 누르면 그날의 기록이 열려요.",
+    guide: "홈의 기념일 카드를 눌러 목록을 열어 보세요. 목록에서 기념일을 추가하거나 삭제할 수 있어요.",
     icon: HouseIcon,
     id: "home",
     label: "홈",
@@ -93,8 +93,7 @@ const ENTRIES: Entry[] = [
     path: "/notifications",
   },
   {
-    guide:
-      "만난 날, 화면 모드, 사용자 전환을 써 보세요. 만난 날을 바꾸면 홈의 함께한 날이 따라 바뀌어요. 바꾼 설정은 이 체험 안에만 적용돼요.",
+    guide: "만난 날, 화면 모드, 사용자 전환을 써 보세요. 만난 날을 바꾸면 홈의 함께한 날이 따라 바뀌어요.",
     icon: GearIcon,
     id: "settings",
     label: "설정",
@@ -227,6 +226,9 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
 
   const selected = ENTRIES.find((entry) => entry.id === selectedId) ?? ENTRIES[0];
   const ready = snapshot !== null;
+  const anniversaryStyle = getAnniversaryCardStyle(
+    new URL(snapshot?.path ?? initialPath, "http://demo.invalid").searchParams.get(ANNIVERSARY_CARD_STYLE_PARAM),
+  );
 
   return (
     <div className="min-h-dvh bg-muted/50 text-foreground">
@@ -288,6 +290,25 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
             <p aria-live="polite" className="mt-1 text-muted-foreground text-sm leading-relaxed">
               {selected.guide}
             </p>
+            {selected.id === "home" && (
+              <div aria-label="기념일 카드 시안" className="mt-3 flex flex-wrap gap-1.5" role="group">
+                {ANNIVERSARY_CARD_STYLES.map(({ label, value }) => (
+                  <ChoiceButton
+                    disabled={!ready}
+                    key={value}
+                    onClick={() =>
+                      send({
+                        name: "navigate",
+                        path: value === "night" ? "/" : `/?${ANNIVERSARY_CARD_STYLE_PARAM}=${value}`,
+                      })
+                    }
+                    pressed={anniversaryStyle === value}
+                  >
+                    {label}
+                  </ChoiceButton>
+                ))}
+              </div>
+            )}
           </section>
         </nav>
 
@@ -392,7 +413,7 @@ export function DemoShell({ initialPath }: { initialPath: string }) {
             되돌리기
           </Button>
         }
-        description="추가한 기록·댓글·알림과 작성 중인 내용, 사용자·화면 모드를 모두 처음 샘플로 돌려요."
+        description="추가한 기념일·기록·댓글·알림과 작성 중인 내용, 사용자·화면 모드를 모두 처음 샘플로 돌려요."
         onClose={() => setResetOpen(false)}
         open={resetOpen}
         title="체험 내용을 지울까요?"

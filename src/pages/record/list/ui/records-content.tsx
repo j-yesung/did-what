@@ -10,7 +10,12 @@ import { RecordCalendar } from "./calendar/record-calendar";
 import { RecordListContent } from "./list/record-list-content";
 import { RecordSearchResults } from "./search/record-search-results";
 
-export function RecordsContent({ view }: { view: RecordView }) {
+type RecordsContentProps = {
+  anniversaryNamesForDate?: (date: string) => readonly string[];
+  view: RecordView;
+};
+
+export function RecordsContent({ anniversaryNamesForDate, view }: RecordsContentProps) {
   const search = useRecordSearch();
   return (
     <>
@@ -25,7 +30,11 @@ export function RecordsContent({ view }: { view: RecordView }) {
           inert={view === "calendar" && Boolean(search.query)}
           className={cn("flex min-h-0 flex-1 flex-col gap-4", view === "calendar" && search.query && "invisible")}
         >
-          {view === "calendar" ? <RecordCalendar /> : <RecordListContent />}
+          {view === "calendar" ? (
+            <RecordCalendar anniversaryNamesForDate={anniversaryNamesForDate} />
+          ) : (
+            <RecordListContent />
+          )}
         </div>
       </PageShell>
       <RecordSearchResults />

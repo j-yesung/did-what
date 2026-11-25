@@ -29,6 +29,8 @@ assert.equal(search("", { ...EMPTY, query: "커 피", from: "2026-08-01" }), "fr
 assert.equal(search("q=커피", { ...EMPTY, query: "커피", sort: "oldest" }), "q=%EC%BB%A4%ED%94%BC&sort=oldest");
 
 assert.equal(parseRecordFilters({ category: "travel" }).category, "travel");
+assert.equal(parseRecordFilters({ category: "celebration" }).category, "celebration");
+assert.equal(parseRecordFilters({ category: "anniversary" }).category, "celebration");
 assert.equal(parseRecordFilters({ category: "uncategorized" }).category, "uncategorized");
 assert.equal(parseRecordFilters({ category: "invalid" }).category, "");
 assert.equal(parseRecordFilters({ category: ["travel", "date"] }).category, "");

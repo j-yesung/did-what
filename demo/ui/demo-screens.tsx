@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -36,8 +36,14 @@ import { RecordForm } from "@/widgets/record-form/record-form";
 import { Toolbar } from "@/widgets/toolbar";
 
 import { toDemoHref, toDemoRecordSheetHref } from "../lib/demo-href";
+import {
+  ANNIVERSARY_CARD_STYLE_PARAM,
+  getAnniversaryCardStyle,
+  getAnniversaryNamesForDate,
+} from "../model/anniversaries";
 import { getDemoHomeRecords, toDetailRow } from "../model/queries";
 import { demoStore, useDemoState } from "../model/store";
+import { DemoAnniversarySheet } from "./demo-anniversary-sheet";
 import { useDemo } from "./demo-context";
 
 type Member = { id: string; name: string };
@@ -56,17 +62,31 @@ export function DemoAppFrame({ children, member }: { children: ReactNode; member
 
 export function DemoHomeScreen({ member }: { member: Member }) {
   const state = useDemoState();
+  const searchParams = useSearchParams();
   const records = useMemo(() => getDemoHomeRecords(state), [state]);
+  const style = getAnniversaryCardStyle(searchParams?.get(ANNIVERSARY_CARD_STYLE_PARAM) ?? null);
 
-  return <HomeDashboard member={member} metOn={state.metOn} records={records} today={state.today} />;
+  return (
+    <HomeDashboard
+      anniversaryCard={<DemoAnniversarySheet style={style} />}
+      member={member}
+      metOn={state.metOn}
+      records={records}
+      today={state.today}
+    />
+  );
 }
 
 export function DemoRecordsScreen() {
   const searchParams = useSearchParams();
-  const { recordView } = useDemoState();
+  const { anniversaries, recordView } = useDemoState();
   const search = searchParams?.toString() ?? "";
   const view = getRecordViewFromParams(Object.fromEntries(new URLSearchParams(search))) ?? recordView ?? "list";
-  return <RecordsContent view={view} />;
+  const anniversaryNamesForDate = useCallback(
+    (date: string) => getAnniversaryNamesForDate(anniversaries, date),
+    [anniversaries],
+  );
+  return <RecordsContent anniversaryNamesForDate={anniversaryNamesForDate} view={view} />;
 }
 
 export function DemoRecordNewScreen() {

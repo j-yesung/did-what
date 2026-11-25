@@ -106,6 +106,6 @@ test("수정 화면에서 카테고리를 복원하고 미분류는 선택하지
     record_places: [],
     record_regions: [],
   };
-  assert.deepEqual(toRecordEditValues(record).category, ["anniversary"]);
+  assert.deepEqual(toRecordEditValues(record).category, ["celebration"]);
   assert.deepEqual(toRecordEditValues({ ...record, category: [] }).category, []);
 });

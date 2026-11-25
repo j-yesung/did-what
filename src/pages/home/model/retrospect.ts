@@ -1,8 +1,7 @@
-import { normalizeRecordCategories } from "@/entities/record/model/category";
 import { getRegionCode, REGIONS, type RegionCode } from "@/entities/region/model/region";
 import { callName } from "@/shared/lib/text/call-name";
 
-import type { HomeRecord, RegionSummary, RelationshipStats, ThisTime, TopPlace, UpcomingAnniversary } from "./types";
+import type { HomeRecord, RegionSummary, RelationshipStats, ThisTime, TopPlace } from "./types";
 
 const DAY = 86_400_000;
 const WINDOW_DAYS = 3;
@@ -38,25 +37,6 @@ export const pickAroundThisTime = (records: readonly HomeRecord[], today: string
 
   matched.sort((a, b) => a.yearsAgo - b.yearsAgo || b.record.recorded_at.localeCompare(a.record.recorded_at));
   return { yearsAgo: matched[0].yearsAgo, record: matched[0].record, records: matched.map(({ record }) => record) };
-};
-
-export const pickUpcomingAnniversary = (records: readonly HomeRecord[], today: string): UpcomingAnniversary | null => {
-  const todayTime = toUtc(today);
-  const todayYear = Number(today.slice(0, 4));
-  let nearest: UpcomingAnniversary | null = null;
-
-  for (const record of records) {
-    if (!normalizeRecordCategories(record.category).includes("anniversary")) continue;
-
-    const [recordYear, month, day] = record.recorded_at.split("-").map(Number);
-    const year = Math.max(todayYear, recordYear);
-    const occurrence = Date.UTC(year, month - 1, day);
-    const nextOccurrence = occurrence < todayTime ? Date.UTC(year + 1, month - 1, day) : occurrence;
-    const dday = Math.round((nextOccurrence - todayTime) / DAY);
-
-    if (!nearest || dday < nearest.dday) nearest = { dday, record };
-  }
-  return nearest;
 };
 
 export const summarizeRegions = (records: readonly HomeRecord[]): RegionSummary[] =>

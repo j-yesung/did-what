@@ -23,11 +23,11 @@ BEGIN
     RAISE EXCEPTION '카테고리 포함 필터 실패';
   END IF;
 
-  IF NOT public.update_owned_record_with_places(record_id, current_date, NULL, regions, '수정 테스트', '', '[]'::jsonb, 'sunny', ARRAY['anniversary'])
+  IF NOT public.update_owned_record_with_places(record_id, current_date, NULL, regions, '수정 테스트', '', '[]'::jsonb, 'sunny', ARRAY['celebration'])
   THEN
     RAISE EXCEPTION '카테고리 수정 호출 실패';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.records WHERE id = record_id AND category = ARRAY['anniversary']) THEN
+  IF NOT EXISTS (SELECT 1 FROM public.records WHERE id = record_id AND category = ARRAY['celebration']) THEN
     RAISE EXCEPTION '카테고리 수정 실패';
   END IF;
   IF NOT public.update_owned_record_with_places(record_id, current_date, NULL, regions, '미분류 테스트', '', '[]'::jsonb, 'sunny', ARRAY[]::text[])

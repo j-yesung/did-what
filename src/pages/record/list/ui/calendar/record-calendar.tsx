@@ -45,7 +45,11 @@ function CalendarMonthBuffer({ active, children }: { active: boolean; children: 
   return active ? children : deferredChildren;
 }
 
-export function RecordCalendar() {
+export function RecordCalendar({
+  anniversaryNamesForDate,
+}: {
+  anniversaryNamesForDate?: (date: string) => readonly string[];
+}) {
   const searchParams = useSearchParams();
   const shouldReduceMotion = useReducedMotion();
   const today = getToday();
@@ -235,6 +239,7 @@ export function RecordCalendar() {
             >
               <CalendarMonthBuffer active={index === CURRENT_MONTH_INDEX}>
                 <CalendarMonth
+                  anniversaryNamesForDate={anniversaryNamesForDate}
                   month={value}
                   onDayClick={handleDayClick}
                   onMonthChange={handleMonthChange}
@@ -250,6 +255,7 @@ export function RecordCalendar() {
 
       {/* 날짜를 바꾸면 목록 스크롤을 맨 위로 되돌린다. */}
       <RecordDayList
+        anniversaryNames={anniversaryNamesForDate?.(selectedDate)}
         date={selectedDate}
         key={selectedDate}
         records={recordsByDate ? (recordsByDate.get(selectedDate) ?? []) : undefined}

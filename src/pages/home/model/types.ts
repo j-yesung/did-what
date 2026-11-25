@@ -49,11 +49,6 @@ export type ThisTime = {
   records: HomeRecord[];
 };
 
-export type UpcomingAnniversary = {
-  dday: number;
-  record: HomeRecord;
-};
-
 export type RegionSummary = {
   code: RegionCode;
   label: string;

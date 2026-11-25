@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 
 import dynamic from "next/dynamic";
 
@@ -12,12 +12,11 @@ import {
   getGreeting,
   getRelationshipStats,
   pickAroundThisTime,
-  pickUpcomingAnniversary,
   rankPlaces,
   summarizeRegions,
 } from "../model/retrospect";
 import type { HomeRecord } from "../model/types";
-import { AnniversaryCard, HomeGreeting, RegionOverview, ThisTimeCard, TogetherCard, TopPlaces } from "./home-sections";
+import { HomeGreeting, RegionOverview, ThisTimeCard, TogetherCard, TopPlaces } from "./home-sections";
 import { RecordListSheet, type RecordListSheetState } from "./record-list-sheet";
 
 const RegionSheet = dynamic(() => import("./region-sheet").then((module) => module.RegionSheet), { ssr: false });
@@ -26,13 +25,14 @@ const RegionListSheet = dynamic(() => import("./region-sheet").then((module) => 
 });
 
 type HomeDashboardProps = {
+  anniversaryCard: ReactNode;
   member: { name: string };
   metOn: string | null;
   records: HomeRecord[];
   today: string;
 };
 
-export function HomeDashboard({ member, metOn, records, today }: HomeDashboardProps) {
+export function HomeDashboard({ anniversaryCard, member, metOn, records, today }: HomeDashboardProps) {
   const [sheet, setSheet] = useState<RecordListSheetState | null>(null);
   const closeSheet = useCallback(() => setSheet(null), []);
   const [regionListOpen, setRegionListOpen] = useState(false);
@@ -40,7 +40,6 @@ export function HomeDashboard({ member, metOn, records, today }: HomeDashboardPr
 
   const stats = getRelationshipStats(today, metOn);
   const thisTime = pickAroundThisTime(records, today);
-  const anniversary = pickUpcomingAnniversary(records, today);
   const regions = summarizeRegions(records);
   const places = rankPlaces(records);
 
@@ -54,7 +53,7 @@ export function HomeDashboard({ member, metOn, records, today }: HomeDashboardPr
           thisTime={thisTime}
         />
       )}
-      {anniversary && <AnniversaryCard {...anniversary} />}
+      {anniversaryCard}
       {records.length > 0 ? (
         <RegionOverview
           onOpen={openRegionSheet}

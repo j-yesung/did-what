@@ -11,7 +11,7 @@ import {
 } from "react-day-picker";
 import { ko } from "react-day-picker/locale";
 
-import { parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 import { normalizeRecordCategory, RECORD_CATEGORY_FILL, type RecordSummary } from "@/entities/record";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
@@ -30,15 +30,14 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
   const recordsByDate = useContext(RecordCalendarContext);
   const hiddenCount = useContext(RecordWeekContext).get(day.isoDate) ?? 0;
   const records = recordsByDate.get(day.isoDate) ?? [];
+  const recordLabel =
+    records.length > 0 ? `, 기록 ${records.length}개, ${records.map((record) => record.activity).join(", ")}` : "";
+  const anniversaryLabel = modifiers.anniversary ? ", 기념일 있음" : "";
 
   return (
     <DayButton
       {...props}
-      aria-label={
-        records.length > 0
-          ? `${props["aria-label"]}, 기록 ${records.length}개, ${records.map((record) => record.activity).join(", ")}`
-          : props["aria-label"]
-      }
+      aria-label={props["aria-label"] ? `${props["aria-label"]}${anniversaryLabel}${recordLabel}` : undefined}
       className={cn(
         "flex w-full min-w-0 flex-1 cursor-pointer flex-col items-center rounded-lg pt-0.5 after:inset-0",
         PRESS_FEEDBACK,
@@ -49,13 +48,16 @@ function RecordDayButton({ children, day, modifiers, ...props }: DayButtonProps)
     >
       <span
         className={cn(
-          "flex size-6 shrink-0 items-center justify-center rounded-full text-sm tabular-nums",
+          "relative flex size-6 shrink-0 items-center justify-center rounded-full text-sm tabular-nums",
           modifiers.outside && "text-muted-foreground",
           modifiers.today && "font-semibold ring-1 ring-primary",
           modifiers.selected && "bg-primary font-semibold text-primary-foreground ring-0",
         )}
       >
         {children}
+        {modifiers.anniversary && (
+          <span aria-hidden="true" className="absolute top-0 -right-1 size-1.5 rounded-full bg-accent-text" />
+        )}
       </span>
       {hiddenCount > 0 ? (
         <span
@@ -145,6 +147,7 @@ const CALENDAR_CLASS_NAMES = {
 };
 
 type CalendarMonthProps = {
+  anniversaryNamesForDate?: (date: string) => readonly string[];
   month: string;
   onDayClick: (date: Date) => void;
   onMonthChange: (date: Date) => void;
@@ -154,6 +157,7 @@ type CalendarMonthProps = {
 };
 
 export const CalendarMonth = memo(function CalendarMonth({
+  anniversaryNamesForDate,
   month,
   onDayClick,
   onMonthChange,
@@ -174,7 +178,12 @@ export const CalendarMonth = memo(function CalendarMonth({
         fixedWeeks
         hideNavigation
         locale={ko}
-        modifiers={{ selected: selectedDate ? parseISO(selectedDate) : false }}
+        modifiers={{
+          anniversary: anniversaryNamesForDate
+            ? (date) => anniversaryNamesForDate(format(date, "yyyy-MM-dd")).length > 0
+            : false,
+          selected: selectedDate ? parseISO(selectedDate) : false,
+        }}
         month={parseISO(`${month}-01`)}
         onDayClick={onDayClick}
         onMonthChange={onMonthChange}
