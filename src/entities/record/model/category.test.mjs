@@ -8,16 +8,18 @@ test("카테고리 복원은 선택 순서를 유지하고 중복·미분류·�
     "date",
   ]);
   assert.deepEqual(normalizeRecordCategories("daily"), ["daily"]);
+  assert.deepEqual(normalizeRecordCategories(["anniversary", "celebration"]), ["celebration"]);
   assert.deepEqual(normalizeRecordCategories("uncategorized"), []);
   assert.deepEqual(normalizeRecordCategories(null), []);
   assert.equal(normalizeRecordCategory(["travel", "date"]), "travel");
   assert.equal(normalizeRecordCategory([]), "uncategorized");
 });
 
-test("카테고리 입력은 배열만 허용하며 선택하지 않거나 5개를 모두 고를 수 있다", () => {
+test("카테고리 입력은 빈 배열이나 현재 카테고리 하나만 허용한다", () => {
   assert.equal(isRecordCategories([]), true);
   assert.equal(isRecordCategories(["daily"]), true);
-  for (const value of [null, "date", {}, ["unknown"], [null], ["daily", "date"]]) {
+  assert.equal(isRecordCategories(["celebration"]), true);
+  for (const value of [null, "date", {}, ["anniversary"], ["unknown"], [null], ["daily", "date"]]) {
     assert.equal(isRecordCategories(value), false);
   }
 });

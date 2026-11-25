@@ -10,7 +10,7 @@ import {
 import type { RecordCategory } from "../model/category";
 
 export const RECORD_CATEGORY_ICON: Record<RecordCategory, { Icon: typeof HeartIcon; color: string }> = {
-  anniversary: { Icon: CakeIcon, color: "text-category-anniversary" },
+  celebration: { Icon: CakeIcon, color: "text-category-anniversary" },
   daily: { Icon: CoffeeIcon, color: "text-category-daily" },
   date: { Icon: HeartIcon, color: "text-category-date" },
   gathering: { Icon: UsersThreeIcon, color: "text-category-gathering" },

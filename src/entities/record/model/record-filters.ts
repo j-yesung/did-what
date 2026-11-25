@@ -31,7 +31,8 @@ const readDate = (value: string | string[] | undefined) => {
 };
 
 export const parseRecordFilters = (params: RecordSearchParams): RecordFilters => {
-  const category = readParam(params.category);
+  const categoryParam = readParam(params.category);
+  const category = categoryParam === "anniversary" ? "celebration" : categoryParam;
   const query = readParam(params.q).replace(RESERVED_PATTERN, "").trim().slice(0, MAX_QUERY_LENGTH);
   const from = readDate(params.from);
   const to = readDate(params.to);

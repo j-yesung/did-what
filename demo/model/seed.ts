@@ -180,7 +180,7 @@ const RECORD_SEEDS: RecordSeed[] = [
   {
     activity: "1주년 기념 저녁",
     author: seojun,
-    category: "anniversary",
+    category: "celebration",
     daysAgo: 45,
     index: 8,
     memo: "처음 만난 동네에서 다시 저녁을 먹었다.",
