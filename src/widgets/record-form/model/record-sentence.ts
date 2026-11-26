@@ -1,4 +1,4 @@
-import type { RecordWeather } from "@/entities/record/model/weather";
+import type { RecordWeather } from "@/entities/record/model/options/weather";
 import type {
   RecordLocationPlace,
   RecordLocationRegion,

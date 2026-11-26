@@ -1,4 +1,4 @@
-import { sortPrimaryRecordRegions } from "@/entities/record/model/record-region";
+import { sortPrimaryRecordRegions } from "@/entities/record/model/region/record-region";
 import { getRelationshipStats, pickAroundThisTime, summarizeRegions } from "@/pages/home/model/retrospect";
 
 import { toAppHref, toDemoHref, toDemoRecordSheetHref, toSafeAppPath } from "../lib/demo-href.ts";
@@ -34,13 +34,17 @@ const FILTERS = { category: "", from: "", query: "", sort: "recent", to: "" };
 
 test("기념일을 등록·수정·삭제해도 기록은 그대로 남는다", () => {
   const state = createSeedState(TODAY);
-  const anniversary = { date: "2026-12-25", id: "christmas", name: " 크리스마스 " };
-  assert.equal(saveAnniversary(state, { ...anniversary, date: "2026-02-29" }).ok, false);
+  const anniversary = { monthDay: "12-25", id: "christmas", name: " 크리스마스 " };
+  assert.equal(saveAnniversary(state, { ...anniversary, monthDay: "02-30" }).ok, false);
 
   const added = saveAnniversary(state, anniversary);
   assert.equal(added.ok, true);
   assert.equal(added.state.changed, true);
-  assert.deepEqual(added.state.anniversaries.at(-1), { ...anniversary, name: "크리스마스" });
+  assert.deepEqual(added.state.anniversaries.at(-1), {
+    date: "2026-12-25",
+    id: anniversary.id,
+    name: "크리스마스",
+  });
 
   const edited = saveAnniversary(added.state, { ...anniversary, name: "함께 맞는 크리스마스" });
   assert.equal(edited.ok, true);

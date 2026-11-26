@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { QueryProvider } from "@/shared/lib/react-query/query-provider";
-import { ToastProvider } from "@/shared/ui/toast-provider";
+import { QueryProvider } from "@/app/providers/query-provider";
+import { ToastProvider } from "@/app/providers/toast-provider";
 
 import "@/app/styles/liquid-glass.css";
 import "../fonts/pretendard.css";

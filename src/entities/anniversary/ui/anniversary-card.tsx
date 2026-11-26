@@ -1,4 +1,6 @@
-import { formatRecordDate } from "@/shared/lib/date/format-date";
+import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr";
+
+import { formatMonthDay } from "@/shared/lib/date/format-date";
 
 type AnniversaryCardProps = {
   date: string;
@@ -13,12 +15,13 @@ export function AnniversaryCard({ date, dday, name }: AnniversaryCardProps) {
       <span className="grid min-w-0 flex-1 gap-0.75">
         <span className="truncate font-bold text-[15px]">{name}</span>
         <time className="text-[12px] text-muted-foreground" dateTime={date}>
-          {formatRecordDate(date)}
+          {formatMonthDay(date)}
         </time>
       </span>
       <span className="shrink-0 whitespace-nowrap font-extrabold text-[22px] text-accent-text tabular-nums leading-[1.15] tracking-[-0.04em]">
         {dday === 0 ? "D-DAY" : `D-${dday}`}
       </span>
+      <CaretRightIcon aria-hidden="true" className="mt-1 size-4 shrink-0 text-muted-foreground" />
     </>
   );
 

@@ -2,11 +2,11 @@ import { Fragment } from "react";
 
 import { MapPinIcon } from "@phosphor-icons/react/dist/ssr";
 
-import { normalizeRecordCategories } from "../model/category";
-import { getRecordPeriodDays } from "../model/record-period";
-import { formatRecordRegionLabels } from "../model/record-region";
+import { getRecordPeriodDays } from "../model/date/record-period";
+import { normalizeRecordCategories } from "../model/options/category";
+import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/options/weather";
+import { formatRecordRegionLabels } from "../model/region/record-region";
 import type { RecordSummary } from "../model/types";
-import { getRecordWeatherLabel, normalizeRecordWeather } from "../model/weather";
 import { RecordCategoryBadge } from "./record-badges";
 import { WeatherIcon } from "./weather-icon";
 

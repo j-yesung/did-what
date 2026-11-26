@@ -2,21 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 
-import { validateAnniversary } from "@/entities/anniversary/model/anniversary";
-import type { Anniversary, AnniversaryActionResult } from "@/entities/anniversary/model/types";
+import { prepareAnniversary } from "@/entities/anniversary/model/anniversary";
+import type { AnniversaryActionResult, AnniversaryDraft } from "@/entities/anniversary/model/types";
 import { requireMember } from "@/entities/member/server";
+import { getToday } from "@/shared/lib/date/get-today";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 
-export const createAnniversary = async (input: Anniversary): Promise<AnniversaryActionResult> => {
-  const message = validateAnniversary(input);
-  if (message) return { message, status: "error" };
-  if (!isUuid(input.id)) return { message: "기념일을 다시 등록해 주세요.", status: "error" };
+export const createAnniversary = async (input: AnniversaryDraft): Promise<AnniversaryActionResult> => {
+  const result = prepareAnniversary(input, getToday());
+  if (!result.anniversary) return { message: result.message, status: "error" };
+  const { date, id, name } = result.anniversary;
+  if (!isUuid(id)) return { message: "기념일을 다시 등록해 주세요.", status: "error" };
   const { supabase, user } = await requireMember();
   const { error } = await supabase.from("anniversaries").upsert(
     {
-      id: input.id,
-      name: input.name.trim(),
-      date: input.date,
+      id,
+      name,
+      date,
       owner_id: user.id,
     },
     { onConflict: "id", ignoreDuplicates: true },

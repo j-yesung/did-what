@@ -3,8 +3,8 @@ import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/
 import { createClient } from "@/shared/api/supabase/client";
 import { MAIN_QUERY_OPTIONS } from "@/shared/lib/react-query/query-client";
 
-import type { RecordFilters } from "../model/record-filters";
-import type { RecordCursor } from "../model/record-page";
+import type { RecordFilters } from "../model/list/record-filters";
+import type { RecordCursor } from "../model/list/record-page";
 import {
   fetchRecord,
   fetchRecordLocations,

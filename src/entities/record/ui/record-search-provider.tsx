@@ -14,8 +14,13 @@ import {
 
 import { usePathname, useSearchParams } from "next/navigation";
 
-import { parseRecordFilters, readRecordQuery } from "../model/record-filters";
-import { applyRecordSearch, beginRecordSearch, clearRecordSearch, resetRecordSearch } from "../model/record-search";
+import { parseRecordFilters, readRecordQuery } from "../model/list/record-filters";
+import {
+  applyRecordSearch,
+  beginRecordSearch,
+  clearRecordSearch,
+  resetRecordSearch,
+} from "../model/list/record-search";
 
 const useSearchState = () => {
   const pathname = usePathname();

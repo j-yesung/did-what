@@ -1,7 +1,7 @@
 import type { Icon, IconProps } from "@phosphor-icons/react";
 import { CloudIcon, CloudRainIcon, CloudSunIcon, SnowflakeIcon, SunIcon } from "@phosphor-icons/react/dist/ssr";
 
-import type { RecordWeather } from "../model/weather";
+import type { RecordWeather } from "../model/options/weather";
 
 const WEATHER_ICON: Record<RecordWeather, Icon> = {
   cloudy: CloudIcon,

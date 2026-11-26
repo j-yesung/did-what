@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import { normalizeRecordCategories } from "@/entities/record/model/category";
+import { normalizeRecordCategories } from "@/entities/record/model/options/category";
 import { getToday } from "@/shared/lib/date/get-today";
 
 import { createSeedState, DEMO_STATE_VERSION } from "./seed.ts";

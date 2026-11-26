@@ -1,4 +1,4 @@
-import { readRecordInput, validateRecordInput } from "@/entities/record/model/record-form";
+import { readRecordInput, validateRecordInput } from "@/entities/record/model/form/record-form";
 import {
   createRecordFormDraft,
   getErrorSlots,

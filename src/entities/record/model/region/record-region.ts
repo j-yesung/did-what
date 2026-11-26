@@ -1,4 +1,4 @@
-import type { RecordSummary } from "./types";
+import type { RecordSummary } from "../types";
 
 const VISIBLE_REGION_LIMIT = 2;
 

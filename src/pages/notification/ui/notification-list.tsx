@@ -11,7 +11,7 @@ import {
   notificationListQueryOptions,
   unreadNotificationCountQueryOptions,
 } from "@/entities/notification";
-import { readAllNotifications } from "@/features/notification/read-all-notifications";
+import { readAllNotifications } from "@/features/notification/api/read-all-notifications";
 import { useDemoOverride } from "@/shared/lib/demo-override";
 import { useActionMutation } from "@/shared/lib/server-action/use-action-mutation";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/ui/empty";

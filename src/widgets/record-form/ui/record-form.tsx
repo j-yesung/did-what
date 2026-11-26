@@ -24,8 +24,6 @@ import { LeaveConfirmDialog } from "@/shared/ui/leave-confirm-dialog";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { Spinner } from "@/shared/ui/spinner";
 
-import { RecordDateField } from "./field/date-field";
-import { RecordMemoField } from "./field/memo-field";
 import {
   getErrorSlots,
   getRecordFormHint,
@@ -34,10 +32,12 @@ import {
   type RecordFormDraft,
   type RecordFormSlot,
   toRecordFormData,
-} from "./model/record-form-draft";
-import { RecordFormLayout } from "./ui/record-form-layout";
-import { RecordFormSheet } from "./ui/record-form-sheet";
-import { RecordSentence } from "./ui/record-sentence";
+} from "../model/record-form-draft";
+import { RecordDateField } from "./date-field";
+import { RecordMemoField } from "./memo-field";
+import { RecordFormLayout } from "./record-form-layout";
+import { RecordFormSheet } from "./record-form-sheet";
+import { RecordSentence } from "./record-sentence";
 
 const COPY = {
   create: { error: "기록을 저장하지 못했어요", submit: "기록 남기기", success: "함께한 순간을 기록했어요" },

@@ -17,7 +17,7 @@ import {
   type RecordWeather,
   WeatherIcon,
 } from "@/entities/record";
-import { getRecordCategoryLabel, RECORD_CATEGORY_BADGE } from "@/entities/record/model/category";
+import { getRecordCategoryLabel, RECORD_CATEGORY_BADGE } from "@/entities/record/model/options/category";
 import { RECORD_CATEGORY_ICON } from "@/entities/record/ui/category-icon";
 import { toVisitedRegions } from "@/features/record/select-record-location/model/location-picker";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";

@@ -10,7 +10,7 @@ import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageHeader, PageShell } from "@/shared/ui/layouts";
 import { LoadErrorAlert } from "@/shared/ui/load-error-alert";
 import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
-import { RecordForm } from "@/widgets/record-form/record-form";
+import { RecordForm } from "@/widgets/record-form/ui/record-form";
 
 type RecordEditPageProps = {
   params: Promise<{ recordId: string }>;

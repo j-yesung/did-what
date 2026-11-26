@@ -11,7 +11,7 @@ import {
   SearchParamsContext,
 } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 
-import { openRecordSheet } from "@/entities/record/model/record-sheet";
+import { openRecordSheet } from "@/entities/record/model/sheet/record-sheet";
 import { setAppPathnameReader } from "@/shared/lib/navigation/app-pathname";
 import { getPageNavigation } from "@/shared/lib/navigation/page-navigation";
 

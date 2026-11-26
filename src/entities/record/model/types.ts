@@ -1,7 +1,5 @@
 import type { ActionState } from "@/shared/lib/server-action/action-state";
 
-import type { RecordFieldErrors } from "./record-form";
-
 export type RecordSummary = {
   activity: string;
   category: string[];
@@ -19,5 +17,9 @@ export type RecordSummary = {
   region_name?: string;
   weather: string;
 };
+
+export type RecordFieldErrors = Partial<
+  Record<"recordedAt" | "recordedUntil" | "regions" | "places" | "weather" | "activity" | "memo" | "category", string>
+>;
 
 export type RecordFormState = ActionState<{ fieldErrors?: RecordFieldErrors }>;

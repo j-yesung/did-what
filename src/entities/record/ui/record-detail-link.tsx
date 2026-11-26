@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { isPlainLeftClick } from "@/shared/lib/navigation/use-press-navigate";
 import { PressLink } from "@/shared/ui/press-link";
 
-import { openRecordSheet, toRecordSheetHref } from "../model/record-sheet";
+import { openRecordSheet, toRecordSheetHref } from "../model/sheet/record-sheet";
 
 type RecordDetailLinkProps = Omit<ComponentProps<typeof PressLink>, "href"> & { href: string };
 
