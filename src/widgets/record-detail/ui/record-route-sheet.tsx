@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
 import { closeRecordSheet } from "@/entities/record/model/sheet/record-sheet";
-import { readRecordNotifications } from "@/features/notification/read-record-notifications";
+import { readRecordNotifications } from "@/features/notification/api/read-record-notifications";
 import { useDemoOverride } from "@/shared/lib/demo-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";
 import { showToast } from "@/shared/lib/toast";
