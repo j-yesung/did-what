@@ -6,7 +6,7 @@ import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
 import { PageShell } from "@/shared/ui/layouts";
 import { createRecordFormDraft } from "@/widgets/record-form/model/record-form-draft";
-import { RecordForm } from "@/widgets/record-form/record-form";
+import { RecordForm } from "@/widgets/record-form/ui/record-form";
 
 type RecordNewPageProps = {
   searchParams: Promise<{ date?: string | string[]; placeId?: string | string[]; region?: string | string[] }>;
