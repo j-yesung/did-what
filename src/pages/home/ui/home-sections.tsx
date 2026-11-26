@@ -34,8 +34,6 @@ export function HomeGreeting({ greeting }: { greeting: string }) {
   );
 }
 
-const formatDate = (date: string) => date.replaceAll("-", ".");
-
 export function TogetherCard({ stats }: { stats: RelationshipStats | null }) {
   return (
     <section aria-label="함께한 시간" className="flex min-h-29.5 flex-col items-start justify-center px-1">
@@ -46,7 +44,6 @@ export function TogetherCard({ stats }: { stats: RelationshipStats | null }) {
             <span className="text-[42px] text-primary tabular-nums">{stats.daysTogether}</span>
             <span className="ml-1 text-[27px]">일째</span>
           </p>
-          <p className="mt-2 text-[13px] text-muted-foreground">{formatDate(stats.metOn)}부터</p>
         </>
       ) : (
         <>
