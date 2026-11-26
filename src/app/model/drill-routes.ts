@@ -4,7 +4,7 @@ export const DRILL_ROUTES = [
   { from: ["/"], to: "/anniversaries" },
   { from: [...TOOLBAR_PATHS, "/places/*"], to: "/records/new" },
   { from: TOOLBAR_PATHS, to: "/notifications" },
-  { from: ["/places"], to: "/places/*" },
+  { from: ["/", "/places"], to: "/places/*" },
 ];
 
 const matchesRoute = (pattern: string, path: string | null) => {
