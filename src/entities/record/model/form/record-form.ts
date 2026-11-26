@@ -1,11 +1,17 @@
-import { isRecordCategories, normalizeRecordCategories, type RecordCategory } from "@/entities/record/model/category";
-import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
-import { getRecordRegionKey } from "@/entities/record/model/record-region";
-import { validateRecordContent, validateRecordDates } from "@/entities/record/model/record-validation";
-import { isRecordWeather, type RecordWeather } from "@/entities/record/model/weather";
+import {
+  isRecordCategories,
+  normalizeRecordCategories,
+  type RecordCategory,
+} from "@/entities/record/model/options/category";
+import { isRecordWeather, type RecordWeather } from "@/entities/record/model/options/weather";
+import { getRecordRegionKey } from "@/entities/record/model/region/record-region";
+import type { RecordFieldErrors } from "@/entities/record/model/types";
 import type { KakaoSearchScope } from "@/shared/api/kakao-local";
 import { KAKAO_SEARCH_MAX_PAGE, validateKakaoPlaceId, validateKakaoQuery } from "@/shared/api/kakao-local/validation";
+import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 import { isUuid } from "@/shared/lib/validation/is-uuid";
+
+import { MAX_ACTIVITY_LENGTH, MAX_MEMO_LENGTH, MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "./limits";
 
 export type RecordPlaceReference =
   | { kind: "existing"; placeId: string; save: boolean }
@@ -25,10 +31,6 @@ type RecordRegionReference = {
   label: string;
   name: string;
 };
-
-export type RecordFieldErrors = Partial<
-  Record<"recordedAt" | "recordedUntil" | "regions" | "places" | "weather" | "activity" | "memo" | "category", string>
->;
 
 export type RecordInput = {
   recordedAt: string;
@@ -179,6 +181,31 @@ const parseRegions = (value: string): RecordRegionReference[] | null => {
   } catch {
     return null;
   }
+};
+
+const validateRecordDates = ({
+  recordedAt,
+  recordedUntil,
+}: {
+  recordedAt: string;
+  recordedUntil: string;
+}): RecordFieldErrors => {
+  const fieldErrors: RecordFieldErrors = {};
+  if (!isIsoDate(recordedAt)) fieldErrors.recordedAt = "올바른 날짜를 입력해 주세요.";
+  if (recordedUntil && (!isIsoDate(recordedUntil) || recordedUntil < recordedAt)) {
+    fieldErrors.recordedUntil = "종료일은 시작일과 같거나 이후여야 해요.";
+  }
+  return fieldErrors;
+};
+
+const validateRecordContent = ({ activity, memo }: { activity: string; memo: string }): RecordFieldErrors => {
+  const fieldErrors: RecordFieldErrors = {};
+  const title = activity.trim();
+  if (title.length < 1 || title.length > MAX_ACTIVITY_LENGTH) {
+    fieldErrors.activity = `기록 제목은 1자 이상 ${MAX_ACTIVITY_LENGTH}자 이하로 입력해 주세요.`;
+  }
+  if (memo.trim().length > MAX_MEMO_LENGTH) fieldErrors.memo = `메모는 ${MAX_MEMO_LENGTH}자 이하로 입력해 주세요.`;
+  return fieldErrors;
 };
 
 export const validateRecordInput = (

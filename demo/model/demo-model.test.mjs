@@ -1,4 +1,4 @@
-import { sortPrimaryRecordRegions } from "@/entities/record/model/record-region";
+import { sortPrimaryRecordRegions } from "@/entities/record/model/region/record-region";
 import { getRelationshipStats, pickAroundThisTime, summarizeRegions } from "@/pages/home/model/retrospect";
 
 import { toAppHref, toDemoHref, toDemoRecordSheetHref, toSafeAppPath } from "../lib/demo-href.ts";

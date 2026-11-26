@@ -1,6 +1,6 @@
-import { MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
-import type { RecordInput } from "@/entities/record/model/record-form";
-import { getRecordRegionKey } from "@/entities/record/model/record-region";
+import { MAX_VISITED_REGIONS } from "@/entities/record/model/form/limits";
+import type { RecordInput } from "@/entities/record/model/form/record-form";
+import { getRecordRegionKey } from "@/entities/record/model/region/record-region";
 import type { RecordComment } from "@/entities/record-comment/model/record-comment";
 
 import { DEMO_REGIONS, getDemoKakaoPlace } from "./samples.ts";

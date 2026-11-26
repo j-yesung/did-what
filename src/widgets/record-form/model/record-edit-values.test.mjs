@@ -1,4 +1,4 @@
-import { validateRecordInput } from "@/entities/record/model/record-form";
+import { validateRecordInput } from "@/entities/record/model/form/record-form";
 import { toSearchedRecordLocationRegion } from "@/features/record/select-record-location/model/location-picker";
 import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
 

@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { NOTIFICATIONS_QUERY_KEY } from "@/entities/notification";
-import { closeRecordSheet } from "@/entities/record/model/record-sheet";
+import { closeRecordSheet } from "@/entities/record/model/sheet/record-sheet";
 import { readRecordNotifications } from "@/features/notification/read-record-notifications";
 import { useDemoOverride } from "@/shared/lib/demo-override";
 import { runServerAction } from "@/shared/lib/server-action/run-server-action";

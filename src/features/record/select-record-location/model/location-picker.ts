@@ -1,7 +1,7 @@
 import type { PlaceOption } from "@/entities/place";
 import type { RecordPlaceReference, RecordRegionLocationRow } from "@/entities/record";
-import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/limits";
-import { getRecordRegionKey, mergeVisitedRegions } from "@/entities/record/model/record-region";
+import { MAX_VISITED_PLACES, MAX_VISITED_REGIONS } from "@/entities/record/model/form/limits";
+import { getRecordRegionKey, mergeVisitedRegions } from "@/entities/record/model/region/record-region";
 import type { KakaoRegion } from "@/shared/api/kakao-local";
 
 export type RecordLocationRegion = KakaoRegion & { label: string };

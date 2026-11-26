@@ -3,14 +3,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/api/supabase/client";
 import type { Database } from "@/shared/api/supabase/database.types";
 
-import type { RecordFilters } from "../model/record-filters";
+import type { RecordFilters } from "../model/list/record-filters";
 import {
   getRecordCursor,
   getRecordCursorFilter,
   getRecordPeriodFilter,
   RECORD_PAGE_SIZE,
   type RecordCursor,
-} from "../model/record-page";
+} from "../model/list/record-page";
 import { RECORD_DETAIL_COLUMNS, RECORD_LOCATION_COLUMNS } from "./record-columns";
 
 const RECORD_PAGE_COLUMNS =

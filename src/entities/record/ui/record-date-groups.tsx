@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { getToday } from "@/shared/lib/date/get-today";
 
-import { formatRecordTimelineDate, groupRecordsByDate } from "../model/record-timeline";
+import { formatRecordTimelineDate, groupRecordsByDate } from "../model/date/record-timeline";
 
 type RecordDateGroupsProps<T> = {
   records: readonly T[];

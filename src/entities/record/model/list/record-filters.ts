@@ -1,4 +1,4 @@
-import { isRecordCategory, type RecordCategory } from "@/entities/record/model/category";
+import { isRecordCategory, type RecordCategory } from "@/entities/record/model/options/category";
 import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
 
 export type RecordSort = "recent" | "oldest";

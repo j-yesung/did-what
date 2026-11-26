@@ -1,4 +1,4 @@
-import { toRecordSheetHref } from "@/entities/record/model/record-sheet";
+import { toRecordSheetHref } from "@/entities/record/model/sheet/record-sheet";
 
 /**
  * 체험 페이지 가운데 iframe이 여는 앱 주소. 앱 경로는 path 쿼리에 담는다.

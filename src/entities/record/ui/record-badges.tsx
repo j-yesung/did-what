@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 
-import { getRecordCategoryLabel, normalizeRecordCategories, RECORD_CATEGORY_BADGE } from "../model/category";
+import { getRecordCategoryLabel, normalizeRecordCategories, RECORD_CATEGORY_BADGE } from "../model/options/category";
 import type { RecordSummary } from "../model/types";
 
 export function RecordCategoryBadge({

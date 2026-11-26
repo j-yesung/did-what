@@ -1,5 +1,5 @@
 import type { RecordCategory, RecordFieldErrors, RecordWeather } from "@/entities/record";
-import { DEFAULT_RECORD_WEATHER } from "@/entities/record/model/weather";
+import { DEFAULT_RECORD_WEATHER } from "@/entities/record/model/options/weather";
 import type {
   RecordLocationPlace,
   RecordLocationRegion,

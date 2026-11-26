@@ -4,8 +4,8 @@ import { ChatCircleIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { cn } from "@/shared/lib/utils";
 
-import { normalizeRecordCategories, RECORD_CATEGORY_FILL } from "../model/category";
-import { formatRecordProvinceLabels } from "../model/record-region";
+import { normalizeRecordCategories, RECORD_CATEGORY_FILL } from "../model/options/category";
+import { formatRecordProvinceLabels } from "../model/region/record-region";
 import type { RecordSummary } from "../model/types";
 import { RECORD_CATEGORY_ICON } from "./category-icon";
 

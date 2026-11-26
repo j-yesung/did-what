@@ -7,7 +7,7 @@ import {
   UsersThreeIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
-import type { RecordCategory } from "../model/category";
+import type { RecordCategory } from "../model/options/category";
 
 export const RECORD_CATEGORY_ICON: Record<RecordCategory, { Icon: typeof HeartIcon; color: string }> = {
   celebration: { Icon: CakeIcon, color: "text-category-anniversary" },

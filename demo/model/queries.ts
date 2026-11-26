@@ -1,11 +1,11 @@
 import type { NotificationCursor } from "@/entities/notification/model/notification-page";
-import type { RecordFilters } from "@/entities/record/model/record-filters";
+import type { RecordFilters } from "@/entities/record/model/list/record-filters";
 import {
   compareRecordsByRecent,
   getRecordCursor,
   RECORD_PAGE_SIZE,
   type RecordCursor,
-} from "@/entities/record/model/record-page";
+} from "@/entities/record/model/list/record-page";
 import type { RecordCommentCursor } from "@/entities/record-comment/model/record-comment";
 import type { HomeRecord } from "@/pages/home/model/types";
 import type { KakaoPlace } from "@/shared/api/kakao-local/types";

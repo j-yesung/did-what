@@ -1,7 +1,7 @@
-import { normalizeRecordCategories } from "@/entities/record/model/category";
-import { sortPrimaryRecordRegions, sortPrimaryRegionFirst } from "@/entities/record/model/record-region";
+import { normalizeRecordCategories } from "@/entities/record/model/options/category";
+import { normalizeRecordWeather } from "@/entities/record/model/options/weather";
+import { sortPrimaryRecordRegions, sortPrimaryRegionFirst } from "@/entities/record/model/region/record-region";
 import type { RecordSummary } from "@/entities/record/model/types";
-import { normalizeRecordWeather } from "@/entities/record/model/weather";
 import {
   toExistingRecordLocationPlace,
   toShortRegionName,
