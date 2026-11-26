@@ -1,8 +1,5 @@
-import {
-  formatRecordDateSlot,
-  getDirectionParticle,
-  getRecordLocationSummary,
-} from "@/widgets/record-form/model/record-sentence";
+import { getDirectionParticle } from "@/shared/lib/text/particle";
+import { formatRecordDateSlot, getRecordLocationSummary } from "@/widgets/record-form/model/record-sentence";
 
 import assert from "node:assert/strict";
 import { test } from "node:test";

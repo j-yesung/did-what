@@ -1,4 +1,5 @@
 import { getRegionCode, REGIONS, type RegionCode } from "@/entities/region/model/region";
+import { countDaysSince } from "@/shared/lib/date/count-days";
 import { callName } from "@/shared/lib/text/call-name";
 
 import type { HomeRecord, RegionSummary, RelationshipStats, ThisTime, TopPlace } from "./types";
@@ -15,7 +16,7 @@ export const getRelationshipStats = (today: string, metOn: string | null = null)
   if (!metOn || metOn > today) return null;
   return {
     metOn,
-    daysTogether: Math.round((toUtc(today) - toUtc(metOn)) / DAY) + 1,
+    daysTogether: countDaysSince(metOn, today),
   };
 };
 
