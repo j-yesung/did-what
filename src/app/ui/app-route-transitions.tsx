@@ -9,8 +9,6 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/shared/lib/utils";
 
-import "./app-route-transitions.css";
-
 const ANNIVERSARIES_PATH = "/anniversaries";
 const RECORD_CREATE_PATH = "/records/new";
 const NOTIFICATIONS_PATH = "/notifications";
@@ -66,7 +64,10 @@ export function AppRouteTransitions({ children }: { children: ReactNode }) {
   // Drill이 다시 붙이는 이전 화면에도 기본 등장 효과 제거를 적용한다.
   return (
     <div
-      className={cn("relative z-0 min-h-dvh overflow-x-clip", useAppWidth && "mx-auto w-full max-w-(--app-width)")}
+      className={cn(
+        "relative z-0 min-h-dvh overflow-x-clip [&[data-suppress-page-entrance]_main]:animate-none",
+        useAppWidth && "mx-auto w-full max-w-(--app-width)",
+      )}
       data-suppress-page-entrance={
         isAnniversaryTransition ||
         isRecordCreateTransition ||
