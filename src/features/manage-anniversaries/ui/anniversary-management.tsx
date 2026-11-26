@@ -90,7 +90,8 @@ export function AnniversaryManagement({
           ))}
         </ul>
       )}
-      <div className="sticky bottom-0 mt-auto bg-background pt-3 pb-[env(safe-area-inset-bottom)]">
+      <div aria-hidden="true" className="h-16 shrink-0" />
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 mx-auto max-w-(--app-width) bg-[linear-gradient(transparent,var(--color-background)_32px)] px-5 pt-8 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] [&>*]:pointer-events-auto">
         <AnniversarySheet formStyle={formStyle} onCreate={onCreate} today={today} />
       </div>
       <ConfirmDialog

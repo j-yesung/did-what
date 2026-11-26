@@ -21,15 +21,11 @@ import { getRecordCategoryLabel, RECORD_CATEGORY_BADGE } from "@/entities/record
 import { RECORD_CATEGORY_ICON } from "@/entities/record/ui/category-icon";
 import { toVisitedRegions } from "@/features/record/select-record-location/model/location-picker";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { getDirectionParticle } from "@/shared/lib/text/particle";
 import { cn } from "@/shared/lib/utils";
 
 import type { RecordFormDraft, RecordFormSlot } from "../model/record-form-draft";
-import {
-  formatRecordDateSlot,
-  getDirectionParticle,
-  getRecordLocationSummary,
-  RECORD_WEATHER_PHRASE,
-} from "../model/record-sentence";
+import { formatRecordDateSlot, getRecordLocationSummary, RECORD_WEATHER_PHRASE } from "../model/record-sentence";
 
 const SHAKE_KEYFRAMES = [0, -6, 6, -4, 4, 0].map((x) => ({ transform: `translateX(${x}px)` }));
 

@@ -19,7 +19,7 @@ export function RecordFormLayout({ backDisabled, children, footer, onBack, title
 
   return (
     <div
-      className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] bg-background"
+      className="relative grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] bg-background"
       style={keyboardInset > 0 ? { paddingBottom: keyboardInset } : undefined}
     >
       <header className="border-b bg-background px-5 pt-[calc(10px+env(safe-area-inset-top))] pb-3">
@@ -30,13 +30,16 @@ export function RecordFormLayout({ backDisabled, children, footer, onBack, title
         </div>
       </header>
 
-      <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-7">{children}</div>
+      <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pt-7 pb-[calc(--spacing(32)+env(safe-area-inset-bottom))]">
+        {children}
+      </div>
 
       <footer
         className={cn(
-          "bg-background px-5 pt-3",
-          keyboardInset > 0 ? "pb-3" : "pb-[max(--spacing(4),env(safe-area-inset-bottom))]",
+          "pointer-events-none absolute inset-x-0 bg-[linear-gradient(transparent,var(--color-background)_32px)] px-5 pt-8 [&>*]:pointer-events-auto",
+          keyboardInset > 0 ? "pb-3" : "pb-[calc(--spacing(4)+env(safe-area-inset-bottom))]",
         )}
+        style={{ bottom: keyboardInset }}
       >
         {footer}
       </footer>

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@number-flow/react": "0.6.2",
     "@phosphor-icons/react": "^2.1.10",
     "@ssgoi/react": "7.5.1",
     "@supabase/ssr": "^0.12.4",
