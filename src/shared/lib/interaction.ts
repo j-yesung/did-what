@@ -1,8 +1,10 @@
 /**
- * 누를 때와 뗄 때의 시간이 다르다. 누르는 건 순간이고 손을 떼면 표면이 천천히 복원되는 게 실제 감각에 가깝다.
+ * 누를 때와 뗄 때의 시간이 다르다. 누를 때는 200ms 동안 부드럽게 감속하며 들어가고, 손을 떼면 표면이 천천히 복원된다.
  * 복귀 커브는 초반에 크게 움직이고 끝에서 길게 눕는 감속이라 350ms여도 느리게 느껴지지 않는다.
+ * Button과 같은 값이다.
  */
-const PRESS_EASING = "duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:duration-[80ms] active:ease-out";
+const PRESS_EASING =
+  "duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:duration-[200ms] active:ease-[cubic-bezier(0.2,0,0,1)]";
 
 /**
  * 브라우저 기본 탭 하이라이트와 텍스트 선택은 꺼둔다.
