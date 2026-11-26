@@ -1,6 +1,6 @@
 "use client";
 
-import { type KeyboardEvent, useId, useLayoutEffect, useRef } from "react";
+import { type KeyboardEvent, type ReactNode, useId, useLayoutEffect, useRef } from "react";
 
 import { cn } from "@/shared/lib/utils";
 
@@ -120,6 +120,29 @@ export function WheelPicker({ "aria-label": ariaLabel, className, onValueChange,
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+export function WheelPickerGroup({
+  "aria-label": ariaLabel,
+  children,
+  className,
+}: {
+  "aria-label": string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      aria-label={ariaLabel}
+      className={cn(
+        "grid grid-flow-col [&>*:first-child:not(:last-child)_[data-slot=wheel-picker-band]]:rounded-r-none [&>*:last-child:not(:first-child)_[data-slot=wheel-picker-band]]:rounded-l-none [&>*:not(:first-child):not(:last-child)_[data-slot=wheel-picker-band]]:rounded-none",
+        className,
+      )}
+      role="group"
+    >
+      {children}
     </div>
   );
 }

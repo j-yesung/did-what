@@ -15,7 +15,7 @@ import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { FieldDescription, FieldLegend, FieldSet } from "@/shared/ui/field";
 import { IconButton } from "@/shared/ui/icon-button";
-import { WheelPicker } from "@/shared/ui/wheel-picker";
+import { WheelPicker, WheelPickerGroup } from "@/shared/ui/wheel-picker";
 
 import { saveMetOn } from "../api/actions";
 
@@ -104,7 +104,7 @@ export function MetOnSetting({ metOn }: { metOn: string | null }) {
             </BottomSheet.Description>
           </BottomSheet.Header>
           <div className="px-5 pt-4 pb-7">
-            <div className="grid grid-cols-[1.3fr_1fr_1fr] [&>*:first-child_[data-slot=wheel-picker-band]]:rounded-r-none [&>*:last-child_[data-slot=wheel-picker-band]]:rounded-l-none [&>*:nth-child(2)_[data-slot=wheel-picker-band]]:rounded-none">
+            <WheelPickerGroup aria-label="우리가 처음 만난 날" className="grid-cols-[1.3fr_1fr_1fr]">
               <WheelPicker
                 aria-label="연도"
                 onValueChange={(value) => changeDraft({ year: value })}
@@ -123,7 +123,7 @@ export function MetOnSetting({ metOn }: { metOn: string | null }) {
                 options={range(1, getDaysInMonth(new Date(year, month - 1)), "일")}
                 value={day}
               />
-            </div>
+            </WheelPickerGroup>
             {error ? (
               <FieldDescription className="mt-3 text-destructive" role="alert">
                 {error}
