@@ -594,6 +594,11 @@
   }
 }
 
+[data-press-settled] {
+  scale: none !important;
+  translate: none !important;
+}
+
 .hide-during-record-search {
   transform-origin: left;
   transition-duration: 150ms;
