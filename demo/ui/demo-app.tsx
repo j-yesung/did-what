@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { AppLoading } from "@/app/ui/app-loading";
 import { AppNotFound } from "@/app/ui/app-not-found";
+import { AppRouteTransitions } from "@/app/ui/app-route-transitions";
 import { withReturnTo } from "@/shared/lib/navigation/return-to";
 
 import { getCurrentDemoMember } from "../lib/demo-actions";
@@ -105,7 +106,9 @@ export function DemoApp() {
 
   return (
     <DemoAppFrame member={memberProps}>
-      <Fragment key={`${pathname}:${navigationKey.current}`}>{screen}</Fragment>
+      <AppRouteTransitions>
+        <Fragment key={`${pathname}:${navigationKey.current}`}>{screen}</Fragment>
+      </AppRouteTransitions>
     </DemoAppFrame>
   );
 }

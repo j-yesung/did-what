@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 
 import { MainDataPrefetch } from "@/app/providers/main-data-prefetch";
 import { AppLoadingFallback, AppShown } from "@/app/ui/app-loading-fallback";
+import { AppRouteTransitions } from "@/app/ui/app-route-transitions";
 import { requireMember } from "@/entities/member/server";
 import { RecordSearchProvider } from "@/entities/record/ui/record-search-provider";
 import { RETURN_TO_HEADER } from "@/shared/lib/navigation/return-to";
@@ -37,7 +38,7 @@ async function AuthenticatedApp({ children }: { children: ReactNode }) {
       <Toolbar memberId={member.id} />
       {/* 상세 화면의 고정 뒤로가기 버튼이 옮겨 오는 자리. 툴바 다음, 본문보다 앞에서 읽힌다. */}
       <PageBackSlot />
-      {children}
+      <AppRouteTransitions>{children}</AppRouteTransitions>
       <BottomNavigation />
       <RecordRouteSheet member={{ id: member.id, name: member.name }} />
     </RecordSearchProvider>
