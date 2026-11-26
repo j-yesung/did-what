@@ -11,7 +11,7 @@ import { RETURN_TO_HEADER } from "@/shared/lib/navigation/return-to";
 import { PageBackSlot } from "@/shared/ui/layouts/page-back-button";
 import { BottomNavigation } from "@/widgets/bottom-navigation";
 import { RecordRouteSheet } from "@/widgets/record-detail";
-import { Toolbar } from "@/widgets/toolbar";
+import { Toolbar } from "@/widgets/toolbar/ui/toolbar";
 
 export const dynamic = "force-dynamic";
 

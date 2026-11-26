@@ -12,7 +12,8 @@ import { cn } from "@/shared/lib/utils";
 import { IconButton } from "@/shared/ui/icon-button";
 import { FixedToolbar } from "@/shared/ui/layouts";
 import { PressScale, PressScaleExempt } from "@/shared/ui/press-scale";
-import { NotificationBell } from "@/widgets/toolbar/notification-bell";
+
+import { NotificationBell } from "./notification-bell";
 
 const TOOLBAR_ENTRY_PATHS = new Set(["/", "/records", "/places", "/settings"]);
 const OPEN_SPRING: Transition = { type: "spring", bounce: 0, visualDuration: 0.3 };

@@ -33,7 +33,7 @@ import { RecordRouteSheet } from "@/widgets/record-detail";
 import { toRecordEditValues } from "@/widgets/record-form/model/record-edit-values";
 import { createRecordFormDraft } from "@/widgets/record-form/model/record-form-draft";
 import { RecordForm } from "@/widgets/record-form/record-form";
-import { Toolbar } from "@/widgets/toolbar";
+import { Toolbar } from "@/widgets/toolbar/ui/toolbar";
 
 import { toDemoHref, toDemoRecordSheetHref } from "../lib/demo-href";
 import {
