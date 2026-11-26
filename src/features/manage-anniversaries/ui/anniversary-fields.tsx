@@ -1,21 +1,27 @@
-import type { Anniversary } from "@/entities/anniversary/model/types";
+import type { AnniversaryDraft } from "@/entities/anniversary/model/types";
 import { cn } from "@/shared/lib/utils";
-import { DateInput } from "@/shared/ui/date-input";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 
 type AnniversaryFieldsProps = {
-  draft: Anniversary;
+  draft: AnniversaryDraft;
   error: string;
-  onChange: (draft: Anniversary) => void;
+  onChange: (draft: AnniversaryDraft) => void;
   style?: "night" | "date" | "line";
 };
+
+const DAYS_PER_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const MONTHS = Array.from({ length: DAYS_PER_MONTH.length }, (_, index) => index + 1);
+const formatMonthDay = (month: number, day: number) =>
+  `${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
 export function AnniversaryFields({ draft, error, onChange, style }: AnniversaryFieldsProps) {
   const isMemoLayout = style === undefined;
   const compact = style === "line";
   const dateFirst = style === "date";
   const orientation = compact ? "horizontal" : "vertical";
+  const [month, day] = draft.monthDay.split("-").map(Number);
+  const selectClassName = "h-11 cursor-pointer bg-transparent px-1.5 text-foreground text-sm";
 
   const nameField = (
     <Field
@@ -61,26 +67,47 @@ export function AnniversaryFields({ draft, error, onChange, style }: Anniversary
           dateFirst && "sr-only",
           isMemoLayout && "text-muted-foreground text-xs",
         )}
-        htmlFor="anniversary-date"
+        htmlFor="anniversary-month"
       >
         날짜
       </FieldLabel>
-      <DateInput
+      <div
         className={cn(
-          "h-11 border-0",
-          isMemoLayout ? "[&>span]:px-0" : "focus-within:ring-2 focus-within:ring-ring/50",
-          compact && "min-w-0 flex-1 [&>span]:justify-end [&>span]:px-0",
-          style === "night" && "bg-muted",
-          dateFirst &&
-            "h-16 rounded-2xl bg-primary/10 text-accent-text [&>span]:justify-center [&>span]:font-extrabold [&>span]:text-xl",
+          "flex items-center gap-2",
+          compact && "min-w-0 flex-1 justify-end",
+          style === "night" && "rounded-lg bg-muted",
+          dateFirst && "justify-center rounded-2xl bg-primary/10",
         )}
-        id="anniversary-date"
-        min="0001-01-01"
-        max="9999-12-31"
-        onChange={(event) => onChange({ ...draft, date: event.target.value })}
-        required
-        value={draft.date}
-      />
+      >
+        <select
+          aria-label="월"
+          className={selectClassName}
+          id="anniversary-month"
+          onChange={(event) => {
+            const nextMonth = Number(event.target.value);
+            onChange({ ...draft, monthDay: formatMonthDay(nextMonth, Math.min(day, DAYS_PER_MONTH[nextMonth - 1])) });
+          }}
+          value={month}
+        >
+          {MONTHS.map((option) => (
+            <option key={option} value={option}>
+              {option}월
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="일"
+          className={selectClassName}
+          onChange={(event) => onChange({ ...draft, monthDay: formatMonthDay(month, Number(event.target.value)) })}
+          value={day}
+        >
+          {Array.from({ length: DAYS_PER_MONTH[month - 1] }, (_, index) => index + 1).map((option) => (
+            <option key={option} value={option}>
+              {option}일
+            </option>
+          ))}
+        </select>
+      </div>
     </Field>
   );
 

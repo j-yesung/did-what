@@ -1,5 +1,4 @@
 import { AnniversarySheet } from "@/features/manage-anniversaries/ui/anniversary-sheet";
-import { formatRecordDate } from "@/shared/lib/date/format-date";
 import { Badge } from "@/shared/ui/badge";
 import { ListRowTexts } from "@/shared/ui/list-row";
 
@@ -39,19 +38,17 @@ type AnniversaryListLabelProps = {
 
 function AnniversaryListLabel({ anniversary, style }: AnniversaryListLabelProps) {
   const { date, name } = anniversary;
-  const formattedDate = formatRecordDate(date);
+  const monthDay = date.slice(5);
+  const [month, day] = monthDay.split("-").map(Number);
+  const formattedDate = `${month}월 ${day}일`;
 
   if (style === "date") {
-    const [year, month, day] = date.split("-").map(Number);
     return (
       <>
         <Badge className="bg-primary/10 text-accent-text">
-          <time dateTime={date}>
-            <span className="sr-only">{year}년 </span>
-            {month}월 {day}일
-          </time>
+          <time dateTime={monthDay}>{formattedDate}</time>
         </Badge>
-        <ListRowTexts className="flex-1" description={`${year}년부터`} title={name} />
+        <ListRowTexts className="flex-1" title={name} />
       </>
     );
   }
@@ -63,13 +60,15 @@ function AnniversaryListLabel({ anniversary, style }: AnniversaryListLabelProps)
         <time
           aria-label={formattedDate}
           className="shrink-0 text-muted-foreground text-xs tabular-nums"
-          dateTime={date}
+          dateTime={monthDay}
         >
-          {date.replaceAll("-", ".")}
+          {monthDay.replace("-", ".")}
         </time>
       </>
     );
   }
 
-  return <ListRowTexts className="flex-1" description={<time dateTime={date}>{formattedDate}</time>} title={name} />;
+  return (
+    <ListRowTexts className="flex-1" description={<time dateTime={monthDay}>{formattedDate}</time>} title={name} />
+  );
 }

@@ -4,7 +4,8 @@ import { type FormEvent, type ReactNode, useState } from "react";
 
 import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
 
-import type { Anniversary, AnniversaryActionResult } from "@/entities/anniversary/model/types";
+import type { Anniversary, AnniversaryActionResult, AnniversaryDraft } from "@/entities/anniversary/model/types";
+import { formatMonthDay } from "@/shared/lib/date/format-date";
 import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
 import { cn } from "@/shared/lib/utils";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -29,7 +30,7 @@ type AnniversarySheetProps = {
   trigger: ReactNode;
   renderListLabel?: (anniversary: Anniversary) => ReactNode;
   formStyle?: "night" | "date" | "line";
-  onCreate: (anniversary: Anniversary) => Promise<AnniversaryActionResult>;
+  onCreate: (anniversary: AnniversaryDraft) => Promise<AnniversaryActionResult>;
   onDelete: (id: string) => Promise<AnniversaryActionResult>;
 };
 
@@ -44,7 +45,7 @@ export function AnniversarySheet({
 }: AnniversarySheetProps) {
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<Anniversary | null>(null);
+  const [draft, setDraft] = useState<AnniversaryDraft | null>(null);
   const [removal, setRemoval] = useState<AnniversaryRemoval | null>(null);
   const [error, setError] = useState("");
   const [deleteError, setDeleteError] = useState("");
@@ -62,7 +63,7 @@ export function AnniversarySheet({
 
   const startAdding = () => {
     setError("");
-    setDraft({ date: today, id: crypto.randomUUID(), name: "" });
+    setDraft({ monthDay: today.slice(5), id: crypto.randomUUID(), name: "" });
   };
 
   const save = async (event: FormEvent<HTMLFormElement>) => {
@@ -144,15 +145,13 @@ export function AnniversarySheet({
                     {renderListLabel ? (
                       renderListLabel(anniversary)
                     ) : (
-                      <>
-                        <ListRowTexts className="flex-1" title={anniversary.name} />
-                        <time
-                          className="shrink-0 text-muted-foreground text-xs tabular-nums"
-                          dateTime={anniversary.date}
-                        >
-                          {anniversary.date.replaceAll("-", ".")}
-                        </time>
-                      </>
+                      <ListRowTexts
+                        className="flex-1"
+                        description={
+                          <time dateTime={anniversary.date.slice(5)}>{formatMonthDay(anniversary.date)}</time>
+                        }
+                        title={anniversary.name}
+                      />
                     )}
                     <IconButton
                       aria-label={`${anniversary.name} 삭제`}

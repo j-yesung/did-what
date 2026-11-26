@@ -3,9 +3,17 @@ const LONG_DATE = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
 });
 
+const MONTH_DAY = new Intl.DateTimeFormat("ko-KR", {
+  month: "long",
+  day: "numeric",
+  timeZone: "Asia/Seoul",
+});
+
 export const formatRecordDate = (recordedAt: string) => {
   return LONG_DATE.format(new Date(`${recordedAt}T00:00:00+09:00`));
 };
+
+export const formatMonthDay = (date: string) => MONTH_DAY.format(new Date(`${date}T00:00:00+09:00`));
 
 /** 시작과 끝 중 한쪽만 있어도 읽히는 기간 문구. 날짜 하나를 어떻게 쓸지는 화면이 정한다. 둘 다 없으면 빈 문자열이다. */
 export const formatDateRange = ({ from, to }: { from: string; to: string }, formatDay: (date: string) => string) => {

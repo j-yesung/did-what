@@ -1,9 +1,10 @@
 export { getAnniversaryNamesForDate, getFeaturedAnniversary } from "@/entities/anniversary/model/anniversary";
 
-import { isIsoDate } from "@/shared/lib/validation/is-iso-date";
+import { prepareAnniversary } from "@/entities/anniversary/model/anniversary";
+import type { AnniversaryDraft } from "@/entities/anniversary/model/types";
 
 import type { DemoActionResult } from "./actions.ts";
-import type { DemoAnniversary, DemoAnniversaryCardStyle, DemoState } from "./types.ts";
+import type { DemoAnniversaryCardStyle, DemoState } from "./types.ts";
 
 export const ANNIVERSARY_CARD_STYLES = [
   { label: "밤에 꺼낸 기록", value: "night" },
@@ -16,14 +17,9 @@ export const ANNIVERSARY_CARD_STYLE_PARAM = "anniversaryCard";
 export const getAnniversaryCardStyle = (value: string | null): DemoAnniversaryCardStyle =>
   ANNIVERSARY_CARD_STYLES.find((style) => style.value === value)?.value ?? "night";
 
-export const saveAnniversary = (state: DemoState, draft: DemoAnniversary): DemoActionResult => {
-  const name = draft.name.trim();
-  if (!name) return { message: "기념일 이름을 입력해 주세요.", ok: false };
-  if (!isIsoDate(draft.date) || draft.date < "0001-01-01") {
-    return { message: "올바른 날짜를 골라 주세요.", ok: false };
-  }
-
-  const anniversary = { ...draft, name };
+export const saveAnniversary = (state: DemoState, draft: AnniversaryDraft): DemoActionResult => {
+  const { anniversary, message } = prepareAnniversary(draft, state.today);
+  if (!anniversary) return { message, ok: false };
   const exists = state.anniversaries.some(({ id }) => id === anniversary.id);
   const anniversaries = exists
     ? state.anniversaries.map((item) => (item.id === anniversary.id ? anniversary : item))

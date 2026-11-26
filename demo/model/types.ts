@@ -1,3 +1,4 @@
+import type { Anniversary, FeaturedAnniversary } from "@/entities/anniversary/model/types";
 import type { AccountMember } from "@/entities/member/model/types";
 import type { RecordComment } from "@/entities/record-comment/model/record-comment";
 import type { RecordView } from "@/features/record/switch-record-view/model/record-view-preference";
@@ -56,15 +57,9 @@ export type DemoNotification = {
   sender_name: string;
 };
 
-export type DemoAnniversary = {
-  date: string;
-  id: string;
-  name: string;
-};
+export type DemoAnniversary = Anniversary;
 
-export type DemoFeaturedAnniversary = Pick<DemoAnniversary, "date" | "name"> & {
-  dday: number;
-};
+export type DemoFeaturedAnniversary = FeaturedAnniversary;
 
 export type DemoAnniversaryCardStyle = "night" | "date" | "line";
 
