@@ -2,89 +2,147 @@
 
 import { useState, useTransition } from "react";
 
+import NumberFlow from "@number-flow/react";
+import { PencilSimpleIcon } from "@phosphor-icons/react";
+import { getDaysInMonth } from "date-fns";
 import { useRouter } from "next/navigation";
 
+import { countDaysSince } from "@/shared/lib/date/count-days";
 import { formatRecordDate } from "@/shared/lib/date/format-date";
 import { getToday } from "@/shared/lib/date/get-today";
 import { useDemoOverride } from "@/shared/lib/demo-override";
+import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
-import { DateInput } from "@/shared/ui/date-input";
 import { FieldDescription, FieldLegend, FieldSet } from "@/shared/ui/field";
+import { IconButton } from "@/shared/ui/icon-button";
+import { WheelPicker } from "@/shared/ui/wheel-picker";
 
 import { saveMetOn } from "../api/actions";
 
+const FIRST_YEAR = 1970;
+
+const range = (from: number, to: number, label: string) =>
+  Array.from({ length: to - from + 1 }, (_, index) => ({ label: `${from + index}${label}`, value: from + index }));
+
+const toIsoDate = (year: number, month: number, day: number) =>
+  `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
 export function MetOnSetting({ metOn }: { metOn: string | null }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(metOn ?? "");
+  const today = getToday();
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(metOn ?? today);
   const [error, setError] = useState("");
   const [saving, startSaving] = useTransition();
   const router = useRouter();
   const save = useDemoOverride(saveMetOn);
+  const [year, month, day] = draft.split("-").map(Number);
+  const todayYear = Number(today.slice(0, 4));
 
-  const startEditing = () => {
-    setValue(metOn ?? "");
+  const changeDraft = (next: { day?: number; month?: number; year?: number }) => {
+    const nextYear = next.year ?? year;
+    const nextMonth = next.month ?? month;
+    const nextDay = Math.min(next.day ?? day, getDaysInMonth(new Date(nextYear, nextMonth - 1)));
+    const date = toIsoDate(nextYear, nextMonth, nextDay);
+    setDraft(date > today ? today : date);
     setError("");
-    setEditing(true);
+  };
+
+  const openSheet = () => {
+    setDraft(metOn ?? today);
+    setError("");
+    setOpen(true);
   };
 
   const submit = () =>
     startSaving(async () => {
-      const result = await save(value);
+      const result = await save(draft);
       if (result.error) {
         setError(result.error);
         return;
       }
-      setEditing(false);
+      setOpen(false);
       router.refresh();
     });
 
   return (
     <FieldSet className="scroll-mt-24" id="met-on">
       <FieldLegend>우리가 만난 날</FieldLegend>
-      {editing ? (
-        <>
-          <DateInput
-            aria-describedby={error ? "met-on-error" : undefined}
-            aria-invalid={Boolean(error)}
-            aria-label="우리가 만난 날"
-            disabled={saving}
-            max={getToday()}
-            onChange={(event) => {
-              setValue(event.target.value);
-              setError("");
-            }}
-            placeholder="날짜를 골라 주세요"
-            value={value}
-          />
-          {error && (
-            <FieldDescription className="text-destructive" id="met-on-error" role="alert">
-              {error}
-            </FieldDescription>
-          )}
-          <div className="flex justify-end gap-2">
+      <div className="flex items-center gap-3">
+        <p className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="truncate font-semibold text-[17px]">
+            {metOn ? formatRecordDate(metOn) : "아직 정하지 않았어요"}
+          </span>
+          {metOn ? (
+            <span className="text-[13px] text-muted-foreground">
+              오늘로 <NumberFlow value={countDaysSince(metOn, today)} />
+              일째예요
+            </span>
+          ) : null}
+        </p>
+        <IconButton
+          aria-label={metOn ? "만난 날 수정" : "만난 날 등록"}
+          className="-mr-2.25"
+          icon={PencilSimpleIcon}
+          iconSize={20}
+          onClick={openSheet}
+          type="button"
+        />
+      </div>
+      <BottomSheet onOpenChange={setOpen} open={open} showSwipeHandle>
+        <BottomSheet.Content>
+          <BottomSheet.Header>
+            <BottomSheet.Title className="text-left font-bold text-xl">우리가 처음 만난 날</BottomSheet.Title>
+            <BottomSheet.Description className="mt-2 flex items-baseline justify-between gap-3 text-left">
+              <span>{formatRecordDate(draft)}</span>
+              <span className="whitespace-nowrap">
+                함께한 지{" "}
+                <span className="font-bold text-accent-text">
+                  <NumberFlow value={countDaysSince(draft, today)} />
+                  일째
+                </span>
+              </span>
+            </BottomSheet.Description>
+          </BottomSheet.Header>
+          <div className="px-5 pt-4 pb-7">
+            <div className="grid grid-cols-[1.3fr_1fr_1fr] [&>*:first-child_[data-slot=wheel-picker-band]]:rounded-r-none [&>*:last-child_[data-slot=wheel-picker-band]]:rounded-l-none [&>*:nth-child(2)_[data-slot=wheel-picker-band]]:rounded-none">
+              <WheelPicker
+                aria-label="연도"
+                onValueChange={(value) => changeDraft({ year: value })}
+                options={range(FIRST_YEAR, todayYear, "년")}
+                value={year}
+              />
+              <WheelPicker
+                aria-label="월"
+                onValueChange={(value) => changeDraft({ month: value })}
+                options={range(1, 12, "월")}
+                value={month}
+              />
+              <WheelPicker
+                aria-label="일"
+                onValueChange={(value) => changeDraft({ day: value })}
+                options={range(1, getDaysInMonth(new Date(year, month - 1)), "일")}
+                value={day}
+              />
+            </div>
+            {error ? (
+              <FieldDescription className="mt-3 text-destructive" role="alert">
+                {error}
+              </FieldDescription>
+            ) : null}
             <Button
-              disabled={saving}
-              onClick={() => setEditing(false)}
-              size="medium"
+              className="mt-4"
+              disabled={draft === metOn}
+              fullWidth
+              loading={saving}
+              onClick={submit}
+              size="large"
               type="button"
-              variant="weak"
-              color="dark"
             >
-              취소
-            </Button>
-            <Button disabled={!value || value === metOn} loading={saving} onClick={submit} size="medium" type="button">
               저장
             </Button>
           </div>
-        </>
-      ) : (
-        <div className="flex items-center gap-3">
-          <p className="min-w-0 flex-1 truncate text-sm">{metOn ? formatRecordDate(metOn) : "아직 정하지 않았어요"}</p>
-          <Button onClick={startEditing} size="small" type="button" variant="outline">
-            {metOn ? "수정" : "등록"}
-          </Button>
-        </div>
-      )}
+        </BottomSheet.Content>
+      </BottomSheet>
     </FieldSet>
   );
 }
