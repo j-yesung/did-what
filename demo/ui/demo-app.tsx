@@ -13,6 +13,7 @@ import { DEMO_NAVIGATION_KEY } from "../lib/demo-router-bridge";
 import { useDemoState } from "../model/store";
 import type { DemoState } from "../model/types";
 import {
+  DemoAnniversariesScreen,
   DemoAppFrame,
   DemoHomeScreen,
   DemoMemberSelectScreen,
@@ -27,7 +28,7 @@ import {
 } from "./demo-screens";
 
 type DemoRoute =
-  | { group: "app"; name: "home" | "notifications" | "places" | "recordNew" | "records" | "settings" }
+  | { group: "app"; name: "anniversaries" | "home" | "notifications" | "places" | "recordNew" | "records" | "settings" }
   | { group: "app"; id: string; name: "placeDetail" | "recordDetail" | "recordEdit" }
   | { group: "member"; name: "memberSelect" }
   | { group: "none"; name: "notFound" };
@@ -36,6 +37,7 @@ export const matchDemoRoute = (pathname: string): DemoRoute => {
   const [first, second, third, ...rest] = pathname.split("/").filter(Boolean);
   if (rest.length) return { group: "none", name: "notFound" };
   if (!first) return { group: "app", name: "home" };
+  if (first === "anniversaries" && !second) return { group: "app", name: "anniversaries" };
   if (first === "records" && !second) return { group: "app", name: "records" };
   if (first === "records" && second === "new" && !third) return { group: "app", name: "recordNew" };
   if (first === "records" && second && !third) return { group: "app", id: second, name: "recordDetail" };
@@ -80,6 +82,8 @@ export function DemoApp() {
     switch (route.name) {
       case "home":
         return <DemoHomeScreen member={memberProps} />;
+      case "anniversaries":
+        return <DemoAnniversariesScreen />;
       case "records":
         return <DemoRecordsScreen />;
       case "recordNew":

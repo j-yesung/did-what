@@ -43,7 +43,7 @@ import {
 } from "../model/anniversaries";
 import { getDemoHomeRecords, toDetailRow } from "../model/queries";
 import { demoStore, useDemoState } from "../model/store";
-import { DemoAnniversarySheet } from "./demo-anniversary-sheet";
+import { DemoAnniversariesPage, DemoAnniversaryLink } from "./demo-anniversaries";
 import { useDemo } from "./demo-context";
 
 type Member = { id: string; name: string };
@@ -68,12 +68,19 @@ export function DemoHomeScreen({ member }: { member: Member }) {
 
   return (
     <HomeDashboard
-      anniversaryCard={<DemoAnniversarySheet style={style} />}
+      anniversaryCard={<DemoAnniversaryLink style={style} />}
       member={member}
       metOn={state.metOn}
       records={records}
       today={state.today}
     />
+  );
+}
+
+export function DemoAnniversariesScreen() {
+  const searchParams = useSearchParams();
+  return (
+    <DemoAnniversariesPage style={getAnniversaryCardStyle(searchParams?.get(ANNIVERSARY_CARD_STYLE_PARAM) ?? null)} />
   );
 }
 
