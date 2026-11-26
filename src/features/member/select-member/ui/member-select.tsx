@@ -1,18 +1,13 @@
 "use client";
 
 import { CheckIcon, WarningCircleIcon } from "@phosphor-icons/react";
-import { useMutation } from "@tanstack/react-query";
 
 import { type AccountMember, MemberAvatar } from "@/entities/member";
-import { useDemoOverride } from "@/shared/lib/demo-override";
-import { getPushEndpoint } from "@/shared/lib/push/get-push-endpoint";
-import { runServerAction } from "@/shared/lib/server-action/run-server-action";
-import { showToast } from "@/shared/lib/toast";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { ListRow } from "@/shared/ui/list-row";
 import { Spinner } from "@/shared/ui/spinner";
 
-import { selectMember } from "../api/select-member";
+import { useSelectMember } from "../model/use-select-member";
 
 type MemberSelectProps = {
   currentMemberId?: string;
@@ -22,25 +17,7 @@ type MemberSelectProps = {
 };
 
 export function MemberSelect({ currentMemberId, destination, members, onSelected }: MemberSelectProps) {
-  const selectMemberAction = useDemoOverride(selectMember);
-
-  const select = useMutation({
-    mutationFn: async (memberId: string) => {
-      const endpoint = await getPushEndpoint();
-      return runServerAction(() => selectMemberAction({ destination, endpoint, memberId }));
-    },
-    onSuccess: (result, memberId) => {
-      if (result?.status === "error") {
-        return;
-      }
-
-      onSelected?.();
-      const member = members.find(({ id }) => id === memberId);
-      if (member) {
-        showToast({ title: `${member.name}님으로 전환했어요`, variant: "success" });
-      }
-    },
-  });
+  const select = useSelectMember({ destination, members, onSelected });
 
   // 전환은 서버 왕복 뒤 화면 이동까지 이어져서, 누른 타일에만 진행 중을 표시한다.
   const pendingMemberId = select.isPending ? select.variables : undefined;
