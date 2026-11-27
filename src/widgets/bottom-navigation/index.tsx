@@ -52,7 +52,7 @@ export function BottomNavigation() {
     <div
       className={cn(
         "pointer-events-none fixed inset-x-0 z-40 pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]",
-        "bottom-(--nav-bottom-offset)",
+        "bottom-(--nav-bottom-offset) [body:not(:has(main))_&]:invisible",
       )}
     >
       {simplifiedNavigation ? (
