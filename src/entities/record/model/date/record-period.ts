@@ -1,10 +1,9 @@
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+import { getWeekday } from "@/shared/lib/date/format-date";
 
 export type RecordPeriodDay = { date: string; label: string; weekday: string };
 
 const toDay = (date: string, withYear: boolean, longWeekday: boolean): RecordPeriodDay => {
-  const [year, month, day] = date.split("-").map(Number);
-  const weekday = WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
+  const weekday = getWeekday(date);
   return {
     date,
     label: (withYear ? date : date.slice(5)).replaceAll("-", "."),

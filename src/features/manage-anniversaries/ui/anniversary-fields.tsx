@@ -2,7 +2,7 @@ import type { AnniversaryDraft } from "@/entities/anniversary/model/types";
 import { cn } from "@/shared/lib/utils";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { WheelPicker, WheelPickerGroup } from "@/shared/ui/wheel-picker";
+import { toWheelOptions, WheelPicker, WheelPickerGroup } from "@/shared/ui/wheel-picker";
 
 type AnniversaryFieldsProps = {
   draft: AnniversaryDraft;
@@ -12,7 +12,8 @@ type AnniversaryFieldsProps = {
 };
 
 const DAYS_PER_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-const MONTH_OPTIONS = DAYS_PER_MONTH.map((_, index) => ({ label: `${index + 1}월`, value: index + 1 }));
+const MONTH_OPTIONS = toWheelOptions(1, DAYS_PER_MONTH.length, "월");
+const DAY_OPTIONS = DAYS_PER_MONTH.map((days) => toWheelOptions(1, days, "일"));
 const formatMonthDay = (month: number, day: number) =>
   `${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
@@ -61,7 +62,7 @@ export function AnniversaryFields({ draft, error, onChange, style }: Anniversary
       <FieldLabel className={cn(dateFirst && "sr-only", (compact || isMemoLayout) && "text-muted-foreground text-xs")}>
         날짜
       </FieldLabel>
-      <WheelPickerGroup aria-label="기념일 날짜">
+      <WheelPickerGroup announcement={`${month}월 ${day}일`} aria-label="기념일 날짜">
         <WheelPicker
           aria-label="월"
           infinite
@@ -75,10 +76,7 @@ export function AnniversaryFields({ draft, error, onChange, style }: Anniversary
           aria-label="일"
           infinite
           onValueChange={(nextDay) => onChange({ ...draft, monthDay: formatMonthDay(month, nextDay) })}
-          options={Array.from({ length: DAYS_PER_MONTH[month - 1] }, (_, index) => ({
-            label: `${index + 1}일`,
-            value: index + 1,
-          }))}
+          options={DAY_OPTIONS[month - 1]}
           value={day}
         />
       </WheelPickerGroup>
