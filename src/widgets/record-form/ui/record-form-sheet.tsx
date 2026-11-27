@@ -9,11 +9,12 @@ type RecordFormSheetProps = {
   children: ReactNode;
   finalFocus?: ComponentProps<typeof BottomSheet.Content>["finalFocus"];
   onClose: () => void;
+  onConfirm?: () => void;
   open: boolean;
-  title: string;
+  title?: string;
 };
 
-export function RecordFormSheet({ children, finalFocus, onClose, open, title }: RecordFormSheetProps) {
+export function RecordFormSheet({ children, finalFocus, onClose, onConfirm, open, title }: RecordFormSheetProps) {
   return (
     <BottomSheet
       onOpenChange={(nextOpen) => {
@@ -26,12 +27,18 @@ export function RecordFormSheet({ children, finalFocus, onClose, open, title }: 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <BottomSheet.Header className="pt-7" glass />
           <div className="px-5 pt-10 pb-6">
-            <BottomSheet.Title className="font-bold text-xl">{title}</BottomSheet.Title>
-            <div className="mt-6 flex flex-col">{children}</div>
+            {title ? (
+              <>
+                <BottomSheet.Title className="font-bold text-xl">{title}</BottomSheet.Title>
+                <div className="mt-6 flex flex-col">{children}</div>
+              </>
+            ) : (
+              children
+            )}
           </div>
         </div>
         <BottomSheet.Footer>
-          <Button fullWidth onClick={onClose} size="xlarge" type="button">
+          <Button fullWidth onClick={onConfirm ?? onClose} size="xlarge" type="button">
             확인
           </Button>
         </BottomSheet.Footer>
