@@ -3,12 +3,16 @@ import { waitForPressRelease } from "@/shared/lib/navigation/wait-for-press-rele
 import assert from "node:assert/strict";
 import test from "node:test";
 
-test("누름 복귀와 음영의 완료 후 페인트 프레임을 넘긴다", async (t) => {
+test("누름 복귀와 음영 트랜지션을 바로 끝내고 페인트 프레임을 넘긴다", async (t) => {
   const frames = [];
   class Transition {
-    constructor(property, finished) {
+    constructor(property) {
       this.transitionProperty = property;
-      this.finished = finished;
+      this.finished = new Promise(() => {});
+      this.finishedCalls = 0;
+    }
+    finish() {
+      this.finishedCalls += 1;
     }
   }
   const originalFrame = globalThis.requestAnimationFrame;
@@ -27,24 +31,17 @@ test("누름 복귀와 음영의 완료 후 페인트 프레임을 넘긴다", a
     await new Promise((resolve) => setImmediate(resolve));
   };
 
-  for (const mode of ["finish", "cancel", "no-motion"]) {
-    const scale = Promise.withResolvers();
-    const overlay = Promise.withResolvers();
+  for (const mode of ["motion", "no-motion"]) {
+    const scale = new Transition("scale");
+    const overlay = new Transition("opacity");
+    const unrelated = new Transition("color");
     let queried = false;
     let navigable = false;
     const element = {
       getAnimations(options) {
         queried = true;
         assert.deepEqual(options, { subtree: true });
-        return mode === "no-motion"
-          ? []
-          : [
-              new Transition("scale", scale.promise),
-              new Transition("opacity", overlay.promise),
-              // 무관한 자식의 무한 애니메이션은 이동을 막지 않는다.
-              { finished: new Promise(() => {}) },
-              new Transition("color", new Promise(() => {})),
-            ];
+        return mode === "no-motion" ? [] : [scale, overlay, { finished: new Promise(() => {}) }, unrelated];
       },
     };
     const waiting = waitForPressRelease(element).then(() => {
@@ -53,19 +50,14 @@ test("누름 복귀와 음영의 완료 후 페인트 프레임을 넘긴다", a
     assert.equal(queried, false);
     await frame();
     assert.equal(queried, true);
-    if (mode !== "no-motion") {
-      scale.resolve();
-      await new Promise((resolve) => setImmediate(resolve));
-      assert.equal(frames.length, 0, "음영 복귀도 기다린다");
-      if (mode === "cancel") overlay.reject(new Error("transition cancelled"));
-      else overlay.resolve();
-      await new Promise((resolve) => setImmediate(resolve));
-    }
     if (mode === "no-motion") {
       await waiting;
       assert.equal(navigable, true);
       continue;
     }
+    assert.equal(scale.finishedCalls, 1, "누름 복귀를 기다리지 않고 바로 끝낸다");
+    assert.equal(overlay.finishedCalls, 1, "음영 복귀도 바로 끝낸다");
+    assert.equal(unrelated.finishedCalls, 0, "무관한 트랜지션은 건드리지 않는다");
     assert.equal(navigable, false);
     await frame();
     assert.equal(navigable, false);
