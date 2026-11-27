@@ -61,9 +61,10 @@ export function AnniversaryFields({ draft, error, onChange, style }: Anniversary
       <FieldLabel className={cn(dateFirst && "sr-only", (compact || isMemoLayout) && "text-muted-foreground text-xs")}>
         날짜
       </FieldLabel>
-      <WheelPickerGroup aria-label="기념일 날짜" className="grid-cols-2">
+      <WheelPickerGroup aria-label="기념일 날짜">
         <WheelPicker
           aria-label="월"
+          infinite
           onValueChange={(nextMonth) =>
             onChange({ ...draft, monthDay: formatMonthDay(nextMonth, Math.min(day, DAYS_PER_MONTH[nextMonth - 1])) })
           }
@@ -72,6 +73,7 @@ export function AnniversaryFields({ draft, error, onChange, style }: Anniversary
         />
         <WheelPicker
           aria-label="일"
+          infinite
           onValueChange={(nextDay) => onChange({ ...draft, monthDay: formatMonthDay(month, nextDay) })}
           options={Array.from({ length: DAYS_PER_MONTH[month - 1] }, (_, index) => ({
             label: `${index + 1}일`,
