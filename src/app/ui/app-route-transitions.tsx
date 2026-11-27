@@ -3,15 +3,28 @@
 import { type ReactNode, useState } from "react";
 
 import { Ssgoi, type SsgoiConfig, type SsgoiFramework, SsgoiLayoutBoundary } from "@ssgoi/react";
-import { drill } from "@ssgoi/react/view-transitions";
+import { drill, IntegratorProvider, type MultiAnimation, type PhysicsOptions } from "@ssgoi/react/view-transitions";
 import { useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 
 import { DRILL_ROUTES, isDrill, isDrillPath } from "@/app/model/drill-routes";
 import { cn } from "@/shared/lib/utils";
 
+const DRILL_PHYSICS: PhysicsOptions = {
+  spring: { stiffness: 500, damping: 37, restDelta: 0.005, restSpeed: 0.05 },
+};
+
+const speedUp = ({ animation }: { animation: MultiAnimation<"in" | "out"> }) => {
+  for (const track of ["in", "out"] as const) {
+    animation.select(track).set({ integrator: IntegratorProvider.from(DRILL_PHYSICS) });
+  }
+};
+
 const config: SsgoiConfig = {
-  transitions: DRILL_ROUTES.map((route) => ({ ...route, transition: drill() })),
+  transitions: DRILL_ROUTES.map((route) => ({
+    ...route,
+    transition: drill(undefined, { override: { backward: speedUp, forward: speedUp } }),
+  })),
 };
 const reducedMotionConfig: SsgoiConfig = { transitions: [] };
 
