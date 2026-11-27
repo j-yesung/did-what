@@ -33,7 +33,7 @@ export function Toolbar({ memberId }: { memberId: string }) {
     reduceMotion ? INSTANT : open ? openTransition : closeTransition;
 
   return (
-    <FixedToolbar className="@container items-start" ref={search.rowRef}>
+    <FixedToolbar className="@container items-start [body:not(:has(main))_&]:invisible" ref={search.rowRef}>
       <PressScale
         aria-label="빠른 작업"
         className="pointer-events-auto ml-auto flex items-center gap-2"

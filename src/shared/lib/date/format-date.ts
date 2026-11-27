@@ -9,6 +9,13 @@ const MONTH_DAY = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
 });
 
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+
+export const getWeekday = (date: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+  return WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
+};
+
 export const formatRecordDate = (recordedAt: string) => {
   return LONG_DATE.format(new Date(`${recordedAt}T00:00:00+09:00`));
 };

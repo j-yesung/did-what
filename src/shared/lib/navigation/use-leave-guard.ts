@@ -92,9 +92,16 @@ export const useLeaveGuard = ({ busy = false, fallbackHref, isDirty }: LeaveGuar
       window.history.go(-2);
     },
     exit: () => {
-      if (couldGoBack.current) window.history.back();
-      else if (isDirty()) setConfirmOpen(true);
-      else leaveToFallback();
+      if (isDirty()) {
+        setConfirmOpen(true);
+        return;
+      }
+      if (!couldGoBack.current) {
+        leaveToFallback();
+        return;
+      }
+      leaving.current = true;
+      window.history.go(window.history.state?.[SENTINEL] ? -2 : -1);
     },
     finish: (destination: string) => {
       leaving.current = true;

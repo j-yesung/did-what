@@ -61,6 +61,7 @@ export function RecordForm({ action, fallbackHref, initialValues, mode, savedTo,
   const [dirty, setDirty] = useState(false);
   const [pickerDraft, setPickerDraft] = useState(createPlacePickerDraft);
   const [openSlot, setOpenSlot] = useState<OpenSlot | null>(null);
+  const pendingDates = useRef<[string, string] | null>(null);
   const [guiding, setGuiding] = useState(mode === "create");
   const [categorySeen, setCategorySeen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<RecordFieldErrors>({});
@@ -197,14 +198,26 @@ export function RecordForm({ action, fallbackHref, initialValues, mode, savedTo,
 
       <RecordFormSheet
         finalFocus={finalFocus}
-        onClose={() => closeSlot("date")}
+        onClose={() => {
+          pendingDates.current = null;
+          closeSlot("date");
+        }}
+        onConfirm={() => {
+          if (pendingDates.current) {
+            const [recordedAt, recordedUntil] = pendingDates.current;
+            update({ recordedAt, recordedUntil });
+          }
+          pendingDates.current = null;
+          closeSlot("date");
+        }}
         open={openSlot === "date"}
-        title="언제였나요?"
       >
         <RecordDateField
           initialRecordedAt={draft.recordedAt}
           initialRecordedUntil={draft.recordedUntil}
-          onValueChange={(recordedAt, recordedUntil) => update({ recordedAt, recordedUntil })}
+          onValueChange={(recordedAt, recordedUntil) => {
+            pendingDates.current = [recordedAt, recordedUntil];
+          }}
           recordedAtError={fieldErrors.recordedAt}
           recordedUntilError={fieldErrors.recordedUntil}
         />

@@ -1,125 +1,159 @@
 "use client";
 
-import { type KeyboardEvent, useId, useLayoutEffect, useRef } from "react";
+import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
+import { WheelPicker as WheelPickerPrimitive, WheelPickerWrapper } from "@ncdai/react-wheel-picker";
+
+import { getToday } from "@/shared/lib/date/get-today";
 import { cn } from "@/shared/lib/utils";
-
-const ITEM_HEIGHT = 40;
-const SETTLE_DELAY = 120;
-const TILT_PER_ITEM = 18;
 
 type WheelOption = { label: string; value: number };
 
 type WheelPickerProps = {
   "aria-label": string;
   className?: string;
+  infinite?: boolean;
   onValueChange: (value: number) => void;
   options: WheelOption[];
   value: number;
 };
 
-const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const WHEEL_CLASS_NAMES = {
+  highlightItem: "font-bold text-[19px] tabular-nums",
+  highlightWrapper: "bg-muted text-foreground",
+  optionItem: "font-semibold text-[19px] text-muted-foreground tabular-nums",
+};
 
-export function WheelPicker({ "aria-label": ariaLabel, className, onValueChange, options, value }: WheelPickerProps) {
-  const id = useId();
-  const listRef = useRef<HTMLDivElement>(null);
-  const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const frame = useRef(0);
-  const mounted = useRef(false);
-  const scrolling = useRef(false);
-  const selectedIndex = Math.max(
-    0,
-    options.findIndex((option) => option.value === value),
-  );
+const FIRST_YEAR = 1970;
 
-  const paint = () => {
-    const list = listRef.current;
-    if (!list) return;
-    const center = list.scrollTop / ITEM_HEIGHT;
-    for (const [index, item] of [...list.children].entries()) {
-      const offset = index - center;
-      const distance = Math.min(Math.abs(offset), 2.5);
-      const style = (item as HTMLElement).style;
-      style.opacity = String(1 - distance * 0.32);
-      style.transform = `rotateX(${-offset * TILT_PER_ITEM}deg) scale(${1 - distance * 0.05})`;
-    }
-  };
+export const toWheelOptions = (from: number, to: number, unit: string): WheelOption[] =>
+  Array.from({ length: to - from + 1 }, (_, index) => ({ label: `${from + index}${unit}`, value: from + index }));
 
-  const scrollToIndex = (index: number, smooth: boolean) => {
-    listRef.current?.scrollTo({
-      behavior: smooth && !prefersReducedMotion() ? "smooth" : "instant",
-      top: index * ITEM_HEIGHT,
-    });
-    paint();
-  };
+const daysInMonth = (year: number, month: number) => new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+const toIsoDate = (year: number, month: number, day: number) =>
+  `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+export function WheelPicker({
+  "aria-label": ariaLabel,
+  className,
+  infinite,
+  onValueChange,
+  options,
+  value,
+}: WheelPickerProps) {
+  const latestValue = useRef(value);
+  const [mountKey, setMountKey] = useState(0);
 
   useLayoutEffect(() => {
-    const list = listRef.current;
-    if (!list || scrolling.current) return;
-    if (Math.round(list.scrollTop / ITEM_HEIGHT) !== selectedIndex) scrollToIndex(selectedIndex, mounted.current);
-    else paint();
-    mounted.current = true;
+    latestValue.current = value;
   });
 
-  const settle = () => {
-    scrolling.current = false;
-    const list = listRef.current;
-    if (!list) return;
-    const index = Math.min(options.length - 1, Math.max(0, Math.round(list.scrollTop / ITEM_HEIGHT)));
-    if (options[index] && options[index].value !== value) onValueChange(options[index].value);
-  };
-
-  const handleScroll = () => {
-    scrolling.current = true;
-    cancelAnimationFrame(frame.current);
-    frame.current = requestAnimationFrame(paint);
-    clearTimeout(settleTimer.current);
-    settleTimer.current = setTimeout(settle, SETTLE_DELAY);
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const next = {
-      ArrowDown: selectedIndex + 1,
-      ArrowUp: selectedIndex - 1,
-      End: options.length - 1,
-      Home: 0,
-    }[event.key];
-    if (next === undefined) return;
-    event.preventDefault();
-    const option = options[Math.min(options.length - 1, Math.max(0, next))];
-    if (option) onValueChange(option.value);
+  const handleValueChange = (next: number) => {
+    flushSync(() => onValueChange(next));
+    if (latestValue.current !== next) setMountKey((key) => key + 1);
   };
 
   return (
-    <div className={cn("relative h-50", className)}>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-20 h-10 rounded-xl bg-muted"
-        data-slot="wheel-picker-band"
+    <div aria-label={ariaLabel} className={cn("flex min-w-0 flex-1", className)} data-slot="wheel-picker" role="group">
+      <WheelPickerPrimitive
+        classNames={WHEEL_CLASS_NAMES}
+        infinite={infinite}
+        key={mountKey}
+        onValueChange={handleValueChange}
+        optionItemHeight={40}
+        options={options}
+        value={value}
+        visibleCount={16}
       />
-      <div
-        aria-activedescendant={`${id}-${value}`}
-        aria-label={ariaLabel}
-        className="relative h-full snap-y snap-mandatory overflow-y-auto overscroll-contain py-20 outline-none [mask-image:linear-gradient(transparent,black_30%,black_70%,transparent)] [perspective:400px] [scrollbar-width:none] focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-scrollbar]:hidden"
-        onKeyDown={handleKeyDown}
-        onScroll={handleScroll}
-        ref={listRef}
-        role="listbox"
-        tabIndex={0}
-      >
-        {options.map((option, index) => (
-          <div
-            aria-selected={option.value === value}
-            className="flex h-10 cursor-pointer snap-center items-center justify-center font-semibold text-[19px] tabular-nums"
-            id={`${id}-${option.value}`}
-            key={option.value}
-            onClick={() => scrollToIndex(index, true)}
-            role="option"
-          >
-            {option.label}
-          </div>
-        ))}
-      </div>
     </div>
+  );
+}
+
+export function WheelPickerGroup({
+  "aria-label": ariaLabel,
+  announcement,
+  children,
+  className,
+}: {
+  "aria-label": string;
+  announcement: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div aria-label={ariaLabel} data-base-ui-swipe-ignore="" role="group">
+      <WheelPickerWrapper
+        className={cn(
+          "[&>[data-slot=wheel-picker]:first-child_[data-rwp-highlight-wrapper]]:rounded-l-xl [&>[data-slot=wheel-picker]:last-child_[data-rwp-highlight-wrapper]]:rounded-r-xl [&_[data-rwp-highlight-wrapper]]:rounded-none [&_[data-rwp]]:[mask-image:linear-gradient(transparent,black_30%,black_70%,transparent)]",
+          className,
+        )}
+      >
+        {children}
+      </WheelPickerWrapper>
+      <span aria-live="polite" className="sr-only">
+        {announcement}
+      </span>
+    </div>
+  );
+}
+
+type DateWheelPickerProps = {
+  "aria-label": string;
+  className?: string;
+  max?: string;
+  onValueChange: (date: string) => void;
+  value: string;
+};
+
+export function DateWheelPicker({
+  "aria-label": ariaLabel,
+  className,
+  max,
+  onValueChange,
+  value,
+}: DateWheelPickerProps) {
+  const [year, month, day] = value.split("-").map(Number);
+  const [maxYear, maxMonth, maxDay] = (max ?? "").split("-").map(Number);
+  const lastYear = max ? maxYear : Number(getToday().slice(0, 4)) + 1;
+  const lastMonth = max && year === maxYear ? maxMonth : 12;
+  const lastDay = max && year === maxYear && month === maxMonth ? maxDay : daysInMonth(year, month);
+
+  const yearOptions = useMemo(() => toWheelOptions(FIRST_YEAR, lastYear, "년"), [lastYear]);
+  const monthOptions = useMemo(() => toWheelOptions(1, lastMonth, "월"), [lastMonth]);
+  const dayOptions = useMemo(() => toWheelOptions(1, lastDay, "일"), [lastDay]);
+
+  const change = (next: { day?: number; month?: number; year?: number }) => {
+    const nextYear = next.year ?? year;
+    const nextMonth = next.month ?? month;
+    const date = toIsoDate(nextYear, nextMonth, Math.min(next.day ?? day, daysInMonth(nextYear, nextMonth)));
+    onValueChange(max && date > max ? max : date);
+  };
+
+  return (
+    <WheelPickerGroup aria-label={ariaLabel} announcement={`${year}년 ${month}월 ${day}일`} className={className}>
+      <WheelPicker
+        aria-label="연도"
+        className="flex-[1.3]"
+        onValueChange={(nextYear) => change({ year: nextYear })}
+        options={yearOptions}
+        value={year}
+      />
+      <WheelPicker
+        aria-label="월"
+        infinite
+        onValueChange={(nextMonth) => change({ month: nextMonth })}
+        options={monthOptions}
+        value={month}
+      />
+      <WheelPicker
+        aria-label="일"
+        infinite
+        onValueChange={(nextDay) => change({ day: nextDay })}
+        options={dayOptions}
+        value={day}
+      />
+    </WheelPickerGroup>
   );
 }

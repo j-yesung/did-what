@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-
-import { DateInput } from "@/shared/ui/date-input";
-import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
+import { getWeekday } from "@/shared/lib/date/format-date";
+import { getToday } from "@/shared/lib/date/get-today";
+import { FOCUS_RING, PRESS_FEEDBACK } from "@/shared/lib/interaction";
+import { cn } from "@/shared/lib/utils";
+import { BottomSheet } from "@/shared/ui/bottom-sheet";
+import { FieldError } from "@/shared/ui/field";
 import { Switch } from "@/shared/ui/switch";
+import { DateWheelPicker } from "@/shared/ui/wheel-picker";
 
-const DATE_FIELD_TRANSITION = { duration: 0.2, ease: [0.23, 1, 0.32, 1] as const };
+type DateKey = "recordedAt" | "recordedUntil";
 
 type RecordDateFieldProps = {
   initialRecordedAt: string;
@@ -18,6 +21,11 @@ type RecordDateFieldProps = {
   recordedUntilError?: string;
 };
 
+const formatCardDate = (date: string, today: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+  return `${date.slice(0, 4) === today.slice(0, 4) ? "" : `${year}년 `}${month}월 ${day}일 (${getWeekday(date)})`;
+};
+
 export function RecordDateField({
   initialRecordedAt,
   initialRecordedUntil,
@@ -25,23 +33,42 @@ export function RecordDateField({
   recordedAtError,
   recordedUntilError,
 }: RecordDateFieldProps) {
-  const [recordedAt, setRecordedAt] = useState(initialRecordedAt);
-  const [recordedUntil, setRecordedUntil] = useState(initialRecordedUntil ?? initialRecordedAt);
+  const today = getToday();
+  const [recordedAt, setRecordedAt] = useState(initialRecordedAt || today);
+  const [recordedUntil, setRecordedUntil] = useState(initialRecordedUntil || initialRecordedAt || today);
   const [isSingleDay, setIsSingleDay] = useState(recordedUntil === recordedAt);
-  const shouldReduceMotion = useReducedMotion();
-  const transition = shouldReduceMotion ? { duration: 0 } : DATE_FIELD_TRANSITION;
+  const [active, setActive] = useState<DateKey>("recordedAt");
+  const editing: DateKey = isSingleDay ? "recordedAt" : active;
+
+  const commit = (nextRecordedAt: string, nextRecordedUntil: string) => {
+    setRecordedAt(nextRecordedAt);
+    setRecordedUntil(nextRecordedUntil);
+    onValueChange?.(nextRecordedAt, nextRecordedUntil);
+  };
+
+  const changeDate = (date: string) => {
+    if (editing === "recordedAt") commit(date, isSingleDay || recordedUntil < date ? date : recordedUntil);
+    else commit(recordedAt, date < recordedAt ? recordedAt : date);
+  };
 
   const handleSingleDayChange = (checked: boolean) => {
     setIsSingleDay(checked);
-    if (!checked) return;
-
-    setRecordedUntil(recordedAt);
-    onValueChange?.(recordedAt, recordedAt);
+    setActive(checked ? "recordedAt" : "recordedUntil");
+    if (checked) commit(recordedAt, recordedAt);
   };
+
+  const cards: { date: string; key: DateKey; label: string }[] = isSingleDay
+    ? [{ date: recordedAt, key: "recordedAt", label: "기록한 날" }]
+    : [
+        { date: recordedAt, key: "recordedAt", label: "첫날" },
+        { date: recordedUntil, key: "recordedUntil", label: "마지막 날" },
+      ];
+  const error = recordedAtError || recordedUntilError;
 
   return (
     <div aria-label="날짜" role="group">
-      <div className="mb-2 flex justify-end">
+      <div className="flex items-center justify-between gap-3">
+        <BottomSheet.Title className="font-bold text-xl">언제였나요?</BottomSheet.Title>
         <label
           className="flex cursor-pointer items-center gap-2 text-muted-foreground text-sm"
           htmlFor="record-single-day"
@@ -50,63 +77,51 @@ export function RecordDateField({
           <Switch checked={isSingleDay} id="record-single-day" onCheckedChange={handleSingleDayChange} />
         </label>
       </div>
-      <motion.div
-        className={isSingleDay ? "grid grid-cols-1 gap-3" : "grid grid-cols-2 gap-3"}
-        layout
-        transition={transition}
-      >
-        <Field className="min-w-0" data-invalid={Boolean(recordedAtError)}>
-          <FieldLabel className="text-muted-foreground" htmlFor="record-start-date">
-            {isSingleDay ? "기록한 날" : "첫날"}
-          </FieldLabel>
-          <DateInput
-            aria-describedby={recordedAtError ? "record-start-date-error" : undefined}
-            aria-invalid={Boolean(recordedAtError)}
-            id="record-start-date"
-            name="recordedAt"
-            onChange={(event) => {
-              const value = event.target.value;
-              const nextRecordedUntil = isSingleDay || !recordedUntil || recordedUntil < value ? value : recordedUntil;
-              setRecordedAt(value);
-              setRecordedUntil(nextRecordedUntil);
-              onValueChange?.(value, nextRecordedUntil);
-            }}
-            required
-            value={recordedAt}
-          />
-          <FieldError id="record-start-date-error">{recordedAtError}</FieldError>
-        </Field>
-        <AnimatePresence initial={false} mode="popLayout">
-          {!isSingleDay ? (
-            <motion.div
-              animate={{ opacity: 1, transform: "translateX(0)" }}
-              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, transform: "translateX(8px)" }}
-              initial={shouldReduceMotion ? false : { opacity: 0, transform: "translateX(8px)" }}
-              transition={transition}
+      <div className={cn("mt-4 grid gap-2", !isSingleDay && "grid-cols-2")}>
+        {cards.map(({ date, key, label }) => {
+          const selected = editing === key;
+          const invalid = (key === "recordedAt" && recordedAtError) || (key === "recordedUntil" && recordedUntilError);
+          const content = (
+            <>
+              <span className={cn("block text-muted-foreground text-xs", selected && "text-accent-text")}>{label}</span>
+              <span className="mt-0.5 block font-bold text-base">{formatCardDate(date, today)}</span>
+            </>
+          );
+          const cardClassName = cn(
+            "inset-ring-[1.5px] inset-ring-transparent rounded-xl bg-muted px-3.5 py-3 text-left",
+            selected && "inset-ring-primary bg-primary/12",
+            invalid && "inset-ring-destructive",
+          );
+          return isSingleDay ? (
+            <div className={cardClassName} key={key}>
+              {content}
+            </div>
+          ) : (
+            <button
+              aria-pressed={selected}
+              className={cn(
+                cardClassName,
+                "transition-[background-color,box-shadow] duration-200",
+                PRESS_FEEDBACK,
+                "after:hidden",
+                FOCUS_RING,
+              )}
+              key={key}
+              onClick={() => setActive(key)}
+              type="button"
             >
-              <Field className="min-w-0" data-invalid={Boolean(recordedUntilError)}>
-                <FieldLabel className="text-muted-foreground" htmlFor="record-end-date">
-                  마지막 날
-                </FieldLabel>
-                <DateInput
-                  aria-describedby={recordedUntilError ? "record-end-date-error" : undefined}
-                  aria-invalid={Boolean(recordedUntilError)}
-                  id="record-end-date"
-                  min={recordedAt || undefined}
-                  name="recordedUntil"
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setRecordedUntil(value);
-                    onValueChange?.(recordedAt, value);
-                  }}
-                  value={recordedUntil}
-                />
-                <FieldError id="record-end-date-error">{recordedUntilError}</FieldError>
-              </Field>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </motion.div>
+              {content}
+            </button>
+          );
+        })}
+      </div>
+      {error ? <FieldError className="mt-2">{error}</FieldError> : null}
+      <DateWheelPicker
+        aria-label={editing === "recordedAt" ? (isSingleDay ? "기록한 날" : "첫날") : "마지막 날"}
+        className="mt-3"
+        onValueChange={changeDate}
+        value={editing === "recordedAt" ? recordedAt : recordedUntil}
+      />
     </div>
   );
 }

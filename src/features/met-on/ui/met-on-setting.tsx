@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 
 import NumberFlow from "@number-flow/react";
 import { PencilSimpleIcon } from "@phosphor-icons/react";
-import { getDaysInMonth } from "date-fns";
 import { useRouter } from "next/navigation";
 
 import { countDaysSince } from "@/shared/lib/date/count-days";
@@ -15,17 +14,9 @@ import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { FieldDescription, FieldLegend, FieldSet } from "@/shared/ui/field";
 import { IconButton } from "@/shared/ui/icon-button";
-import { WheelPicker } from "@/shared/ui/wheel-picker";
+import { DateWheelPicker } from "@/shared/ui/wheel-picker";
 
 import { saveMetOn } from "../api/actions";
-
-const FIRST_YEAR = 1970;
-
-const range = (from: number, to: number, label: string) =>
-  Array.from({ length: to - from + 1 }, (_, index) => ({ label: `${from + index}${label}`, value: from + index }));
-
-const toIsoDate = (year: number, month: number, day: number) =>
-  `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
 export function MetOnSetting({ metOn }: { metOn: string | null }) {
   const today = getToday();
@@ -35,17 +26,6 @@ export function MetOnSetting({ metOn }: { metOn: string | null }) {
   const [saving, startSaving] = useTransition();
   const router = useRouter();
   const save = useDemoOverride(saveMetOn);
-  const [year, month, day] = draft.split("-").map(Number);
-  const todayYear = Number(today.slice(0, 4));
-
-  const changeDraft = (next: { day?: number; month?: number; year?: number }) => {
-    const nextYear = next.year ?? year;
-    const nextMonth = next.month ?? month;
-    const nextDay = Math.min(next.day ?? day, getDaysInMonth(new Date(nextYear, nextMonth - 1)));
-    const date = toIsoDate(nextYear, nextMonth, nextDay);
-    setDraft(date > today ? today : date);
-    setError("");
-  };
 
   const openSheet = () => {
     setDraft(metOn ?? today);
@@ -104,26 +84,15 @@ export function MetOnSetting({ metOn }: { metOn: string | null }) {
             </BottomSheet.Description>
           </BottomSheet.Header>
           <div className="px-5 pt-4 pb-7">
-            <div className="grid grid-cols-[1.3fr_1fr_1fr] [&>*:first-child_[data-slot=wheel-picker-band]]:rounded-r-none [&>*:last-child_[data-slot=wheel-picker-band]]:rounded-l-none [&>*:nth-child(2)_[data-slot=wheel-picker-band]]:rounded-none">
-              <WheelPicker
-                aria-label="연도"
-                onValueChange={(value) => changeDraft({ year: value })}
-                options={range(FIRST_YEAR, todayYear, "년")}
-                value={year}
-              />
-              <WheelPicker
-                aria-label="월"
-                onValueChange={(value) => changeDraft({ month: value })}
-                options={range(1, 12, "월")}
-                value={month}
-              />
-              <WheelPicker
-                aria-label="일"
-                onValueChange={(value) => changeDraft({ day: value })}
-                options={range(1, getDaysInMonth(new Date(year, month - 1)), "일")}
-                value={day}
-              />
-            </div>
+            <DateWheelPicker
+              aria-label="우리가 처음 만난 날"
+              max={today}
+              onValueChange={(date) => {
+                setDraft(date);
+                setError("");
+              }}
+              value={draft}
+            />
             {error ? (
               <FieldDescription className="mt-3 text-destructive" role="alert">
                 {error}

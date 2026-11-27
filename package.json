@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@ncdai/react-wheel-picker": "1.2.3",
     "@number-flow/react": "0.6.2",
     "@phosphor-icons/react": "^2.1.10",
     "@ssgoi/react": "7.5.1",
